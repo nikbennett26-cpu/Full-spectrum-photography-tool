@@ -1,0 +1,2508 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Filter Transmission Curves — UV/IR Filter Stacking Calculator</title>
+<meta name="description" content="Free transmission curve visualiser and stacking calculator for UV, IR and colour glass filters. 150+ filters — Schott, B+W, Hoya, Wratten, Kodak — fitted to real manufacturer and spectrometer data, with auto-generated stacking guidance.">
+<meta name="keywords" content="filter transmission curve, UV filter, IR filter, Schott glass, Wratten filter, filter stacking calculator, infrared photography filter">
+<meta name="robots" content="index, follow">
+<link rel="canonical" href="https://irlab.uk/filters.html">
+<meta name="theme-color" content="#160f0a">
+<link rel="icon" href="/favicon.ico" sizes="any">
+<link rel="icon" type="image/png" sizes="512x512" href="/favicon-512.png">
+<link rel="icon" type="image/png" sizes="192x192" href="/favicon-192.png">
+<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16.png">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+
+<!-- Google Analytics (GA4) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-CSQ28MD35N"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-CSQ28MD35N');
+</script>
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebApplication",
+  "name": "Filter Transmission Curves — UV/IR Filter Stacking Calculator",
+  "alternateName": "IR Lab Filter Curves",
+  "url": "https://irlab.uk/filters.html",
+  "description": "Free transmission curve visualiser and stacking calculator for UV, IR and colour glass filters. 150+ filters — Schott, B+W, Hoya, Wratten, Kodak — fitted to real manufacturer and spectrometer data, with auto-generated stacking guidance.",
+  "applicationCategory": "MultimediaApplication",
+  "operatingSystem": "Any (runs in any modern web browser)",
+  "browserRequirements": "Requires JavaScript",
+  "isAccessibleForFree": true,
+  "offers": {
+    "@type": "Offer",
+    "price": "0",
+    "priceCurrency": "USD"
+  },
+  "isPartOf": {
+    "@type": "WebSite",
+    "name": "IR Lab",
+    "url": "https://irlab.uk/"
+  }
+}
+</script>
+
+<!-- Open Graph (Facebook, WhatsApp, Discord, LinkedIn, iMessage previews) -->
+<meta property="og:type" content="website">
+<meta property="og:title" content="Filter Transmission Curves — UV/IR Filter Stacking Calculator">
+<meta property="og:description" content="Free transmission curve visualiser for UV, IR and colour glass filters. 150+ filters fitted to real manufacturer and spectrometer data.">
+<meta property="og:url" content="https://irlab.uk/filters.html">
+<meta property="og:site_name" content="Filter Curves">
+<meta property="og:image" content="https://irlab.uk/preview-filters.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+
+<!-- Twitter/X card -->
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Filter Transmission Curves — UV/IR Filter Stacking Calculator">
+<meta name="twitter:description" content="Free transmission curve visualiser for UV, IR and colour glass filters, fitted to real data.">
+<meta name="twitter:image" content="https://irlab.uk/preview-filters.jpg">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#160f0a;--surface:#20160f;--surface2:#2a1d13;--line:#40301f;--line2:#54402a;
+  --paper:#ede2ce;--paper-dim:#a89372;--muted:#7a6a52;
+  --safelight:#c2431b;--safelight-dim:#8f3417;
+  --phosphor:#6fab96;--phosphor-dim:#4d7d6e;
+  --warn:#d8a13a;
+  --radius:4px;
+  --font-display:'Barlow Condensed',system-ui,sans-serif;
+  --font-mono:'JetBrains Mono',ui-monospace,'SF Mono',Consolas,monospace;
+  --font-body:system-ui,-apple-system,'Segoe UI',sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:radial-gradient(ellipse 900px 500px at 50% -8%,rgba(194,67,27,.10),transparent 60%),var(--bg);
+  color:var(--paper);font-family:var(--font-body);font-size:14px;line-height:1.45;padding:12px;max-width:920px;margin:0 auto}
+@media (min-width:900px){body{max-width:1400px;padding:24px 40px}}
+@media (min-width:1600px){body{max-width:92vw;padding:32px 4vw}}
+::selection{background:var(--safelight);color:#fff}
+a{color:var(--phosphor)}
+
+header{margin-bottom:14px}
+header h1{font-family:var(--font-display);font-weight:700;font-size:28px;letter-spacing:.01em;text-transform:uppercase;line-height:1}
+header .tagline{font-size:11.5px;color:var(--paper-dim);margin-top:4px;display:block}
+.backlink{display:inline-block;margin-top:8px;font-family:var(--font-mono);font-size:11px;color:var(--safelight);text-decoration:none;border:1px solid var(--line2);padding:5px 10px;border-radius:3px}
+.backlink:hover{background:var(--surface2)}
+
+.panel{background:var(--surface);border:1px solid var(--line);border-top:2px solid var(--line2);border-radius:var(--radius);padding:14px;margin-bottom:10px}
+.pt{font-family:var(--font-display);font-size:13px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--paper-dim);margin-bottom:10px}
+details summary{list-style:none;cursor:pointer;display:inline-block}
+details summary::-webkit-details-marker{display:none}
+details summary::after{content:'+';font-family:var(--font-mono);color:var(--safelight);margin-left:8px}
+details[open] summary::after{content:'–'}
+
+#chartWrap{position:relative}
+#chart{width:100%;height:340px;display:block;background:#0a0603;border:1px solid var(--line);border-radius:3px}
+#specStrip{width:100%;height:14px;display:block;margin-top:2px;border:1px solid var(--line);border-top:none;border-radius:0 0 3px 3px}
+
+.grp{margin-bottom:14px}
+.grp h3{font-family:var(--font-mono);font-size:10.5px;text-transform:uppercase;letter-spacing:.04em;color:var(--paper-dim);font-weight:500;margin-bottom:6px}
+.grph3sum{font-family:var(--font-mono);font-size:10.5px;text-transform:uppercase;letter-spacing:.04em;color:var(--paper-dim);font-weight:500;cursor:pointer;display:inline-block}
+.grp details[open] .grph3sum{margin-bottom:0}
+.rechdr{font-family:var(--font-mono);font-size:10.5px;text-transform:uppercase;letter-spacing:.04em;color:var(--paper-dim);font-weight:500}
+.ctl{display:flex;align-items:center;gap:7px;font-family:var(--font-mono);font-size:11px;color:var(--paper-dim);cursor:pointer;user-select:none}
+.ctl input[type=checkbox]{accent-color:var(--safelight);cursor:pointer}
+.ctl b{color:var(--phosphor);font-weight:500;min-width:82px;text-align:right}
+.ctl .hint{color:var(--muted)}
+.fgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:5px}
+.fb{position:relative;background:var(--surface2);border:1px solid var(--line);border-left:3px solid var(--line2);border-radius:3px;padding:7px 8px 7px 10px;cursor:pointer;text-align:left;color:var(--paper);font-family:inherit;font-size:12px;transition:background .1s,border-color .1s}
+.fb:hover{background:var(--line)}
+.fb.on{background:rgba(194,67,27,.14)}
+.fbqty{position:absolute;top:4px;right:4px;background:var(--safelight);color:#fff;font-family:var(--font-mono);font-size:9.5px;font-weight:600;padding:1px 5px;border-radius:8px;line-height:1.4}
+.fbclear{position:absolute;top:-6px;right:-6px;width:18px;height:18px;background:var(--surface);border:1px solid var(--line2);border-radius:50%;display:none;align-items:center;justify-content:center;font-size:12px;line-height:1;color:var(--paper-dim);z-index:2}
+.fbclear:hover{color:var(--safelight);border-color:var(--safelight)}
+.fb b{font-family:var(--font-mono);display:block;font-size:11.5px;font-weight:600}
+.fb small{display:block;font-size:9.5px;color:var(--paper-dim);margin-top:1px;line-height:1.25}
+
+.bar{display:flex;gap:7px;flex-wrap:wrap;margin-bottom:10px;align-items:center}
+button{background:var(--surface2);border:1px solid var(--line2);border-radius:3px;color:var(--paper);padding:8px 13px;font-size:12.5px;cursor:pointer;font-family:inherit}
+button:hover{background:var(--line)}
+button:focus-visible{outline:2px solid var(--phosphor);outline-offset:1px}
+
+#stackName{font-family:var(--font-mono);font-size:12px;color:var(--phosphor);margin-left:auto;text-align:right}
+
+.readout{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:8px;margin-top:10px}
+.ro{background:#120b07;border:1px solid var(--line);border-radius:3px;padding:8px 10px}
+.ro .k{font-family:var(--font-mono);font-size:9px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted)}
+.ro .v{font-family:var(--font-mono);font-size:15px;color:var(--phosphor);margin-top:2px}
+.ro.warn .v{color:var(--warn)}
+.ro.bad .v{color:var(--safelight)}
+
+.legend{display:flex;flex-wrap:wrap;gap:10px;margin-top:8px}
+.lg{display:flex;align-items:center;gap:5px;font-family:var(--font-mono);font-size:10.5px;color:var(--paper-dim)}
+.lg i{width:14px;height:3px;border-radius:2px;display:block}
+
+.note{font-size:11px;color:var(--muted);line-height:1.5;margin-top:8px}
+.note b{color:var(--paper-dim)}
+.warnbox{background:rgba(216,161,58,.08);border:1px solid rgba(216,161,58,.3);border-left:3px solid var(--warn);border-radius:3px;padding:10px 12px;font-size:12px;line-height:1.5;margin-top:10px;display:none}
+.warnbox b{color:var(--warn)}
+.warnbox.info{background:rgba(111,171,150,.08);border-color:rgba(111,171,150,.3);border-left-color:var(--phosphor)}
+.warnbox.info b{color:var(--phosphor)}
+#behaviour{margin-top:12px}
+#behaviour h4{font-family:var(--font-display);font-size:12px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--paper-dim);margin-bottom:8px}
+.bh{background:#120b07;border:1px solid var(--line);border-left:3px solid var(--c,var(--line2));border-radius:3px;padding:9px 11px;margin-bottom:6px}
+.bh .bn{font-family:var(--font-mono);font-size:11.5px;font-weight:600;color:var(--paper)}
+.bh .bd{font-size:11.5px;color:var(--paper-dim);margin-top:3px;line-height:1.45}
+.bh .bs{font-size:11.5px;color:var(--phosphor);margin-top:4px;line-height:1.45}
+.bh .bs.bad{color:var(--safelight)}
+.bh.combo{border-left-color:var(--phosphor);background:rgba(111,171,150,.07);border-color:rgba(111,171,150,.28)}
+.bh.combo .bn{color:var(--phosphor)}
+.bh.combo .bd{color:var(--paper)}
+.bh.combo b{color:var(--phosphor)}
+#stackSummary{font-family:var(--font-display);font-size:15px;font-weight:600;letter-spacing:.02em;color:var(--phosphor);margin-top:6px}
+footer{font-size:11px;color:var(--muted);margin-top:14px;border-top:1px solid var(--line);padding-top:10px;line-height:1.6}
+footer a{color:var(--safelight);text-decoration:none;font-weight:600}
+</style>
+</head>
+<body>
+<div id="cookieBanner" style="display:none;position:fixed;left:0;right:0;bottom:0;z-index:9999;
+  background:var(--surface);border-top:1px solid var(--line2);padding:10px 16px;
+  align-items:center;justify-content:center;gap:14px;
+  font-family:var(--font-body);font-size:12.5px;color:var(--paper-dim);box-shadow:0 -4px 16px rgba(0,0,0,.4)">
+  <span>This site uses Google Analytics — anonymous visit counts only, no account, no data sold.</span>
+  <button id="cookieAck" style="background:var(--safelight);border-color:var(--safelight);color:#fff;flex-shrink:0">OK, got it</button>
+</div>
+<script>
+(function(){
+  var seen = null;
+  try{ seen = localStorage.getItem('cookieAck'); }catch(e){}
+  if(seen!=='1'){
+    var b=document.getElementById('cookieBanner'); if(!b)return; b.style.display='flex';
+    document.getElementById('cookieAck').addEventListener('click',function(){
+      b.style.display='none';
+      try{ localStorage.setItem('cookieAck','1'); }catch(e){}
+    });
+  }
+})();
+</script>
+
+<header>
+  <h1>Filter Curves</h1>
+  <span class="tagline">Transmission &amp; stacking calculator — UV / visible / IR</span>
+  <a class="backlink" href="index.html">← Back to Channel Swap</a>
+</header>
+
+<div class="panel">
+  <div class="bar">
+    <button id="clearBtn">Clear all</button>
+    <span id="stackName">nothing selected</span>
+  </div>
+  <div id="stackSummary"></div>
+  <div class="bar" style="margin:8px 0 4px;align-items:center;gap:14px">
+    <label class="ctl"><input type="checkbox" id="logScale"> Log scale <span class="hint">(reveals leaks)</span></label>
+    <label class="ctl" style="flex:1;min-width:190px">Glass thickness
+      <input type="range" id="thick" min="25" max="300" value="100" style="flex:1;accent-color:var(--safelight)">
+      <b id="thickVal">as specified</b>
+    </label>
+  </div>
+  <div class="bar" style="margin:0 0 4px;align-items:center;gap:14px">
+    <label class="ctl">Camera body
+      <select id="cameraBrand" style="background:#120b07;border:1px solid var(--line2);color:var(--phosphor);font-family:var(--font-mono);font-size:11.5px;padding:5px 8px;border-radius:3px;margin-left:6px">
+        <option value="neutral">Neutral / not specified</option>
+        <option value="fuji">Fujifilm</option>
+        <option value="canon">Canon</option>
+        <option value="nikon">Nikon</option>
+        <option value="sony">Sony</option>
+      </select>
+    </label>
+  </div>
+  <details style="margin-bottom:10px">
+    <summary class="grph3sum" style="cursor:pointer">What "Camera body" does and doesn't change</summary>
+    <div class="note" style="margin-top:8px">
+      The curve you see is always the <b>glass itself</b> — that never changes with camera choice, it's a fixed
+      physical property. Selecting a body scales down the red/near-IR portion (>600nm) of the <i>combined
+      result</i> chart, readout and description, based on a real finding: Kolari Vision compiled stock
+      transmission curves for 82 camera bodies and found Fujifilm's sensor runs hottest for red/near-IR
+      sensitivity, Canon sits in the middle, Sony and Nikon skew lowest
+      (<a href="https://kolarivision.com/uv-filter-effectiveness-article/" target="_blank" rel="noopener">source</a>).
+      That's a real published <b>ranking</b>, not a measured curve — so the exact scaling here is estimated to
+      match the ranking, not lab data.
+    </div>
+    <div class="note" style="margin-top:8px;color:var(--warn)">
+      <b>Deliberately NOT included:</b> that same Kolari study also measured each brand's stock UV/IR-cut
+      <i>glass</i> cutoff (Sony ≈409nm, Canon ≈416nm, Nikon/Fuji ≈420nm). That data is real too, but it
+      describes the hot-mirror glass that gets physically removed during a full-spectrum conversion — so it
+      doesn't apply to a converted body, which is what this tool assumes. Using it here would misrepresent a
+      converted camera's actual UV response.
+    </div>
+  </details>
+  <details style="margin-bottom:12px">
+    <summary class="rechdr" style="cursor:pointer;display:inline-block">Describe the look you want</summary>
+    <div style="margin-top:8px">
+      <div class="note" style="margin-bottom:6px">Type a subject + colour — e.g. "blue foliage", "black foliage", "white trees". Rather than guessing from which colour band a filter passes, this <b>predicts what foliage actually renders as</b>: it integrates each stack's transmission against a published vegetation reflectance curve (corrected from single-leaf to canopy, since you photograph a tree rather than one leaf) and a Bayer sensor response, white-balances against a grey card, then reads off the resulting hue and brightness — as shot and with red/blue swapped, relative to how the same foliage would look through a normal camera. Searches the 15 named recipes, every filter, every pair, and a beam search over three-filter stacks. Validated on the two cases with known ground truth: a normal camera's IR-cut glass predicts green foliage, and an 850nm filter predicts the white Wood effect — both falling out of the same equations. Predicted hues are directional, not colorimetric — a flat illuminant is assumed and the exact hue shifts with your white-balance reference.</div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+        <input type="text" id="lookQuery" placeholder="e.g. blue foliage" style="background:#120b07;border:1px solid var(--line2);color:var(--phosphor);font-family:var(--font-mono);font-size:13px;padding:8px 10px;border-radius:3px;flex:1;min-width:160px">
+        <button id="lookSuggest">Suggest a recipe</button>
+      </div>
+      <div id="lookResults" style="margin-top:10px"></div>
+    </div>
+  </details>
+  <details style="margin-bottom:12px">
+    <summary class="rechdr" style="cursor:pointer;display:inline-block">Known recipes</summary>
+    <div class="bar" style="margin-top:6px;margin-bottom:0">
+      <button class="rec" data-stack="zwb3,tsn575">My UV stack</button>
+      <button class="rec" data-stack="grb1,lee139">Candy Chrome DIY</button>
+      <button class="rec" data-stack="grb3,lee729">IR Chrome DIY</button>
+      <button class="rec" data-stack="w47">Faux colour (W47)</button>
+      <button class="rec" data-stack="kolarichrome">Kolari IR Chrome</button>
+      <button class="rec" data-stack="w15">Aerochrome yellow</button>
+      <button class="rec" data-stack="zwb3">UV glass, no blocker</button>
+      <button class="rec" data-stack="stockir,ha7">Why convert: stock IR-cut vs H-alpha</button>
+      <button class="rec" data-stack="zwb3,qb21,stockir">Faux UV, unconverted body (UVP)</button>
+      <button class="rec" data-stack="lext">L-eXtreme (Ha + OIII)</button>
+      <button class="rec" data-stack="kb20,bw061,c80c">Candy Pink stack</button>
+      <button class="rec" data-stack="grb3,lee035">Pink Aerochrome DIY</button>
+      <button class="rec" data-stack="db850,lee441">Blue Trees (Hidden Realms)</button>
+      <button class="rec" data-stack="db850,lee744">Blue Trees — Dirty White variant</button>
+      <button class="rec" data-stack="tsn575,c80a,notch532,nf550">Black foliage (notch stack)</button>
+    </div>
+  </details>
+  <div id="chartWrap">
+    <canvas id="chart"></canvas>
+    <canvas id="specStrip"></canvas>
+  </div>
+  <div class="legend" id="legend"></div>
+  <div class="readout" id="readout"></div>
+  <div class="warnbox" id="leakWarn"></div>
+  <div id="behaviour"></div>
+</div>
+
+<div class="panel">
+  <div class="pt">Select filters — tap to stack</div>
+  <input type="text" id="filterSearch" placeholder="Search filters… (e.g. Schott, Wratten, notch, 850)"
+    style="background:#120b07;border:1px solid var(--line2);color:var(--phosphor);font-family:var(--font-mono);
+    font-size:13px;padding:8px 10px;border-radius:3px;width:100%;margin-bottom:10px;box-sizing:border-box">
+  <div id="filterSearchStatus" style="font-family:var(--font-mono);font-size:11px;color:var(--muted);
+    margin:-4px 0 8px;display:none"></div>
+  <div id="filterList"></div>
+</div>
+
+<div class="panel">
+  <details>
+    <summary class="pt" style="margin-bottom:0">About this data — what's measured, what's estimated</summary>
+    <div class="note" style="margin-top:10px">
+      <p><b>Most of this is now fit to real published or measured data — the "model" part is the smooth curve
+      connecting real numbers, not a guess at the numbers themselves.</b> That's a genuine shift from where this
+      started: the Wratten series is fit to Kodak's own handbook, the Schott series to Schott's own datasheets,
+      several Hoya and Lee entries to real manufacturer charts or product-specific measurements, GRB1/GRB3 to
+      real product data, the astronomy filters to physical constants. Where that's true, treat the curve
+      <i>shape</i> as trustworthy even though a sigmoid can't trace every wiggle of a real glass exactly.
+      A real minority of entries are still genuine estimates rather than fits — generic eBay/AliExpress items
+      with no published data, a few derived-not-measured cases, and the colour-conversion filters generally —
+      and those are flagged individually as they come up below, rather than left for you to guess which is
+      which.</p>
+      <p style="margin-top:8px"><b>The branded filters are the best-anchored.</b> Their 50% transmission points
+      come from the Kodak Photographic Filters Handbook (B-3, 1992) for the Wratten series — which is what
+      Tiffen numbering follows — and from B+W's own published figures for the 09x series. Where a manufacturer
+      gives two points (B+W 092: 50% at 695nm rising past 90% by 730nm; B+W 093: about 1% at 800nm and 88% at
+      900nm) the edge steepness was fitted to match both, rather than guessed. Every branded cutoff here
+      reproduces its published 50% figure to within a nanometre.</p>
+      <p style="margin-top:8px">Real glass rolls off slightly asymmetrically, so a sigmoid can't match a true
+      trace perfectly — the 092 curve reaches about 81% at 730nm where the spec says over 90%. Close, not exact.</p>
+      <p style="margin-top:8px"><b>The Wratten step series is a good fit by nature.</b> Filters 3 through 29 are
+      documented as sharing one curve shape — a simple step cutting everything below a limit, with only the
+      cutoff moving from blue to deep red — which is exactly what this model draws. Cut-on figures are from
+      filter-stock listings and the Kodak handbook. These are the filters put in front of Aerochrome film to
+      hold back blue, since all three emulsion layers are inherently blue-sensitive; shooters generally reach
+      for a #15 dark yellow or #16 orange, finding a #12 or lighter leaves a blue cast.</p>
+      <p style="margin-top:8px"><b>Colour filters are modelled with their infrared leak included</b>, because
+      that is the single most important thing about using them on a converted body. Organic dyes absorb in the
+      visible but go essentially transparent past about 700nm, so a blue, green or magenta filter passes its
+      colour <i>and</i> infrared at once. That dual band is what produces in-camera false colour, and it is why
+      a deep blue Wratten 47 is used deliberately for the effect. The visible bands are drawn from published
+      Wratten passband figures; the leak height is a reasonable dye-filter value, not a measurement for each
+      specific filter.</p>
+      <p style="margin-top:8px"><b>GRB1 and GRB3 are attenuators, not blockers.</b> Both pass visible light almost
+      untouched and only knock infrared down — effectively an ND filter for IR — which is the point: leaving some
+      IR through and pairing it with a colour gel gives controlled false colour rather than the all-or-nothing
+      result of a hard IR cut. Manufacturer Zeyuan Optics states GRB1 = Schott KG2 and GRB3 = Schott KG3; GRB3
+      cross-checked closely against real product-specific data (2.2pp RMS) so its KG3-datasheet fit stayed. GRB1
+      didn't — real GRB1-specific data showed it blocking NIR noticeably harder than genuine Schott KG2 glass does,
+      so it's now fitted directly to that real data instead of the KG2 proxy (11.0pp RMS as a proxy vs 1.2pp fitted
+      directly). The core finding survives the correction: GRB1 still passes more light than GRB3 at every
+      wavelength from 700-1000nm, just by a smaller margin than the KG2 proxy implied. The two DIY recipes on the
+      buttons above (GRB1 + Lee 139 Primary Green; GRB3 + Lee 729 Scuba Blue, the latter reported as close to
+      Kolari's IR Chrome) come from David Kennard's 23-filter comparison and use these two specific glasses.</p>
+      <p style="margin-top:8px"><b>All five Lee lighting gels used in the DIY recipes are now fit to real Lee
+      Filters data</b>, replacing what were previously the weakest-sourced colour entries in this file — one
+      estimated from a single published daylight-transmission number, another borrowed its curve shape from an
+      unrelated Wratten filter entirely. Real digitised data (0.16-4.6 percentage points RMS across all five)
+      showed genuinely different shapes than assumed: Lee 139 and 729 are true narrowband bandpasses, not the
+      broader soft-edged curves guessed at before, and Lee 035's "pink" result comes from a real dip shape
+      (elevated blue, sagging green, rising red) rather than an approximation. One honest caveat carried over from
+      the source itself: every Lee gel in that dataset shares the same generic "rises to ~90% by 800nm" NIR tail,
+      which its own documentation admits is a rough extrapolation applied uniformly, not measured per colour —
+      plausible for the two broad warming gels, less obviously true for the narrowband ones, so those two carry a
+      more conservative, clearly-flagged leak estimate rather than inheriting the same confident number.</p>
+      <p style="margin-top:8px"><b>TSN340 and TSN575 have no manufacturer datasheet, so both are derived rather
+      than guessed.</b> TSN340 turns out not to be a separate glass at all — Aphalo's own measurements identify it
+      directly as ZWB1 glass at 8.3mm, so this reuses ZWB1's already-verified curve and scales it by Beer-Lambert
+      (thickness ratio 8.3/2.1) rather than fitting a new shape from scratch. TSN575 is cross-checked a different
+      way: Aphalo publishes measured optical density for three TSN575 stacks (with ZWB1, ZWB2 and ZWB3). Since
+      stacked OD adds, subtracting this file's own ZWB curves from each measured stack isolates TSN575's own OD
+      three independent times per waveband — where that subtraction is numerically stable, all three agree with
+      the shortpass-at-575nm shape already modelled here. Green/yellow bands were dropped from that check because
+      both filters are already near-opaque there, which makes the subtraction noise-dominated rather than
+      informative — the source's own text warns that measured OD above 3-4 should be read as "high," not exact.
+      TSN340's Beer-Lambert scaling was later tested against real ZWB1 data measured at three actual thicknesses
+      (1mm, 2mm, 3mm): the theory held up reasonably in the UV passband, but the deep-NIR blocking region — the
+      part that matters most for TSN340's whole purpose — was too noisy in the real data to support a more
+      precise empirical alternative (one measurement even showed the 3mm sample passing <i>more</i> than the 2mm
+      one at 900nm, a sign of measurement noise near the floor rather than a real material effect). The
+      theory-based approach was kept rather than "corrected" toward numbers the data itself couldn't reliably
+      support.</p>
+      <p style="margin-top:8px"><b>"Faux UV on an unconverted body" is a real, verified case worth explaining.</b>
+      Reported directly on ultravioletphotography.com by Fedia: ZWB3 + QB21 stacked on a stock (unconverted)
+      Canon 600D. No true UV reaches the sensor here — the camera's own internal hot-mirror still blocks it,
+      which this tool models explicitly via "Stock camera IR-cut" and can verify numerically: the same
+      ZWB3+QB21 pair passes 64% at 350nm on a converted body but only 0.1% on a stock one. What survives instead
+      is a narrow deep blue-violet band around 410nm — a purely visible-light effect. Fedia's own observation
+      was that vegetation still renders dark, similar to true UV, but for an unrelated reason: chlorophyll
+      absorbs blue light strongly too, so a blue-only passband darkens foliage by a completely different
+      mechanism than UV absorption does. Worth knowing if you own UV glass but haven't converted a body yet.</p>
+      <p style="margin-top:8px"><b>The astronomy filters are anchored on physical constants.</b> The emission
+      wavelengths are not estimates — H-alpha 656.3nm, H-beta 486.1nm, OIII 495.9/500.7nm, SII 671.6nm, sodium D
+      589.0/589.6nm, mercury 435.8/546.1/578nm. The passband widths follow standard product bandwidths (3nm,
+      7nm, 8nm) and the modelled filters measure within about 0.15nm of the width they are named for. The
+      L-eXtreme is drawn as Optolong specify it: 7nm bands on Ha and OIII, with H-beta deliberately blocked,
+      which is what separates it from the tri-band L-eNhance.</p>
+      <p style="margin-top:8px">The <b>stock camera IR-cut</b> entry is there to show why conversion happens at
+      all. Select it together with an H-alpha filter: an unconverted body passes roughly 20% at 656nm against
+      about 89% once the internal cut filter is gone. That gap is the whole reason astro-modified and
+      full-spectrum bodies exist, and it is the same modification that makes this tool's kind of photography
+      possible.</p>
+      <p style="margin-top:8px"><b>QB21 and Schott BG38 are the same glass.</b> Tangsinuo sell it under both
+      names, and it is listed elsewhere as "QB21 (equal to BG38)" — so the two entries here deliberately carry
+      identical curves. The AR-coated QB21 is separate because the coating raises throughput; Pedro Aphalo
+      measured it transmitting UV-A better than the TSN575 while blocking NIR less effectively, which is why it
+      is drawn with an earlier deep-IR leak. Relative ordering within the Schott short-pass family follows
+      documented behaviour: S8612 suppresses infrared more aggressively than BG38, BG39 or BG40 at equal
+      thickness, BG39 cuts furthest into visible red, and BG40 sits between BG38 and BG39. B+W 039 is mounted
+      BG39, B+W 489 is mounted KG3, and the LDP CC1 is widely held to be uncoated 2.5mm BG38. Cutoffs assume
+      roughly 2mm — thickness matters a great deal with absorptive glass.</p>
+      <p style="margin-top:8px"><b>Absorptive and interference blockers are flagged separately</b> because the
+      difference is practical, not academic. Absorptive glass works chemically and behaves identically across
+      the frame. Interference coatings reflect infrared off a dielectric stack whose effective thickness varies
+      with incidence angle, so the cutoff drifts at the frame edges and wide lenses can show an uneven cyan
+      corner cast. Filters known to develop surface haze over time are flagged too.</p>
+      <p style="margin-top:8px"><b>Hoya's X0/X1 naming does not match Kodak's.</b> Kodak's old letter scheme ran
+      K1 = Wratten 6, K2 = Wratten 8, K3 = Wratten 9, G = Wratten 15, X1 = Wratten 11, X2 = Wratten 13,
+      A = Wratten 25. Hoya broke from it: they sell the Wratten 11 yellow-green as <b>X0</b> and use <b>X1</b>
+      for a fuller green. Both namings are in circulation and people do get caught out — a Hoya X1 is not a
+      Kodak X1. The Hoya group here follows Hoya's own product naming, since that is what is engraved on the
+      filter you are holding, and each entry states its Wratten equivalent explicitly. Hoya's O is designated
+      (G), and Kodak's G was deep yellow rather than orange, which is why the O(G) sits at Wratten 15 and not
+      with the true oranges. Both are now fit to real Hoya-branded X0/X1 data too, which turned up two real
+      corrections: X0's true peak is ~90% near 550-560nm, not the 60-63% previously read off a chart, and X1 —
+      previously modelled with a flat ~6-7% floor through red and NIR — actually climbs slowly but steadily back
+      up to ~17.6% by 1080nm, a genuine late-NIR rise the earlier chart reading gave no reason to suspect.</p>
+      <p style="margin-top:8px"><b>Two real physical effects are now modelled separately.</b> Absorption in the
+      glass follows Beer-Lambert, so internal transmittance scales as a power of thickness — doubling the glass
+      squares it. Surface reflection is a fixed Fresnel loss of roughly 4% per air-glass face, independent of
+      thickness, which an anti-reflection coating cuts to about 1%. Schott quote internal and external
+      transmission separately for exactly this reason. The thickness slider applies the first effect and leaves
+      the second alone, which is why moving it barely changes the passband but drives the stopband down hard:
+      S8612's own datasheet (1mm reference) puts it under 1% at 700nm already, falling to effectively zero by
+      2mm — this is a genuinely aggressive IR blocker even thin, which is part of why it's rated for half the
+      thickness of a BG38-class glass for the same blocking. Interference filters are excluded from the scaling
+      because their behaviour comes from a coating stack, not bulk absorption.</p>
+      <p style="margin-top:8px"><b>Turn on the log scale to see leaks.</b> A linear axis flattens anything below
+      about 1% onto the baseline, which hides precisely the thing that matters most — a UV stack leaking a few
+      tenths of a percent in the infrared still ruins the shot. The log axis runs down to 0.001% so those tails
+      are visible. It is the same reason spectroscopy is usually plotted as optical density.</p>
+      <p style="margin-top:8px">Fedia (source for the ZWB3/ZWB1 data above, and for the faux-UV-on-unconverted-body
+      technique) put the practical reason better than that: a UV-pass filter's small secondary bumps look
+      unimportant on a linear chart, but they aren't. UV glass like ZWB3 passes a lot of UV in absolute terms,
+      but a camera sensor's native sensitivity to UV is weak, so shooting real UV means cranking ISO hard to
+      compensate. Once you've done that, the "small" leak features get amplified right along with the UV
+      signal — a bump that reads as a few percent on a linear axis can end up genuinely competing with the UV
+      you're trying to capture. The log scale is what actually shows you that risk; the linear one hides it.</p>
+      <p style="margin-top:8px"><b>The Schott series is the reference glass most filters are cut from.</b> Their
+      part numbers are the 50% cut-on wavelength by definition — RG695 cuts at 695nm, OG550 at 550nm — so those
+      entries are exact rather than estimated. B+W 092 is RG695, B+W 093 is RG830, B+W 091 is RG630, and the
+      Hoya R72 sits beside RG715. Edge steepness is the estimated part: it varies between melts and the model
+      scales it with wavelength as a rough rule.</p>
+      <p style="margin-top:8px"><b>Not all UV-pass glass leaks infrared — dielectric ones don't.</b> The
+      ZWB/UG-family absorptive glass leaks deep IR because its dye simply doesn't absorb out there, which is why
+      it needs a blocker stacked with it. Baader U and its rivals (Andrea-U, Chroma U-Bessel) work differently:
+      a dielectric coating stack reflects everything outside the passband by design, so there is no IR leak to
+      block in the first place — independently measured out to 850nm on both Baader and Andrea-U. The tradeoff
+      is the same one interference coatings always have: transmission is angle-dependent, so the passband
+      drifts and dims a little off-axis (measured at about 0.2 stops for the Baader U at 45°). Hoya U-330 and
+      U-340 are the absorptive-glass counterpart, and both are now fitted to Hoya's own official datasheets
+      rather than estimated — which corrected a real underestimate on U-330 specifically. It doesn't just "leak
+      IR like the ZWB family": the real datasheet shows the leak peaking near 50% around 720nm and still sitting
+      at roughly 32% by 1000nm, closer to an IR-pass filter with a UV side-channel than a clean UV bandpass. U-340
+      is much cleaner, peaking only a couple of percent around 710-720nm — the two are not interchangeable despite
+      the similar naming. The U-360 curve is a different animal again, fitted directly to a published measurement:
+      70% transmission near 360nm and about 10% infrared leak at 740nm.</p>
+      <p style="margin-top:8px"><b>All three Hoya 80-series conversion filters are now fit to real Hoya-branded
+      data.</b> This wasn't a straightforward improvement — 80A was originally fit to Kodak's own published table
+      for the Wratten 80A gel (excellent data, 1 percentage point RMS, independently reproduced Kodak's own
+      luminous transmittance figure). Checking that fit against real Hoya-specific measurements turned up a
+      41.7-point gap: not a data-quality problem, a genuinely different curve shape (Kodak's table holds a broad
+      plateau to ~493nm; real Hoya 80A is already down to half strength by 450nm). Kodak's Wratten 80A gel and
+      Hoya's own 80A glass, sold as equivalent 3200K-to-5500K conversions, turn out not to be identical
+      formulations. Since this entry is explicitly labelled "Hoya 80A," it's now fit to the Hoya-specific data
+      instead — the better-sourced dataset was, in this case, fit to the wrong product. 80B and 80C moved from a
+      stated 9.5-point mean error (digitised off a chart) to 2.6 and 1.3 points respectively, also against real
+      Hoya-branded measurements.</p>
+      <p style="margin-top:8px"><b>B+W 403 and 094 are Schott glass under a different name, and now fitted as such.</b>
+      403 is Schott UG1, 094 is comparable to RG1000-class glass; both now use least-squares fits to Schott's own
+      published datasheets (UG1: 1.3 percentage points RMS; RG1000 fit to its own guaranteed spec points) rather
+      than estimates. The UG1 fit confirmed something spectrometer testers had already found qualitatively: B+W
+      403 has a real, substantial NIR leak peaking near 48% around 750nm, not the soft plateau once assumed —
+      which is why it renders as a near-IR image on a full-spectrum body unless paired with a real IR blocker.</p>
+      <p style="margin-top:8px">The <b>stacking maths is exact</b>, though: transmittances multiply, which is
+      the same operation used on real measured data. So the qualitative conclusions a stack shows you here —
+      "this combination still leaks IR", "this one doesn't" — are trustworthy even though the absolute numbers
+      are approximations.</p>
+      <p style="margin-top:8px">Individual filters also genuinely vary between glass melts, so even real measured
+      curves differ slightly from filter to filter of the same type.</p>
+      <p style="margin-top:8px">For actual measured spectra see
+      <a href="https://www.photo-spectrum.info/pages/filters/UV-filter-stacks.html" target="_blank" rel="noopener">photo-spectrum.info</a>
+      (Pedro J. Aphalo, measured on an HP 8453 diode-array spectrophotometer), the filter-test threads at
+      <a href="https://www.ultravioletphotography.com" target="_blank" rel="noopener">ultravioletphotography.com</a>,
+      and <a href="https://github.com/CheeseCube312/Filter-Plotter-Data" target="_blank" rel="noopener">CheeseCube312's
+      Filter-Plotter-Data project</a> (MIT-licensed), a large independent dataset of digitised manufacturer charts
+      and product-specific measurements that a good number of the refits above are now fit to directly.</p>
+    </div>
+  </details>
+</div>
+
+<footer>
+  Tool by <a href="https://www.instagram.com/king_of_little_germany" target="_blank" rel="noopener">@king_of_little_germany</a>
+</footer>
+
+<script>
+'use strict';
+const $=id=>document.getElementById(id);
+
+/* ---------- filter model ----------
+   Each filter is a set of passbands. A band has an optional low edge (lo) and
+   high edge (hi), each with a softness (ls/hs) and a peak transmittance (T).
+   Bands combine with max() since they're separate regions of the spectrum.
+   A "leak" band is how UV glass passes deep IR — the single most important
+   behaviour to see, and the reason UV stacks need an IR blocker at all. */
+const edgeUp=(x,c,s)=>1/(1+Math.exp(-(x-c)/s));
+const edgeDn=(x,c,s)=>1/(1+Math.exp((x-c)/s));
+function bandT(l,b){
+  const r=b.lo!=null?edgeUp(l,b.lo,b.ls||8):1;
+  const f=b.hi!=null?edgeDn(l,b.hi,b.hs||8):1;
+  return b.T*r*f;
+}
+
+/* ---------- transmission model ----------
+   Two physical effects are now separated, because they behave differently:
+
+   INTERNAL TRANSMITTANCE is what the glass itself absorbs. It follows
+   Beer-Lambert, so doubling thickness squares it: t(d2) = t(d1)^(d2/d1).
+   This is exact, not an approximation, and it is why a 1mm and a 3mm piece of
+   the same glass are genuinely different filters.
+
+   SURFACE REFLECTION is Fresnel loss at the two air-glass boundaries. For
+   n≈1.5 that is about 4% per surface, so ~92% gets through regardless of how
+   thick the glass is. An AR coating pushes that to ~99%. This is why the
+   AR-coated QB21 out-transmits the plain one without being a different glass.
+
+   Schott quote both numbers separately for exactly this reason. Interference
+   filters do not obey Beer-Lambert at all — their behaviour comes from a
+   coating stack, not bulk absorption — so thickness scaling is skipped there. */
+const P_UNCOATED=0.92, P_AR=0.99;
+let thicknessScale=1; // 1 = each filter at its own reference thickness
+
+/* ---------- camera body (sensor red/IR sensitivity) ----------
+   Real ranking from Kolari Vision's 82-camera transmission study: Fujifilm
+   runs hottest for red/near-IR sensitivity, Canon sits in the middle, Sony
+   and Nikon skew lowest. All factors are <=1 and scale DOWN from the pure
+   filter curve (never up), so the displayed "combined result" never exceeds
+   what the glass itself actually passes — Fuji stays closest to that
+   reference since it's the most sensitive body, the others are reduced more.
+   This is a real ordering, not a measured coefficient — the exact numbers
+   here are estimated to match the ranking, not lab data. Applies only to the
+   combined system chart/readout/description; each filter's OWN curve is a
+   fixed physical property and never changes with camera choice. */
+let cameraBrand='neutral';
+const CAMERA_IR_FACTOR={fuji:0.97,canon:0.88,nikon:0.75,sony:0.75};
+function sensorFactor(l){
+  if(cameraBrand==='neutral')return 1;
+  const f=CAMERA_IR_FACTOR[cameraBrand];
+  if(f==null)return 1;
+  if(l<600)return 1; // only the red/near-IR portion is affected
+  const t=Math.min(1,(l-600)/100); // smooth ramp from 600 to 700nm, then flat
+  return 1+(f-1)*t;
+}
+function systemT(l,fs){return stackT(l,fs)*sensorFactor(l);}
+
+function filterT(l,f){
+  let t=f.bands.reduce((m,b)=>Math.max(m,bandT(l,b)),0);
+  if(f.notch)f.notch.forEach(n=>{
+    t*=1-n.d*Math.exp(-Math.pow(l-n.c,2)/(2*n.w*n.w));
+  });
+  // Per-filter dye-density correction (Beer-Lambert on the bulk). Currently
+  // UNUSED: it was introduced to reconcile chart-fitted curves with published
+  // filter factors, then removed from every filter once real measured spectra
+  // showed the filter-factor targets were the less reliable of the two. Kept
+  // because the mechanism is sound if a future entry genuinely needs it. That matters: a dye stays transparent in
+  // the near-IR no matter how concentrated it is, so a flat multiply would
+  // wrongly dim the IR leak too. Beer-Lambert keeps transparent regions
+  // transparent and deepens only where the dye actually absorbs.
+  if(f.dens&&f.dens!==1&&f.type!=='interference'){
+    const Pd=f.ar?P_AR:P_UNCOATED;
+    t=Math.pow(Math.min(1,t/Pd),f.dens)*Pd;
+  }
+  // interference coatings: no bulk absorption, so no thickness scaling
+  if(f.type==='interference'||thicknessScale===1)return t;
+  const P=f.ar?P_AR:P_UNCOATED;
+  const internal=Math.min(1,t/P);          // strip the surface loss out
+  const scaled=Math.pow(internal,thicknessScale); // Beer-Lambert on the bulk
+  return scaled*P;                          // put the surface loss back
+}
+const stackT=(l,fs)=>fs.reduce((p,f)=>p*filterT(l,f),1);
+
+const FILTERS=[
+ // ---- UV-pass (all the ZWB/Schott absorptive glasses leak deep IR) ----
+ {id:'zwb1',g:'UV-pass',n:'ZWB1 (≈UG1)',d:'90% UV peak · IR leak much smaller than ZWB3',c:'#8f7ad6',
+  bands:[{lo:290,ls:10,hi:375,hs:11,T:.90},{lo:697,ls:13,hi:750,hs:25,T:.17}],leak:true,
+  same:'fitted to the same JMC Scientific Consulting Ltd (2021) lab chart used for ZWB3 \u2014 that chart includes a ZWB1 2mm trace alongside it. Genuinely useful finding: ZWB1\u2019s IR leak peaks at only ~11-12% near 720nm, nowhere near ZWB3\u2019s ~66% \u2014 ZWB1 is a much cleaner UV-pass glass on its own, which is presumably part of why ZWB3 needs a blocker stacked with it and ZWB1 gets away with less correction. Fitted to 20 digitized points; max error 5.0 percentage points on the UV band, 0.4 on the small NIR bump'},
+ {id:'zwb2',g:'UV-pass',n:'ZWB2 (≈UG11)',d:'81% UV peak, real Tangsinuo chart · IR bump ~28% at 740nm',c:'#7a6ad0',
+  bands:[{lo:313,ls:9,hi:383,hs:8,T:.81},{lo:712,ls:6,hi:850,hs:100,T:.30}],leak:true,
+  same:'fitted directly to Tangsinuo\u2019s own product chart for this exact glass at 2.0mm (their Amazon/product listing), so this is first-party manufacturer data, not a third party. UV band max error 2.0 percentage points. The NIR side is a broader, longer-tailed bump than ZWB3\u2019s \u2014 peaks ~28% around 740nm then declines gradually out past 1000nm rather than the dip-and-recover shape ZWB3 shows'},
+ {id:'zwb3',g:'UV-pass',n:'ZWB3',d:'89% UV peak · true-zero trough to ~650nm · IR bump ~715nm',c:'#9b8ae0',
+  bands:[{lo:279,ls:9,hi:395,hs:12,T:.89},{lo:678,ls:8,hi:830,hs:70,T:.74},{lo:870,ls:60,T:.44}],leak:true,
+  same:'corrected against a real independent lab measurement (JMC Scientific Consulting Ltd, 2021) covering ZWB3 at multiple thicknesses/diameters. Fedia is confirmed as the original source of both charts used for this filter \u2014 the original UVP forum post (with the Tangsinuo-format chart) and the later JMC correction. The earlier fit had the NIR trough rising too early \u2014 showing 21% transmission at 650nm when the real glass is still under 3% there. Refitted with a steeper, later onset: max error 5.6 percentage points, mean 1.9 across 37 digitized points. Same overall shape otherwise \u2014 near-zero trough through green/yellow/orange, a real bump peaking ~66% near 715-720nm, a dip around 870-900nm, then a small secondary rise past 1000nm'},
+ {id:'baader',g:'UV-pass',n:'Baader U',d:'Dielectric · CWL 350nm · no IR leak',c:'#b9a6f0',type:'interference',
+  bands:[{lo:322,ls:5,hi:388,hs:5,T:.80}],
+  same:'20-layer dielectric stack blocking 200\u20131500nm outside the passband \u2014 unlike absorptive UV glass, no deep-IR leak by design'},
+ {id:'andreau',g:'UV-pass',n:'Andrea-U',d:'Dielectric · Baader U rival · violet leak',c:'#a693e0',type:'interference',
+  bands:[{lo:315,ls:6,hi:410,hs:8,T:.67}],
+  same:'sold against the Baader Venus U-filter; measured with a touch more leakage into violet/blue and no IR leak to 850nm, at roughly 1/4 stop less throughput'},
+ {id:'ubessel',g:'UV-pass',n:'Chroma U-Bessel',d:'Astro photometric · narrow, no IR leak',c:'#9c88de',type:'interference',
+  bands:[{lo:300,ls:6,hi:400,hs:6,T:.60}],
+  same:'Chroma\u2019s official spec for the Classic Johnson/Cousins Bessell "U" photometric filter: ~300-400nm passband '
+   +'(~100nm wide), 3.0mm substrate, peak transmission >50% \u2014 widened from an earlier narrower estimate (335-385nm) '
+   +'to match. Chroma state each filter ships with its own measured production-lot curve rather than one fixed published '
+   +'graph, and per AAVSO commentary this "Bessell" shape is flat-topped and not a strict rendition of the true '
+   +'Johnson-Cousins passband \u2014 treat this as the published spec, not a digitised measurement, and flag if photometric '
+   +'precision matters. Source: chroma.com/products/parts/classic-u-bessell'},
+ {id:'hyu330',g:'UV-pass',n:'Hoya U-330',d:'Broad UV-A · very strong IR leak',c:'#7d6cc9',type:'absorptive',
+  bands:[{lo:248.1,ls:6.49,hi:388.1,hs:6.95,T:.867},{lo:687.4,ls:8.67,hi:763.9,hs:12.2,T:.521},{lo:771.3,ls:21.33,T:.32}],leak:true,
+  same:'least-squares fit to Hoya Candeo Optronics\u2019 official U-330 datasheet, external transmittance at 2.50mm \u2014 '
+   +'RMS 1.1 percentage points across 19 published points, 240-1000nm. CORRECTED: U-330\u2019s NIR leak is far larger than '
+   +'previously modelled \u2014 the datasheet shows it peaking at ~50% around 720nm and still sitting at ~32% by 1000nm, not '
+   +'a flat ~85% cut-on-at-770 assumption. This filter needs a genuinely strong IR blocker paired with it; on its own it '
+   +'is closer to an IR-pass filter with a UV side-channel than a clean UV bandpass. Source: '
+   +'hoyacandeo.co.jp/english/products/eo_pdf/U330.pdf'},
+ {id:'hyu340',g:'UV-pass',n:'Hoya U-340',d:'Astro/forensic standard · leaks IR',c:'#8878d0',type:'absorptive',
+  bands:[{lo:283.1,ls:6.88,hi:370.2,hs:5.48,T:.75},{lo:696.2,ls:3.35,hi:740.5,hs:5.09,T:.022}],leak:true,
+  same:'least-squares fit to Hoya Candeo Optronics\u2019 official U-340 datasheet, external transmittance at 2.50mm (the '
+   +'classic grade, not the weather-resistant U340A which leaks more) \u2014 RMS 1.3 percentage points across 18 points. '
+   +'IR leak is small and narrow, peaking ~2.2% around 710-720nm \u2014 much cleaner than U-330. Source: '
+   +'uqgoptics.com/wp-content/uploads/2019/08/Hoya-U340.pdf'},
+ {id:'hyu360',g:'UV-pass',n:'Hoya U-360',d:'70% @360nm, 10% IR leak @740',c:'#9384d8',type:'absorptive',
+  bands:[{lo:338,ls:4,hi:382,hs:4,T:.72},{lo:770,ls:15,T:.85}],leak:true,
+  same:'measured (Savazzi): 70% transmission near 360nm, ~10% infrared leak at 740nm — the reference point these curves are fitted to'},
+ {id:'tsn340',g:'UV-pass',n:'TSN340',d:'ZWB1 glass at 8.3mm \u00b7 derived, not guessed',c:'#6f5cc0',
+  bands:[{lo:290,ls:10,hi:375,hs:11,T:.90},{lo:697,ls:13,hi:750,hs:25,T:.17}],dens:3.952,
+  same:'TSN340 is not a separate glass \u2014 Aphalo\u2019s own measurements (photo-spectrum.info) identify it directly as '
+   +'ZWB1 glass at 8.3mm, versus the 2.1mm ZWB1 already fitted elsewhere in this file. Rather than guess a curve shape, '
+   +'this reuses that already-verified ZWB1 band shape and applies Beer-Lambert scaling (dens = 8.3/2.1 = 3.952) via the '
+   +'same internal-transmittance mechanism used elsewhere in this file (see the 80-series notes). The result is '
+   +'physically coherent with Aphalo\u2019s own description: UV peak drops moderately (~90%\u2192~70%) while the NIR bump is '
+   +'nearly eliminated (~11%\u21920.02% of peak) \u2014 \"blocks NIR enough for some uses in photography\" without a full '
+   +'blocker stage, exactly matching his stated reasoning that a thicker filter discriminates UV from NIR better because '
+   +'attenuation increases exponentially with thickness'},
+ {id:'bw403',g:'UV-pass',n:'B+W 403',d:'= Schott UG1 · fitted to Schott datasheet',c:'#a08ae8',
+  bands:[{lo:315.1,ls:10.16,hi:390.5,hs:5.78,T:.76},{lo:723.2,ls:9.21,hi:735.5,hs:61.1,T:1.0},{lo:720,ls:3.12,T:.05}],leak:true,
+  same:'least-squares fit to Schott\u2019s official UG1 datasheet (internal \u03c4\u1d62 at 1mm reference, external-transmission '
+   +'factor 0.914 applied) \u2014 RMS 1.3 percentage points across 28 points, 280-1100nm. Confirms and quantifies what '
+   +'spectrometer testing (Kolari Vision, diglloyd) already showed qualitatively: a real, substantial NIR leak peaking '
+   +'~48% around 750nm (not a soft ~85% plateau as previously estimated), settling to a long ~5-6% tail through 1000nm+. '
+   +'This is why B+W 403 dominates as a near-IR image on a full-spectrum body unless paired with a real IR blocker. '
+   +'Source: sydor.com/wp-content/uploads/SCHOTT-UG1-UV-Bandpass-Filter.pdf'},
+
+ // ---- IR blockers (short-pass) — the partner half of a UV stack ----
+ /* ---- IR blockers / short-pass ----
+    Two physically different technologies sit in this group and they behave
+    very differently in use:
+
+    ABSORPTIVE glass (BG/S8612/KG/QB series) absorbs IR chemically. Its
+    response does not care what angle light arrives at, so it stays even
+    across the frame on any lens.
+
+    INTERFERENCE coatings (hot mirrors, B+W 486) reflect IR off a dielectric
+    stack. The effective coating thickness changes with incidence angle, so
+    the cutoff shifts toward blue at the frame edges — the notorious cyan
+    corner cast on wide lenses. Sellers of absorptive glass make this point
+    against 486-type filters and they are right about the mechanism.
+
+    Cutoffs below are for roughly 2mm thickness. Thickness matters a lot with
+    absorptive glass: doubling it deepens the IR block and pulls the visible
+    cutoff shorter. */
+ {id:'tsn575',g:'IR blocker',n:'TSN575',d:'Strongest NIR block \u00b7 conservative interim estimate',c:'#6fab96',
+  bands:[{hi:575,hs:18,T:.55}],type:'absorptive',
+  same:'no manufacturer datasheet exists for this Chinese-market glass, but the shape is now cross-validated rather '
+   +'than resting on description alone. Aphalo\u2019s blog (photo-spectrum.info) publishes measured optical density for '
+   +'three TSN575 stacks (ZWB1+, ZWB2+, ZWB3+TSN575) across named wavebands. Since stacked OD is additive '
+   +'(OD_total = OD_A + OD_B), subtracting this file\u2019s own already-fitted ZWB1/ZWB2/ZWB3 curves from those three '
+   +'measured stack values isolates TSN575\u2019s own OD independently three times per band \u2014 a triangulation, not a '
+   +'single read. In the bands where the subtraction is numerically stable (UV-A1, Purple, Blue, Orange, Red, NIR) all '
+   +'three stacks agree closely: TSN575 passes UV-A1/Purple/Blue reasonably well (roughly 30-80%) and is essentially '
+   +'fully opaque by Red/NIR (OD 3.5-5+, under 0.03% transmission) \u2014 consistent with a shortpass cutting off around '
+   +'575nm, which is what this entry already modelled. Green/Yellow were dropped from the triangulation: both '
+   +'constituent filters are already nearly opaque there, so the subtraction becomes numerically unstable. PEAK LOWERED '
+   +'from 92% to 55%: a UV/IR forum contributor flagged that a real "Black foliage" stack using this filter shouldn\u2019t '
+   +'pass much in the 400-460nm violet/blue region, and computing the actual stack showed a genuine 53% peak there, '
+   +'traced specifically to this filter\u2019s flat plateau. 92% sat at the very top of the triangulation\u2019s already-wide '
+   +'30-80% uncertainty range; 55% sits at the middle of that same range instead \u2014 still within what the real data '
+   +'supports, just no longer the most optimistic reading of it. This is a deliberately conservative estimate, not a '
+   +'refit: the triangulation data doesn\u2019t resolve band-by-band variation within the passband, so a single flat '
+   +'plateau remains a simplification either way'},
+ {id:'qb21',g:'IR blocker',n:'QB21',d:'Tangsinuo · = Schott BG38',c:'#5f9ea8',
+  bands:[{lo:390,ls:15,hi:665,hs:22,T:.92},{lo:1030,ls:35,T:.10}],type:'absorptive',
+  same:'Schott BG38 — Tangsinuo sell it under both names. UV-side cutoff (~390nm) added from a forum-posted '
+   +'lab chart (photoni/UVP, comparing QB21 2.0mm against a ZWB3+TSN575 stack) — approximate, read off a phone '
+   +'photo of the chart rather than digitized point-by-point, so treat the exact position/slope as provisional'},
+ {id:'qb21ar',g:'IR blocker',n:'QB21 AR coated',d:'Better UV-A, weaker NIR block',c:'#6fb0bc',
+  bands:[{lo:375,ls:14,hi:668,hs:22,T:.96},{lo:990,ls:35,T:.14}],type:'absorptive',
+  same:'AR-coated QB21/BG38 — higher throughput, measurably weaker NIR blocking than TSN575. UV-side cutoff '
+   +'estimated slightly earlier than plain QB21 to match its better-stated UV-A performance; not independently '
+   +'measured, provisional like the plain QB21 figure'},
+ {id:'bg38',g:'IR blocker',n:'Schott BG38',d:'= QB21 · keeps most red',c:'#4d8f7d',
+  bands:[{lo:390,ls:15,hi:665,hs:22,T:.92},{lo:1030,ls:35,T:.10}],type:'absorptive',
+  same:'QB21 — the same glass under the Chinese designation. Same provisional UV-side cutoff as QB21 (~390nm), '
+   +'from a forum lab chart read off a phone photo'},
+ {id:'s8612',g:'IR blocker',n:'Schott S8612',d:'Strong IR block · fitted to Schott datasheet',c:'#57a08a',
+  bands:[{lo:329.5,ls:11.4,hi:605.9,hs:21.6,T:.89}],type:'absorptive',stains:true,
+  same:'least-squares fit to Schott\u2019s official S8612 datasheet (internal transmittance \u03c4\u1d62 at 1mm reference, with '
+   +'the standard ~8% two-surface Fresnel reflection factor applied to get external transmission) \u2014 RMS 2.4 percentage '
+   +'points across the published curve, including datasheet points as deep as \u03c4\u1d62<1\u00d710\u207b\u2075 in the 800-950nm block '
+   +'region. Source: schott.com S8612 data sheet, table via edmundoptics.de/document/download/521982'},
+ {id:'bg40',g:'IR blocker',n:'Schott BG40',d:'Between BG38 and BG39 · fitted to Schott datasheet',c:'#489a86',
+  bands:[{lo:321.8,ls:3.35,hi:642.9,hs:28.2,T:.89}],type:'absorptive',
+  same:'least-squares fit to Schott\u2019s official BG40 datasheet (internal \u03c4\u1d62 at 1mm, external-transmission factor '
+   +'applied) \u2014 RMS 1.9 percentage points. NOTE: BG40\u2019s NIR block bottoms out at only \u03c4\u1d62\u22481.6-1.9\u00d710\u207b\u00b3 '
+   +'around 850-870nm, roughly 100\u00d7 weaker than BG39/S8612\u2019s <1\u00d710\u207b\u2075 \u2014 BG40 is a noticeably weaker IR '
+   +'blocker than its siblings despite the similar visible-passband shape; don\u2019t treat them as interchangeable. '
+   +'Source: sydor.com/wp-content/uploads/SCHOTT-BG40-Bandpass-Filter.pdf'},
+ {id:'bg39',g:'IR blocker',n:'Schott BG39',d:'Cuts deep into red · fitted to Schott datasheet',c:'#43907e',
+  bands:[{lo:343.9,ls:8.0,hi:610.4,hs:20.9,T:.87}],type:'absorptive',stains:true,
+  same:'least-squares fit to Schott\u2019s official BG39 datasheet (internal \u03c4\u1d62 at 1mm, external-transmission factor '
+   +'applied) \u2014 RMS 2.6 percentage points, deep NIR block confirmed to \u03c4\u1d62<1.7\u00d710\u207b\u2075 by 800nm. Source: '
+   +'media.schott.com/api/public/content/ceb64e2f76c44567887842069ba46dd2'},
+ {id:'bw039',g:'IR blocker',n:'B+W 039',d:'Mounted Schott BG39',c:'#3f8878',
+  bands:[{lo:343.9,ls:8.0,hi:610.4,hs:20.9,T:.87}],type:'absorptive',stains:true,
+  same:'Schott BG39 in a B+W mount \u2014 same corrected fit as the bg39 entry, see its note for sourcing'},
+ {id:'cc1',g:'IR blocker',n:'LDP CC1',d:'≈ BG38 2.5mm uncoated',c:'#52988a',
+  bands:[{hi:655,hs:21,T:.90},{lo:1040,ls:35,T:.07}],type:'absorptive',
+  same:'widely believed to be uncoated 2.5mm BG38'},
+ {id:'uvircut',g:'IR blocker',n:'UV/IR cut',d:'Hot mirror · corner shift risk',c:'#79bda8',
+  bands:[{lo:400,ls:8,hi:680,hs:10,T:.95}],type:'interference'},
+ {id:'bw486',g:'IR blocker',n:'B+W 486',d:'UV/IR cut · fitted to official B+W chart',c:'#8fcbb6',
+  bands:[{lo:393,ls:4,hi:688,hs:6.5,T:.90}],type:'interference',
+  same:'fitted to B+W\u2019s own official transmission chart (cross-confirmed across two independent postings of the same curve) \u2014 max fitting error 3.9 percentage points'},
+ {id:'hoyauvir',g:'IR blocker',n:'Hoya UV-IR cut',d:'Restores normal colour',c:'#6ab49c',
+  bands:[{lo:400,ls:7,hi:685,hs:9,T:.96}],type:'interference'},
+ {id:'heliouvir',g:'IR blocker',n:'Heliopan Digital UV-IR',d:'Schott glass · absorptive, not a hot mirror',c:'#72c0a0',
+  bands:[{lo:400,ls:8,hi:670,hs:11,T:.94}],type:'absorptive',
+  same:'built from Schott glass rather than a dielectric coating — avoids the corner colour-shift dichroic hot mirrors can show on wide lenses'},
+ {id:'grb1',g:'IR blocker',n:'GRB1 (2mm)',d:'Real product-specific data · extends furthest into NIR',c:'#a8c9b8',
+  bands:[{lo:292.1,ls:13.72,hi:753.0,hs:74.93,T:.88}],type:'absorptive',
+  same:'REFITTED to real product-specific GRB1 data (via CheeseCube312\u2019s Filter-Plotter-Data project, MIT-licensed) \u2014 '
+   +'RMS 1.2 percentage points across 170 points, 255-1100nm, a real improvement on the previous Schott KG2 proxy (11.0pp '
+   +'RMS against this same real data). Manufacturer Zeyuan Optics states GRB1 = Schott KG2, and that identification still '
+   +'looks directionally right for the visible band, but this real GRB1-specific data shows it blocking NIR notably '
+   +'harder than genuine Schott KG2 glass does \u2014 e.g. 1.4% at 1000nm here vs ~10% the KG2 proxy assumed \u2014 suggesting '
+   +'either a formulation difference or a less-than-perfect "equivalent" claim. GRB3, by contrast, matched its KG3 proxy '
+   +'closely (2.2pp RMS against this same real dataset) and was left as-is. The crossover finding survives with the '
+   +'corrected curve: GRB1 still passes more than GRB3 at every wavelength from 700-1000nm, just with smaller margins '
+   +'than the KG2 proxy implied \u2014 GRB1 genuinely does extend furthest into NIR, the magnitude was just overstated before'},
+ {id:'grb3',g:'IR blocker',n:'GRB3 (2mm, = Schott KG3)',d:'Official Schott datasheet · genuine ND-for-IR',c:'#93bda9',
+  bands:[{lo:312.9,ls:11.02,hi:707.5,hs:43.55,T:.862}],type:'absorptive',
+  same:'REFITTED to Schott\u2019s own official KG3 datasheet (internal \u03c4\u1d62 at 2mm reference, external-transmission '
+   +'factor 0.919 applied) \u2014 RMS 1.2 percentage points across 27 published points, 270-1100nm. This is the exact '
+   +'glass Kennard\u2019s 2mm GRB3/KG3 DIY recipes use, and it is what B+W 489 is a mounted equivalent of. Superseded '
+   +'a mismatched-thickness comparison against a different reseller\u2019s GRB1 datasheet \u2014 see the GRB1 note'},
+ {id:'bw489',g:'IR blocker',n:'B+W 489',d:'Mounted Schott KG3',c:'#9dc4b0',
+  bands:[{lo:312.9,ls:11.02,hi:707.5,hs:43.55,T:.862}],type:'absorptive',
+  same:'Schott KG3 in a B+W mount \u2014 same official-datasheet fit as the grb3 entry above, see its note for sourcing'},
+
+ // ---- IR-pass (long-pass) — the conversion ladder ----
+ {id:'ir550',g:'IR-pass',n:'550nm',d:'Deep blue sky, pink foliage',c:'#c9c04a'},
+ {id:'ir590',g:'IR-pass',n:'590nm',d:'Goldie',c:'#d0a83f'},
+ {id:'ir630',g:'IR-pass',n:'630nm',d:'',c:'#d18f3c'},
+ {id:'ir665',g:'IR-pass',n:'665nm',d:'Enhanced colour',c:'#d1763a'},
+ {id:'ir720',g:'IR-pass',n:'720nm',d:'Classic white foliage',c:'#c85f33'},
+ {id:'ir780',g:'IR-pass',n:'780nm',d:'',c:'#bd4d2c'},
+ {id:'ir850',g:'IR-pass',n:'850nm',d:'Wood effect, B&W',c:'#a83c22'},
+ {id:'ir950',g:'IR-pass',n:'950nm',d:'Deep IR',c:'#8d2d19'},
+ {id:'ir1000',g:'IR-pass',n:'1000nm',d:'Deepest',c:'#722113'},
+
+ /* ---- Branded IR filters you can actually buy ----
+    50% transmission points from the Kodak Photographic Filters Handbook
+    (B-3, 1992) for the Wratten series, and B+W's own published figures.
+    Edge softness for 092 and 093 was fitted to their two-point specs
+    (092: 50% @695 rising past 90% by 730; 093: ~1% @800, 88% @900). */
+ {id:'bw040',g:'Branded',n:'B+W 040',     d:'= Schott OG550 · 50% @550nm',  c:'#d68f3c',bands:[{lo:550,ls:12,T:.91}],
+  same:'confirmed directly on ultravioletphotography.com: B+W 040 and B+W 099 are made from the SAME glass, Schott OG550, both 50% transmission at 550nm. B+W markets 040 as a "black & white filter" and 099 as an "infrared filter" \u2014 same physical filter, different marketing label'},
+ {id:'bw099',g:'Branded',n:'B+W 099',     d:'= Schott OG550 · same glass as 040',c:'#d68a3a',bands:[{lo:550,ls:12,T:.91}],
+  same:'confirmed on ultravioletphotography.com: identical to B+W 040 \u2014 both are Schott OG550, both 50% at 550nm. Earlier estimate here had 099 at 520nm, which was wrong; correcting to match 040 exactly'},
+ {id:'bw041',g:'Branded',n:'B+W 041',     d:'= Wratten 22 · red-orange contrast',c:'#d47c36',bands:[{lo:566.7,ls:5.09,T:.896}],
+  same:'B+W 041 is Wratten #22 equivalent glass \u2014 aligned to the Wratten 22 entry\u2019s Kodak-table fit (see w22\u2019s '
+   +'note) rather than kept as a separate rough estimate. Note this is a visible-light red-orange contrast filter for '
+   +'B&W tonal separation, not a UV or IR filter \u2014 it sits in this database mainly as a "same glass as w22" cross-reference'},
+ {id:'bw090',g:'Branded',n:'B+W 090',     d:'= Schott OG590 · confirmed on B+W\u2019s own chart',c:'#d2653d',bands:[{lo:590,ls:12,T:.90}],
+  same:'B+W\u2019s own official reference chart (p.29 of their filter guide) labels this directly as OG590 \u2014 confirmed identity, not a cross-referenced approximation'},
+ {id:'bw091',g:'Branded',n:'B+W 091',     d:'= Schott RG630 · confirmed on B+W\u2019s own chart',c:'#cf5334',bands:[{lo:630,ls:11,T:.90}],
+  same:'B+W\u2019s own official reference chart labels this directly as RG630 \u2014 confirmed identity, not a cross-referenced approximation'},
+ {id:'bw092',g:'Branded',n:'B+W 092',     d:'= Schott RG695 · confirmed on B+W\u2019s own chart',    c:'#c8462e',bands:[{lo:695,ls:16,T:.90}],
+  same:'B+W\u2019s own official reference chart labels this directly as RG695'},
+ {id:'w89b', g:'Branded',n:'Wratten 89B', d:'Official Kodak data · 716.5nm',              c:'#c1402c',bands:[{lo:716.5,ls:10.5,T:.90}],
+  same:'cross-verified against two independent scans of the official Kodak transmittance tables \u2014 both agree closely (717.0nm and 716.5nm), max fitting error under 5 percentage points'},
+ {id:'r72',  g:'Branded',n:'Hoya R72',    d:'The classic · fitted to official Hoya graph',         c:'#bd3f2b',bands:[{lo:711,ls:8,hi:2600,hs:400,T:.965}],
+  same:'fitted to Hoya\u2019s own official R72 transmission graph \u2014 max fitting error 0.7 percentage points across 13 real data points 650-1200nm. 50% point sits at 711nm'},
+ {id:'w88a', g:'Branded',n:'Wratten 88A', d:'Official Kodak data · 755nm',              c:'#b23a27',bands:[{lo:755,ls:11,T:.90}],
+  same:'corrected after re-reading a second scan of the official Kodak table \u2014 the first pass had a column-alignment error that put this ~17nm too low; verified line-by-line against physically-expected ordering (89B lowest cutoff, then 88A, then 87, then 87C highest). Max fitting error 5.9 percentage points'},
+ {id:'w87',  g:'Branded',n:'Wratten 87',  d:'Official Kodak data · 788nm · also Lee 87',c:'#a33523',bands:[{lo:788,ls:14.5,T:.90}],
+  same:'cross-verified against two independent scans of the official Kodak transmittance tables (786.2nm and 788.0nm) \u2014 consistent. Lee sells a polyester 87 too \u2014 Lee\u2019s own marketing copy says "transmission begins above 730nm", but independent measurement finds it tracks close to this real Wratten spec, not the marketing figure'},
+ {id:'bw093',g:'Branded',n:'B+W 093',     d:'= Schott RG830 · confirmed on B+W\u2019s own chart',      c:'#973020',bands:[{lo:830,ls:8, T:.90}],
+  same:'B+W\u2019s own official reference chart labels this directly as RG830'},
+ {id:'w87c', g:'Branded',n:'Wratten 87C', d:'Official Kodak data · 855nm · also Lee 87C',c:'#8a2c1d',bands:[{lo:855,ls:18,T:.90}],
+  same:'cross-verified against two independent scans of the official Kodak transmittance tables (847.0nm and 855.0nm) \u2014 consistent within a few nm. Lee\u2019s polyester 87C is sold for B&W IR film sensitive to 1000nm, consistent with this real spec'},
+ {id:'rm90', g:'Branded',n:'Hoya RM90',   d:'Real gradual rise, fitted to UVP chart',        c:'#7c2719',bands:[{lo:926,ls:50,T:.94}],
+  same:'fitted to a real Schott/Hoya comparison chart on ultravioletphotography.com \u2014 the rise is far more gradual than a simple cutoff suggests, spanning roughly 700-1200nm rather than plateauing sharply. Max fitting error 4.0 percentage points'},
+ {id:'bw094',g:'Branded',n:'B+W 094',     d:'= Schott RG1000 · fitted to Schott datasheet',c:'#6e2216',bands:[{lo:994.4,ls:44.7,T:.825}],
+  same:'least-squares fit to Schott\u2019s official RG1000 datasheet (internal \u03c4\u1d62 at 3mm reference, external-transmission '
+   +'factor 0.913 applied) \u2014 RMS 2.1 percentage points across 13 points, cross-confirmed by an independent Edmund '
+   +'Optics spec sheet quoting the identical 730nm stopband edge and 1000\u00b16nm 50%-point. B+W\u2019s own numbering '
+   +'(092=695nm/RG695, 093=830nm/RG830, 094\u2248RG1000) confirms the identity. CORRECTED: the real rise is far more '
+   +'gradual (ls\u224845, spanning roughly 800-1300nm) than the sharp ~1000nm cutoff previously assumed \u2014 the same '
+   +'"gradual, not sharp" correction already found for the Hoya RM90/RM100 entries in this file. Source: '
+   +'uqgoptics.com/wp-content/uploads/2019/08/Schott-RG1000.pdf'},
+ {id:'rm100',g:'Branded',n:'Hoya RM100',  d:'Official Hoya datasheet · deepest',            c:'#6b2115',bands:[{lo:950,ls:42,T:.91}],
+  same:'fitted to Hoya\u2019s own official spectral characteristics datasheet (RM100, 2.5mm, AR coated) \u2014 max fitting error 4.5 percentage points. Also gradual, rising from ~800nm through past 1200nm rather than a sharp cutoff'},
+
+ /* ---- Wratten step series: yellow -> orange -> red ----
+    All share one curve shape — a simple step cutting everything below a
+    limit — with only the cutoff moving from blue through to deep red.
+    These are the filters actually used in front of Aerochrome film to hold
+    back blue, since every emulsion layer is inherently blue-sensitive. */
+ {id:'w3',   g:'Step',n:'Wratten 3',   d:'Light yellow · 440nm',                 c:'#e8e07a',bands:[{lo:462.6,ls:7.08,T:.902}]},
+ {id:'w4',   g:'Step',n:'Wratten 4',   d:'Yellow · 455nm',                       c:'#e6d96b',bands:[{lo:471.3,ls:5.50,T:.903}]},
+ {id:'w8',   g:'Step',n:'Wratten 8 (K2)',d:'Hoya K2 yellow · official Kodak data',c:'#e3cf5c',bands:[{lo:492.2,ls:9.21,T:.900}],
+  same:'least-squares fit to Eastman Kodak\u2019s own published transmittance table ("Transmission of Wratten Filters", '
+   +'compiled by Allie C. Peed Jr.), 400-700nm at 10nm intervals, illuminant C \u2014 OCR-extracted from the scanned '
+   +'original rather than read by eye. RMS error 1.2 percentage points across 25 real data points. The No.8 column reads '
+   +'0.25% at 460nm, 5.50% at 470, 19.0% at 480, 41.0% at 490, 63.5% at 500, 78.0% at 510, putting the true 50% point at '
+   +'\u2248492nm. Cross-checks against the table\u2019s own published luminous transmittance for No.8 (82.7%). '
+   +'CORRECTION HISTORY, recorded because this entry was wrong twice: it originally sat at 463.5nm; a first correction to '
+   +'495nm (from B+W\u2019s 022 catalogue number and an astronomy paper) was actually close to right, but was then WRONGLY '
+   +'reverted to 463.5nm after misreading a phone photo of this same table \u2014 the values used for that revert were the '
+   +'No.6 column, one column to the left of No.8. The OCR-extracted figures above settle it at 492nm, roughly 29nm from '
+   +'where this entry sat and vindicating the original 495nm estimate'},
+ {id:'w9',   g:'Step',n:'Wratten 9',   d:'Deep yellow · 470nm',                  c:'#e0c650',bands:[{lo:497.6,ls:13.34,T:.900}]},
+ {id:'w12',  g:'Step',n:'Wratten 12',  d:'Minus-blue · official Kodak data',       c:'#dcb944',bands:[{lo:508.0,ls:5.83,T:.903}],
+  same:'fitted directly to Eastman Kodak\u2019s own transmittance table; max fitting error 2.7 percentage points \u2014 the 50% point sits at 518.7nm'},
+ {id:'w15',  g:'Step',n:'Wratten 15',  d:'Dark yellow · deep-yellow step',      c:'#d9ad3c',bands:[{lo:529.3,ls:6.75,T:.899}],
+  same:'Kodak\u2019s own data shows this is genuinely a bell/band shape, not a simple longpass step \u2014 it peaks around 56% near 510-520nm and gradually falls back through red, unlike most of the step series which just rise and hold. Fitted to the official Kodak table, mean error ~5-6 percentage points on the awkward asymmetric shoulder'},
+ {id:'w16',  g:'Step',n:'Wratten 16',  d:'B+W 040/099 · official Kodak data',c:'#d69c37',bands:[{lo:539.7,ls:8.41,T:.895}],
+  same:'fitted to Eastman Kodak\u2019s own transmittance table for Wratten 16 specifically \u2014 50% point at 529nm, max fitting error 4.6 percentage points. Worth flagging: Tiffen\u2019s own published chart for their compatibly-numbered "Color 16" measures its 50% point at ~547nm, a genuine ~18nm difference between two real manufacturers\u2019 same-numbered filters. Since "Wratten" is specifically Kodak\u2019s own brand, this entry now uses Kodak\u2019s data as the authoritative one for that name'},
+ {id:'w21',  g:'Step',n:'Wratten 21',  d:'Orange · official Kodak data',              c:'#d48c34',bands:[{lo:554.6,ls:5.76,T:.892}],
+  same:'fitted to Eastman Kodak\u2019s own transmittance table \u2014 50% point at 555.8nm, max fitting error 3.9 percentage points. This replaces an earlier visual estimate from a Tiffen chart gap; now anchored to real Kodak numbers'},
+ {id:'w22',  g:'Step',n:'Wratten 22',  d:'B+W 041 · red-orange · official Kodak data',         c:'#d17c31',bands:[{lo:566.7,ls:5.09,T:.896}],
+  same:'fitted to Eastman Kodak\u2019s own transmittance table \u2014 50% point at 567.6nm, max fitting error 3.2 percentage points'},
+ {id:'w23a', g:'Step',n:'Wratten 23A', d:'Light red · official Kodak data',                    c:'#d06d2f',bands:[{lo:580.4,ls:6.58,T:.887}],
+  same:'fitted to Eastman Kodak\u2019s own transmittance table \u2014 50% point at 581.3nm, max fitting error 4.0 percentage points'},
+ {id:'w25',  g:'Step',n:'Wratten 25',  d:'Tricolor red · official Kodak data',              c:'#d4553c',bands:[{lo:599.0,ls:5.70,T:.877}],
+  same:'fitted to Eastman Kodak\u2019s own transmittance table \u2014 50% point at 593.6nm, max fitting error 5.4 percentage points. Kodak\u2019s own description for this one: "aerial infrared photography and haze cutting"'},
+ {id:'w29',  g:'Step',n:'Wratten 29',  d:'Deep red · official Kodak data',         c:'#d04a37',bands:[{lo:620.6,ls:6.19,T:.889}],
+  same:'fitted to Eastman Kodak\u2019s own transmittance table \u2014 50% point lands almost exactly at 600nm (interpolates to 600.0nm from the raw data), max fitting error 6.6 percentage points'},
+
+ /* ---- Colour conversion (roughest models on this page) ----
+    Unlike the step filters these are gentle slopes across the visible band,
+    which a sigmoid can only approximate. They are also DYE filters, so like
+    every dye they go transparent past ~700nm — the second band below. */
+ {id:'kb1_5',g:'Conv',n:'B+W KB1.5',  d:'Mildest blue conversion',c:'#a8c0e8',
+  bands:[{lo:200,ls:1,T:.99}],ar:true,notch:[{c:595,w:63,d:.30}],
+  same:'same B+W KB-series chart as KB20 \u2014 same notch shape and centre, depth read off this curve\u2019s shallower trough (~70%). Weakest of the five'},
+ {id:'kb3',  g:'Conv',n:'B+W KB3',    d:'Mild-moderate blue conversion',c:'#8fb0e0',
+  bands:[{lo:200,ls:1,T:.99}],ar:true,notch:[{c:595,w:63,d:.49}],
+  same:'same B+W KB-series chart as KB20 \u2014 same notch shape and centre, depth read off this curve\u2019s trough (~51%)'},
+ {id:'kb6',  g:'Conv',n:'B+W KB6',    d:'Moderate blue conversion',c:'#7ba0da',
+  bands:[{lo:200,ls:1,T:.99}],ar:true,notch:[{c:595,w:63,d:.68}],
+  same:'same B+W KB-series chart as KB20 \u2014 same notch shape and centre, depth read off this curve\u2019s trough (~32%)'},
+ {id:'kb12', g:'Conv',n:'B+W KB12',   d:'Strong blue conversion',c:'#6f98d5',
+  bands:[{lo:200,ls:1,T:.99}],ar:true,notch:[{c:595,w:63,d:.78}],
+  same:'same B+W KB-series chart as KB20 \u2014 same notch shape and centre, depth read off this curve\u2019s trough (~22%). One step below KB20, the strongest of the five'},
+ {id:'kb20', g:'Conv',n:'B+W KB20',   d:'Strongest blue conversion · real deep-notch shape',   c:'#5f8fd0',
+  bands:[{lo:200,ls:1,T:.99}],ar:true,notch:[{c:595,w:63,d:.93}],
+  same:'fitted to B+W\u2019s own official KB-series chart \u2014 this is a genuine deep V-notch centred ~595nm dropping to ~10%, not a simple falling-then-rising edge. Mean error 5.1 percentage points. The earlier model had roughly the right endpoints but the wrong shape in between. FRESNEL CORRECTED: all five KB entries were modelled at exactly 100% peak transmission, which no real glass reaches \u2014 B+W\u2019s published chart almost certainly plots internal transmission, excluding surface reflection. Set to 99% with the AR flag, matching B+W\u2019s MRC multicoating; the notch depths and shape are unchanged'},
+ {id:'c80a', g:'Conv',n:'Hoya 80A',   d:'3200K \u2192 5500K \u00b7 real Hoya-branded data',c:'#6f9bd8',
+  bands:[{lo:345.9,ls:8.25,hi:469.4,hs:77.26,T:1.00},{lo:276,ls:8,T:.161}],leak:true,
+  same:'REFITTED to real Hoya-branded 80A data (via CheeseCube312\u2019s Filter-Plotter-Data project, MIT-licensed) \u2014 '
+   +'RMS 2.8 percentage points, 355-1000nm. This SUPERSEDES the previous Kodak Wratten 80A table fit (RMS 1.0pp against '
+   +'Kodak\u2019s own data) for an important reason: checked against this new Hoya-specific data, the Kodak fit was off by '
+   +'up to 41.7pp \u2014 not a small gap, a genuinely different curve shape (Kodak\u2019s table stays near-peak in a broad '
+   +'381-493nm plateau; real Hoya 80A is already down to 52.6% by 450nm). This isn\u2019t a data-quality problem in either '
+   +'source \u2014 both are internally well-fitted to their own real data \u2014 it means Kodak\u2019s Wratten 80A gel and Hoya\u2019s '
+   +'own 80A glass, sold as equivalent 3200K-to-5500K conversions, are genuinely NOT identical formulations. Since this '
+   +'entry is explicitly labelled "Hoya 80A," the Hoya-branded data is the more appropriate fit for what it claims to '
+   +'represent, even though the Kodak source was individually the more rigorously verified of the two'},
+
+ {id:'c80b', g:'Conv',n:'Hoya 80B',   d:'3400K → 5500K · real Hoya-branded data',            c:'#7fa8de',
+  bands:[{lo:343.0,ls:7.61,hi:513.0,hs:88.63,T:1.00},{lo:276,ls:8,T:.244}],leak:true,
+  same:'REFITTED to real Hoya-branded 80B data (via CheeseCube312\u2019s Filter-Plotter-Data project) \u2014 RMS 2.6 '
+   +'percentage points, a real improvement on the previous chart-digitisation\u2019s stated 9.5pp mean error. A dye-density '
+   +'correction toward B+H\u2019s published 3x filter factor was tried earlier and removed \u2014 shown to degrade agreement '
+   +'with real measured data on 80A, so never trusted here either. This replaces the earlier leak-band-capping fix (that '
+   +'fix addressed a real artefact \u2014 a flat, unterminated IR tail reporting a false peak at 1100nm \u2014 but this full '
+   +'refit to real data resolves the same problem more thoroughly, since the whole curve including its NIR behaviour is '
+   +'now fitted to real Hoya-specific measurements rather than an estimated rolloff)'},
+ {id:'c80c', g:'Conv',n:'Hoya 80C',   d:'3800K → 5500K · real Hoya-branded data',c:'#90b5e4',
+  bands:[{lo:355.2,ls:11.76,hi:545.1,hs:109.04,T:1.00},{lo:268,ls:4,T:.261}],leak:true,
+  same:'REFITTED to real Hoya-branded 80C data (via CheeseCube312\u2019s Filter-Plotter-Data project) \u2014 RMS 1.3 '
+   +'percentage points, the best-fitted of the three 80-series entries and a real improvement on the previous chart-'
+   +'digitisation\u2019s stated 9.5pp mean error. Same dye-density-correction history as 80A/80B: tried and removed, since '
+   +'it degraded agreement with real measured data rather than helping. This replaces the earlier leak-band-capping fix '
+   +'the same way 80B does \u2014 fully refit to real data rather than patched at just the NIR tail'},
+ {id:'c85',  g:'Conv',n:'Wratten 85', d:'5500K → 3400K · real double-rise shape',  c:'#d8a05f',
+  bands:[{lo:405,ls:22,T:.34},{lo:505,ls:38,hi:1000,hs:220,T:.92}],
+  same:'fitted to Hoya\u2019s own official 85/85B/85C chart \u2014 this has a genuine shoulder/plateau around 450-500nm before a second rise to a peak near 650nm, then a gentle decline. Mean error 3.2 percentage points'},
+ {id:'c85b', g:'Conv',n:'Wratten 85B',d:'5500K → 3200K · real double-rise shape', c:'#d8925a',
+  bands:[{lo:405,ls:22,T:.29},{lo:505,ls:38,hi:1000,hs:220,T:.92}],
+  same:'fitted to Hoya\u2019s own official chart \u2014 same double-rise shape as 85, slightly lower shoulder. Mean error 4.2 percentage points'},
+ {id:'c85c', g:'Conv',n:'Hoya 85C',d:'Mildest of the 85-series · real chart data', c:'#dea868',
+  bands:[{lo:400,ls:22,T:.54},{lo:505,ls:38,hi:1000,hs:220,T:1.02}],
+  same:'fitted to Hoya\u2019s own official 85/85B/85C chart \u2014 the mildest of the three, peaking ~90% near 650nm. Mean error 3.1 percentage points'},
+ {id:'c81a', g:'Conv',n:'Hoya 81A',d:'Mild warming · real chart, two-slope shape', c:'#d6b878',
+  bands:[{lo:400,ls:60,T:.945}],
+  same:'fitted to Hoya\u2019s own official 81A/81B/81C chart. The real curve rises fast then keeps climbing gently all the way to 750nm+ \u2014 a single sigmoid can\u2019t perfectly trace both slopes at once, mean error 8.6 percentage points, best treated as a reasonable approximation rather than a precision fit'},
+ {id:'c81b', g:'Conv',n:'Hoya 81B',d:'Mild warming · real chart, two-slope shape', c:'#d3b072',
+  bands:[{lo:405,ls:63,T:.945}],
+  same:'fitted to Hoya\u2019s own official chart, same two-slope limitation as 81A. Mean error 9.6 percentage points'},
+ {id:'c81c', g:'Conv',n:'Hoya 81C',d:'Mild warming · real chart, two-slope shape', c:'#cfa86c',
+  bands:[{lo:410,ls:66,T:.955}],
+  same:'fitted to Hoya\u2019s own official chart, same two-slope limitation. Mean error 13.3 percentage points \u2014 the weakest fit of the three since the real curve is flattest/most gradual'},
+
+ /* ---- Colour filters on a full-spectrum body ----
+    THE important group for experimenting. On a normal camera these are just
+    blue/green/magenta. On a converted body the dye is transparent beyond
+    ~700nm, so each one passes its colour PLUS a pile of infrared — which is
+    what produces in-camera faux colour. A Wratten 47 deep blue this way is
+    documented as giving a 590nm-Goldie-like result straight out of camera. */
+ /* ---- Kolari IR Chrome — a real named product, fitted to real measured data ----
+    Unlike the generic Wratten/Lee colour gels above (fitted to one Y-transmission
+    number, or not fitted at all), this one is fitted to an actual published
+    spectrometer trace: Zach Van Rijn measured Kolari's IR Chrome and published
+    full-spectrum transmission values, republished with attribution by
+    truecolorinfrared.com. It's a fused dual-glass filter (blue glass + heat
+    absorber), not a simple longpass — strong blue/violet, a deep trough
+    through yellow-red, then a genuine secondary NIR bump peaking near 760nm
+    before declining into deep IR. Fitted to 10 real data points across
+    360–1000nm; max fitting error 4.4 percentage points. */
+ {id:'kolarichrome',g:'Colour',n:'Kolari IR Chrome',d:'Fused glass · real spectrometer data · no post-processing needed',c:'#5a7ad0',
+  bands:[{lo:338,ls:23,hi:517,hs:44,T:1.0},{lo:550,ls:55,hi:1050,hs:220,T:0.09},{lo:703,ls:17,hi:850,hs:45,T:0.28}],
+  same:'measured by Zach Van Rijn, published via truecolorinfrared.com — peak 90-93% at 400-460nm, drops to 6-10% through 550-700nm, a real secondary NIR bump peaking ~23% at 760nm, declining to 6% by 1000nm. Designed to give Aerochrome-style red foliage straight out of camera with no channel swap; Kolari\u2019s own documentation notes Sony bodies specifically render foliage more orange than red with this filter, correctable with a modest hue shift'},
+ {id:'kolariiridium',g:'Colour',n:'Kolari Iridium',d:'R/G/B tri-pass \u00b7 fitted to Kolari\u2019s official chart',c:'#7a8fd6',
+  bands:[{lo:381,ls:5,hi:486,hs:5,T:0.89},{lo:514,ls:4,hi:568,hs:4,T:0.96},{lo:606,ls:11,hi:1060,hs:45,T:0.96}],
+  notch:[{c:950,w:20,d:0.60}],
+  same:'fitted by hand to Kolari\u2019s own official published transmission chart (from kolarivision.com/what-is-iridium-filter) '
+   +'\u2014 a genuinely complex real shape, not the simple estimate this entry started as: three distinct passbands (blue '
+   +'380-486nm ~87%, green 514-568nm ~96%, and a wide red-through-NIR band from ~606nm ~90-98%) separated by two sharp, '
+   +'near-total notches (bottoming under 5% around 495-510nm and 575-595nm) exactly matching Kolari\u2019s own description '
+   +'of "blocking the in-between, ambiguous colors, allowing true reds, greens, and blues to shine through." The chart '
+   +'also shows something unexpected this entry wouldn\u2019t have guessed: a third, deep notch around 950nm (dropping to '
+   +'~39%) before recovering to a secondary peak near 985nm \u2014 modelled here as an explicit notch rather than assumed '
+   +'away. Hand-read against ~16 points sampled off the chart, RMS ~7 percentage points \u2014 close, not pixel-exact, and '
+   +'the chart itself is cut off at 1000nm with a declining trend right at that edge, so behaviour beyond 1000nm is '
+   +'extrapolated, not shown. Important caveat that still stands even with this official chart in hand: a UVP forum '
+   +'member who bought the physical filter titled their thread "Kolari\'s Iridium filter does not correspond to its '
+   +'official transmission chart" after testing their own unit against a known reference (an Omega XB30) \u2014 so even '
+   +'this chart, Kolari\u2019s own, may not perfectly represent what ships. On full-spectrum this gives a 720nm-class Wood '
+   +'effect (white/near-white foliage, blue sky) without a channel swap, per Kolari and independent users (Dan '
+   +'Wampler\u2019s blog)'},
+ {id:'w47',  g:'Colour',n:'Wratten 47',  d:'Deep blue tricolour · faux colour',  c:'#4f7ad8',
+  bands:[{lo:414.4,ls:7.26,hi:481.1,hs:10.28,T:.512},{lo:790,ls:30,T:.85}],leak:true},
+ {id:'w47b', g:'Colour',n:'Wratten 47B', d:'Darker blue · leaks some green',      c:'#4166c9',
+  bands:[{lo:409.9,ls:9.44,hi:455.5,hs:10.68,T:.605},{lo:790,ls:30,T:.85}],leak:true},
+ {id:'w38a', g:'Colour',n:'Wratten 38A', d:'Blue · lighter',                      c:'#6389de',
+  bands:[{lo:399.4,ls:11.54,hi:518.5,hs:29.37,T:.633},{lo:790,ls:30,T:.85}],leak:true},
+ {id:'w58',  g:'Colour',n:'Wratten 58',  d:'Green tricolour',                     c:'#57b06a',
+  bands:[{lo:505.8,ls:6.50,hi:557.4,hs:12.83,T:.608},{lo:790,ls:30,T:.85}],leak:true},
+ {id:'w61',  g:'Colour',n:'Wratten 61',  d:'Deep green',                          c:'#46a05a',
+  bands:[{lo:489.9,ls:8.31,hi:554.0,hs:12.22,T:.638},{lo:790,ls:30,T:.85}],leak:true},
+ {id:'w11',  g:'Colour',n:'Wratten 11',  d:'Yellow-green · official Kodak data, real bandpass',c:'#8fc059',
+  bands:[{lo:476.5,ls:9.91,hi:552.1,hs:40.10,T:.848},{lo:790,ls:30,T:.85}],leak:true,
+  same:'fitted to Eastman Kodak\u2019s own transmittance table \u2014 this is a genuine bandpass (peaks ~60% near 510-530nm, falls to a ~6% floor by 660-700nm), not the broader single-edge shape assumed earlier. Mean fitting error 4.1 percentage points against 24 real data points 420-700nm. Kodak table stops at 700nm so the further NIR rise past that point remains an inference from general dye-filter behaviour, consistent with the rest of this Colour group'},
+ {id:'w32',  g:'Colour',n:'Wratten 32',  d:'Magenta · blue + red, minus green',   c:'#c96acc',
+  bands:[{lo:429.8,ls:39.90,hi:481.0,hs:8.23,T:1.00},{lo:611.3,ls:5.11,T:.902},{lo:790,ls:30,T:.85}],leak:true},
+ {id:'w34a', g:'Colour',n:'Wratten 34A', d:'Violet · 410–470 + 660–700nm',        c:'#9b6ad0',
+  bands:[{lo:419.6,ls:1.98,hi:462.2,hs:9.38,T:.731},{lo:650.5,ls:9.13,T:.888},{lo:790,ls:30,T:.85}],leak:true},
+ {id:'w44a', g:'Colour',n:'Wratten 44A', d:'Cyan · light blue-green',             c:'#5fb8c0',
+  bands:[{lo:436.9,ls:9.56,hi:529.9,hs:11.72,T:.536},{lo:790,ls:30,T:.85}],leak:true},
+ {id:'bw061',g:'Colour',n:'B+W 061',     d:'Green · for Aero Ektachrome IR',     c:'#4fa862',
+  bands:[{lo:470,ls:12,hi:600,hs:15,T:.62},{lo:790,ls:30,T:.85}],leak:true},
+ {id:'lee139',g:'Colour',n:'Primary Green (Lee 139)',    d:'Green gel · real Lee Filters data',         c:'#3f9c55',
+  bands:[{lo:505.4,ls:7.6,hi:550.4,hs:8.9,T:.39},{lo:700,ls:20,T:.35}],leak:true,
+  same:'REFITTED to real Lee Filters transmission data (via CheeseCube312\u2019s Filter-Plotter-Data project, MIT-licensed, scraped from the LeeFilters website) \u2014 RMS 0.16 percentage points, essentially exact. Confirms this is a genuine narrowband bandpass (peak 39% at ~528nm, near-zero blue and red), not the broader/softer shape previously estimated. The NIR-leak figure is honest, not confident: the source dataset applies the same generic "~90% by 800nm" extrapolation to every Lee gel regardless of colour, which its own documentation admits is a rough assumption, not per-gel measurement \u2014 plausible for broad warming gels but less obviously true for a narrowband green dye. Lowered the leak estimate to 35% here rather than trust the blanket 90% for a filter this narrowband'},
+ {id:'lee729',g:'Colour',n:'Scuba Blue (Lee 729)',    d:'Blue gel · real Lee Filters data',            c:'#4f9fd0',
+  bands:[{lo:484.9,ls:22.2,hi:513.0,hs:10.3,T:.81},{lo:700,ls:20,T:.35}],leak:true,
+  same:'REFITTED to real Lee Filters transmission data (via CheeseCube312\u2019s Filter-Plotter-Data project) \u2014 RMS 0.66 percentage points. Real shape peaks at 81% around 495-500nm and falls to near-zero by 560nm, narrower and taller than previously estimated. Same NIR-leak caveat as Lee 139: the source\u2019s generic Lee-gel extrapolation isn\u2019t measured per-colour, so the leak figure here is a conservative guess (35%), not a confident number'},
+ {id:'lee035',g:'Colour',n:'Light Pink (Lee 035)',    d:'Pink gel · real Lee Filters data',c:'#e8a0b8',
+  bands:[{hi:577.6,hs:73.5,T:.78},{lo:565.9,ls:14.3,T:.90}],
+  same:'REFITTED to real Lee Filters transmission data (via CheeseCube312\u2019s Filter-Plotter-Data project) \u2014 RMS 1.2 percentage points. The real curve is a genuine dip shape: elevated in blue (~68-70%), sagging through green (~44-51% around 540-560nm), then rising strongly through orange/red to ~90%+ \u2014 this is why it reads as pink rather than just neutral-dim. The recipe pairing with KG3 (GRB3 in this file) is sourced from community reports, not verified first-hand. The "Pink Aerochrome DIY" recipe button previously paired this with GRB1 (=KG2) instead of GRB3 (=KG3) — a mismatch against this filter\u2019s own documented pairing, fixed separately'},
+ {id:'lee441',g:'Colour',n:'Full CT Straw (Lee 441)',d:'Warm/yellow gel · real Lee Filters data',c:'#d8a050',
+  bands:[{lo:522.3,ls:51.1,T:.91}],leak:true,
+  same:'REFITTED to real Lee Filters transmission data (via CheeseCube312\u2019s Filter-Plotter-Data project) \u2014 RMS 4.6 percentage points. Real shape is a broad single rising edge, low in blue (~10-15%) climbing to ~85-93% by red \u2014 close to what the earlier Wratten-85B-based estimate assumed, now confirmed directly rather than borrowed from an unrelated filter. This is one of the two gels Hidden Realms confirmed for the "blue trees" technique, stacked with a MidOpt DB850. The author is explicit the result is camera-dependent: it worked on Nikon and a Canon 1000D, but a different tester on another Canon body got "more purple than blue" with a pink gel instead — this is not a settled one-size-fits-all recipe'},
+ {id:'lee744',g:'Colour',n:'Dirty White (Lee 744)',d:'Subtle warm gel · real Lee Filters data',c:'#d8c090',
+  bands:[{lo:519.8,ls:56.2,T:.90}],leak:true,
+  same:'REFITTED to real Lee Filters transmission data (via CheeseCube312\u2019s Filter-Plotter-Data project) \u2014 RMS 4.6 percentage points. Similar broad warming-edge shape to Lee 441, slightly gentler rise, matching its description as "an off white tungsten" correction. This is the SECOND of the two gels Hidden Realms names for the blue-trees technique; the author uses "Dirty White or Full CT Straw" interchangeably without stating which gives a better result'},
+
+ {id:'lee026',g:'Colour',n:'Bright Red (Lee 26)',d:'Real Lee Filters data',c:'#E6003C',
+  bands:[{lo:628.8,ls:19.83,T:0.88}],leak:true,
+  same:'fit to real Lee Filters data (via CheeseCube312\u2019s Filter-Plotter-Data project, MIT-licensed) \u2014 RMS 4.12 percentage points. Part of a curated ~20-gel expansion beyond the handful with documented DIY recipes, picked for saturated colour rather than any specific known technique \u2014 same shared caveat as the original five: the source applies a generic "rises to ~90% by 800nm" NIR extrapolation to every Lee gel regardless of colour, not measured per-gel, so treat the visible-band shape as the well-fitted part and the deep-NIR leak as a reasonable but unverified assumption'},
+ {id:'lee106',g:'Colour',n:'Primary Red (Lee 106)',d:'Real Lee Filters data',c:'#F00032',
+  bands:[{lo:618.1,ls:15.16,T:0.88}],leak:true,
+  same:'fit to real Lee Filters data (via CheeseCube312\u2019s Filter-Plotter-Data project, MIT-licensed) \u2014 RMS 3.32 percentage points. Part of a curated ~20-gel expansion beyond the handful with documented DIY recipes, picked for saturated colour rather than any specific known technique \u2014 same shared caveat as the original five: the source applies a generic "rises to ~90% by 800nm" NIR extrapolation to every Lee gel regardless of colour, not measured per-gel, so treat the visible-band shape as the well-fitted part and the deep-NIR leak as a reasonable but unverified assumption'},
+ {id:'lee101',g:'Colour',n:'Yellow (Lee 101)',d:'Real Lee Filters data',c:'#FFF500',
+  bands:[{lo:504.2,ls:12.42,T:0.89}],leak:true,
+  same:'fit to real Lee Filters data (via CheeseCube312\u2019s Filter-Plotter-Data project, MIT-licensed) \u2014 RMS 1.76 percentage points. Part of a curated ~20-gel expansion beyond the handful with documented DIY recipes, picked for saturated colour rather than any specific known technique \u2014 same shared caveat as the original five: the source applies a generic "rises to ~90% by 800nm" NIR extrapolation to every Lee gel regardless of colour, not measured per-gel, so treat the visible-band shape as the well-fitted part and the deep-NIR leak as a reasonable but unverified assumption'},
+ {id:'lee010',g:'Colour',n:'Medium Yellow (Lee 10)',d:'Real Lee Filters data',c:'#FFFF00',
+  bands:[{lo:490.0,ls:6.33,T:0.90}],leak:true,
+  same:'fit to real Lee Filters data (via CheeseCube312\u2019s Filter-Plotter-Data project, MIT-licensed) \u2014 RMS 1.31 percentage points. Part of a curated ~20-gel expansion beyond the handful with documented DIY recipes, picked for saturated colour rather than any specific known technique \u2014 same shared caveat as the original five: the source applies a generic "rises to ~90% by 800nm" NIR extrapolation to every Lee gel regardless of colour, not measured per-gel, so treat the visible-band shape as the well-fitted part and the deep-NIR leak as a reasonable but unverified assumption'},
+ {id:'lee105',g:'Colour',n:'Orange (Lee 105)',d:'Real Lee Filters data',c:'#FFA000',
+  bands:[{lo:560.2,ls:11.66,T:0.89}],leak:true,
+  same:'fit to real Lee Filters data (via CheeseCube312\u2019s Filter-Plotter-Data project, MIT-licensed) \u2014 RMS 2.11 percentage points. Part of a curated ~20-gel expansion beyond the handful with documented DIY recipes, picked for saturated colour rather than any specific known technique \u2014 same shared caveat as the original five: the source applies a generic "rises to ~90% by 800nm" NIR extrapolation to every Lee gel regardless of colour, not measured per-gel, so treat the visible-band shape as the well-fitted part and the deep-NIR leak as a reasonable but unverified assumption'},
+ {id:'lee158',g:'Colour',n:'Deep Orange (Lee 158)',d:'Real Lee Filters data',c:'#FF8700',
+  bands:[{lo:573.5,ls:16.60,T:0.89}],leak:true,
+  same:'fit to real Lee Filters data (via CheeseCube312\u2019s Filter-Plotter-Data project, MIT-licensed) \u2014 RMS 1.99 percentage points. Part of a curated ~20-gel expansion beyond the handful with documented DIY recipes, picked for saturated colour rather than any specific known technique \u2014 same shared caveat as the original five: the source applies a generic "rises to ~90% by 800nm" NIR extrapolation to every Lee gel regardless of colour, not measured per-gel, so treat the visible-band shape as the well-fitted part and the deep-NIR leak as a reasonable but unverified assumption'},
+ {id:'lee020',g:'Colour',n:'Medium Amber (Lee 20)',d:'Real Lee Filters data',c:'#FFBE55',
+  bands:[{lo:550.0,ls:23.61,T:0.89}],leak:true,
+  same:'fit to real Lee Filters data (via CheeseCube312\u2019s Filter-Plotter-Data project, MIT-licensed) \u2014 RMS 4.06 percentage points. Part of a curated ~20-gel expansion beyond the handful with documented DIY recipes, picked for saturated colour rather than any specific known technique \u2014 same shared caveat as the original five: the source applies a generic "rises to ~90% by 800nm" NIR extrapolation to every Lee gel regardless of colour, not measured per-gel, so treat the visible-band shape as the well-fitted part and the deep-NIR leak as a reasonable but unverified assumption'},
+ {id:'lee022',g:'Colour',n:'Dark Amber (Lee 22)',d:'Real Lee Filters data',c:'#FF6900',
+  bands:[{lo:587.5,ls:10.75,T:0.88}],leak:true,
+  same:'fit to real Lee Filters data (via CheeseCube312\u2019s Filter-Plotter-Data project, MIT-licensed) \u2014 RMS 2.33 percentage points. Part of a curated ~20-gel expansion beyond the handful with documented DIY recipes, picked for saturated colour rather than any specific known technique \u2014 same shared caveat as the original five: the source applies a generic "rises to ~90% by 800nm" NIR extrapolation to every Lee gel regardless of colour, not measured per-gel, so treat the visible-band shape as the well-fitted part and the deep-NIR leak as a reasonable but unverified assumption'},
+ {id:'lee113',g:'Colour',n:'Magenta (Lee 113)',d:'Real Lee Filters data',c:'#FF0064',
+  bands:[{hi:466.8,hs:8.54,T:0.09},{lo:611.5,ls:9.86,T:0.89}],leak:true,
+  same:'fit to real Lee Filters data (via CheeseCube312\u2019s Filter-Plotter-Data project, MIT-licensed) \u2014 RMS 1.94 percentage points. Part of a curated ~20-gel expansion beyond the handful with documented DIY recipes, picked for saturated colour rather than any specific known technique \u2014 same shared caveat as the original five: the source applies a generic "rises to ~90% by 800nm" NIR extrapolation to every Lee gel regardless of colour, not measured per-gel, so treat the visible-band shape as the well-fitted part and the deep-NIR leak as a reasonable but unverified assumption'},
+ {id:'lee046',g:'Colour',n:'Dark Magenta (Lee 46)',d:'Real Lee Filters data',c:'#DC005A',
+  bands:[{hi:475.3,hs:22.54,T:0.07},{lo:639.6,ls:19.39,T:0.90}],leak:true,
+  same:'fit to real Lee Filters data (via CheeseCube312\u2019s Filter-Plotter-Data project, MIT-licensed) \u2014 RMS 1.85 percentage points. Part of a curated ~20-gel expansion beyond the handful with documented DIY recipes, picked for saturated colour rather than any specific known technique \u2014 same shared caveat as the original five: the source applies a generic "rises to ~90% by 800nm" NIR extrapolation to every Lee gel regardless of colour, not measured per-gel, so treat the visible-band shape as the well-fitted part and the deep-NIR leak as a reasonable but unverified assumption'},
+ {id:'lee049',g:'Colour',n:'Medium Purple (Lee 49)',d:'Real Lee Filters data',c:'#BE0091',
+  bands:[{hi:474.6,hs:11.47,T:0.31},{lo:649.6,ls:14.08,T:0.90}],leak:true,
+  same:'fit to real Lee Filters data (via CheeseCube312\u2019s Filter-Plotter-Data project, MIT-licensed) \u2014 RMS 2.00 percentage points. Part of a curated ~20-gel expansion beyond the handful with documented DIY recipes, picked for saturated colour rather than any specific known technique \u2014 same shared caveat as the original five: the source applies a generic "rises to ~90% by 800nm" NIR extrapolation to every Lee gel regardless of colour, not measured per-gel, so treat the visible-band shape as the well-fitted part and the deep-NIR leak as a reasonable but unverified assumption'},
+ {id:'lee120',g:'Colour',n:'Deep Blue (Lee 120)',d:'Real Lee Filters data',c:'#005FBE',
+  bands:[{hi:492.0,hs:6.51,T:0.27},{lo:718.7,ls:15.69,T:0.89}],leak:true,
+  same:'fit to real Lee Filters data (via CheeseCube312\u2019s Filter-Plotter-Data project, MIT-licensed) \u2014 RMS 4.31 percentage points. Part of a curated ~20-gel expansion beyond the handful with documented DIY recipes, picked for saturated colour rather than any specific known technique \u2014 same shared caveat as the original five: the source applies a generic "rises to ~90% by 800nm" NIR extrapolation to every Lee gel regardless of colour, not measured per-gel, so treat the visible-band shape as the well-fitted part and the deep-NIR leak as a reasonable but unverified assumption'},
+ {id:'lee132',g:'Colour',n:'Medium Blue (Lee 132)',d:'Real Lee Filters data',c:'#00A0DC',
+  bands:[{hi:515.3,hs:11.79,T:0.49},{lo:718.1,ls:16.27,T:0.89}],leak:true,
+  same:'fit to real Lee Filters data (via CheeseCube312\u2019s Filter-Plotter-Data project, MIT-licensed) \u2014 RMS 4.28 percentage points. Part of a curated ~20-gel expansion beyond the handful with documented DIY recipes, picked for saturated colour rather than any specific known technique \u2014 same shared caveat as the original five: the source applies a generic "rises to ~90% by 800nm" NIR extrapolation to every Lee gel regardless of colour, not measured per-gel, so treat the visible-band shape as the well-fitted part and the deep-NIR leak as a reasonable but unverified assumption'},
+ {id:'lee036',g:'Colour',n:'Medium Pink (Lee 36)',d:'Real Lee Filters data',c:'#FFA0B9',
+  bands:[{hi:486.5,hs:72.37,T:0.82},{lo:577.7,ls:12.02,T:0.89}],leak:true,
+  same:'fit to real Lee Filters data (via CheeseCube312\u2019s Filter-Plotter-Data project, MIT-licensed) \u2014 RMS 1.60 percentage points. Part of a curated ~20-gel expansion beyond the handful with documented DIY recipes, picked for saturated colour rather than any specific known technique \u2014 same shared caveat as the original five: the source applies a generic "rises to ~90% by 800nm" NIR extrapolation to every Lee gel regardless of colour, not measured per-gel, so treat the visible-band shape as the well-fitted part and the deep-NIR leak as a reasonable but unverified assumption'},
+ {id:'lee119',g:'Colour',n:'Dark Blue (Lee 119)',d:'Real Lee Filters data',c:'#0078C8',
+  bands:[{lo:421.7,ls:14.41,hi:487.8,hs:15.73,T:0.58}],leak:true,
+  same:'fit to real Lee Filters data (via CheeseCube312\u2019s Filter-Plotter-Data project, MIT-licensed) \u2014 RMS 1.85 percentage points. Part of a curated ~20-gel expansion beyond the handful with documented DIY recipes, picked for saturated colour rather than any specific known technique \u2014 same shared caveat as the original five: the source applies a generic "rises to ~90% by 800nm" NIR extrapolation to every Lee gel regardless of colour, not measured per-gel, so treat the visible-band shape as the well-fitted part and the deep-NIR leak as a reasonable but unverified assumption'},
+ {id:'lee141',g:'Colour',n:'Bright Blue (Lee 141)',d:'Real Lee Filters data',c:'#00D2E6',
+  bands:[{lo:408.9,ls:15.51,hi:522.0,hs:18.33,T:0.80}],leak:true,
+  same:'fit to real Lee Filters data (via CheeseCube312\u2019s Filter-Plotter-Data project, MIT-licensed) \u2014 RMS 1.26 percentage points. Part of a curated ~20-gel expansion beyond the handful with documented DIY recipes, picked for saturated colour rather than any specific known technique \u2014 same shared caveat as the original five: the source applies a generic "rises to ~90% by 800nm" NIR extrapolation to every Lee gel regardless of colour, not measured per-gel, so treat the visible-band shape as the well-fitted part and the deep-NIR leak as a reasonable but unverified assumption'},
+ {id:'lee124',g:'Colour',n:'Dark Green (Lee 124)',d:'Real Lee Filters data',c:'#00DC78',
+  bands:[{lo:482.8,ls:7.98,hi:551.1,hs:13.60,T:0.75}],leak:true,
+  same:'fit to real Lee Filters data (via CheeseCube312\u2019s Filter-Plotter-Data project, MIT-licensed) \u2014 RMS 1.07 percentage points. Part of a curated ~20-gel expansion beyond the handful with documented DIY recipes, picked for saturated colour rather than any specific known technique \u2014 same shared caveat as the original five: the source applies a generic "rises to ~90% by 800nm" NIR extrapolation to every Lee gel regardless of colour, not measured per-gel, so treat the visible-band shape as the well-fitted part and the deep-NIR leak as a reasonable but unverified assumption'},
+ {id:'lee088',g:'Colour',n:'Lime Green (Lee 88)',d:'Real Lee Filters data',c:'#DCFF64',
+  bands:[{lo:479.6,ls:6.61,hi:629.6,hs:59.56,T:1.00},{lo:687.2,ls:20.13,T:0.90}],leak:true,
+  same:'fit to real Lee Filters data (via CheeseCube312\u2019s Filter-Plotter-Data project, MIT-licensed) \u2014 RMS 2.50 percentage points. Part of a curated ~20-gel expansion beyond the handful with documented DIY recipes, picked for saturated colour rather than any specific known technique \u2014 same shared caveat as the original five: the source applies a generic "rises to ~90% by 800nm" NIR extrapolation to every Lee gel regardless of colour, not measured per-gel, so treat the visible-band shape as the well-fitted part and the deep-NIR leak as a reasonable but unverified assumption'},
+ {id:'lee122',g:'Colour',n:'Fern Green (Lee 122)',d:'Real Lee Filters data',c:'#78FA6E',
+  bands:[{lo:481.3,ls:9.46,hi:566.1,hs:29.16,T:1.00},{lo:713.8,ls:17.97,T:0.89}],leak:true,
+  same:'fit to real Lee Filters data (via CheeseCube312\u2019s Filter-Plotter-Data project, MIT-licensed) \u2014 RMS 2.54 percentage points. Part of a curated ~20-gel expansion beyond the handful with documented DIY recipes, picked for saturated colour rather than any specific known technique \u2014 same shared caveat as the original five: the source applies a generic "rises to ~90% by 800nm" NIR extrapolation to every Lee gel regardless of colour, not measured per-gel, so treat the visible-band shape as the well-fitted part and the deep-NIR leak as a reasonable but unverified assumption'},
+ {id:'lee121',g:'Colour',n:'LEE Green (Lee 121)',d:'Real Lee Filters data',c:'#B4FF64',
+  bands:[{lo:482.5,ls:8.09,hi:586.4,hs:39.43,T:1.00},{lo:709.4,ls:18.17,T:0.89}],leak:true,
+  same:'fit to real Lee Filters data (via CheeseCube312\u2019s Filter-Plotter-Data project, MIT-licensed) \u2014 RMS 2.34 percentage points. Part of a curated ~20-gel expansion beyond the handful with documented DIY recipes, picked for saturated colour rather than any specific known technique \u2014 same shared caveat as the original five: the source applies a generic "rises to ~90% by 800nm" NIR extrapolation to every Lee gel regardless of colour, not measured per-gel, so treat the visible-band shape as the well-fitted part and the deep-NIR leak as a reasonable but unverified assumption'},
+
+ /* ---- MidOpt multi-bandpass (machine-vision interference filters) ----
+    Dielectric coatings, not dyes, so the passbands are sharp and there is no
+    dye IR leak — what you see is all you get. The names encode the bands:
+    DB550/850 passes a green band AND an 850nm NIR band, nothing between.
+    These land visible and NIR into separate channels deliberately, which is
+    the industrial version of what full-spectrum shooters do by accident. */
+ {id:'db395',g:'MidOpt',n:'DB395/870',d:'UV/violet + 870nm NIR',c:'#8f6ad8',
+  bands:[{lo:385,ls:2,hi:405,hs:2,T:.85},{lo:855,ls:3,hi:885,hs:3,T:.90}],type:'interference'},
+ {id:'db475',g:'MidOpt',n:'DB475/850',d:'Blue + 850nm NIR',c:'#5f86d8',
+  bands:[{lo:462,ls:2.7,hi:488,hs:2.7,T:.88},{lo:835,ls:3,hi:865,hs:3,T:.90}],type:'interference'},
+ {id:'db550',g:'MidOpt',n:'DB550/850',d:'Green + 850nm NIR',c:'#5fb87a',
+  bands:[{lo:537,ls:2.7,hi:563,hs:2.7,T:.88},{lo:835,ls:3,hi:865,hs:3,T:.90}],type:'interference'},
+ {id:'db660',g:'MidOpt',n:'DB660/850',d:'Red + 850nm NIR',c:'#d0563f',
+  bands:[{lo:647,ls:2.7,hi:673,hs:2.7,T:.88},{lo:835,ls:3,hi:865,hs:3,T:.90}],type:'interference'},
+ {id:'db735',g:'MidOpt',n:'DB735',d:'Full visible + 735nm NIR',c:'#c08a4f',
+  bands:[{lo:405,ls:6,hi:645,hs:6,T:.88},{lo:720,ls:3,hi:750,hs:3,T:.90}],type:'interference'},
+ {id:'db850',g:'MidOpt',n:'DB850',d:'Full visible + 850nm NIR · Hidden Realms blue trees',c:'#c9975f',
+  bands:[{lo:405,ls:6,hi:645,hs:6,T:.90},{lo:835,ls:3,hi:875,hs:3,T:.90}],type:'interference',
+  same:'MidOpt official spec: useful range 405\u2013645nm + 835\u2013875nm, \u2265 90% peak. This is the filter behind Hidden Realms\u2019 documented "blue trees" technique, stacked with either a Lee 441 Full CT Straw or a Lee 744 Dirty White gel — the author uses the two interchangeably in the source'},
+ {id:'tb550',g:'MidOpt',n:'TB550/660/850',d:'Green+Red+NIR · NDVI/CVI',c:'#c9a04f',
+  bands:[{lo:537,ls:2.7,hi:563,hs:2.7,T:.86},{lo:647,ls:2.7,hi:673,hs:2.7,T:.86},{lo:835,ls:3,hi:865,hs:3,T:.88}],type:'interference'},
+ {id:'tb475',g:'MidOpt',n:'TB475/550/850',d:'Blue+Green+NIR · ENDVI',c:'#6f9fb8',
+  bands:[{lo:462,ls:2.7,hi:488,hs:2.7,T:.86},{lo:537,ls:2.7,hi:563,hs:2.7,T:.86},{lo:835,ls:3,hi:865,hs:3,T:.88}],type:'interference'},
+ {id:'nf550',g:'MidOpt',n:'NF550',d:'Magenta dichroic · green block, passes blue+red',c:'#c060a8',
+  bands:[{lo:385,ls:8,hi:715,hs:15,T:.90}],type:'interference',notch:[{c:535,w:47,d:.90}],
+  same:'MidOpt\u2019s official spec for the NF550 Magenta Dichroic Shortpass (Green Block): useful range 395\u2013475nm and '
+   +'605\u2013700nm, 50%T cutoff/cuton at 480nm and 590nm (\u00b110nm tolerance), peak transmission \u226590%. Modelled as a broad '
+   +'Gaussian notch centred 535nm \u2014 checked against the spec points and it lands ~49% at both 480 and 590nm and ~89\u201390% '
+   +'at the 395/700nm range edges, matching closely. This is the same green-block/magenta dichroic design as the cheaper '
+   +'generic "make sky greener" filters sold on AliExpress/eBay for full-spectrum IR work (e.g. Nantong Foric) \u2014 those '
+   +'listings don\u2019t publish a transmission chart, so this MidOpt spec stands in as the closest documented reference for '
+   +'the same optical principle rather than a measurement of that specific product. BASELINE BOUNDED: previously modelled '
+   +'as a flat 90% across the ENTIRE spectrum outside the notch \u2014 nothing stopped it passing 90% in the far-UV, which is '
+   +'exactly what MidOpt\u2019s own "useful range" language says shouldn\u2019t happen. Added edges around the stated 395-700nm '
+   +'useful span so it actually falls off outside it, rather than staying flat forever; this was a real contributor to a '
+   +'stacked recipe showing unexpectedly high transmission in the 400-450nm region that a UV/IR forum contributor '
+   +'correctly flagged as implausible'},
+
+ /* ---- Generic multi-bandpass, non-MidOpt suppliers ----
+    Same dielectric-interference principle as the MidOpt series above, but
+    sold directly by smaller optics shops without a house brand name — the
+    part number IS the spec sheet. */
+ {id:'qb425',g:'Multi',n:'Quad-Band 425/525/660/815',d:'HBP quad-band \u00b7 tuned to sodium-lamp emission lines',c:'#8f6ab0',
+  bands:[{lo:410,ls:3,hi:440,hs:3,T:.85},{lo:508,ls:3,hi:542,hs:3,T:.92},{lo:648,ls:2.5,hi:672,hs:2.5,T:.76},
+   {lo:795,ls:3,hi:830,hs:3,T:.90},{lo:1015,ls:3,hi:1045,hs:3,T:.85},{lo:1080,ls:30,hi:1250,hs:40,T:.55}],
+  same:'read directly off the manufacturer\u2019s own printed spec card (rapidspectra, eBay listing, part number '
+   +'425-525-660-815QB, HBP round 49.8mm, 2mm thick) \u2014 four sharp named passbands at 425/525/660/815nm as printed, '
+   +'plus a fifth sharp \u224885% spike near 1030nm and a broader rippled hump out to 1300nm that the chart clearly shows '
+   +'but the part number doesn\u2019t name \u2014 likely coating ringing rather than a designed band, kept here as a rough '
+   +'simplified plateau since it\u2019s real measured behaviour of this glass even if imprecise from a photo. Most silicon '
+   +'sensors lose sensitivity well before 1100nm, so that trailing region matters far less in practice than the four '
+   +'named bands. REAL-WORLD CONTEXT (ultravioletphotography.com, "Spectacular nighttime imagery" thread, July 2026): '
+   +'a forum member overlaid this filter\u2019s own transmission curve against a real high-pressure sodium vapour lamp '
+   +'emission spectrum and found the four passbands line up closely with four of the lamp\u2019s actual emission lines \u2014 '
+   +'notably the 815nm band matching sodium\u2019s own 818-819nm IR line \u2014 while the gaps between bands fall right where '
+   +'sodium\u2019s dominant ~568nm yellow line sits, excluding it. Whether that\u2019s deliberate design or a fortunate '
+   +'coincidence is unconfirmed, but it explains the effect a separate poster (Christoph, "Heatwaves" project) '
+   +'reported shooting with this filter: sodium street-lighting reads as purple/magenta (from that matched IR line), '
+   +'while LEDs and most other sources read green, giving a distinctive night palette. That poster also paired this '
+   +'filter with GRB1 as an IR-reducer \u2014 a real independent confirmation of GRB1/KG2\u2019s role as an attenuator '
+   +'stacked alongside another filter, matching how it\u2019s documented elsewhere in this file'},
+
+ /* ---- Special effect glass ---- */
+ {id:'didy',g:'FX',n:'Didymium',d:'Red enhancer · 11 real absorption peaks',c:'#c9607f',
+  bands:[{lo:380,ls:10,T:.90}],
+  notch:[{c:431,w:9,d:.35},{c:473,w:9,d:.40},{c:513,w:8,d:.45},{c:529,w:8,d:.45},
+    {c:573,w:8,d:.80},{c:585,w:8,d:.80},{c:685,w:10,d:.30},{c:741,w:8,d:.55},
+    {c:749,w:8,d:.55},{c:807,w:10,d:.35},{c:879,w:12,d:.25}],
+  same:'REBUILT from a single notch to the real absorption structure. Didymium glass (a praseodymium/neodymium mix) '
+   +'is a certified spectrophotometer wavelength-calibration standard precisely because it has many sharp, '
+   +'well-documented absorption peaks, not one \u2014 Starna\u2019s certified reference glass (a respected calibration-'
+   +'standard manufacturer) lists 11 peaks from 430-890nm: 431, 473, 513, 529, 573, 585, 685, 741, 749, 807, 879nm. '
+   +'The 573/585 doublet is the dominant, most visually significant one \u2014 eating that yellow-orange band is '
+   +'literally why these are sold as "red enhancer" filters \u2014 modelled with the deepest notches here to match. '
+   +'The other peaks are real but subtler in a consumer photography-grade filter compared to lab-grade calibration '
+   +'glass (which is a much higher rare-earth concentration for maximum contrast); depths here are estimated '
+   +'proportionally weaker for the outer peaks rather than measured for this specific consumer product, since no '
+   +'published transmission chart exists for a specific branded photography didymium filter \u2014 peak '
+   +'<i>positions</i> are the well-verified part, individual peak <i>depths</i> for a photography-grade filter '
+   +'specifically are the estimated part'},
+ {id:'notch532',g:'FX',n:'532nm Notch',d:'Rejects green laser line · passes red+blue either side',c:'#b06fa8',
+  bands:[{lo:360,ls:10,T:.88}],type:'interference',notch:[{c:532,w:8,d:.95}],
+  same:'generic eBay-listed laser-line rejection filter (targets the doubled-Nd:YAG 532nm green line) \u2014 read from the '
+   +'seller\u2019s own spectrometer chart: two flat plateaus around 85\u201390% (roughly 390\u2013480nm and 550nm+), separated by a '
+   +'deep near-total notch. Centre pinned to the advertised 532nm rather than the chart\u2019s apparent centre, since laser-line '
+   +'notch filters are manufactured to a precise design wavelength and sub-30nm position is hard to read reliably off a phone '
+   +'photo of a printed chart. WIDTH CORRECTED: previously w:20 (\u224847nm FWHM), which a UV/IR forum contributor correctly '
+   +'flagged as far too soft for a real dichroic notch \u2014 genuine laser-line notch filters are narrow. A published patent '
+   +'formula for notch bandwidth (Notch Bandwidth = 55\u00d710\u207b\u2076\u03bb\u00b2 + 14\u00d710\u207b\u00b3\u03bb \u2212 5.9, \u03bb in nm) gives \u224817nm FWHM '
+   +'at 532nm, and a real commercial Edmund Optics 532nm notch product is spec\u2019d at 10nm FWHM \u2014 both real external sources, '
+   +'independent of the original eBay chart. Narrowed to w:8 (\u224819nm FWHM), sitting between those two references rather '
+   +'than the original chart-read guess, since this is a generic unbranded product likely less precise than either. On a '
+   +'full-spectrum body this pulls green out while leaving red and blue largely intact \u2014 a magenta-leaning creative look '
+   +'distinct from anything else in this list'},
+ {id:'sepia',g:'FX',n:'Sepia / warm',d:'Cuts blue <480nm · keeps NIR',c:'#c99a5f',
+  bands:[{lo:480,ls:40,T:.90}]},
+ {id:'nd4', g:'FX',n:'ND4 (2 stops)', d:'Flat · shape unchanged',c:'#8a8a8a',bands:[{T:.25}]},
+ {id:'nd8', g:'FX',n:'ND8 (3 stops)', d:'Flat · shape unchanged',c:'#767676',bands:[{T:.125}]},
+ {id:'nd16',g:'FX',n:'ND16 (4 stops)',d:'Flat · shape unchanged',c:'#626262',bands:[{T:.0625}]},
+
+ /* ---- Polarizers ----
+    A CPL is a linear polarizer plus a quarter-wave retarder, and that retarder
+    is cut for one wavelength — a typical 140nm retardation centres it near
+    560nm. Out in the NIR the plate is nowhere near a quarter wave, so the
+    "circular" half stops doing its job. The polarizing film itself also loses
+    efficiency past ~700nm, and because a failing polarizer blocks LESS of the
+    unpolarized light, transmission actually RISES into the infrared even as
+    the glare-killing effect fades away. */
+ {id:'cpl',  g:'Pol',n:'Circular polarizer',d:'Glare control fades in IR',c:'#7f8fa0',
+  bands:[{hi:700,hs:45,T:.32},{lo:700,ls:45,T:.55}],pol:'circular'},
+ {id:'lpl',  g:'Pol',n:'Linear polarizer',d:'Holds up better in IR',c:'#8f9fb0',
+  bands:[{hi:720,hs:45,T:.38},{lo:720,ls:45,T:.46}],pol:'linear'},
+ {id:'redcpl',g:'Pol',n:'Red enhancer CPL',d:'Didymium + polarizer',c:'#c07a8a',
+  bands:[{hi:700,hs:45,T:.30},{lo:700,ls:45,T:.52}],
+  notch:[{c:431,w:9,d:.35},{c:473,w:9,d:.40},{c:513,w:8,d:.45},{c:529,w:8,d:.45},
+    {c:573,w:8,d:.80},{c:585,w:8,d:.80},{c:685,w:10,d:.30},{c:741,w:8,d:.55},
+    {c:749,w:8,d:.55},{c:807,w:10,d:.35},{c:879,w:12,d:.25}],
+  pol:'circular',
+  same:'same real 11-peak didymium absorption structure as the standalone Didymium entry (see that entry\u2019s note '
+   +'for sourcing) \u2014 this was previously an independent, separately-simplified single-notch approximation and '
+   +'has been brought in line so the two entries agree on the same real physics rather than drifting apart'},
+
+ /* ---- Astronomy ----
+    Emission-line wavelengths here are physical constants, not estimates:
+    H-alpha 656.3, H-beta 486.1, OIII 495.9/500.7, SII 671.6, NII 658.4,
+    sodium D 589.0/589.6, mercury 435.8/546.1/578. The passband WIDTHS follow
+    standard product bandwidths (3/7/12nm etc). This group belongs in a
+    full-spectrum tool because H-alpha at 656nm is precisely what a stock
+    camera's internal IR-cut filter throws away — which is the main reason
+    people have bodies converted in the first place. */
+ {id:'stockir',g:'Astro',n:'Stock camera IR-cut',d:'Unconverted body · kills Ha',c:'#9a9a9a',
+  bands:[{lo:400,ls:8,hi:635,hs:16,T:.95}]},
+ {id:'ha7',  g:'Astro',n:'H-alpha 7nm',   d:'656.3nm · emission nebulae',c:'#d43a3a',
+  bands:[{lo:652.8,ls:0.9,hi:659.8,hs:0.9,T:.93}],type:'interference'},
+ {id:'ha3',  g:'Astro',n:'H-alpha 3nm',   d:'656.3nm · high contrast',   c:'#c22f2f',
+  bands:[{lo:654.8,ls:0.45,hi:657.8,hs:0.45,T:.90}],type:'interference'},
+ {id:'oiii7',g:'Astro',n:'OIII 7nm',      d:'500.7nm · teal nebulosity', c:'#3fc0b0',
+  bands:[{lo:497.2,ls:0.9,hi:504.2,hs:0.9,T:.93}],type:'interference'},
+ {id:'sii7', g:'Astro',n:'SII 7nm',       d:'671.6nm · Hubble palette',  c:'#b03050',
+  bands:[{lo:668.1,ls:0.9,hi:675.1,hs:0.9,T:.90}],type:'interference'},
+ {id:'hb8',  g:'Astro',n:'H-beta 8nm',    d:'486.1nm',                   c:'#4f8fd8',
+  bands:[{lo:482.1,ls:1.0,hi:490.1,hs:1.0,T:.90}],type:'interference'},
+ {id:'lext', g:'Astro',n:'L-eXtreme',     d:'Dual 7nm · Ha + OIII',      c:'#8f5fc0',
+  bands:[{lo:497.2,ls:0.9,hi:504.2,hs:0.9,T:.93},{lo:652.8,ls:0.9,hi:659.8,hs:0.9,T:.93}],type:'interference',
+  same:'matches Optolong\u2019s official published spec exactly: dual 7nm FWHM bands centred on OIII 500.7nm and '
+   +'H\u03b1 656.3nm, B270 substrate, 1.85mm thick, >99% light-pollution-line blocking. Optolong themselves caveat that '
+   +'their published curve is "only for reference, and not used as the final product data" \u2014 treat this as design '
+   +'spec, not a digitised measurement. Designed for f/2\u2013f/3.3 fast optics (their standard L-eXtreme targets slower '
+   +'systems, f/4+). Source: optolong.com/cms/document/detail/id/100.html'},
+ {id:'lenh', g:'Astro',n:'L-eNhance',     d:'Tri-band · Hb + OIII + Ha', c:'#a06fd0',
+  bands:[{lo:484,ls:1.2,hi:508,hs:1.2,T:.90},{lo:650.3,ls:1.2,hi:662.3,hs:1.2,T:.90}],type:'interference',
+  same:'aligned to Optolong\u2019s official spec: H\u03b1 band ~12nm centred 656.3nm, combined H\u03b2/OIII window ~24nm '
+   +'covering H\u03b2 486.1nm and OIII 495.9/500.7nm together, up to 90% transmission, B270 substrate 1.85mm. Same '
+   +'"reference only, not final product data" caveat as L-eXtreme applies. Source: optolong.com/cms/document/detail/id/14.html'},
+ {id:'uhc',  g:'Astro',n:'UHC',           d:'Nebula broadband',          c:'#5fa0c9',
+  bands:[{lo:484,ls:2,hi:506,hs:2,T:.95},{lo:645,ls:3,T:.95}],type:'interference',
+  same:'matches Astronomik\u2019s official UHC spec: 95% at 496/501nm (OIII) and 656nm (H\u03b1), passband 480-505nm plus '
+   +'everything above ~645nm (not a narrow H\u03b1-only band \u2014 widened the red side to open-ended here, since UHC passes '
+   +'the full red/H\u03b1 region rather than cutting at 680nm as previously modelled), FWHM 25nm, 1mm glass, blocks Na/Hg '
+   +'lines between the windows. "UHC" is a generic name used by several brands \u2014 this models Astronomik\u2019s version '
+   +'specifically as the most-referenced. Source: astronomik.com/en/visual-filters/uhc-filter.html'},
+ {id:'cls',  g:'Astro',n:'CLS light pollution',d:'Blocks sodium/mercury', c:'#6fb0a0',
+  bands:[{lo:450,ls:6,hi:540,hs:8,T:.92},{lo:640,ls:6,T:.92}],type:'interference',
+  notch:[{c:589,w:7,d:.98},{c:546,w:4,d:.85}],
+  same:'Astronomik\u2019s official CLS spec: wide passband roughly 450-540nm plus the full H\u03b1-and-redward region at '
+   +'near-100% visible transmission, completely blocking Na and Hg vapour lamp lines and most LED/airglow emission \u2014 '
+   +'deliberately wider than UHC (passes more continuum, so brighter stars, less nebula contrast). Red band widened to '
+   +'open-ended here to match. The CLS-CCD variant adds an integrated IR-block layer (~700-1100nm) not modelled here. '
+   +'Source: astronomik.com/en/visual-filters/cls-filter.html'},
+ {id:'neod', g:'Astro',n:'Baader Neodymium',d:'Real 4-feature shape, cross-verified · falls to ~0 past 750nm',  c:'#c98fb0',
+  bands:[{lo:396,ls:3,hi:715,hs:10,T:.99}],type:'interference',notch:[{c:424,w:6,d:.30},{c:574,w:28,d:.94},{c:682,w:9,d:.25}],
+  same:'refitted against two independent official Baader charts (nexstarsite.com review, dated 2001/2003; Astroshop.eu\u2019s current product listing) \u2014 both agree closely and both show something the earlier Cloudy-Nights-sourced fit missed: transmission falls to near-zero past ~730nm rather than staying high indefinitely into the NIR. That matters, since a Moon/skyglow filter is meant to cut overall throughput, not pass full infrared. Mean error 7.7 percentage points across 26 digitized points'},
+ {id:'solc', g:'Astro',n:'Solar continuum',d:'540nm 7.5nm · white light', c:'#c9c04f',
+  bands:[{lo:536.25,ls:1.0,hi:543.75,hs:1.0,T:.85}],type:'interference',
+  same:'Baader\u2019s CURRENT product is 7.5nm FWHM at 540nm (replacing an older 10nm version, and correcting a copy-paste '
+   +'spec error Baader themselves flagged that had briefly shown the old 10nm range on the new product) \u2014 narrowed '
+   +'from the previous 10nm-wide estimate to match. Baader state it blocks everything 300-1200nm except this one '
+   +'continuum window. Source: baader-planetarium.com/en/7.5nm-solar-continuum-filter-540nm.html'},
+
+ /* ---- Hoya contrast filters ----
+    Listed by the name actually printed on the ring, because that is what you
+    are holding. Equivalences are cross-checked against Hoya's own product
+    pages and Kodak's letter system — but note the two DISAGREE on X0/X1.
+    Kodak's scheme had X1 = Wratten 11; Hoya sell their Wratten 11 as X0 and
+    use X1 for a fuller green. Where they conflict, Hoya's own naming wins
+    here, since that is what is engraved on a Hoya filter. All are dye
+    filters, so on a converted body they pass their colour plus infrared. */
+ {id:'hy_k2', g:'Hoya',n:'Hoya Y (K2)',   d:'Yellow · = Wratten 8',       c:'#e3cf5c',
+  bands:[{lo:492.2,ls:9.21,T:.92}],same:'Wratten 8 — also sold as Y2 in older Tiffen naming. Matched to the corrected Wratten 8 fit (492nm, least-squares against Kodak’s own table); previously sat at 465nm following the same error documented in the Wratten 8 note'},
+ {id:'bw022', g:'Branded',n:'B+W 022',    d:'Yellow · = Wratten 8/K2 · B+W’s "495" naming confirmed', c:'#e0c752',
+  bands:[{lo:494,ls:9.5,T:.91}],
+  same:'B+W catalogue this as "495/022", following their convention of naming a filter by its 50%-cutoff wavelength '
+   +'(090=590nm, 091=630nm, 040=550nm elsewhere in this file). That 495 figure is now CONFIRMED rather than merely '
+   +'plausible: a least-squares fit to the actual Kodak table puts Wratten 8 at 492nm, so B+W\u2019s number is accurate to '
+   +'about 3nm and the two really are the same filter. An earlier version of this entry claimed a ~27nm gap and kept them '
+   +'deliberately separate \u2014 that gap was an artefact of the Wratten 8 error described in its note, not a real '
+   +'difference between the glasses'},
+
+ {id:'hy_og', g:'Hoya',n:'Hoya O (G)',    d:'Deep yellow · = Wratten 15', c:'#d9ad3c',
+  bands:[{lo:510,ls:12,T:.92}],same:'Wratten 15 — Kodak\u2019s letter G was always deep yellow, not orange'},
+ {id:'hy_ya3',g:'Hoya',n:'Hoya YA3',      d:'Orange · factor 4',          c:'#d68b34',
+  bands:[{lo:540,ls:12,T:.91}],same:'sits between Wratten 21 and 22 — Hoya rate it factor 4 (2 stops)'},
+ {id:'hy_x0', g:'Hoya',n:'Hoya X0',       d:'Yellow-green · real double-hump, refitted',c:'#8fc059',
+  bands:[{lo:485.5,ls:19.1,hi:638.7,hs:60.1,T:1.00},{lo:656.4,ls:56.7,T:.90}],leak:true,
+  same:'REFITTED to real Hoya X0 data (via CheeseCube312\u2019s Filter-Plotter-Data project, MIT-licensed) \u2014 RMS 1.4 '
+   +'percentage points across 165 points, 210-1100nm. The genuine double-hump shape is confirmed but the earlier '
+   +'chart-read numbers were notably under-scaled: real peak is ~90% near 550-560nm (previously modelled ~60-63%), the '
+   +'dip bottoms out around 51% near 640nm (previously ~33%), and it climbs back to ~90% by 800-1080nm (previously only '
+   +'70-80%) \u2014 same shape family, meaningfully higher magnitude throughout once checked against this cleaner source'},
+ {id:'hy_x1', g:'Hoya',n:'Hoya X1',       d:'Green · real chart, late-NIR rise found',c:'#5fae64',
+  bands:[{lo:500.8,ls:16.6,hi:564.2,hs:26.6,T:.81},{lo:1363,ls:180,T:1.00}],leak:true,
+  same:'REFITTED to real Hoya X1 data (via CheeseCube312\u2019s Filter-Plotter-Data project) \u2014 RMS 0.58 percentage '
+   +'points, one of the tightest fits in this whole database. The main peak (now 81% near ~530nm, not 18% \u2014 the old '
+   +'chart reading was drastically under-scaled) was expected, but the real data also revealed something the earlier '
+   +'model missed entirely: rather than settling to a flat ~6-7% floor through red and NIR, X1 climbs slowly but '
+   +'steadily from ~3.4% around 680nm back up to ~17.6% by 1080nm \u2014 a genuine late-NIR rise this file previously had '
+   +'no reason to suspect, now captured with an open-ended rising band rather than a flat tail'},
+ {id:'hy_r1', g:'Hoya',n:'Hoya R (25A)',  d:'Red · = Wratten 25',         c:'#d4553c',
+  bands:[{lo:600,ls:12,T:.90}],same:'Wratten 25 — sold as R1, R(A25) or 25A depending on era'},
+];
+// build the long-pass bands from their cutoff names
+FILTERS.forEach(f=>{
+  if(f.g==='IR-pass'&&!f.bands){
+    const cut=parseInt(f.n,10);
+    f.bands=[{lo:cut,ls:6,T:.90}];
+  }
+});
+
+/* ---- Schott colour-glass long-pass reference series ----
+   Schott's part numbers ARE the 50% cut-on wavelength: RG695 cuts at 695nm,
+   OG550 at 550nm, and so on. This is the raw glass that most branded filters
+   are cut from — B+W 092 is RG695, B+W 093 is RG830, Hoya R72 sits with
+   RG715 — so having the series lets you cross-reference anything.
+   WG = UV-transmitting near-colourless, GG = yellowish, OG = orange,
+   RG = red through deep infrared. */
+const SCHOTT_LP=[
+  ['WG280',280],['WG295',295],['WG305',305],['WG320',320],['WG345',345],['WG360',360],
+  ['GG385',385],['GG395',395],['GG400',400],['GG420',420],['GG435',435],
+  ['GG455',455],['GG475',475],['GG495',495],
+  ['OG515',515],['OG530',530],['OG550',550],['OG570',570],['OG590',590],
+  ['RG610',610],['RG630',630],['RG645',645],['RG665',665],['RG695',695],
+  ['RG715',715],['RG780',780],['RG830',830],['RG850',850],['RG1000',1000]
+];
+const SCHOTT_NOTE={
+  RG695:'B+W 092 is cut from this glass',
+  RG830:'B+W 093 is cut from this glass',
+  RG715:'the Hoya R72 sits alongside this',
+  RG630:'B+W 091 is cut from this glass',
+  GG495:'a common minus-blue / haze cut'
+};
+SCHOTT_LP.forEach(([name,cut])=>{
+  // edge steepness grows roughly with cut wavelength for colloidal glass
+  const ls=Math.max(4,Math.round(cut/58));
+  const fam=name.slice(0,2);
+  const col=fam==='WG'?'#b9a6f0':fam==='GG'?'#ddd06a':fam==='OG'?'#d69a45':
+            cut<700?'#cf5334':cut<850?'#a83c22':'#722113';
+  FILTERS.push({
+    id:'sch_'+name.toLowerCase(), g:'Schott', n:name,
+    d:cut+'nm cut-on'+(SCHOTT_NOTE[name]?' · '+SCHOTT_NOTE[name]:''),
+    c:col, type:'absorptive', ref:2,
+    // real Schott OG515-590 charts show a genuine gentle long-wavelength
+    // taper — peak transmission slowly declines a few % out to 1200nm+.
+    // hi:2600/hs:400 reproduces that (fitted to the real chart, max error
+    // 0.65 percentage points) without disturbing the rising edge near cut-on.
+    bands:[{lo:cut,ls:ls,hi:2600,hs:400,T:.91}]
+  });
+});
+
+const LMIN=280,LMAX=1100;
+let selected=[];
+
+/* ---------- filter buttons ---------- */
+(function buildList(){
+  const wrap=$('filterList');
+  ['UV-pass','IR blocker','IR-pass','Schott','Branded','Step','Hoya','Colour','Conv','MidOpt','Multi','FX','Pol','Astro'].forEach(g=>{
+    const div=document.createElement('div');div.className='grp';
+    const det=document.createElement('details');
+    const sum=document.createElement('summary');
+    sum.className='grph3sum';
+    sum.textContent=g==='UV-pass'?'UV-pass glass (stack these with a blocker)'
+      :g==='IR blocker'?'IR blockers / short-pass (kills the UV glass IR leak)'
+      :g==='IR-pass'?'IR long-pass — conversion cutoffs (Aerochrome ladder)'
+      :g==='Schott'?'Schott colour glass — the reference series most filters are cut from'
+      :g==='Branded'?'Branded IR — B+W / Hoya / Tiffen (Wratten), by 50% cutoff'
+      :g==='Step'?'Yellow → red step series — the filters used in front of Aerochrome'
+      :g==='Hoya'?'Hoya contrast filters — by the name printed on the ring'
+      :g==='Colour'?'Colour filters on a full-spectrum body — colour + IR = faux colour'
+      :g==='MidOpt'?'MidOpt multi-bandpass — sharp interference coatings, no dye leak'
+      :g==='Multi'?'Multi-bandpass from other suppliers — same interference principle, no house brand'
+      :g==='FX'?'Special effect, red enhancers and ND'
+      :g==='Pol'?'Polarizers — note the effect fades in infrared'
+      :g==='Astro'?'Astronomy — narrowband, light pollution, and why conversion matters for H-alpha'
+      :'Colour conversion — gradual curves, roughest models here';
+    det.appendChild(sum);
+    const grid=document.createElement('div');grid.className='fgrid';grid.style.marginTop='8px';
+    FILTERS.filter(f=>f.g===g).forEach(f=>{
+      const b=document.createElement('button');
+      b.className='fb';b.dataset.id=f.id;
+      b.style.borderLeftColor=f.c;
+      b.innerHTML='<b>'+f.n+'</b>'+(f.d?'<small>'+f.d+'</small>':'')+
+        '<span class="fbqty" style="display:none"></span>'+
+        '<span class="fbclear" style="display:none" title="remove">×</span>';
+      b.addEventListener('click',ev=>{
+        // the small clear glyph is its own tap target — sits in the corner and
+        // removes every copy of this filter; the rest of the button adds one more
+        if(ev.target.classList.contains('fbclear')){clearFilter(f.id);}
+        else{addOne(f.id);}
+      });
+      grid.appendChild(b);
+    });
+    det.appendChild(grid);div.appendChild(det);wrap.appendChild(div);
+  });
+})();
+
+/* ---------- live filter search ---------- */
+(function(){
+  const input=$('filterSearch'), status=$('filterSearchStatus');
+  if(!input)return;
+  // remember which groups were open before a search starts, so clearing the
+  // box restores exactly how the list looked rather than snapping everything
+  // back to fully collapsed
+  let openBeforeSearch=null;
+  input.addEventListener('input',()=>{
+    const q=input.value.trim().toLowerCase();
+    const groups=document.querySelectorAll('#filterList .grp');
+    if(!q){
+      // restore: show every group/button, reopen whatever was open before
+      groups.forEach((g,i)=>{
+        g.style.display='';
+        g.querySelectorAll('.fb').forEach(b=>b.style.display='');
+        const det=g.querySelector('details');
+        if(det)det.open=openBeforeSearch?openBeforeSearch[i]:false;
+      });
+      status.style.display='none';
+      openBeforeSearch=null;
+      return;
+    }
+    if(openBeforeSearch===null){
+      openBeforeSearch=[...groups].map(g=>{
+        const det=g.querySelector('details');return det?det.open:false;
+      });
+    }
+    let total=0;
+    groups.forEach(g=>{
+      let anyMatch=false;
+      g.querySelectorAll('.fb').forEach(b=>{
+        const f=FILTERS.find(x=>x.id===b.dataset.id);
+        const hay=[f.n,f.d,f.g,f.id,f.same||''].join(' ').toLowerCase();
+        const match=hay.includes(q);
+        b.style.display=match?'':'none';
+        if(match){anyMatch=true;total++;}
+      });
+      g.style.display=anyMatch?'':'none';
+      const det=g.querySelector('details');
+      if(det&&anyMatch)det.open=true;
+    });
+    status.style.display='block';
+    status.textContent=total+' filter'+(total===1?'':'s')+' match'+(total===1?'es':'')+
+      (total===0?' — try a manufacturer name, wavelength, or keyword like "notch" or "leak"':'');
+  });
+})();
+
+const MAX_COPIES=4; // no realistic reason to stack more than a few of the same glass
+// collapse a selection array (which may contain the same filter id several
+// times — stacking two pieces of the same glass is physically real) down to
+// unique filters + a count, for DISPLAY only. stackT/filterT keep using the
+// raw array with duplicates, since that's what makes repeated stacking
+// actually darken the curve correctly.
+function dedupe(fs){
+  const seen=new Map();
+  fs.forEach(f=>seen.set(f.id,{f,n:(seen.get(f.id)?seen.get(f.id).n:0)+1}));
+  return[...seen.values()];
+}
+function addOne(id){
+  const count=selected.filter(x=>x===id).length;
+  if(count>=MAX_COPIES)return;
+  selected.push(id);
+  refreshButton(id);
+  draw();
+}
+function clearFilter(id){
+  selected=selected.filter(x=>x!==id);
+  refreshButton(id);
+  draw();
+}
+function refreshButton(id){
+  const b=document.querySelector('.fb[data-id="'+CSS.escape(id)+'"]');
+  if(!b)return;
+  const n=selected.filter(x=>x===id).length;
+  b.classList.toggle('on',n>0);
+  const qty=b.querySelector('.fbqty'),clr=b.querySelector('.fbclear');
+  if(n>1){qty.style.display='block';qty.textContent='×'+n;}else{qty.style.display='none';}
+  clr.style.display=n>0?'flex':'none';
+}
+function setSelection(ids){
+  selected=ids.slice();
+  document.querySelectorAll('.fb').forEach(b=>refreshButton(b.dataset.id));
+  draw();
+}
+$('clearBtn').addEventListener('click',()=>setSelection([]));
+document.querySelectorAll('button.rec').forEach(b=>{
+  b.addEventListener('click',()=>setSelection(b.dataset.stack.split(',')));
+});
+
+/* ---------- "describe the look" recipe finder ----------
+   Plain keyword matching against the recipe buttons above — not real NLP.
+   Each recipe gets a short tag list (subject + colour words a person would
+   actually type) plus a one-line reason, keyed by the same data-stack
+   string the button already uses so clicking a suggestion reuses the exact
+   same setSelection() path as clicking the button directly. */
+const RECIPE_TAGS={
+  'zwb3,tsn575':{label:'My UV stack',tags:['uv','ultraviolet'],why:'Clean UV pass with the IR leak blocked — general-purpose UV work, not a colour-of-foliage recipe.'},
+  'grb1,lee139':{label:'Candy Chrome DIY',tags:['pink','magenta','candy','pastel','foliage','trees','leaves'],why:'Pastel pink/magenta foliage on a full-spectrum body.'},
+  'grb3,lee729':{label:'IR Chrome DIY',tags:['pink','red','magenta','foliage','trees','leaves','blue','sky','aerochrome','classic'],why:'Classic Aerochrome-style pink/red foliage with blue sky.'},
+  'w47':{label:'Faux colour (W47)',tags:['purple','violet','blue','faux'],why:'A single Wratten 47 for a general purple/blue faux-colour look.'},
+  'kolarichrome':{label:'Kolari IR Chrome',tags:['pink','red','foliage','trees','leaves','blue','sky','aerochrome'],why:'Commercial Aerochrome-style pink foliage, blue sky.'},
+  'w15':{label:'Aerochrome yellow',tags:['yellow','gold','foliage','trees','leaves'],why:'Yellow/gold foliage rather than pink.'},
+  'zwb3':{label:'UV glass, no blocker',tags:['uv','ultraviolet','contaminated'],why:'UV glass on its own — mostly a demonstration of red/IR contamination without a blocker, not a colour recipe.'},
+  'stockir,ha7':{label:'Why convert: stock IR-cut vs H-alpha',tags:['astro','astrophotography','nebula','hydrogen','comparison'],why:'Astro comparison of stock IR-cut glass against an H-alpha filter.'},
+  'zwb3,qb21,stockir':{label:'Faux UV, unconverted body (UVP)',tags:['uv','ultraviolet','unconverted','faux uv'],why:'Best achievable UV look on an unconverted body — deep blue/violet only, not real UV.'},
+  'lext':{label:'L-eXtreme (Ha + OIII)',tags:['astro','astrophotography','nebula','narrowband','hydrogen','oxygen'],why:'Narrowband astro filter for nebulae, not a daylight colour recipe.'},
+  'kb20,bw061,c80c':{label:'Candy Pink stack',tags:['pink','candy','foliage','trees','leaves'],why:'Saturated candy-pink foliage.'},
+  'grb3,lee035':{label:'Pink Aerochrome DIY',tags:['pale','yellow','gold','foliage','trees','leaves','aerochrome'],why:'DIY Aerochrome-style foliage. FIXED: was paired with GRB1 (=Schott KG2), but Lee 035\'s own note says it\'s meant for KG3 — GRB3 in this file\'s naming (Zeyuan Optics confirms GRB1=KG2, GRB3=KG3). Corrected pairing predicts pale yellow/gold at fairly low saturation (~0.26), not a confident pink — closer to a washed-out result than a strongly coloured one. A UV/IR forum contributor questioned the "pink" name on exactly these grounds, expecting more gray/white foliage; this model\'s own prediction leans the same direction, though it doesn\'t confidently resolve to neutral gray either.'},
+  'db850,lee441':{label:'Blue Trees (Hidden Realms)',tags:['blue','cyan','foliage','trees','leaves','grass'],why:'Deep-blue dichroic base — after a red/blue channel swap, IR-reflective foliage renders blue.'},
+  'db850,lee744':{label:'Blue Trees — Dirty White variant',tags:['blue','cyan','white','pale','foliage','trees','leaves','grass'],why:'Same blue-foliage principle, paler/whiter variant.'},
+  'tsn575,c80a,notch532,nf550':{label:'Black foliage (notch stack)',tags:['black','dark','foliage','trees','leaves','red','cyan','blue'],why:'Green-notch stack that reads as near-black foliage against red and cyan/blue elsewhere.'}
+};
+// order-independent lookup so auto-discovered pairs/triples that happen to
+// match a curated recipe (regardless of filter order) get skipped rather
+// than shown as a near-duplicate
+const RECIPE_KEY_SET=new Set(Object.keys(RECIPE_TAGS).map(k=>k.split(',').sort().join(',')));
+function canonKey(ids){return ids.slice().sort().join(',');}
+// Synonyms so "gold"→yellow, "trees"→foliage, etc. match without the user
+// having to guess the exact tag word. Applied to BOTH query words and
+// candidate tags, so each entry must map straight to the canonical form —
+// chains don't resolve (a lone shadow→dark entry would never reach 'black',
+// since lookup runs once, not recursively).
+const LOOK_SYNONYMS={
+  gold:'yellow',golden:'yellow',amber:'yellow',
+  violet:'purple',lilac:'purple',
+  magenta:'pink',fuchsia:'pink',rose:'pink',crimson:'red',scarlet:'red',
+  trees:'foliage',tree:'foliage',leaves:'foliage',leaf:'foliage',grass:'foliage',
+  plants:'foliage',plant:'foliage',greenery:'foliage',vegetation:'foliage',
+  nebula:'astro',nebulae:'astro',stars:'astro',stargazing:'astro',
+  dark:'black',shadow:'black',shadows:'black',shadowy:'black',silhouette:'black',
+  teal:'cyan',turquoise:'cyan',aqua:'cyan',
+  ir:'infrared',nir:'infrared',
+  ultraviolet:'uv'
+};
+function normLookWord(w){return LOOK_SYNONYMS[w]||w;}
+
+/* ---------- auto-derived tags, computed from the real transmission curves ----------
+   RECIPE_TAGS above is hand-curated for the 15 named combos, which caps what
+   "describe the look" can find at whatever I happened to write down. This
+   block instead classifies EVERY single filter in FILTERS by actually
+   sampling its own filterT() curve — same zone-splitting/dual-band/narrowband
+   logic already used by describeStack() above — so a search can surface
+   filters that were never manually tagged. Uses plain stackT (no sensor
+   factor), since this classifies the filter's own optics, not a particular
+   camera's rendering of it. Cached after first build; invalidated if the
+   glass-thickness slider changes, since that can shift absorptive edges. */
+let AUTO_CANDIDATES=null;
+function zoneAnalysis(fs,step){
+  step=step||1;
+  const samples=[];let pk=0;
+  for(let l=LMIN;l<=LMAX;l+=step){const t=stackT(l,fs);samples.push([l,t]);if(t>pk)pk=t;}
+  const seg=(a,b)=>{let m=0;for(const [l,t] of samples)if(l>=a&&l<=b&&t>m)m=t;return m;};
+  const uv=seg(LMIN,399),blue=seg(400,500),green=seg(500,570),red=seg(590,700),nir=seg(750,LMAX);
+  const vis=Math.max(blue,green,red);
+  let width=0,windows=0,inWin=false;
+  for(const [,t] of samples){
+    const on=t>=pk/2;
+    if(on){width+=step;if(!inWin){windows++;inWin=true;}}else inWin=false;
+  }
+  return {pk,uv,blue,green,red,vis,nir,windows,narrow:pk>0.05&&width<=30};
+}
+// coarse fingerprint of a curve's shape, for spotting near-duplicate
+// results (e.g. one UV glass paired with five interchangeable IR
+// blockers) — buckets each zone into sixths of the peak, so two stacks
+// with materially the same shape collapse to the same signature
+function sigOf(z){
+  const b=v=>Math.round(Math.min(1,v/(z.pk||1e-9))*6);
+  return [b(z.uv),b(z.blue),b(z.green),b(z.red),b(z.nir)].join('-');
+}
+/* shared hue/character decision, used for both single filters and pairs so
+   the two searches reason about a curve the same way */
+function classifyZones(z){
+  if(z.pk<0.03)return null;
+  const tags=[];const why=[];
+  const uvDominant=z.uv>z.pk*0.5&&z.nir<=z.pk*0.05&&z.vis<=z.uv*0.6;
+  const irOnly=z.nir>z.pk*0.5&&z.vis<=z.pk*0.15&&z.uv<=z.pk*0.15;
+  if(uvDominant){
+    tags.push('uv');why.push('passes UV with the rest blocked');
+  }else if(irOnly){
+    tags.push('infrared','nir');why.push('passes near-infrared with visible light blocked — a Wood-effect look');
+  }
+  if(z.narrow&&z.windows>1){tags.push('astro');why.push('narrowband, multiple isolated lines — built for astro, not daylight colour');}
+  return {tags,why};
+}
+
+/* ---------- predictive foliage model ----------
+   The old approach compared peak transmission in blue/green/red bands and
+   guessed a hue from whichever won. That's wrong in a specific way: it never
+   asked what foliage actually REFLECTS. A leaf returns only a few percent of
+   red light but well over half the near-infrared, so a big red passband
+   doesn't make foliage red; barely any red comes back off the leaf. Peak
+   transmission also ignores bandwidth entirely (a 5nm spike scored the same
+   as a 100nm window).
+
+   This instead predicts the actual pixel value:
+
+     channel response = SUM over wavelength of
+        filter(L) x canopyReflectance(L) x sensorChannelResponse(L,channel)
+
+   ...for foliage and again for a neutral grey card, uses the grey card to
+   derive white-balance gains (what a photographer sets off a grey card), and
+   applies them to the foliage response. Out comes the predicted RGB.
+
+   SOURCING (see individual notes below for detail):
+     - vegetation reflectance: anchored to the standard remote-sensing
+       signature as reviewed in Seager et al. 2005 (arXiv astro-ph/0503302),
+       drawing on Clark et al. 1993 (USGS Digital Spectral Library) and
+       Middleton & Sullivan 2000 (BOREAS TE-10, ORNL DAAC)
+     - canopy vs single-leaf correction: Knipling 1970, via the same review
+     - CFA response: representative CMOS Bayer shape, of the kind published in
+       camera-sensitivity sets such as Jiang et al. 2013
+     - silicon QE: generic envelope, the weakest-sourced element here
+
+   VALIDATION: two cases have unambiguous ground truth, and both come out
+   right from the same equations without special-casing — a normal camera's
+   IR-cut filter predicts green foliage (hue 87 degrees), and an 850nm filter
+   predicts near-neutral foliage roughly ten times brighter than normal, which
+   is the Wood effect.
+
+   REMAINING LIMITATIONS: assumes a flat illuminant rather than a real daylight
+   spectrum; ignores CFA crosstalk and lens transmission; uses one generic
+   silicon response rather than a measured body; and models a generic healthy
+   broadleaf canopy, where real spectra vary substantially by species, water
+   content and stress. Predicted hues are directional, not colorimetric, and
+   the absolute hue shifts with your white-balance reference. */
+
+/* Single-leaf reflectance for healthy green broadleaf foliage, piecewise-linear
+   anchors. Shape and magnitudes are set against the standard remote-sensing
+   vegetation signature as characterised in Seager et al. 2005 (arXiv
+   astro-ph/0503302), which reviews the canonical measured spectra: Clark et al.
+   1993, the USGS Digital Spectral Library (deciduous leaf), and Middleton &
+   Sullivan 2000, BOREAS TE-10 leaf optical properties (aspen), via the ORNL
+   DAAC. Anchored to three published constraints from that review:
+     - chlorophyll absorption minima near 450nm and 670-680nm (chlorophyll a
+       peaks ~430/662nm, chlorophyll b ~443/642nm), with the small green bump
+       between them that makes leaves look green
+     - the red edge is "a factor of five or more" rise around 700nm; this table
+       gives R(750)/R(700) = 5.2
+     - the NIR plateau is "greater than or approximately 50%" leaf reflectance;
+       this table sits at 0.50-0.55
+   TESTED AND REVERTED an alternative: CheeseCube312's Filter-Plotter-Data
+   project (see the sensor table below) also includes four real measured
+   single-leaf reflectance spectra. Swapping them in was tried directly, and
+   it broke the model's one unambiguous ground-truth check — a normal camera's
+   IR-cut filter stopped predicting green foliage (shifted to yellow, hue 66
+   instead of ~82-87 degrees) — traced specifically to the real data's much
+   shallower red-absorption dip around 650-680nm compared to this table\u2019s.
+   Isolated testing confirmed the leaf data was the cause, not the sensor
+   model swapped in alongside it (that one tested clean on its own). Real
+   spectrometer data run through this simplified linear model apparently
+   doesn't reproduce "photographs green" as reliably as this hand-anchored
+   table does — plausibly because a real camera's colour pipeline (daylight
+   illuminant, gamma, colour-matrix correction) does work this flat model
+   doesn't attempt, work this table may have implicitly been shaped around
+   even while citing real literature for its general shape. Kept as-is rather
+   than ship a change that fails a validated physical check; the real leaf
+   data remains available for a more careful future integration. Still a
+   representative broadleaf, not a measured species: real spectra vary
+   substantially with species, water content and stress (stress notably raises
+   reflectance near 700nm). */
+const LEAF_REFL=[[280,.025],[400,.04],[450,.045],[500,.075],[550,.15],[570,.14],
+  [600,.09],[650,.05],[670,.035],[680,.04],[700,.10],[720,.35],[750,.52],
+  [800,.55],[900,.55],[1000,.53],[1100,.50]];
+/* CANOPY correction. The single-leaf spectrum above is what a spectrometer
+   measures with one leaf in an integrating sphere — but a photographer never
+   shoots one leaf, they shoot a tree or a hedge, and a canopy behaves
+   measurably differently. Knipling 1970 (via Seager et al. 2005, arXiv
+   astro-ph/0503302) found canopy reflectance falls to roughly 40% of the
+   single-leaf value in the visible but only about 70% of it in the near-
+   infrared, because NIR passes through upper leaves, reflects off lower ones
+   and comes back up, while visible light is simply absorbed on first contact.
+   This still applies here — the correction is about canopy vs single-leaf
+   geometry, independent of which single-leaf spectrum feeds into it — now
+   applied to the single-leaf estimate above, independent of which specific
+   single-leaf spectrum feeds into it.
+   This matters a lot here: it does not just darken foliage evenly, it raises
+   the NIR-to-visible ratio by about 1.75x, which is precisely the contrast the
+   whole false-colour effect depends on. Modelling a single leaf instead of a
+   canopy understates every predicted colour shift. */
+const CANOPY_VIS=0.40, CANOPY_NIR=0.70;
+function canopyFactor(l){
+  if(l<=680)return CANOPY_VIS;
+  if(l>=750)return CANOPY_NIR;
+  return CANOPY_VIS+(CANOPY_NIR-CANOPY_VIS)*(l-680)/70; // blend across the red edge
+}
+function interpCurve(tbl,l){
+  if(l<=tbl[0][0])return tbl[0][1];
+  if(l>=tbl[tbl.length-1][0])return tbl[tbl.length-1][1];
+  for(let i=1;i<tbl.length;i++){
+    if(l<=tbl[i][0]){
+      const [x0,y0]=tbl[i-1],[x1,y1]=tbl[i];
+      return y0+(y1-y0)*(l-x0)/(x1-x0);
+    }
+  }
+  return 0;
+}
+function leafR(l){return interpCurve(LEAF_REFL,l)*canopyFactor(l);}
+/* Combined sensor response per channel (silicon QE × Bayer CFA dye, together),
+   REPLACED with real per-channel measured data — CheeseCube312's
+   Filter-Plotter-Data project (MIT-licensed) includes a generic CMOS sensor's
+   actual B/G/R response curve, 355-995nm at 5nm steps. This retires the
+   previous two-stage synthesis (a literature-estimated overall QE curve from
+   three papers, multiplied by a separately-estimated CFA dye shape) in favour
+   of one real measured combined curve — simpler and no longer compounding two
+   separate estimates' errors into each other. Checked against the old model
+   before switching: mostly close in the 500-950nm range (usually within
+   10-15 percentage points of each other, normalised to each curve's own
+   peak), but two real discrepancies stood out — the old model badly
+   undersold blue-channel response near 400nm (13% vs this real data's 61%,
+   normalised), and still had some residual red-channel leak into the green
+   peak around 550nm (22% vs 7% here) despite an earlier fix aimed at exactly
+   that problem. The source data only covers 355-995nm; outside that this
+   table tapers toward zero by 280nm and 1100nm, consistent with UV cover-
+   glass absorption and the silicon bandgap cutoff respectively — those two
+   tails remain extrapolation, not measurement, same caveat as before. */
+const SENSOR_CH_TABLE={
+  b:[[280,0],[355,0.0697],[370,0.1475],[385,0.2452],[400,0.3512],[415,0.4705],[430,0.545],[445,0.5695],[460,0.5614],[475,0.52],[490,0.4216],[505,0.3087],[520,0.1813],[535,0.1111],[550,0.0741],[565,0.0407],[580,0.0187],[595,0.01],[610,0.012],[625,0.0189],[640,0.0272],[655,0.0345],[670,0.0376],[685,0.0414],[700,0.0389],[715,0.0309],[730,0.0208],[745,0.0167],[760,0.0159],[780,0.0468],[800,0.1224],[825,0.1439],[850,0.1254],[875,0.1035],[900,0.0774],[925,0.0576],[950,0.041],[975,0.0245],[995,0.0184],[1050,0.008],[1100,0]],
+  g:[[280,0],[355,0.0],[370,0.0185],[385,0.026],[400,0.0368],[415,0.0336],[430,0.0295],[445,0.0403],[460,0.1106],[475,0.2536],[490,0.4102],[505,0.5758],[520,0.6162],[535,0.6402],[550,0.6455],[565,0.6115],[580,0.5289],[595,0.3951],[610,0.2574],[625,0.1498],[640,0.1055],[655,0.0837],[670,0.0778],[685,0.092],[700,0.1232],[715,0.1439],[730,0.1471],[745,0.1431],[760,0.1432],[780,0.1481],[800,0.1482],[825,0.1465],[850,0.1243],[875,0.103],[900,0.0814],[925,0.0627],[950,0.0463],[975,0.032],[995,0.0261],[1050,0.011],[1100,0]],
+  r:[[280,0],[355,0.0],[370,0.0163],[385,0.0318],[400,0.0458],[415,0.0445],[430,0.0345],[445,0.0218],[460,0.0151],[475,0.014],[490,0.0186],[505,0.0297],[520,0.0443],[535,0.0325],[550,0.0315],[565,0.1512],[580,0.2988],[595,0.4326],[610,0.4684],[625,0.4596],[640,0.4394],[655,0.4059],[670,0.3636],[685,0.3276],[700,0.2999],[715,0.28],[730,0.2655],[745,0.2534],[760,0.2386],[780,0.2099],[800,0.1754],[825,0.1491],[850,0.1236],[875,0.0938],[900,0.072],[925,0.0538],[950,0.0374],[975,0.0245],[995,0.0172],[1050,0.007],[1100,0]]
+};
+function channelQE(l,ch){return interpCurve(SENSOR_CH_TABLE[ch],l);}
+/* Predict what a green leaf renders as through this stack, plus what a neutral
+   grey card renders as (used for white balance). Returns null when so little
+   light gets through that any hue claim would be noise.
+
+   The leaf/CFA/QE weights don't depend on the filter stack, so they're
+   precomputed once per sampling step and reused — without this, the pair and
+   triple searches would redo six exponentials per wavelength per stack across
+   tens of thousands of stacks. */
+const FOLIAGE_W_CACHE={};
+function foliageWeights(step){
+  if(FOLIAGE_W_CACHE[step])return FOLIAGE_W_CACHE[step];
+  const ls=[],wl={r:[],g:[],b:[]},wg={r:[],g:[],b:[]};
+  for(let l=LMIN;l<=LMAX;l+=step){
+    ls.push(l);
+    const lr=leafR(l);
+    for(const ch of ['r','g','b']){
+      const s=channelQE(l,ch)*step;
+      wl[ch].push(s*lr);
+      wg[ch].push(s*0.18); // 18% neutral reference
+    }
+  }
+  return FOLIAGE_W_CACHE[step]={ls,wl,wg};
+}
+function predictFoliage(fs,step){
+  step=step||5;
+  const {ls,wl,wg}=foliageWeights(step);
+  let lr=0,lg=0,lb=0,gr=0,gg=0,gb=0;
+  for(let i=0;i<ls.length;i++){
+    const t=stackT(ls[i],fs);
+    if(t<=0)continue;
+    lr+=t*wl.r[i];lg+=t*wl.g[i];lb+=t*wl.b[i];
+    gr+=t*wg.r[i];gg+=t*wg.g[i];gb+=t*wg.b[i];
+  }
+  const gMax=Math.max(gr,gg,gb);
+  if(gMax<1e-6)return null; // effectively opaque
+  // white balance: scale each channel so the grey card comes out neutral,
+  // exactly as a photographer would when setting WB off a grey card. Gains are
+  // clamped because a channel with almost nothing in it would otherwise be
+  // amplified into dominating the result off pure numerical noise.
+  const gain={r:Math.min(40,gMax/(gr||1e-9)),g:Math.min(40,gMax/(gg||1e-9)),b:Math.min(40,gMax/(gb||1e-9))};
+  const rgb={r:lr*gain.r,g:lg*gain.g,b:lb*gain.b};
+  const mx=Math.max(rgb.r,rgb.g,rgb.b),mn=Math.min(rgb.r,rgb.g,rgb.b);
+  // lightness relative to an 18% grey card: 1.0 means foliage renders as
+  // bright as the card, well under 1 means it goes dark
+  const L=(rgb.r+rgb.g+rgb.b)/3/(gMax||1e-9);
+  const sat=mx>0?(mx-mn)/mx:0;
+  return {rgb,L,sat,hue:rgbHue(rgb)};
+}
+function rgbHue(c){
+  const mx=Math.max(c.r,c.g,c.b),mn=Math.min(c.r,c.g,c.b),d=mx-mn;
+  if(d<=0)return 0;
+  let h;
+  if(mx===c.r)h=((c.g-c.b)/d)%6;
+  else if(mx===c.g)h=(c.b-c.r)/d+2;
+  else h=(c.r-c.g)/d+4;
+  h*=60;return (h+360)%360;
+}
+function hueNames(h,sat){
+  if(sat<0.12)return ['neutral','grey'];
+  if(h<15||h>=345)return ['red'];
+  if(h<45)return ['orange'];
+  if(h<70)return ['yellow','gold'];
+  if(h<165)return ['green'];
+  if(h<195)return ['cyan'];
+  if(h<265)return ['blue'];
+  if(h<295)return ['purple','violet'];
+  return ['magenta','pink'];
+}
+/* Full classification of a stack: optical character (UV/IR/astro) from the
+   raw curve, plus the predicted foliage colour both as-captured and after the
+   red/blue channel swap most people apply. Both are tagged, because someone
+   searching "blue foliage" means the FINAL image, which for most of these
+   recipes is the swapped version. */
+/* Reference point for "how dark is dark". Rather than hard-coding an absolute
+   lightness threshold — which silently goes wrong the moment the reflectance
+   or sensor model is revised — this measures what the SAME foliage does
+   through a normal camera's IR-cut filter, and expresses everything relative
+   to that. So "dark" means dark compared to an ordinary photograph of the same
+   bush, which is what a photographer actually means. Computed lazily on first
+   use and cached. */
+let FOLIAGE_BASELINE=null;
+function foliageBaseline(){
+  if(FOLIAGE_BASELINE==null){
+    const ref=FILTERS.find(f=>f.id==='stockir');
+    const p=ref?predictFoliage([ref],2):null;
+    FOLIAGE_BASELINE=(p&&p.L>0)?p.L:0.21;
+  }
+  return FOLIAGE_BASELINE;
+}
+function classifyStack(fs,step){
+  step=step||5;
+  const z=zoneAnalysis(fs,step);
+  if(z.pk<0.03)return null;
+  const base=classifyZones(z)||{tags:[],why:[]};
+  const p=predictFoliage(fs,step);
+  const tags=[...base.tags],why=[...base.why];
+  let swatch=null,swatchSwapped=null,L=0;
+  // Below 400nm the leaf-reflectance figures are the weakest part of this
+  // model (UV leaf data is scarce and varies hugely by species and leaf
+  // surface), so a UV-pass stack gets no colour claim at all rather than a
+  // confident-sounding hue derived from the least trustworthy numbers.
+  const uvOnly=base.tags.includes('uv');
+  if(p&&!uvOnly){
+    L=p.L;
+    const swapped={r:p.rgb.b,g:p.rgb.g,b:p.rgb.r};
+    const sHue=rgbHue(swapped),sMx=Math.max(swapped.r,swapped.g,swapped.b),
+          sMn=Math.min(swapped.r,swapped.g,swapped.b);
+    const sSat=sMx>0?(sMx-sMn)/sMx:0;
+    const pct=(p.L*100).toFixed(0);
+    const base=foliageBaseline();
+    const rel=p.L/base;                       // 1.0 = as bright as a normal photo
+    const relTxt=rel.toFixed(1)+'x a normal photo of the same foliage';
+    if(rel>4&&p.sat<0.15){
+      tags.push('white','bright','glow');
+      why.push('foliage is predicted to render far brighter than normal and near-neutral ('+relTxt+
+        ') — the Wood effect, where leaves glow white because they reflect most of the near-infrared');
+    }else if(rel<0.55){
+      tags.push('black','dark');
+      why.push('foliage is predicted to render dark \u2014 '+relTxt);
+    }else{
+      const asShot=hueNames(p.hue,p.sat),afterSwap=hueNames(sHue,sSat);
+      asShot.forEach(t=>{if(!tags.includes(t))tags.push(t);});
+      afterSwap.forEach(t=>{if(!tags.includes(t))tags.push(t);});
+      if(rel>2.5)tags.push('bright');
+      why.push('predicted foliage: '+asShot[0]+' as shot, '+afterSwap[0]+
+        ' with red and blue swapped, at '+relTxt);
+    }
+    if(!tags.includes('foliage'))tags.push('foliage');
+    const mxc=Math.max(p.rgb.r,p.rgb.g,p.rgb.b)||1e-9;
+    const to255=c=>Math.max(0,Math.min(255,Math.round(c/mxc*255*Math.min(1,Math.max(0.12,p.L*0.9)))));
+    swatch='rgb('+to255(p.rgb.r)+','+to255(p.rgb.g)+','+to255(p.rgb.b)+')';
+    swatchSwapped='rgb('+to255(p.rgb.b)+','+to255(p.rgb.g)+','+to255(p.rgb.r)+')';
+  }
+  if(!tags.length)return null;
+  return {tags,why,swatch,swatchSwapped,foliageL:L,pk:z.pk,sig:sigOf(z),
+    hue:p?p.hue:null,sat:p?p.sat:0,hueSw:p?rgbHue({r:p.rgb.b,g:p.rgb.g,b:p.rgb.r}):null};
+}
+/* Canonical hue angles for colour words, used to rank how convincingly a
+   result actually IS the colour asked for — tag matching alone treats a
+   barely-tinted stack the same as a saturated one, which is how a stock
+   IR-cut filter ended up answering "blue foliage" (green as shot, faintly
+   cyan once swapped, technically tagged blue). */
+const COLOUR_HUE={red:0,orange:30,yellow:55,green:110,cyan:180,blue:225,purple:270,pink:315,magenta:315};
+function hueDist(a,b){const d=Math.abs(a-b)%360;return d>180?360-d:d;}
+/* 0..1 quality score for how well a candidate matches the requested look.
+   Colour queries score on predicted hue proximity weighted by saturation;
+   black/white queries score on predicted lightness instead. */
+function lookQuality(r,words){
+  let best=0,any=false;
+  words.forEach(w=>{
+    if(w==='black'){any=true;best=Math.max(best,r.foliageL!=null?Math.max(0,1-r.foliageL/0.45):0);}
+    else if(w==='white'||w==='bright'||w==='glow'){any=true;best=Math.max(best,r.foliageL!=null?Math.min(1,r.foliageL/2.5):0);}
+    else if(COLOUR_HUE[w]!=null&&r.hue!=null){
+      any=true;
+      const target=COLOUR_HUE[w];
+      // a stack can be used either straight or with red/blue swapped, so credit
+      // whichever orientation lands closer to what was asked for
+      const d=Math.min(hueDist(r.hue,target),r.hueSw!=null?hueDist(r.hueSw,target):999);
+      const prox=Math.max(0,1-d/90);            // full credit within ~0°, none past 90°
+      best=Math.max(best,prox*(0.35+0.65*Math.min(1,(r.sat||0)/0.4)));
+    }
+  });
+  return any?best:0.5; // no colour/tone word in the query — don't bias ranking
+}
+/* ---------- auto-derived tags, computed from the real transmission curves ----------
+   RECIPE_TAGS above is hand-curated for the 15 named combos, which caps what
+   "describe the look" can find at whatever I happened to write down. This
+   block instead classifies EVERY single filter in FILTERS by running its real
+   curve through the predictive foliage model above, so a search can surface
+   filters that were never manually tagged. Cached after first build;
+   invalidated if the glass-thickness slider changes, since that can shift
+   absorptive edges. */
+function buildAutoCandidates(){
+  if(AUTO_CANDIDATES)return AUTO_CANDIDATES;
+  AUTO_CANDIDATES=[];
+  FILTERS.forEach(f=>{
+    const c=classifyStack([f]);
+    if(!c)return;
+    AUTO_CANDIDATES.push({stack:f.id,label:f.n+' (predicted)',tags:c.tags,
+      why:'From its own curve: '+c.why.join('; ')+'.',
+      pk:c.pk,sig:c.sig,swatch:c.swatch,swatchSwapped:c.swatchSwapped,foliageL:c.foliageL,
+      hue:c.hue,sat:c.sat,hueSw:c.hueSw});
+  });
+  return AUTO_CANDIDATES;
+}
+/* ---------- auto-derived PAIR candidates ----------
+   Same idea, but for every two-filter combination — ~130 filters means
+   ~8,400 pairs, too many to sample at 1nm resolution synchronously without
+   janking the page. Two-stage funnel instead: a fast coarse pass (20nm
+   steps) rejects pairs that clearly cancel each other out (a UV-pass glass
+   stacked with an IR blocker that also happens to kill the UV, for
+   instance — same "these cancel out" case already flagged elsewhere), then
+   a finer pass (5nm) classifies only the survivors. Triples aren't
+   attempted — the combinatorics (~370,000) aren't worth it for a
+   synchronous in-browser search, and two filters already covers the
+   overwhelming majority of real stacking practice in this database's own
+   "Known recipes". Doesn't de-duplicate near-identical results (e.g. one
+   UV glass paired with several IR blockers that behave almost the same) —
+   worth knowing if a result list looks repetitive. */
+let AUTO_PAIR_CANDIDATES=null;
+function buildAutoPairCandidates(){
+  if(AUTO_PAIR_CANDIDATES)return AUTO_PAIR_CANDIDATES;
+  AUTO_PAIR_CANDIDATES=[];
+  const n=FILTERS.length;
+  const survivors=[];
+  for(let i=0;i<n;i++){
+    for(let j=i+1;j<n;j++){
+      const z=zoneAnalysis([FILTERS[i],FILTERS[j]],20);
+      if(z.pk>0.05)survivors.push([i,j]);
+    }
+  }
+  survivors.forEach(([i,j])=>{
+    const fi=FILTERS[i],fj=FILTERS[j];
+    if(RECIPE_KEY_SET.has(canonKey([fi.id,fj.id])))return; // already a named recipe
+    const c=classifyStack([fi,fj],10);
+    if(!c)return;
+    AUTO_PAIR_CANDIDATES.push({stack:fi.id+','+fj.id,label:fi.n+' + '+fj.n+' (predicted)',tags:c.tags,
+      why:'From the combined stack: '+c.why.join('; ')+'.',
+      pk:c.pk,sig:c.sig,swatch:c.swatch,swatchSwapped:c.swatchSwapped,foliageL:c.foliageL,
+      hue:c.hue,sat:c.sat,hueSw:c.hueSw});
+  });
+  return AUTO_PAIR_CANDIDATES;
+}
+/* ---------- auto-derived TRIPLE candidates, via beam search ----------
+   Full 3-filter search is ~370,000 combinations — too slow synchronously.
+   Instead: take the highest-throughput pairs that already predict a usable
+   foliage rendering, then try adding a third filter to each of those only.
+   This is how the real "Black foliage" recipe was actually built by hand
+   (start from a working pair, add one more piece) — the beam just automates
+   that search instead of exploring the full cube of combinations blind. */
+let AUTO_TRIPLE_CANDIDATES=null;
+const TRIPLE_BEAM_SIZE=50;
+function buildAutoTripleCandidates(){
+  if(AUTO_TRIPLE_CANDIDATES)return AUTO_TRIPLE_CANDIDATES;
+  AUTO_TRIPLE_CANDIDATES=[];
+  const beam=buildAutoPairCandidates()
+    .filter(p=>p.tags.includes('foliage'))
+    .sort((a,b)=>b.pk-a.pk)
+    .slice(0,TRIPLE_BEAM_SIZE)
+    .map(p=>({ids:p.stack.split(','),fs:p.stack.split(',').map(id=>FILTERS.find(f=>f.id===id))}));
+  const seen=new Set();
+  beam.forEach(({ids,fs})=>{
+    FILTERS.forEach(f3=>{
+      if(ids.includes(f3.id))return;
+      const key=canonKey([...ids,f3.id]);
+      if(seen.has(key)||RECIPE_KEY_SET.has(key))return;
+      const fs3=[...fs,f3];
+      const zc=zoneAnalysis(fs3,20);
+      if(zc.pk<0.05)return; // coarse cancel-out check first, cheap
+      seen.add(key);
+      const c=classifyStack(fs3,10);
+      if(!c)return;
+      AUTO_TRIPLE_CANDIDATES.push({stack:key,label:fs3.map(f=>f.n).join(' + ')+' (predicted)',tags:c.tags,
+        why:'From the combined stack: '+c.why.join('; ')+'.',
+        pk:c.pk,sig:c.sig,swatch:c.swatch,swatchSwapped:c.swatchSwapped,foliageL:c.foliageL,
+        hue:c.hue,sat:c.sat,hueSw:c.hueSw});
+    });
+  });
+  return AUTO_TRIPLE_CANDIDATES;
+}
+
+let RECIPE_Z_CACHE=null;
+function curatedCandidates(){
+  if(!RECIPE_Z_CACHE){
+    RECIPE_Z_CACHE={};
+    Object.keys(RECIPE_TAGS).forEach(stack=>{
+      const fs=stack.split(',').map(id=>FILTERS.find(f=>f.id===id)).filter(Boolean);
+      const c=classifyStack(fs);
+      const z=zoneAnalysis(fs,2);
+      RECIPE_Z_CACHE[stack]=c?{pk:c.pk,sig:c.sig,swatch:c.swatch,swatchSwapped:c.swatchSwapped,
+                               foliageL:c.foliageL,hue:c.hue,sat:c.sat,hueSw:c.hueSw}
+                             :{pk:z.pk,sig:sigOf(z),swatch:null,swatchSwapped:null,
+                               foliageL:null,hue:null,sat:0,hueSw:null};
+    });
+  }
+  return Object.entries(RECIPE_TAGS).map(([stack,r])=>Object.assign(
+    {stack,label:r.label,tags:r.tags,why:r.why,curated:true},RECIPE_Z_CACHE[stack]));
+}
+function suggestLook(){
+  const raw=($('lookQuery').value||'').toLowerCase().trim();
+  const out=$('lookResults');
+  if(!raw){out.innerHTML='<div class="note">Type a word or two first — try a colour and a subject, like "pink foliage" or "black shadows".</div>';return;}
+  out.innerHTML='<div class="note">Searching single filters, two-filter, and three-filter combinations…</div>';
+  // let the "searching" note actually paint before the heavier search
+  // (only slow the first time — all candidate lists are cached after that)
+  setTimeout(()=>{
+    const words=raw.split(/[^a-z]+/).filter(Boolean).map(normLookWord);
+    const candidates=[
+      ...curatedCandidates(),
+      ...buildAutoCandidates(),
+      ...buildAutoPairCandidates(),
+      ...buildAutoTripleCandidates()
+    ];
+    const scored=candidates.map(r=>{
+      const tagSet=r.tags.map(normLookWord);
+      const score=words.filter(w=>tagSet.includes(w)).length;
+      return {stack:r.stack,r,score};
+    }).filter(s=>s.score>0).sort((a,b)=>b.score-a.score); // stable sort: ties keep curated-first insertion order
+    if(!scored.length){
+      out.innerHTML='<div class="note">No close match anywhere in the database — try simpler colour/subject words (blue, pink, gold, black, foliage, sky, UV, astro).</div>';
+      return;
+    }
+    const tied=scored.filter(s=>s.score===scored[0].score);
+    // drop near-duplicate shapes (e.g. one UV glass paired with five
+    // interchangeable IR blockers) — first occurrence wins, and curated
+    // recipes were inserted first so they take priority over an auto find
+    // with the same signature
+    const seenSig=new Set();
+    const deduped=tied.filter(s=>{
+      if(seenSig.has(s.r.sig))return false;
+      seenSig.add(s.r.sig);return true;
+    });
+    // curated recipes are hand-verified — a real person actually shot this
+    // and it works. An auto-discovered combo is just a curve that computes
+    // the right shape; it might genuinely be untested or impractical (an
+    // odd mount, a filter nobody stocks). So curated matches show first,
+    // THEN the rest — but ordered by how convincingly the model predicts the
+    // colour that was actually asked for, with throughput only as a
+    // tie-breaker. Ranking auto results on throughput alone let a stock
+    // IR-cut filter answer "blue foliage" purely because it passes lots of
+    // light and happened to carry a faint blue tag.
+    deduped.forEach(s=>{s.q=lookQuality(s.r,words);});
+    deduped.sort((a,b)=>{
+      if(a.r.curated!==b.r.curated)return a.r.curated?-1:1;
+      if(Math.abs(b.q-a.q)>0.04)return b.q-a.q;
+      return b.r.pk-a.r.pk;
+    });
+    // cap curated at 3 rather than letting it fill all 6 slots — the whole
+    // point of the auto search is to surface combinations that were never
+    // written up as a recipe, so it needs actual room to show
+    const curatedTop=deduped.filter(s=>s.r.curated).slice(0,3);
+    const autoTop=deduped.filter(s=>!s.r.curated).slice(0,6-curatedTop.length);
+    const top=[...curatedTop,...autoTop];
+    out.innerHTML='';
+    top.forEach(({stack,r})=>{
+      const div=document.createElement('div');
+      div.style.cssText='margin-bottom:8px;padding:8px 10px;border:1px solid var(--line2);border-radius:3px';
+      let sw='';
+      if(r.swatch){
+        const chip=(c,lbl)=>'<span style="display:inline-flex;align-items:center;gap:5px;margin-right:12px">'+
+          '<span style="width:15px;height:15px;border-radius:2px;border:1px solid var(--line2);background:'+c+';display:inline-block"></span>'+
+          '<span style="font-size:10.5px;color:var(--muted)">'+lbl+'</span></span>';
+        sw='<div style="margin:5px 0 3px">'+chip(r.swatch,'as shot')+chip(r.swatchSwapped,'R↔B swapped')+'</div>';
+      }
+      div.innerHTML='<button class="rec" style="margin:0 0 4px 0">'+r.label+'</button>'+sw+
+        '<div class="note" style="margin-top:2px">'+r.why+' Peak throughput '+(r.pk*100).toFixed(0)+'%.</div>';
+      div.querySelector('button').addEventListener('click',()=>setSelection(stack.split(',')));
+      out.appendChild(div);
+    });
+  },10);
+}
+$('lookSuggest').addEventListener('click',suggestLook);
+$('lookQuery').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();suggestLook();}});
+
+/* ---------- chart ---------- */
+function lamToX(l,W,pad){return pad.l+(l-LMIN)/(LMAX-LMIN)*(W-pad.l-pad.r);}
+// y mapping honours the log toggle. Log runs 1e-5..1 so a 0.01% leak is still
+// on the chart instead of being flattened onto the axis by a linear scale.
+const LOG_MIN=1e-5;
+function isLog(){const el=$('logScale');return !!(el&&el.checked);}
+function tToY(t,H,pad){
+  if(!isLog())return H-pad.b-t*(H-pad.t-pad.b);
+  const v=Math.max(t,LOG_MIN);
+  const frac=(Math.log10(v)-Math.log10(LOG_MIN))/(0-Math.log10(LOG_MIN));
+  return H-pad.b-frac*(H-pad.t-pad.b);
+}
+
+// approximate visible wavelength -> RGB, for the spectrum strip and region tint
+function lamRGB(l){
+  let r=0,g=0,b=0;
+  if(l>=380&&l<440){r=-(l-440)/60;b=1;}
+  else if(l<490){g=(l-440)/50;b=1;}
+  else if(l<510){g=1;b=-(l-510)/20;}
+  else if(l<580){r=(l-510)/70;g=1;}
+  else if(l<645){r=1;g=-(l-645)/65;}
+  else if(l<=780){r=1;}
+  let f=1;
+  if(l<420&&l>=380)f=.3+.7*(l-380)/40;
+  else if(l>700&&l<=780)f=.3+.7*(780-l)/80;
+  else if(l<380||l>780)f=0;
+  return [Math.round(255*Math.pow(r*f,.8)),Math.round(255*Math.pow(g*f,.8)),Math.round(255*Math.pow(b*f,.8))];
+}
+
+function draw(){
+  const cv=$('chart'),rect=cv.getBoundingClientRect(),dpr=window.devicePixelRatio||1;
+  const W=Math.max(1,Math.round(rect.width*dpr)),H=Math.max(1,Math.round(rect.height*dpr));
+  if(cv.width!==W||cv.height!==H){cv.width=W;cv.height=H;}
+  const cx=cv.getContext('2d');
+  cx.clearRect(0,0,W,H);
+  const pad={l:52*dpr,r:12*dpr,t:14*dpr,b:38*dpr};
+
+  // region tints: UV / visible / NIR
+  const uvX0=lamToX(LMIN,W,pad),uvX1=lamToX(400,W,pad),visX1=lamToX(700,W,pad),nirX1=lamToX(LMAX,W,pad);
+  cx.fillStyle='rgba(143,122,214,.06)';cx.fillRect(uvX0,pad.t,uvX1-uvX0,H-pad.t-pad.b);
+  cx.fillStyle='rgba(237,226,206,.04)';cx.fillRect(uvX1,pad.t,visX1-uvX1,H-pad.t-pad.b);
+  cx.fillStyle='rgba(194,67,27,.06)';cx.fillRect(visX1,pad.t,nirX1-visX1,H-pad.t-pad.b);
+
+  // grid
+  cx.strokeStyle='rgba(84,64,42,.55)';cx.lineWidth=1*dpr;
+  cx.font=(9.5*dpr)+'px "JetBrains Mono",monospace';cx.fillStyle='#7a6a52';
+  if(isLog()){
+    const decades=[1,0.1,0.01,0.001,0.0001,0.00001];
+    decades.forEach(t=>{
+      const y=Math.round(tToY(t,H,pad))+.5;
+      cx.beginPath();cx.moveTo(pad.l,y);cx.lineTo(W-pad.r,y);cx.stroke();
+      cx.textAlign='right';cx.textBaseline='middle';
+      cx.fillText(t>=0.01?(t*100)+'%':(t*100).toExponential(0)+'%',pad.l-6*dpr,y);
+    });
+    // minor ticks at the 5x and 2x points within each decade — short marks on
+    // the axis edge only, unlabeled, so the scale reads finer without clutter
+    cx.strokeStyle='rgba(84,64,42,.35)';cx.lineWidth=0.75*dpr;
+    decades.slice(1).forEach((t,i)=>{
+      const above=decades[i];
+      [5,2].forEach(mult=>{
+        const v=t*mult;if(v>=above)return;
+        const y=Math.round(tToY(v,H,pad))+.5;
+        cx.beginPath();cx.moveTo(pad.l,y);cx.lineTo(pad.l+5*dpr,y);cx.stroke();
+        cx.beginPath();cx.moveTo(W-pad.r-5*dpr,y);cx.lineTo(W-pad.r,y);cx.stroke();
+      });
+    });
+    cx.strokeStyle='rgba(84,64,42,.55)';cx.lineWidth=1*dpr;
+  }else{
+    for(let t=0;t<=1.0001;t+=0.25){
+      const y=Math.round(tToY(t,H,pad))+.5;
+      cx.beginPath();cx.moveTo(pad.l,y);cx.lineTo(W-pad.r,y);cx.stroke();
+      cx.textAlign='right';cx.textBaseline='middle';
+      cx.fillText(Math.round(t*100)+'%',pad.l-6*dpr,y);
+    }
+    // minor ticks every 5% — short marks on the axis edges, unlabeled
+    cx.strokeStyle='rgba(84,64,42,.35)';cx.lineWidth=0.75*dpr;
+    for(let t=0.05;t<1.0001;t+=0.05){
+      if(Math.abs((t*100)%25)<0.01)continue; // skip where a major line already is
+      const y=Math.round(tToY(t,H,pad))+.5;
+      cx.beginPath();cx.moveTo(pad.l,y);cx.lineTo(pad.l+5*dpr,y);cx.stroke();
+      cx.beginPath();cx.moveTo(W-pad.r-5*dpr,y);cx.lineTo(W-pad.r,y);cx.stroke();
+    }
+    cx.strokeStyle='rgba(84,64,42,.55)';cx.lineWidth=1*dpr;
+  }
+  for(let l=300;l<=1100;l+=100){
+    const x=Math.round(lamToX(l,W,pad))+.5;
+    cx.beginPath();cx.moveTo(x,pad.t);cx.lineTo(x,H-pad.b);cx.stroke();
+    cx.textAlign='center';cx.textBaseline='top';
+    cx.fillText(l,x,H-pad.b+6*dpr);
+  }
+  // minor wavelength ticks every 25nm — short marks along the bottom edge
+  cx.strokeStyle='rgba(84,64,42,.35)';cx.lineWidth=0.75*dpr;
+  for(let l=LMIN;l<=LMAX;l+=25){
+    if(l%100===0)continue; // skip where a major line already is
+    const x=Math.round(lamToX(l,W,pad))+.5;
+    cx.beginPath();cx.moveTo(x,H-pad.b-5*dpr);cx.lineTo(x,H-pad.b);cx.stroke();
+    cx.beginPath();cx.moveTo(x,pad.t);cx.lineTo(x,pad.t+5*dpr);cx.stroke();
+  }
+  cx.strokeStyle='rgba(84,64,42,.55)';cx.lineWidth=1*dpr;
+
+  // axis titles
+  cx.font=(10*dpr)+'px "Barlow Condensed",sans-serif';cx.fillStyle='#a89372';
+  cx.textAlign='center';cx.textBaseline='alphabetic';
+  cx.fillText('WAVELENGTH (nm)',pad.l+(W-pad.l-pad.r)/2,H-4*dpr);
+  cx.save();
+  cx.translate(11*dpr,pad.t+(H-pad.t-pad.b)/2);
+  cx.rotate(-Math.PI/2);
+  cx.textAlign='center';cx.textBaseline='alphabetic';
+  cx.fillText(isLog()?'TRANSMISSION (log %)':'TRANSMISSION (%)',0,0);
+  cx.restore();
+
+  // region labels
+  cx.textBaseline='top';cx.textAlign='center';cx.fillStyle='rgba(168,147,114,.75)';
+  cx.fillText('UV',(uvX0+uvX1)/2,pad.t+3*dpr);
+  cx.fillText('VISIBLE',(uvX1+visX1)/2,pad.t+3*dpr);
+  cx.fillText('NIR',(visX1+nirX1)/2,pad.t+3*dpr);
+
+  const fs=selected.map(id=>FILTERS.find(f=>f.id===id)).filter(Boolean);
+
+  // individual curves (thin) — one line per unique filter, even if stacked more than once
+  if(fs.length>1){
+    dedupe(fs).forEach(({f})=>{
+      cx.beginPath();
+      for(let px=0;px<=(W-pad.l-pad.r);px++){
+        const l=LMIN+(px/(W-pad.l-pad.r))*(LMAX-LMIN);
+        const x=pad.l+px,y=tToY(filterT(l,f),H,pad);
+        px?cx.lineTo(x,y):cx.moveTo(x,y);
+      }
+      cx.strokeStyle=f.c;cx.lineWidth=1.2*dpr;cx.globalAlpha=.55;cx.stroke();cx.globalAlpha=1;
+    });
+  }
+
+  // stacked result (thick, filled)
+  if(fs.length){
+    cx.beginPath();
+    cx.moveTo(pad.l,H-pad.b);
+    for(let px=0;px<=(W-pad.l-pad.r);px++){
+      const l=LMIN+(px/(W-pad.l-pad.r))*(LMAX-LMIN);
+      cx.lineTo(pad.l+px,tToY(systemT(l,fs),H,pad));
+    }
+    cx.lineTo(W-pad.r,H-pad.b);cx.closePath();
+    cx.fillStyle=fs.length>1?'rgba(194,67,27,.22)':'rgba(111,171,150,.18)';cx.fill();
+    cx.beginPath();
+    for(let px=0;px<=(W-pad.l-pad.r);px++){
+      const l=LMIN+(px/(W-pad.l-pad.r))*(LMAX-LMIN);
+      const x=pad.l+px,y=tToY(systemT(l,fs),H,pad);
+      px?cx.lineTo(x,y):cx.moveTo(x,y);
+    }
+    cx.strokeStyle=fs.length>1?'#c2431b':fs[0].c;cx.lineWidth=2.2*dpr;cx.stroke();
+  }else{
+    cx.fillStyle='#7a6a52';cx.textAlign='center';cx.textBaseline='middle';
+    cx.font=(12*dpr)+'px system-ui,sans-serif';
+    cx.fillText('Select one or more filters below',W/2,H/2);
+  }
+
+  drawStrip();
+  updateLegend(fs);
+  updateReadout(fs);
+  $('stackSummary').textContent=summarise(fs);
+  renderBehaviour(fs);
+}
+
+function drawStrip(){
+  const cv=$('specStrip'),rect=cv.getBoundingClientRect(),dpr=window.devicePixelRatio||1;
+  const W=Math.max(1,Math.round(rect.width*dpr)),H=Math.max(1,Math.round(rect.height*dpr));
+  if(cv.width!==W||cv.height!==H){cv.width=W;cv.height=H;}
+  const cx=cv.getContext('2d');
+  const pad={l:44*dpr,r:12*dpr};
+  cx.clearRect(0,0,W,H);
+  cx.fillStyle='#0a0603';cx.fillRect(0,0,W,H);
+  const span=W-pad.l-pad.r;
+  for(let px=0;px<span;px++){
+    const l=LMIN+(px/span)*(LMAX-LMIN);
+    const [r,g,b]=lamRGB(l);
+    if(r||g||b){cx.fillStyle='rgb('+r+','+g+','+b+')';cx.fillRect(pad.l+px,0,1.5,H);}
+  }
+}
+
+function updateLegend(fs){
+  const el=$('legend');el.innerHTML='';
+  if(fs.length>1){
+    dedupe(fs).forEach(({f,n})=>{
+      const d=document.createElement('span');d.className='lg';
+      d.innerHTML='<i style="background:'+f.c+';opacity:.6"></i>'+f.n+(n>1?' ×'+n:'');
+      el.appendChild(d);
+    });
+    const d=document.createElement('span');d.className='lg';
+    d.innerHTML='<i style="background:#c2431b;height:4px"></i><b style="color:var(--paper)">Stacked result</b>';
+    el.appendChild(d);
+  }
+  $('stackName').textContent=fs.length?dedupe(fs).map(({f,n})=>f.n+(n>1?' ×'+n:'')).join('  +  '):'nothing selected';
+}
+
+function updateReadout(fs){
+  const el=$('readout'),warn=$('leakWarn');
+  el.innerHTML='';warn.style.display='none';warn.className='warnbox';
+  if(!fs.length)return;
+
+  // sample the stack at 1nm
+  let peak=0,peakL=LMIN;
+  const T=[];
+  for(let l=LMIN;l<=LMAX;l++){
+    const t=systemT(l,fs);T.push(t);
+    if(t>peak){peak=t;peakL=l;}
+  }
+  // half-maximum edges around the peak
+  const half=peak/2;
+  let lo=peakL,hi=peakL;
+  const idx=l=>l-LMIN;
+  while(lo>LMIN&&T[idx(lo)]>half)lo--;
+  while(hi<LMAX&&T[idx(hi)]>half)hi++;
+
+  // NIR leak: any meaningful transmission beyond 750nm relative to the peak
+  let nirMax=0,nirL=0;
+  for(let l=750;l<=LMAX;l++){if(T[idx(l)]>nirMax){nirMax=T[idx(l)];nirL=l;}}
+  const nirRel=peak>0?nirMax/peak:0;
+
+  // visible leak, for UV work
+  let visMax=0;
+  for(let l=430;l<=700;l++)visMax=Math.max(visMax,T[idx(l)]);
+  const visRel=peak>0?visMax/peak:0;
+
+  const card=(k,v,cls)=>{
+    const d=document.createElement('div');d.className='ro'+(cls?' '+cls:'');
+    d.innerHTML='<div class="k">'+k+'</div><div class="v">'+v+'</div>';el.appendChild(d);
+  };
+  card('Peak transmission',(peak*100).toFixed(1)+'%');
+  card('Peak wavelength',peakL+' nm');
+  card('Passband (FWHM)',peak>0.005?lo+'–'+hi+' nm':'—');
+  card('NIR leak (>750nm)',(nirRel*100).toFixed(nirRel<0.01?2:1)+'%',
+       nirRel>0.15?'bad':nirRel>0.02?'warn':'');
+
+  const hasUVpass=fs.some(f=>f.g==='UV-pass');
+  const hasBlocker=fs.some(f=>f.g==='IR blocker');
+  const isColour=fs.some(f=>f.g==='Colour'||f.g==='Conv');
+  // visible-band peak, to detect the colour+IR dual band that makes faux colour
+  let visPk=0;for(let l=400;l<=700;l++)visPk=Math.max(visPk,T[idx(l)]);
+  const dualBand=visPk>0.1&&nirMax>0.1;
+
+  if(hasUVpass&&nirRel>0.15){
+    warn.style.display='block';warn.className='warnbox';
+    warn.innerHTML='<b>Strong NIR leak — this is a problem here.</b> The stack passes '+(nirRel*100).toFixed(0)+
+      '% of its peak out at '+nirL+'nm. Absorptive UV glass is transparent to deep infrared, which is why '+
+      'UV-pass filters look red held up to a lamp and why photos come out red-contaminated. '+
+      'Add an IR blocker (TSN575, S8612, BG38) to cut it.';
+  }else if(isColour&&dualBand&&!hasBlocker){
+    warn.style.display='block';warn.className='warnbox info';
+    warn.innerHTML='<b>Colour + IR dual band — this is the faux-colour effect.</b> On a normal camera this '+
+      'filter is just a colour filter. On a full-spectrum body the dye goes transparent past about 700nm, so '+
+      'the sensor receives its visible band <i>and</i> infrared at the same time, landing in different channels. '+
+      'That mix is what produces in-camera false colour — a deep blue Wratten 47 used this way is documented as '+
+      'giving a 590nm-Goldie-like result straight out of camera, no channel swap needed. '+
+      'Add an IR blocker if you want the filter to behave normally instead.';
+  }else if(nirRel>0.15&&!hasBlocker&&!fs.some(f=>f.g==='IR-pass'||f.g==='Branded')){
+    warn.style.display='block';warn.className='warnbox';
+    warn.innerHTML='<b>NIR leak.</b> This passes '+(nirRel*100).toFixed(0)+'% of its peak at '+nirL+
+      'nm. Whether that is a fault or the whole point depends on what you are shooting for.';
+  }else if(peak>0.01&&visRel>0.25&&hasUVpass){
+    warn.style.display='block';warn.className='warnbox';
+    warn.innerHTML='<b>Visible-light leak.</b> This stack still passes '+(visRel*100).toFixed(0)+
+      '% of its peak in the visible band, so results will mix real colour with the UV signal. '+
+      'That can be a look rather than a fault — it is roughly why ZWB3 stacks give those surprising false colours.';
+  }
+}
+
+$('logScale').addEventListener('change',draw);
+$('cameraBrand').addEventListener('change',()=>{cameraBrand=$('cameraBrand').value;draw();});
+$('thick').addEventListener('input',()=>{
+  const v=+$('thick').value/100;
+  thicknessScale=v;
+  $('thickVal').textContent=Math.abs(v-1)<0.005?'as specified':(v).toFixed(2)+'× ref';
+  AUTO_CANDIDATES=null;AUTO_PAIR_CANDIDATES=null;AUTO_TRIPLE_CANDIDATES=null;RECIPE_Z_CACHE=null;FOLIAGE_BASELINE=null; // thickness can shift absorptive edges — force recompute
+  draw();
+});
+window.addEventListener('resize',draw);
+
+/* describe what the COMBINED stack delivers — the thing you actually shoot */
+function describeStack(fs){
+  const T=[];let pk=0,pl=LMIN;
+  for(let l=LMIN;l<=LMAX;l++){const t=systemT(l,fs);T.push(t);if(t>pk){pk=t;pl=l;}}
+  const idx=l=>l-LMIN;
+  const seg=(a,b)=>{let m=0;for(let l=a;l<=b;l++)m=Math.max(m,T[idx(l)]);return m;};
+  const uv=seg(LMIN,399),vis=seg(400,700),nir=seg(750,LMAX);
+  // Light loss must be integrated, not taken from the peak: a filter passing
+  // one narrow band at 90% still throws away almost everything a full-spectrum
+  // sensor could have caught. Mean transmission across 380-1000nm is a far
+  // better proxy for the exposure hit than peak height.
+  let sum=0,n=0;
+  for(let l=380;l<=1000;l++){sum+=T[idx(l)];n++;}
+  const mean=sum/n;
+  const stops=mean>1e-6?Math.log2(1/mean):20;
+  // Dominant band from where the peak actually sits, not from thresholds
+  const dom=pl<400?'uv':pl<=700?'vis':'nir';
+  const mixed=vis>pk*0.15&&nir>pk*0.15;
+  // total width above half-peak, and how many separate windows make it up
+  let width=0,windows=0,inWin=false;
+  for(let l=LMIN;l<=LMAX;l++){
+    const on=T[idx(l)]>=pk/2;
+    if(on){width++;if(!inWin){windows++;inWin=true;}}else inWin=false;
+  }
+  const narrow=pk>0.05&&width<=30;
+  let out=[];
+  if(pk<0.03){
+    out.push('<b>These cancel out.</b> Peak throughput is only '+(pk*100).toFixed(2)+
+      '%, so almost nothing reaches the sensor. One filter is blocking the exact band the other passes — '+
+      'pairing an IR long-pass with an IR blocker does this. Drop one of them.');
+  }else{
+    const parts=[];
+    if(uv>pk*0.3)parts.push('ultraviolet');
+    if(vis>pk*0.3)parts.push('visible light');
+    if(nir>pk*0.3)parts.push('infrared');
+    out.push('<b>This stack delivers '+(parts.length?parts.join(' + '):'a narrow band')+
+      '</b>, peaking '+(pk*100).toFixed(0)+'% at '+pl+'nm.');
+    if(narrow){
+      out.push(windows>1
+        ? 'Just '+width+'nm of total bandwidth split across '+windows+' separate windows — this is multi-band '+
+          'narrowband, isolating specific emission lines and rejecting everything between them. Each line lands '+
+          'in a different sensor channel, which is how a colour camera captures several lines in one exposure.'
+        : 'Only about '+width+'nm wide at half peak — this is narrowband, isolating a single emission line '+
+          'rather than shaping a broad colour response.');
+      out.push('Almost everything else is rejected, so it is near useless for ordinary daylight work and built '+
+        'for long exposures on emission targets. A conventional channel swap has little to act on here.');
+    }else if(dom==='uv'){
+      if(nir<=0.02){
+        out.push('The peak sits in the ultraviolet with the infrared fully blocked — that is exactly what a UV stack is for.');
+        if(vis>pk*0.25)out.push('It still passes some violet and blue, so expect a little visible contamination mixed into the UV signal; that is characteristic of the wider UV glasses rather than a fault.');
+      }else{
+        out.push('The peak is in the ultraviolet but infrared is still getting through, which will contaminate the result with red. Add an IR blocker such as TSN575, S8612 or BG38.');
+      }
+      out.push('Expect a heavy cast that only resolves after a custom white balance, and long exposures.');
+    }else if(mixed){
+      out.push('Visible and infrared arrive together, so they land in different sensor channels at once — that overlap is what creates false colour. Custom white balance on grass or foliage in-camera, then channel-swap in post to place the colours where you want them.');
+    }else if(dom==='nir'){
+      out.push('Infrared only, so expect the Wood effect — bright foliage, dark sky — and a near-monochrome file that channel swapping can do little with. White balance off foliage to get white leaves.');
+    }else{
+      out.push('Visible only — the infrared is blocked, so a converted body will render more or less normally.');
+    }
+    out.push('Averaged across the range a full-spectrum sensor can see, this passes about '+
+      (mean*100).toFixed(1)+'% of the available light — roughly '+stops.toFixed(1)+
+      ' stops down from bare sensor, so plan exposure accordingly.');
+  }
+  return out.join(' ');
+}
+
+/* ---------- behaviour + stacking guidance ----------
+   Descriptions are DERIVED from each filter's own curve rather than authored
+   per filter, so they can't drift out of sync with the model or assert
+   something the maths doesn't actually do. */
+function bandsOf(f,thresh){
+  // find contiguous regions where this filter passes >thresh of its own peak
+  let pk=0;for(let l=LMIN;l<=LMAX;l++)pk=Math.max(pk,filterT(l,f));
+  if(pk<=0.001)return{pk:0,regions:[]};
+  const regions=[];let start=null;
+  for(let l=LMIN;l<=LMAX;l++){
+    const on=filterT(l,f)>=pk*thresh;
+    if(on&&start===null)start=l;
+    if((!on||l===LMAX)&&start!==null){regions.push([start,l]);start=null;}
+  }
+  return{pk,regions};
+}
+function describeFilter(f){
+  const{pk,regions}=bandsOf(f,0.5);
+  if(!pk)return'Blocks essentially everything.';
+  const named=r=>{
+    const[a,b]=r;
+    const where=v=>v<400?'UV':v<500?'blue':v<580?'green':v<640?'orange':v<700?'red':v<900?'NIR':'deep IR';
+    if(b>=LMAX)return'passes from '+a+'nm upward ('+where(a)+' and beyond)';
+    return'passes '+a+'–'+b+'nm ('+where((a+b)/2)+')';
+  };
+  let s=(pk*100).toFixed(0)+'% peak; '+regions.map(named).join(', ')+'.';
+  if(f.same)s+=' <b>Same glass as:</b> '+f.same+'.';
+  if(f.type==='interference'){
+    s+=' <b>Interference type:</b> it reflects rather than absorbs, so the cutoff shifts with the angle light '+
+      'arrives at. On a wide lens that means the corners cut bluer than the centre — the familiar uneven cyan '+
+      'cast. Absorptive glass avoids this entirely.';
+  }else if(f.type==='absorptive'){
+    s+=' Absorptive glass, so its response is the same across the whole frame regardless of lens or angle.';
+  }
+  if(f.stains)s+=' This glass can develop surface haze over time; store it dry, with desiccant if you are somewhere humid.';
+  if(f.notch)s+=' Absorption notch at '+f.notch[0].c+'nm — that dip is what lifts reds and autumn foliage away from yellow.';
+  if(f.pol){
+    s+=' <b>Polarizer:</b> the transmission shown is the light it passes, not the glare it kills. '+
+      (f.pol==='circular'
+        ? 'Its quarter-wave retarder is cut for roughly 560nm, so out in the infrared it is nowhere near a quarter wave and the circular behaviour breaks down. '
+        : 'Having no retarder it holds up better into the infrared than a circular type. ')+
+      'The polarizing film also loses efficiency past about 700nm, and a failing polarizer blocks less light — which is why transmission climbs in the NIR even as the effect fades. Expect little to no glare or sky control on a deep-IR shot.';
+  }
+  if(f.leak)s+=' Being a dye filter it goes transparent past ~700nm, so on a converted body it also delivers infrared.';
+  if(regions.length>1&&!f.leak&&!f.pol)s+=' Multiple separate bands land in different sensor channels at once.';
+  return s;
+}
+function renderBehaviour(fs){
+  const el=$('behaviour');el.innerHTML='';
+  if(!fs.length)return;
+  const h=document.createElement('h4');
+  h.textContent='Selected glass behaviour & stacking guidance';
+  el.appendChild(h);
+
+  // combined result first — what you actually get out of this combination
+  const combo=document.createElement('div');
+  combo.className='bh combo';
+  const uniq=dedupe(fs);
+  combo.innerHTML='<div class="bn">'+(fs.length>1?'Combined result — '+uniq.map(({f,n})=>f.n+(n>1?' ×'+n:'')).join(' + '):'Result — '+fs[0].n)+
+    '</div><div class="bd">'+describeStack(fs)+'</div>';
+  el.appendChild(combo);
+
+  if(fs.length>1){
+    const sub=document.createElement('h4');
+    sub.style.marginTop='12px';sub.textContent='Each filter\u2019s part in it';
+    el.appendChild(sub);
+  }
+
+  const peakOf=arr=>{let p=0;for(let l=LMIN;l<=LMAX;l++)p=Math.max(p,stackT(l,arr));return p;};
+  const stackPk=peakOf(fs);
+  dedupe(fs).forEach(({f,n})=>{
+    const card=document.createElement('div');card.className='bh';card.style.setProperty('--c',f.c);
+    const others=fs.filter(x=>x!==f);
+    let inter='';
+    if(others.length){
+      const alone=peakOf(fs.filter(x=>x===f)); // this filter at its OWN stacked count, alone
+      const drop=alone>0?(1-stackPk/alone):1;
+      let nirAlone=0,nirStack=0;
+      for(let l=750;l<=LMAX;l++){nirAlone=Math.max(nirAlone,filterT(l,f));nirStack=Math.max(nirStack,stackT(l,fs));}
+      if(stackPk<0.03){
+        inter='<span class="bs bad">Cancels with the rest of this stack — their passbands barely overlap, so almost nothing reaches the sensor. Combining an IR long-pass with an IR blocker does exactly this.</span>';
+      }else if(nirAlone>0.2&&nirStack<0.02){
+        // wording depends on what kind of glass this is
+        const msg=f.g==='UV-pass'
+          ? 'Its deep-IR leak is being cut by the blocker here, leaving clean ultraviolet — this is exactly why UV glass needs a partner filter.'
+          : f.g==='Colour'||f.g==='Conv'
+          ? 'Its infrared leak is being removed by the other glass here, so it behaves like an ordinary colour filter again.'
+          : 'Its infrared transmission is being cut by the other glass in this stack.';
+        inter='<span class="bs">'+msg+'</span>';
+      }else if(drop>0.55){
+        inter='<span class="bs">The rest of the stack cuts this one hard — peak throughput falls about '+(drop*100).toFixed(0)+'%. Expect long exposures.</span>';
+      }else{
+        inter='<span class="bs">Combines without much loss — the stack keeps roughly '+((1-drop)*100).toFixed(0)+'% of what this filter passes alone.</span>';
+      }
+    }
+    if(n>1){
+      const soloPk=peakOf([f]),stackedPk=peakOf(fs.filter(x=>x===f));
+      inter+='<span class="bs">Stacked ×'+n+' of this same glass — peak transmission drops from '+(soloPk*100).toFixed(0)+
+        '% for one piece to '+(stackedPk*100).toFixed(0)+'% for '+n+', and the cutoff edge gets steeper. That is Beer-Lambert absorption: identical pieces multiply their transmittance rather than add.</span>';
+    }
+    card.innerHTML='<div class="bn">'+f.n+(n>1?' <span style="color:var(--muted);font-weight:400">×'+n+'</span>':'')+'</div><div class="bd">'+describeFilter(f)+'</div>'+inter;
+    el.appendChild(card);
+  });
+}
+
+/* ---------- smart stack naming ---------- */
+const STACK_NAMES=[
+  {ids:['zwb3','tsn575'],label:'Clean UV-pass — IR leak removed'},
+  {ids:['zwb2','tsn575'],label:'Clean UV-pass — the recommended pairing'},
+  {ids:['zwb1','tsn575'],label:'Clean UV-pass — wider UV-A'},
+  {ids:['kb20','bw061','c80c'],label:'Candy Pink — in-camera false colour'},
+  {ids:['zwb2','qb21ar'],label:'UV-pass with residual NIR leak'},
+  {ids:['grb1','lee139'],label:'Candy Chrome DIY'},
+  {ids:['grb3','lee035'],label:'Pink Aerochrome DIY (corrected KG2->KG3 pairing bug)'},
+  {ids:['db850','lee441'],label:'Blue Trees — CT Straw variant (Hidden Realms)'},
+  {ids:['db850','lee744'],label:'Blue Trees — Dirty White variant (Hidden Realms)'},
+  {ids:['zwb3','qb21','stockir'],label:'Faux UV on an unconverted body (Fedia) — deep blue/violet only, no real UV reaches the sensor'},
+  {ids:['grb3','lee729'],label:'IR Chrome DIY'},
+  {ids:['w47'],          label:'In-camera faux colour — Goldie-like'},
+  {ids:['bw099'],        label:'Orange/cyan Aerochrome starting point'},
+  {ids:['baader'],       label:'Reference UV-pass — no leak by design'},
+];
+function summarise(fs){
+  if(!fs.length)return'';
+  const ids=fs.map(f=>f.id).sort().join(',');
+  const hit=STACK_NAMES.find(s=>s.ids.slice().sort().join(',')===ids);
+  if(hit)return hit.label;
+  // fall back to a description of what the combined stack actually does
+  let pk=0,pl=0,vis=0,nir=0;
+  for(let l=LMIN;l<=LMAX;l++){const t=stackT(l,fs);if(t>pk){pk=t;pl=l;}}
+  for(let l=400;l<=700;l++)vis=Math.max(vis,stackT(l,fs));
+  for(let l=750;l<=LMAX;l++)nir=Math.max(nir,stackT(l,fs));
+  if(pk<0.03)return'Dead stack — these cancel each other out';
+  if(vis>0.1&&nir>0.1)return'Mixed visible + infrared — false colour';
+  if(nir>0.1&&vis<=0.1)return'Infrared only';
+  if(pl<400)return'Ultraviolet only';
+  return'Visible only';
+}
+draw();
+</script>
+</body>
+</html>
