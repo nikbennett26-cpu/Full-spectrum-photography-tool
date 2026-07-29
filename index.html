@@ -92,7 +92,7 @@ body.has-image{overflow-y:auto;height:auto;min-height:100vh;min-height:100dvh}
 /* ---- desktop split: image top fixed height, tools scroll below ---- */
 @media (min-width:1100px){
   body.has-image{overflow:hidden;height:100vh;height:100dvh}
-  #editorLeft{height:58vh;overflow:hidden;flex-shrink:0;display:flex;flex-direction:column}
+  #editorLeft{height:68vh;overflow:hidden;flex-shrink:0;display:flex;flex-direction:column}
   #previewSticky{position:static;margin:0;padding:4px 0;background:transparent;box-shadow:none;
     flex:1;min-height:0;display:flex;flex-direction:column}
   #cw{flex:1;min-height:0}
@@ -100,7 +100,7 @@ body.has-image{overflow-y:auto;height:auto;min-height:100vh;min-height:100dvh}
   #cmpBar{flex-shrink:0}
   #resinfo{flex-shrink:0;font-size:11px}
   #preview{max-height:100%!important;max-width:100%!important;height:auto;width:auto}
-  #reorderZone{height:calc(42vh - 24px);overflow-y:auto;overflow-x:hidden;
+  #reorderZone{height:calc(32vh - 24px);overflow-y:auto;overflow-x:hidden;
     border-top:1px solid var(--line);padding-top:12px;
     scrollbar-width:thin;scrollbar-color:var(--line2) transparent}
   #reorderZone::-webkit-scrollbar{width:6px}
@@ -212,6 +212,9 @@ input[type=file]{position:absolute;width:1px;height:1px;opacity:0;pointer-events
 
 #cw{background:#0a0603;border:1px solid var(--line);border-radius:var(--radius);overflow:hidden;text-align:center;min-height:120px;display:flex;align-items:center;justify-content:center;position:relative;user-select:none;-webkit-user-select:none}
 #previewSticky{position:sticky;top:0;z-index:40;background:var(--bg);padding:8px 12px 10px;margin:0 -12px;box-shadow:0 8px 16px -8px rgba(0,0,0,.5)}
+#previewSticky.floating{position:fixed;top:0;left:0;right:0;margin:0;max-height:38vh;overflow:hidden}
+#previewStickySpacer{display:none}
+#previewStickySpacer.active{display:block}
 #btnExpandPreview{position:absolute;bottom:8px;right:8px;width:34px;height:34px;padding:0;border-radius:50%;
   background:rgba(10,6,3,.7);border:1px solid rgba(237,226,206,.3);color:var(--paper);font-size:16px;
   display:flex;align-items:center;justify-content:center;cursor:pointer;backdrop-filter:blur(2px)}
@@ -328,6 +331,7 @@ footer{font-size:11px;color:var(--muted);margin-top:14px;line-height:1.5;border-
   </div>
 
   <!-- SHAPING: everything that changes the look -->
+  <div id="previewStickySpacer"></div>
   <div id="previewSticky">
   <div id="cw">
     <div id="previewWrap">
@@ -559,6 +563,50 @@ const IR_PRESETS=[
 ];
 
 const $=id=>document.getElementById(id);
+
+/* Mobile floating preview: JS-controlled fallback for CSS position:sticky,
+   which repeatedly failed to stick reliably across mobile browsers despite
+   ruling out the usual causes (overflow on ancestors, transform on
+   ancestors, flex context on body). This measures where the preview
+   naturally sits, then switches it to position:fixed once the user scrolls
+   past that point, with a spacer holding its place so nothing jumps.
+   Desktop (>=1100px) uses its own fixed top/bottom split layout instead and
+   never engages this at all. */
+let floatingPreviewInit=false;
+function initFloatingPreview(){
+  if(floatingPreviewInit)return;
+  floatingPreviewInit=true;
+  const ps=$('previewSticky'), spacer=$('previewStickySpacer');
+  if(!ps||!spacer)return;
+  let naturalTop=0, naturalHeight=0;
+  function measure(){
+    if(ps.classList.contains('floating'))return;
+    const r=ps.getBoundingClientRect();
+    naturalTop=r.top+window.scrollY;
+    naturalHeight=r.height;
+  }
+  function setFloating(on){
+    if(on){
+      spacer.style.height=naturalHeight+'px';
+      spacer.classList.add('active');
+      ps.classList.add('floating');
+    }else{
+      ps.classList.remove('floating');
+      spacer.classList.remove('active');
+    }
+  }
+  requestAnimationFrame(measure);
+  window.addEventListener('resize',()=>{
+    if(window.innerWidth>=1100){setFloating(false);return;}
+    setFloating(false);
+    requestAnimationFrame(measure);
+  });
+  window.addEventListener('scroll',()=>{
+    if(window.innerWidth>=1100)return;
+    setFloating(window.scrollY>naturalTop+10);
+  },{passive:true});
+}
+
 // Bulletproof file entry point: defined immediately so the inline onchange
 // on the inputs always has something to call, even if later code throws.
 window.__pendingFile=null;
@@ -1563,6 +1611,7 @@ async function loadImg(file){
     dz.style.display='none';$('main').style.display='block';
     document.body.classList.add('has-image');
     const esg=$('emptyStateGroup');if(esg)esg.style.display='none';
+    initFloatingPreview();
     $('rawNote').style.display=raw?'block':'none';
     updateExportResOptions();
     updateResInfo();
