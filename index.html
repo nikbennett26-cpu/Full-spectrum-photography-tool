@@ -4,26 +4,9 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Channel Swap — Aerochrome & False Colour Tool for UV/IR Photography</title>
-<meta name="description" content="Free browser-based channel swap tool for full-spectrum, UV and infrared photography. Aerochrome presets, WebGL channel mixer, Darktable row normalization.">
-<meta name="keywords" content="channel swap, Aerochrome, false colour, infrared photography, UV photography, full spectrum, WebGL">
+<meta name="description" content="Free browser-based channel swap tool for full-spectrum, UV and infrared photography. WebGL channel mixer, Darktable row normalization, 3D LUT export.">
 <meta name="robots" content="index, follow">
-<link rel="canonical" href="https://irlab.uk/">
 <meta name="theme-color" content="#160f0a">
-
-<script type="application/ld+json">
-{
-  "@context": "https://schema.org",
-  "@type": "WebApplication",
-  "name": "Channel Swap — Aerochrome & False Colour Tool",
-  "alternateName": "IR Lab Channel Swap",
-  "url": "https://irlab.uk/",
-  "description": "Free browser-based WebGL channel swap tool for full-spectrum, UV and infrared photography.",
-  "applicationCategory": "MultimediaApplication",
-  "operatingSystem": "Any (runs in any modern web browser)",
-  "browserRequirements": "Requires JavaScript and WebGL",
-  "isAccessibleForFree": true
-}
-</script>
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -46,8 +29,6 @@ body{background:var(--bg);color:var(--paper);font-family:var(--font-body);font-s
 body.has-image{overflow-y:auto;height:auto}
 @media (min-width:900px){body{max-width:1400px;padding:24px 40px}}
 @media (min-width:1600px){body{max-width:92vw;padding:32px 4vw}}
-
-/* Desktop vs Mobile Layout */
 @media (min-width:1100px){
   body.has-image{overflow:hidden;height:100vh}
   #editorLeft{height:68vh;overflow:hidden;flex-shrink:0;display:flex;flex-direction:column}
@@ -58,35 +39,11 @@ body.has-image{overflow-y:auto;height:auto}
   #reorderZone{height:calc(32vh - 24px);overflow-y:auto;overflow-x:hidden;border-top:1px solid var(--line);padding-top:12px;scrollbar-width:thin;scrollbar-color:var(--line2) transparent}
 }
 
-/* Sticky Preview & Compare Features */
-#previewSticky{position:sticky;top:0;z-index:40;background:var(--bg);padding:8px 12px 10px;margin:0 -12px;box-shadow:0 8px 16px -8px rgba(0,0,0,.5)}
-#previewSticky.floating{position:fixed;top:0;left:0;right:0;margin:0;padding:6px 12px 8px;background:var(--bg);box-shadow:0 8px 16px -8px rgba(0,0,0,.5)}
-#previewSticky.floating #cw{max-height:30vh}
-#previewSticky.floating #preview{max-height:30vh!important}
-#previewSticky.floating #cmpBar{display:none}
-#previewStickySpacer{display:none}
-#previewStickySpacer.active{display:block}
-
-#previewOrig{position:absolute;top:0;left:0;width:100%;height:100%;display:none;clip-path:inset(0 50% 0 0);pointer-events:none}
-#cmpLabels{position:absolute;top:8px;left:8px;right:8px;display:none;justify-content:space-between;pointer-events:none}
-#cmpLabels span{background:rgba(10,6,3,.75);color:var(--paper);font-family:var(--font-mono);font-size:9.5px;font-weight:600;padding:3px 9px;border-radius:2px;letter-spacing:.06em}
-#cmpHandle{position:absolute;top:0;bottom:0;left:50%;width:0;display:none;pointer-events:none}
-#cmpHandle::before{content:'';position:absolute;top:0;bottom:0;left:-1px;width:2px;background:var(--safelight);box-shadow:0 0 8px rgba(194,67,27,.8)}
-#cmpBar{display:none;margin-top:8px;padding:8px 10px;background:var(--surface);border:1px solid var(--line);border-radius:3px}
-.cmpBarLabels{display:flex;justify-content:space-between;font-family:var(--font-mono);font-size:9.5px;font-weight:500;color:var(--paper-dim);letter-spacing:.04em;margin-bottom:4px}
-#cmpRange{width:100%;accent-color:var(--safelight)}
-
 header{margin-bottom:clamp(6px,1.6vh,14px)}
 header h1{font-family:var(--font-display);font-weight:700;font-size:clamp(20px,5vh,28px);letter-spacing:.01em;text-transform:uppercase;color:var(--paper);line-height:1}
 header .tagline{font-size:11.5px;color:var(--paper-dim);margin-top:4px;display:block}
-#spectrumBar{height:5px;border-radius:2px;margin:clamp(4px,1.2vh,10px) 0 4px;position:relative;overflow:hidden;
-  background:linear-gradient(90deg,#6a3fb0 0%,#3f6fd6 14%,#3fa0c9 26%,#3fb583 40%,#7fc23f 52%,#d6c23f 63%,#d6903f 72%,#d6503f 82%,#a8321f 91%,#4a1108 100%);
-  box-shadow:0 0 14px rgba(194,67,27,.35)}
-#spectrumTicks{display:flex;justify-content:space-between;font-family:var(--font-mono);font-size:9px;color:var(--muted);margin-bottom:2px}
-
 .panel{background:var(--surface);border:1px solid var(--line);border-top:2px solid var(--line2);border-radius:var(--radius);padding:14px;margin-bottom:10px;position:relative}
 .pt{font-family:var(--font-display);font-size:13px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--paper-dim);margin-bottom:10px;display:flex;align-items:center;gap:8px}
-
 #dropzone{border:1.5px dashed rgba(205,45,25,.6);border-radius:var(--radius);text-align:center;aspect-ratio:1/1;max-width:min(62vh,560px);width:100%;margin:0 auto;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;padding:1.2rem;box-shadow:0 0 60px -20px rgba(205,45,25,.35);transition:border-color .2s}
 #dropzone.dragover{border-color:var(--safelight)}
 #dropzone .big{font-family:var(--font-display);font-size:clamp(18px,4.2vh,26px);font-weight:600;color:var(--paper)}
@@ -122,21 +79,23 @@ input[type=range]{width:100%;accent-color:var(--safelight)}
 .note{font-size:11px;color:var(--muted);margin-top:6px;line-height:1.4}
 .filelabel{display:inline-block;background:rgb(205,45,25);color:#fff;font-weight:600;padding:10px 20px;border-radius:3px;cursor:pointer}
 .wbrow{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:6px}
+.fmt{display:flex;gap:16px;align-items:center;font-size:12.5px;color:var(--paper-dim);flex-wrap:wrap}
+.fmt label{cursor:pointer;display:flex;align-items:center;gap:5px}
+
+.busy{position:absolute;inset:0;background:rgba(10,6,3,.85);display:flex;align-items:center;justify-content:center;color:var(--safelight);font-family:var(--font-mono);font-weight:500;padding:20px;text-align:center;z-index:100;display:none}
 </style>
 </head>
 <body>
 
 <div id="emptyStateGroup" style="margin:auto 0;width:100%;display:flex;flex-direction:column;align-items:center">
   <header style="text-align:center">
-    <h1>Channel Swap WebGL</h1>
-    <span class="tagline">Darkroom for light you can't see — 60 FPS WebGL GPU Engine</span>
-    <div id="spectrumTicks"><span>400</span><span>500</span><span>600</span><span>700nm</span><span>850</span><span>IR →</span></div>
-    <div id="spectrumBar"></div>
+    <h1>Channel Swap Pro</h1>
+    <span class="tagline">Dual Engine: WebGL2 Preview & CPU Export</span>
   </header>
 
   <div id="dropzone">
     <div class="big">Choose an image to begin</div>
-    <p style="font-size:11.5px;margin-top:6px">Runs client-side on your GPU · 32-bit linear floating point math</p>
+    <p style="font-size:11.5px;margin-top:6px">Runs entirely in browser · preserves full EXIF and 16-bit TIFF</p>
     <label class="filelabel" style="margin-top:14px">Choose image<input type="file" id="fi" accept="image/*,.jpg,.jpeg,.png,.webp,.tif,.tiff" style="display:none"></label>
   </div>
 </div>
@@ -146,24 +105,15 @@ input[type=range]{width:100%;accent-color:var(--safelight)}
     <div style="display:flex;gap:8px;margin-bottom:10px;">
       <label class="filelabel" style="padding:8px 14px">New image<input type="file" id="fi2" accept="image/*" style="display:none"></label>
       <button id="bReset">Reset all</button>
+      <button id="btnExportLUT">Save .cube preset</button>
     </div>
 
-    <div id="previewStickySpacer"></div>
     <div id="previewSticky">
       <div id="cw">
         <div id="previewWrap">
           <canvas id="preview"></canvas>
-          <canvas id="previewOrig"></canvas>
-          <div id="cmpLabels">
-            <span id="cmpLabelBefore">BEFORE</span>
-            <span id="cmpLabelAfter">AFTER</span>
-          </div>
-          <div id="cmpHandle"></div>
         </div>
-      </div>
-      <div id="cmpBar">
-        <div class="cmpBarLabels"><span>◀ Before</span><span>After ▶</span></div>
-        <input type="range" id="cmpRange" min="0" max="100" value="50">
+        <div class="busy" id="busy">Processing…</div>
       </div>
     </div>
   </div>
@@ -215,6 +165,31 @@ input[type=range]{width:100%;accent-color:var(--safelight)}
       <div class="sl" style="margin-top:8px"><label>Black point <b id="v_blackPt">0</b></label><input type="range" id="blackPt" min="0" max="120" value="0"></div>
     </div>
 
+    <div class="panel">
+      <div class="pt">5. LUT (.cube) Colour Grade</div>
+      <div class="wbrow">
+        <label class="filelabel" style="margin-top:0;padding:8px 14px">Load .cube LUT<input type="file" id="fiLut" accept=".cube" style="display:none"></label>
+        <button id="lutClear" style="display:none">Clear LUT</button>
+        <span class="note" id="lutStatus" style="margin-top:0">No LUT loaded</span>
+      </div>
+      <div id="lutControls" style="display:none;margin-top:10px">
+        <div class="sl"><label>LUT intensity <b id="v_lutMix">100</b>%</label><input type="range" id="lutMix" min="0" max="100" value="100"></div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="pt">6. Export Settings</div>
+      <div class="fmt" style="margin-bottom:10px">
+        <label><input type="radio" name="fmt" value="tiff16" checked> 16-bit TIFF</label>
+        <label><input type="radio" name="fmt" value="png"> PNG</label>
+        <label><input type="radio" name="fmt" value="jpeg"> JPEG</label>
+      </div>
+      <div class="fmt" id="resChoice">
+        <label><input type="radio" name="res" value="working" checked> Working preview size</label>
+        <label><input type="radio" name="res" value="original"> Original photo size (Full CPU Render)</label>
+      </div>
+    </div>
+
     <button id="bDl" class="primary" style="width:100%;padding:14px;font-size:15px;margin-bottom:10px">Export Image</button>
   </div>
 </div>
@@ -222,20 +197,38 @@ input[type=range]{width:100%;accent-color:var(--safelight)}
 <script>
 'use strict';
 
-// --- WebGL Shaders ---
-const VS_SOURCE = `
-  attribute vec2 a_position;
-  attribute vec2 a_texCoord;
-  varying vec2 v_texCoord;
+const SRGB_TO_LINEAR = new Float32Array(256);
+for (let i = 0; i < 256; i++) {
+  const c = i / 255;
+  SRGB_TO_LINEAR[i] = c <= 0.04045 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4);
+}
+
+function linearToSrgbFloat(c) {
+  if (c <= 0) return 0;
+  if (c >= 1) return 1;
+  return c <= 0.0031308 ? c * 12.92 : 1.055 * Math.pow(c, 1 / 2.4) - 0.055;
+}
+
+// --- WebGL2 Shaders ---
+const VS_SOURCE = `#version 300 es
+  in vec2 a_position;
+  in vec2 a_texCoord;
+  out vec2 v_texCoord;
   void main() {
     gl_Position = vec4(a_position, 0.0, 1.0);
     v_texCoord = vec2(a_texCoord.x, 1.0 - a_texCoord.y);
   }
 `;
 
-const FS_SOURCE = `
+const FS_SOURCE = `#version 300 es
   precision highp float;
+  precision highp sampler3D;
+  
   uniform sampler2D u_image;
+  uniform sampler3D u_lut;
+  uniform bool u_hasLut;
+  uniform float u_lutMix;
+  
   uniform mat3 u_matrix;
   uniform vec3 u_preWB;
   uniform vec3 u_postWB;
@@ -243,7 +236,9 @@ const FS_SOURCE = `
   uniform float u_hue;
   uniform float u_sat;
   uniform float u_blackPt;
-  varying vec2 v_texCoord;
+  
+  in vec2 v_texCoord;
+  out vec4 outColor;
 
   vec3 srgbToLinear(vec3 c) {
     return mix(c / 12.92, pow((c + 0.055) / 1.055, vec3(2.4)), step(vec3(0.04045), c));
@@ -254,7 +249,6 @@ const FS_SOURCE = `
     return mix(clamped * 12.92, 1.055 * pow(clamped, vec3(1.0 / 2.4)) - 0.055, step(vec3(0.0031308), clamped));
   }
 
-  // Darktable Hyperbolic Tangent Gamut Protection
   float compressChan(float v) {
     if (v < 0.0) return 0.0;
     if (v > 0.75) {
@@ -300,7 +294,7 @@ const FS_SOURCE = `
   }
 
   void main() {
-    vec4 texColor = texture2D(u_image, v_texCoord);
+    vec4 texColor = texture(u_image, v_texCoord);
     vec3 rgb = srgbToLinear(texColor.rgb);
 
     rgb *= u_preWB;
@@ -310,31 +304,36 @@ const FS_SOURCE = `
 
     vec3 srgb = linearToSrgb(rgb);
 
-    if (u_blackPt > 0.0) {
-      float bp = u_blackPt / 255.0;
-      srgb = clamp((srgb - bp) / (1.0 - bp), 0.0, 1.0);
-    }
-
     if (u_hue != 0.0 || u_sat != 1.0) {
       vec3 hsl = rgb2hsl(srgb);
       hsl.x = fract(hsl.x + u_hue);
       hsl.y = clamp(hsl.y * u_sat, 0.0, 1.0);
       srgb = hsl2rgb(hsl);
     }
+    
+    if (u_hasLut) {
+      vec3 lutColor = texture(u_lut, srgb).rgb;
+      srgb = mix(srgb, lutColor, u_lutMix);
+    }
 
-    gl_FragColor = vec4(srgb, texColor.a);
+    if (u_blackPt > 0.0) {
+      float bp = u_blackPt / 255.0;
+      srgb = clamp((srgb - bp) / (1.0 - bp), 0.0, 1.0);
+    }
+
+    outColor = vec4(srgb, texColor.a);
   }
 `;
 
-// --- WebGL Engine Class ---
-class WebGLEngine {
+class WebGL2Engine {
   constructor(canvas) {
     this.canvas = canvas;
-    this.gl = canvas.getContext('webgl', { preserveDrawingBuffer: true });
-    if (!this.gl) alert('WebGL unsupported in this browser');
+    this.gl = canvas.getContext('webgl2', { preserveDrawingBuffer: true });
+    if (!this.gl) alert('WebGL2 unsupported. App will run in slow CPU mode.');
     this.initShaders();
     this.initBuffers();
     this.texture = null;
+    this.lutTexture = null;
   }
 
   initShaders() {
@@ -357,7 +356,11 @@ class WebGLEngine {
       exposure: gl.getUniformLocation(this.program, 'u_exposure'),
       hue: gl.getUniformLocation(this.program, 'u_hue'),
       sat: gl.getUniformLocation(this.program, 'u_sat'),
-      blackPt: gl.getUniformLocation(this.program, 'u_blackPt')
+      blackPt: gl.getUniformLocation(this.program, 'u_blackPt'),
+      hasLut: gl.getUniformLocation(this.program, 'u_hasLut'),
+      lutMix: gl.getUniformLocation(this.program, 'u_lutMix'),
+      image: gl.getUniformLocation(this.program, 'u_image'),
+      lut: gl.getUniformLocation(this.program, 'u_lut')
     };
   }
 
@@ -380,11 +383,11 @@ class WebGLEngine {
 
   setImage(img) {
     const gl = this.gl;
-    this.canvas.width = img.width;
-    this.canvas.height = img.height;
+    this.canvas.width = img.width; this.canvas.height = img.height;
     gl.viewport(0, 0, img.width, img.height);
-
     if (!this.texture) this.texture = gl.createTexture();
+    
+    gl.activeTexture(gl.TEXTURE0);
     gl.bindTexture(gl.TEXTURE_2D, this.texture);
     gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, img);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
@@ -392,17 +395,29 @@ class WebGLEngine {
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
   }
 
+  setLUT(lutObj) {
+    const gl = this.gl;
+    if (!lutObj) {
+      if (this.lutTexture) { gl.deleteTexture(this.lutTexture); this.lutTexture = null; }
+      return;
+    }
+    gl.activeTexture(gl.TEXTURE1);
+    this.lutTexture = gl.createTexture();
+    gl.bindTexture(gl.TEXTURE_3D, this.lutTexture);
+    gl.texImage3D(gl.TEXTURE_3D, 0, gl.RGB32F, lutObj.size, lutObj.size, lutObj.size, 0, gl.RGB, gl.FLOAT, lutObj.data);
+    gl.texParameteri(gl.TEXTURE_3D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+    gl.texParameteri(gl.TEXTURE_3D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+    gl.texParameteri(gl.TEXTURE_3D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+    gl.texParameteri(gl.TEXTURE_3D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+    gl.texParameteri(gl.TEXTURE_3D, gl.TEXTURE_WRAP_R, gl.CLAMP_TO_EDGE);
+  }
+
   render(p) {
     const gl = this.gl;
     gl.useProgram(this.program);
     
-    // Transpose matrix from Row-Major (UI) to Column-Major (WebGL)
     const m = p.matrix;
-    const transposed = [
-      m[0], m[3], m[6],
-      m[1], m[4], m[7],
-      m[2], m[5], m[8]
-    ];
+    const transposed = [m[0],m[3],m[6], m[1],m[4],m[7], m[2],m[5],m[8]];
 
     gl.uniformMatrix3fv(this.uLocs.matrix, false, new Float32Array(transposed));
     gl.uniform3fv(this.uLocs.preWB, new Float32Array(p.preWB));
@@ -411,22 +426,32 @@ class WebGLEngine {
     gl.uniform1f(this.uLocs.hue, p.hue / 360);
     gl.uniform1f(this.uLocs.sat, p.sat / 100);
     gl.uniform1f(this.uLocs.blackPt, p.blackPt);
+
+    gl.uniform1i(this.uLocs.image, 0);
+    
+    if (this.lutTexture) {
+      gl.uniform1i(this.uLocs.hasLut, 1);
+      gl.uniform1i(this.uLocs.lut, 1);
+      gl.uniform1f(this.uLocs.lutMix, p.lutMix / 100);
+      gl.activeTexture(gl.TEXTURE1);
+      gl.bindTexture(gl.TEXTURE_3D, this.lutTexture);
+    } else {
+      gl.uniform1i(this.uLocs.hasLut, 0);
+    }
+
     gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
   }
 }
 
-// --- App State & UI Logic ---
+// --- App State & Utils ---
 const $ = id => document.getElementById(id);
 const MCELLS = ['m00','m01','m02','m10','m11','m12','m20','m21','m22'];
 let engine = null, preWB = [1, 1, 1], postWB = [1, 1, 1], loadedImage = null, pickMode = null;
+let rawCanvas = document.createElement('canvas'), rawCtx = rawCanvas.getContext('2d', { willReadFrequently: true });
+let origFile = null, origW = 0, origH = 0, exifSegment = null;
+let currentLUT = null;
 
-let rawCanvas = document.createElement('canvas');
-let rawCtx = rawCanvas.getContext('2d', { willReadFrequently: true });
-
-const UV_PRESETS = [
-  { n: "Bug vision 🐛", m: [0,100,0, 0,0,100, 100,0,0] }
-];
-
+const UV_PRESETS = [{ n: "Bug vision 🐛", m: [0,100,0, 0,0,100, 100,0,0] }];
 const IR_PRESETS = [
   { n: "550nm 🌸", m: [0,0,100, 100,0,0, 0,100,0] },
   { n: "Aerochrome 🌿", m: [0,0,100, 100,0,0, 0,100,0] },
@@ -435,75 +460,11 @@ const IR_PRESETS = [
   { n: "720nm Classic 🌲", m: [0,0,100, 0,100,0, 100,0,0] }
 ];
 
-// 1. Sticky Preview Setup
-let floatingPreviewInit = false;
-function initFloatingPreview() {
-  if (floatingPreviewInit) return;
-  floatingPreviewInit = true;
-  const ps = $('previewSticky'), spacer = $('previewStickySpacer');
-  if (!ps || !spacer) return;
-  let naturalTop = 0, isFloating = false;
-  
-  function measure() {
-    if (ps.classList.contains('floating')) return;
-    const r = ps.getBoundingClientRect();
-    naturalTop = r.top + window.scrollY;
-  }
-  function setFloating(on) {
-    if (on === isFloating) return;
-    isFloating = on;
-    if (on) {
-      spacer.style.height = (Math.round(window.innerHeight * 0.30) + 16) + 'px';
-      spacer.classList.add('active');
-      ps.classList.add('floating');
-    } else {
-      ps.classList.remove('floating');
-      spacer.classList.remove('active');
-    }
-  }
-  requestAnimationFrame(measure);
-  window.addEventListener('resize', () => {
-    if (window.innerWidth >= 1100) { setFloating(false); return; }
-    setFloating(false);
-    requestAnimationFrame(measure);
-  });
-  window.addEventListener('scroll', () => {
-    if (window.innerWidth >= 1100) return;
-    const y = window.scrollY;
-    if (!isFloating && y > naturalTop + 40) setFloating(true);
-    else if (isFloating && y < naturalTop - 20) setFloating(false);
-  }, { passive: true });
-}
-
-// 2. Before & After Slider Setup
-function setupCompareOverlay() {
-  const po = $('previewOrig');
-  po.width = rawCanvas.width;
-  po.height = rawCanvas.height;
-  po.getContext('2d').drawImage(rawCanvas, 0, 0);
-  po.style.display = 'block';
-  $('cmpLabels').style.display = 'flex';
-  $('cmpHandle').style.display = 'block';
-  $('cmpBar').style.display = 'block';
-  $('cmpRange').value = 50;
-  setComparePos(50);
-}
-
-function setComparePos(pct) {
-  pct = Math.max(0, Math.min(100, +pct));
-  $('previewOrig').style.clipPath = 'inset(0 ' + (100 - pct) + '% 0 0)';
-  $('cmpHandle').style.left = pct + '%';
-}
-$('cmpRange').addEventListener('input', e => setComparePos(e.target.value));
-
-// 3. Matrix & Render Logic
 function normalizeMatrix(m) {
   const norm = [...m];
   for (let r = 0; r < 3; r++) {
     const sum = Math.abs(norm[r*3]) + Math.abs(norm[r*3+1]) + Math.abs(norm[r*3+2]);
-    if (sum > 0.0001) {
-      norm[r*3] /= sum; norm[r*3+1] /= sum; norm[r*3+2] /= sum;
-    }
+    if (sum > 0.0001) { norm[r*3] /= sum; norm[r*3+1] /= sum; norm[r*3+2] /= sum; }
   }
   return norm;
 }
@@ -516,17 +477,15 @@ function getMatrixUI() {
 function render() {
   if (!engine || !loadedImage) return;
   engine.render({
-    matrix: getMatrixUI(),
-    preWB: preWB,
-    postWB: postWB,
-    exposure: +$('bright').value || 0,
-    hue: +$('hue').value || 0,
-    sat: +$('sat').value || 100,
-    blackPt: +$('blackPt').value || 0
+    matrix: getMatrixUI(), preWB: preWB, postWB: postWB,
+    exposure: +$('bright').value || 0, hue: +$('hue').value || 0,
+    sat: +$('sat').value || 100, blackPt: +$('blackPt').value || 0,
+    lutMix: +$('lutMix').value || 100
   });
 }
 
-['bright','hue','sat','blackPt'].forEach(id => {
+// --- Wire UI ---
+['bright','hue','sat','blackPt','lutMix'].forEach(id => {
   $(id).addEventListener('input', () => { $('v_' + id).textContent = $(id).value; render(); });
 });
 MCELLS.forEach(id => $(id).addEventListener('input', render));
@@ -548,17 +507,66 @@ function buildPresetButtons(list, containerId) {
 buildPresetButtons(UV_PRESETS, 'pgUV');
 buildPresetButtons(IR_PRESETS, 'pgIR');
 
-// 4. File Loading
-function loadFile(file) {
+// --- File Handling & EXIF ---
+function extractExifSegment(bytes){
+  if(bytes.length<4||bytes[0]!==0xFF||bytes[1]!==0xD8)return null;
+  let i=2;
+  while(i<bytes.length-4){
+    if(bytes[i]!==0xFF)break;
+    const marker=bytes[i+1];
+    if(marker===0xD8||marker===0xD9||marker===0xDA)break;
+    const len=(bytes[i+2]<<8)|bytes[i+3];
+    if(len<2)break;
+    if(marker===0xE1&&i+4+6<=bytes.length){
+      let sig='';for(let k=0;k<6;k++)sig+=String.fromCharCode(bytes[i+4+k]);
+      if(sig==='Exif\u0000\u0000')return bytes.slice(i,i+2+len);
+    }
+    i+=2+len;
+  }
+  return null;
+}
+
+function spliceExifIntoJpegBytes(jpegBytes,exifSegment){
+  if(!exifSegment||jpegBytes[0]!==0xFF||jpegBytes[1]!==0xD8)return jpegBytes;
+  const out=new Uint8Array(2+exifSegment.length+(jpegBytes.length-2));
+  out.set([0xFF,0xD8],0); out.set(exifSegment,2); out.set(jpegBytes.subarray(2),2+exifSegment.length);
+  return out;
+}
+
+const CRC_TABLE=(()=>{const t=new Uint32Array(256);for(let n=0;n<256;n++){let c=n;for(let k=0;k<8;k++)c=c&1?(0xEDB88320^(c>>>1)):(c>>>1);t[n]=c>>>0;}return t;})();
+function crc32(bytes){let c=0xFFFFFFFF;for(let i=0;i<bytes.length;i++)c=CRC_TABLE[(c^bytes[i])&0xFF]^(c>>>8);return(c^0xFFFFFFFF)>>>0;}
+function u32be(n){return[(n>>>24)&0xFF,(n>>>16)&0xFF,(n>>>8)&0xFF,n&0xFF];}
+
+function spliceExifIntoPngBytes(pngBytes,exifSegment){
+  if(!exifSegment || exifSegment.length<=10)return pngBytes;
+  const tiffData=exifSegment.subarray(10);
+  try{
+    const ihdrLen=(pngBytes[8]<<24)|(pngBytes[9]<<16)|(pngBytes[10]<<8)|pngBytes[11];
+    const ihdrEnd=8+4+4+ihdrLen+4;
+    const typeBytes=new Uint8Array([0x65,0x58,0x49,0x66]);
+    const crcInput=new Uint8Array(typeBytes.length+tiffData.length);
+    crcInput.set(typeBytes,0);crcInput.set(tiffData,typeBytes.length);
+    const chunk=new Uint8Array(4+4+tiffData.length+4);
+    chunk.set(u32be(tiffData.length),0); chunk.set(typeBytes,4); chunk.set(tiffData,8); chunk.set(u32be(crc32(crcInput)),8+tiffData.length);
+    const out=new Uint8Array(pngBytes.length+chunk.length);
+    out.set(pngBytes.subarray(0,ihdrEnd),0); out.set(chunk,ihdrEnd); out.set(pngBytes.subarray(ihdrEnd),ihdrEnd+chunk.length);
+    return out;
+  }catch(e){return pngBytes;}
+}
+
+async function loadFile(file) {
   if (!file) return;
+  origFile = file;
+  try { exifSegment = extractExifSegment(new Uint8Array(await file.arrayBuffer())); } catch(e){}
+
   const img = new Image();
   img.onload = () => {
+    origW = img.width; origH = img.height;
     const maxDim = 2048;
     let w = img.width, h = img.height;
     if (w > maxDim || h > maxDim) {
       const scale = maxDim / Math.max(w, h);
-      w = Math.round(w * scale);
-      h = Math.round(h * scale);
+      w = Math.round(w * scale); h = Math.round(h * scale);
     }
     rawCanvas.width = w; rawCanvas.height = h;
     rawCtx.drawImage(img, 0, 0, w, h);
@@ -568,11 +576,9 @@ function loadFile(file) {
     $('main').style.display = 'block';
     document.body.classList.add('has-image');
     
-    if (!engine) engine = new WebGLEngine($('preview'));
+    if (!engine) engine = new WebGL2Engine($('preview'));
     engine.setImage(rawCanvas);
-    
-    initFloatingPreview();
-    setupCompareOverlay();
+    if(currentLUT) engine.setLUT(currentLUT);
     render();
   };
   img.src = URL.createObjectURL(file);
@@ -589,18 +595,47 @@ dz.addEventListener('drop', e => {
   if (f) loadFile(f);
 });
 
-$('bReset').onclick = () => {
-  const identity = [100,0,0, 0,100,0, 0,0,100];
-  MCELLS.forEach((id, i) => $(id).value = identity[i]);
-  preWB = [1, 1, 1]; postWB = [1, 1, 1];
-  ['bright','hue','blackPt'].forEach(id => { $(id).value = 0; $('v_' + id).textContent = 0; });
-  $('sat').value = 100; $('v_sat').textContent = 100;
-  $('wbPreStatus').textContent = 'Pre-WB: Not set';
-  $('wbPostStatus').textContent = 'Post-WB: Not set';
-  document.querySelectorAll('.pb').forEach(x => x.classList.remove('on'));
+// --- LUT Handling ---
+function parseCubeLUT(text){
+  const lines=text.split(/\r?\n/);
+  let size=0,domainMin=[0,0,0],domainMax=[1,1,1];
+  const data=[];
+  for(const raw of lines){
+    const line=raw.trim();
+    if(!line||line.startsWith('#'))continue;
+    if(/^TITLE/i.test(line))continue;
+    if(/^LUT_3D_SIZE/i.test(line)){size=parseInt(line.split(/\s+/)[1],10);continue;}
+    if(/^DOMAIN_MIN/i.test(line)){domainMin=line.split(/\s+/).slice(1).map(Number);continue;}
+    if(/^DOMAIN_MAX/i.test(line)){domainMax=line.split(/\s+/).slice(1).map(Number);continue;}
+    const parts=line.split(/\s+/).map(Number);
+    if(parts.length===3&&parts.every(n=>!isNaN(n)))data.push(parts[0],parts[1],parts[2]);
+  }
+  if(!size||data.length!==size*size*size*3)throw new Error('invalid or incomplete .cube file');
+  return{size,domainMin,domainMax,data:new Float32Array(data)};
+}
+
+$('fiLut').onchange = async e => {
+  const f = e.target.files[0]; e.target.value = '';
+  if(!f) return;
+  try {
+    currentLUT = parseCubeLUT(await f.text());
+    $('lutStatus').textContent = '✓ ' + f.name;
+    $('lutControls').style.display = 'block';
+    $('lutClear').style.display = 'inline-block';
+    if(engine) engine.setLUT(currentLUT);
+    render();
+  } catch(err) { $('lutStatus').textContent = 'Error: ' + err.message; }
+};
+$('lutClear').onclick = () => {
+  currentLUT = null;
+  $('lutStatus').textContent = 'No LUT loaded';
+  $('lutControls').style.display = 'none';
+  $('lutClear').style.display = 'none';
+  if(engine) engine.setLUT(null);
   render();
 };
 
+// --- White Balance ---
 $('wbPre').onclick = () => { pickMode = 'pre'; $('wbPre').classList.add('armed'); $('wbPost').classList.remove('armed'); $('preview').classList.add('pick'); };
 $('wbPost').onclick = () => { pickMode = 'post'; $('wbPost').classList.add('armed'); $('wbPre').classList.remove('armed'); $('preview').classList.add('pick'); };
 $('wbPreReset').onclick = () => { preWB = [1,1,1]; $('wbPreStatus').textContent = 'Pre-WB: Cleared'; render(); };
@@ -615,33 +650,179 @@ $('preview').onclick = e => {
   const rad = 2;
   const pix = rawCtx.getImageData(Math.max(0, x - rad), Math.max(0, y - rad), 5, 5).data;
   let r = 0, g = 0, b = 0, count = 0;
-  for (let i = 0; i < pix.length; i += 4) {
-    r += pix[i]; g += pix[i+1]; b += pix[i+2]; count++;
-  }
+  for (let i = 0; i < pix.length; i += 4) { r += pix[i]; g += pix[i+1]; b += pix[i+2]; count++; }
   r /= count; g /= count; b /= count;
 
   const avg = (r + g + b) / 3;
   const gains = [r > 0 ? avg / r : 1, g > 0 ? avg / g : 1, b > 0 ? avg / b : 1];
 
-  if (pickMode === 'pre') {
-    preWB = gains;
-    $('wbPreStatus').textContent = `Set ✓ R:${preWB[0].toFixed(2)} G:${preWB[1].toFixed(2)} B:${preWB[2].toFixed(2)}`;
-    $('wbPre').classList.remove('armed');
-  } else {
-    postWB = gains;
-    $('wbPostStatus').textContent = `Set ✓ R:${postWB[0].toFixed(2)} G:${postWB[1].toFixed(2)} B:${postWB[2].toFixed(2)}`;
-    $('wbPost').classList.remove('armed');
-  }
-  pickMode = null;
-  $('preview').classList.remove('pick');
+  if (pickMode === 'pre') { preWB = gains; $('wbPreStatus').textContent = `Set ✓ R:${preWB[0].toFixed(2)} G:${preWB[1].toFixed(2)} B:${preWB[2].toFixed(2)}`; $('wbPre').classList.remove('armed'); } 
+  else { postWB = gains; $('wbPostStatus').textContent = `Set ✓ R:${postWB[0].toFixed(2)} G:${postWB[1].toFixed(2)} B:${postWB[2].toFixed(2)}`; $('wbPost').classList.remove('armed'); }
+  pickMode = null; $('preview').classList.remove('pick'); render();
+};
+
+$('bReset').onclick = () => {
+  const identity = [100,0,0, 0,100,0, 0,0,100];
+  MCELLS.forEach((id, i) => $(id).value = identity[i]);
+  preWB = [1, 1, 1]; postWB = [1, 1, 1];
+  ['bright','hue','blackPt'].forEach(id => { $(id).value = 0; $('v_' + id).textContent = 0; });
+  $('sat').value = 100; $('v_sat').textContent = 100;
+  $('wbPreStatus').textContent = 'Pre-WB: Not set';
+  $('wbPostStatus').textContent = 'Post-WB: Not set';
+  document.querySelectorAll('.pb').forEach(x => x.classList.remove('on'));
   render();
 };
 
-$('bDl').onclick = () => {
-  const a = document.createElement('a');
-  a.download = 'channel-swap-' + Date.now() + '.png';
-  a.href = $('preview').toDataURL('image/png');
-  a.click();
+// --- CPU Export Engine (Original Resolution, TIFF, EXIF) ---
+function rgbToHsl(r,g,b){
+  r/=255;g/=255;b/=255;const mx=Math.max(r,g,b),mn=Math.min(r,g,b);let h,s,l=(mx+mn)/2;
+  if(mx===mn){h=s=0;}else{const d=mx-mn;s=l>.5?d/(2-mx-mn):d/(mx+mn);
+    if(mx===r)h=((g-b)/d+(g<b?6:0))/6;else if(mx===g)h=((b-r)/d+2)/6;else h=((r-g)/d+4)/6;}
+  return[h,s,l];
+}
+function hue2(p,q,t){if(t<0)t+=1;if(t>1)t-=1;if(t<1/6)return p+(q-p)*6*t;if(t<.5)return q;if(t<2/3)return p+(q-p)*(2/3-t)*6;return p;}
+function hslToRgb(h,s,l){if(s<=0){const v=Math.round(l*255);return[v,v,v];}const q=l<.5?l*(1+s):l+s-l*s,p=2*l-q;return[Math.round(hue2(p,q,h+1/3)*255),Math.round(hue2(p,q,h)*255),Math.round(hue2(p,q,h-1/3)*255)];}
+
+function sampleLutPixel(lut, r, g, b, mix) {
+  if(!lut || mix<=0) return [r,g,b];
+  const N = lut.size, d = lut.data;
+  const fx = (r/255)*(N-1), fy = (g/255)*(N-1), fz = (b/255)*(N-1);
+  const x0 = Math.floor(fx), y0 = Math.floor(fy), z0 = Math.floor(fz);
+  const x1 = Math.min(x0+1,N-1), y1 = Math.min(y0+1,N-1), z1 = Math.min(z0+1,N-1);
+  const dx = fx-x0, dy = fy-y0, dz = fz-z0;
+  const idx = (x,y,z) => ((z*N+y)*N+x)*3;
+  const out = [0,0,0];
+  for(let c=0; c<3; c++) {
+    const c00 = d[idx(x0,y0,z0)+c]*(1-dx)+d[idx(x1,y0,z0)+c]*dx, c10 = d[idx(x0,y1,z0)+c]*(1-dx)+d[idx(x1,y1,z0)+c]*dx;
+    const c01 = d[idx(x0,y0,z1)+c]*(1-dx)+d[idx(x1,y0,z1)+c]*dx, c11 = d[idx(x0,y1,z1)+c]*(1-dx)+d[idx(x1,y1,z1)+c]*dx;
+    const c0 = c00*(1-dy)+c10*dy, c1 = c01*(1-dy)+c11*dy;
+    out[c] = c0*(1-dz)+c1*dz;
+  }
+  const or = Math.max(0, Math.min(255, Math.round(out[0]*255))), og = Math.max(0, Math.min(255, Math.round(out[1]*255))), ob = Math.max(0, Math.min(255, Math.round(out[2]*255)));
+  if(mix>=1) return [or, og, ob];
+  return [Math.round(r+(or-r)*mix), Math.round(g+(og-g)*mix), Math.round(b+(ob-b)*mix)];
+}
+
+function processCPUChunk(src, dst, mat, pr, pg, pb, qr, qg, qb, exp, hShft, sat, bp, lut, lMix, start, end) {
+  for (let p = start; p < end; p += 4) {
+    let R = SRGB_TO_LINEAR[src[p]] * pr, G = SRGB_TO_LINEAR[src[p+1]] * pg, B = SRGB_TO_LINEAR[src[p+2]] * pb;
+    let lR = (mat[0]*R + mat[1]*G + mat[2]*B) * qr * exp;
+    let lG = (mat[3]*R + mat[4]*G + mat[5]*B) * qg * exp;
+    let lB = (mat[6]*R + mat[7]*G + mat[8]*B) * qb * exp;
+
+    const comp = v => {
+      if(v<0) return 0;
+      if(v>0.75) { let x=(v-0.75)/0.25; return 0.75+0.25*((Math.exp(x)-Math.exp(-x))/(Math.exp(x)+Math.exp(-x))); }
+      return v;
+    };
+    let r = Math.round(linearToSrgbFloat(comp(lR))*255), g = Math.round(linearToSrgbFloat(comp(lG))*255), b = Math.round(linearToSrgbFloat(comp(lB))*255);
+
+    if (hShft || sat!==1) {
+      let [hh, ss, ll] = rgbToHsl(r, g, b);
+      hh = (hh + hShft + 1) % 1; ss = Math.max(0, Math.min(1, ss * sat));
+      [r, g, b] = hslToRgb(hh, ss, ll);
+    }
+    if (lut) [r, g, b] = sampleLutPixel(lut, r, g, b, lMix);
+    if (bp > 0) {
+      r = Math.max(0, Math.min(255, Math.round((r-bp)/(255-bp)*255)));
+      g = Math.max(0, Math.min(255, Math.round((g-bp)/(255-bp)*255)));
+      b = Math.max(0, Math.min(255, Math.round((b-bp)/(255-bp)*255)));
+    }
+    dst[p]=r; dst[p+1]=g; dst[p+2]=b; dst[p+3]=src[p+3];
+  }
+}
+
+const LE=(()=>{const b=new ArrayBuffer(2);new Uint16Array(b)[0]=1;return new Uint8Array(b)[0]===1;})();
+function encodeTIFF16(rgba,w,h){
+  const pixelBytes=w*h*6, ifdOffset=8, ifdSize=2+14*12+4, after=ifdOffset+ifdSize;
+  const bpsOff=after, xResOff=bpsOff+6, yResOff=xResOff+8, pixOff=yResOff+8;
+  const buf=new ArrayBuffer(pixOff+pixelBytes), dv=new DataView(buf);
+  dv.setUint8(0,LE?0x49:0x4D); dv.setUint8(1,LE?0x49:0x4D); dv.setUint16(2,42,LE); dv.setUint32(4,ifdOffset,LE);
+  let o=ifdOffset; dv.setUint16(o,14,LE); o+=2;
+  const en=(t,ty,c,v)=>{dv.setUint16(o,t,LE);dv.setUint16(o+2,ty,LE);dv.setUint32(o+4,c,LE);dv.setUint32(o+8,v,LE);o+=12;};
+  en(256,4,1,w); en(257,4,1,h); en(258,3,3,bpsOff); en(259,3,1,1); en(262,3,1,2); en(273,4,1,pixOff); en(277,3,1,3); en(278,4,1,h); en(279,4,1,pixelBytes); en(282,5,1,xResOff); en(283,5,1,yResOff); en(284,3,1,1); en(296,3,1,2); en(339,3,1,1); dv.setUint32(o,0,LE);
+  dv.setUint16(bpsOff,16,LE); dv.setUint16(bpsOff+2,16,LE); dv.setUint16(bpsOff+4,16,LE);
+  dv.setUint32(xResOff,72,LE); dv.setUint32(xResOff+4,1,LE); dv.setUint32(yResOff,72,LE); dv.setUint32(yResOff+4,1,LE);
+  const px=new Uint16Array(buf,pixOff,w*h*3); let j=0;
+  for(let i=0;i<rgba.length;i+=4){px[j++]=rgba[i]*257;px[j++]=rgba[i+1]*257;px[j++]=rgba[i+2]*257;}
+  return new Blob([buf],{type:'image/tiff'});
+}
+
+$('bDl').onclick = async () => {
+  if (!loadedImage) return;
+  $('busy').style.display = 'flex'; $('busy').textContent = 'Preparing CPU Render...';
+  
+  const fmt = document.querySelector('input[name=fmt]:checked').value;
+  const useOrig = document.querySelector('input[name=res]:checked').value === 'original' && origFile;
+  
+  setTimeout(async () => {
+    try {
+      let srcCanvas = rawCanvas;
+      if (useOrig) {
+        $('busy').textContent = 'Decoding Original Image...';
+        const img = new Image();
+        await new Promise(r => { img.onload=r; img.src=URL.createObjectURL(origFile); });
+        srcCanvas = document.createElement('canvas'); srcCanvas.width = img.width; srcCanvas.height = img.height;
+        srcCanvas.getContext('2d').drawImage(img,0,0);
+      }
+      
+      const W = srcCanvas.width, H = srcCanvas.height;
+      const srcData = srcCanvas.getContext('2d').getImageData(0,0,W,H).data;
+      const outData = new Uint8ClampedArray(srcData.length);
+      
+      const m = getMatrixUI(), pr=preWB[0], pg=preWB[1], pb=preWB[2], qr=postWB[0], qg=postWB[1], qb=postWB[2];
+      const exp = Math.pow(2, (+$('bright').value||0)/100), hShft = (+$('hue').value||0)/360, sat = (+$('sat').value||100)/100, bp = +$('blackPt').value||0;
+      const lMix = (+$('lutMix').value||100)/100;
+
+      const CHUNK = 1<<21; let off = 0;
+      function processNext() {
+        const end = Math.min(off + CHUNK, srcData.length);
+        processCPUChunk(srcData, outData, m, pr,pg,pb, qr,qg,qb, exp, hShft, sat, bp, currentLUT, lMix, off, end);
+        off = end;
+        $('busy').textContent = `Processing CPU Export... ${Math.round(off/srcData.length*100)}%`;
+        if (off < srcData.length) setTimeout(processNext, 0);
+        else finalizeExport();
+      }
+      
+      function finalizeExport() {
+        $('busy').textContent = 'Encoding File...';
+        setTimeout(async () => {
+          let blob, ext, mime;
+          if (fmt === 'tiff16') { blob = encodeTIFF16(outData, W, H); ext = 'tiff'; mime = 'image/tiff'; }
+          else {
+            const oc = document.createElement('canvas'); oc.width=W; oc.height=H;
+            const ox = oc.getContext('2d'); const id = ox.createImageData(W,H); id.data.set(outData); ox.putImageData(id,0,0);
+            mime = fmt==='png' ? 'image/png' : 'image/jpeg'; ext = fmt==='png' ? 'png' : 'jpg';
+            const b = await new Promise(r => oc.toBlob(r, mime, 1.0));
+            if (exifSegment) {
+              const buf = new Uint8Array(await b.arrayBuffer());
+              blob = new Blob([fmt==='png' ? spliceExifIntoPngBytes(buf, exifSegment) : spliceExifIntoJpegBytes(buf, exifSegment)], {type:mime});
+            } else blob = b;
+          }
+          const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `channelswap-${Date.now()}.${ext}`; a.click();
+          $('busy').style.display = 'none';
+        }, 50);
+      }
+      
+      processNext();
+    } catch(e) { alert('Export Failed: ' + e); $('busy').style.display = 'none'; }
+  }, 50);
+};
+
+// --- LUT Export ---
+$('btnExportLUT').onclick = () => {
+  const m = getMatrixUI(), pr=preWB[0], pg=preWB[1], pb=preWB[2], qr=postWB[0], qg=postWB[1], qb=postWB[2];
+  const exp = Math.pow(2, (+$('bright').value||0)/100), hShft = (+$('hue').value||0)/360, sat = (+$('sat').value||100)/100, bp = +$('blackPt').value||0;
+  const lMix = (+$('lutMix').value||100)/100;
+  
+  const size = 32, N = size-1; let text = `TITLE "ChannelSwap_LUT"\nLUT_3D_SIZE ${size}\nDOMAIN_MIN 0 0 0\nDOMAIN_MAX 1 1 1\n`;
+  const tmp = new Uint8ClampedArray(4);
+  for(let z=0;z<size;z++) for(let y=0;y<size;y++) for(let x=0;x<size;x++){
+    const src = new Uint8ClampedArray([Math.round(x/N*255), Math.round(y/N*255), Math.round(z/N*255), 255]);
+    processCPUChunk(src, tmp, m, pr,pg,pb, qr,qg,qb, exp, hShft, sat, bp, currentLUT, lMix, 0, 4);
+    text += `${(tmp[0]/255).toFixed(6)} ${(tmp[1]/255).toFixed(6)} ${(tmp[2]/255).toFixed(6)}\n`;
+  }
+  const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([text],{type:'text/plain'})); a.download = `ChannelSwap_${Date.now()}.cube`; a.click();
 };
 </script>
 </body>
