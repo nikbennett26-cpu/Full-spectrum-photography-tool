@@ -82,7 +82,7 @@ details[open] summary{margin-bottom:4px}
 
 .pt{font-family:var(--font-display);font-size:13px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--paper-dim);margin-bottom:10px;display:flex;align-items:center;gap:8px}
 
-#dropzone{border:1.5px dashed rgba(205,45,25,.6);border-radius:var(--radius);text-align:center;aspect-ratio:1/1;max-width:min(62vh,560px);width:100%;margin:0 auto;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;padding:1.2rem;box-shadow:0 0 0 1px rgba(205,45,25,.08),0 0 60px -20px rgba(205,45,25,.35);transition:box-shadow .2s,border-color .2s}
+#dropzone{border:1.5px dashed rgba(205,45,25,.6);border-radius:var(--radius);text-align:center;aspect-ratio:1/1;max-width:min(62vh,560px);width:100%;margin:0 auto;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;padding:1.2rem;box-shadow:0 0 0 1px rgba(205,45,25,.08),0 0 60px -20px rgba(205,45,25,.35);transition:border-color .2s,box-shadow .2s}
 #dropzone:hover, #dropzone.dragover{border-color:rgba(205,45,25,.9);box-shadow:0 0 0 1px rgba(205,45,25,.15),0 0 70px -15px rgba(205,45,25,.5)}
 #dropzone .big{font-family:var(--font-display);font-size:clamp(18px,4.2vh,26px);font-weight:600;color:var(--paper)}
 
@@ -108,8 +108,14 @@ button.primary{background:var(--safelight);border-color:var(--safelight);color:#
 button.primary:hover{background:var(--safelight-dim)}
 button.armed{background:var(--safelight);color:#fff}
 
-/* ORIGINAL CSS FOR PREVIEW & SLIDER (RESTORED) */
+/* CSS Fix for Preview Alignment */
 #cw{background:#0a0603;border:1px solid var(--line);border-radius:var(--radius);overflow:hidden;text-align:center;min-height:120px;display:flex;align-items:center;justify-content:center;position:relative;user-select:none;-webkit-user-select:none}
+#previewWrap{position:relative;display:inline-block;line-height:0}
+#preview{max-width:100%;max-height:34vh;width:auto;height:auto;display:block;margin:0 auto}
+@media (min-width:900px){#preview{max-height:62vh}}
+@media (min-width:1600px){#preview{max-height:72vh}}
+#preview.pick{cursor:crosshair}
+
 #previewSticky{position:sticky;top:0;z-index:40;background:var(--bg);padding:8px 12px 10px;margin:0 -12px;box-shadow:0 8px 16px -8px rgba(0,0,0,.5)}
 #previewSticky.floating{position:fixed;top:0;left:0;right:0;margin:0;padding:6px 12px 8px;background:var(--bg);box-shadow:0 8px 16px -8px rgba(0,0,0,.5)}
 #previewSticky.floating #cw{max-height:30vh}
@@ -118,16 +124,13 @@ button.armed{background:var(--safelight);color:#fff}
 #previewStickySpacer{display:none}
 #previewStickySpacer.active{display:block}
 
-#previewWrap{position:relative;display:inline-block;line-height:0}
-#preview{max-width:100%;max-height:34vh;width:auto;height:auto;display:block;margin:0 auto}
-@media (min-width:900px){#preview{max-height:62vh}}
-@media (min-width:1600px){#preview{max-height:72vh}}
-#preview.pick{cursor:crosshair}
-#previewOrig{position:absolute;top:0;left:0;width:100%;height:100%;display:none;clip-path:inset(0 50% 0 0);pointer-events:none}
+/* Stacking Order fixed with Natural DOM flow */
+#previewOrig{position:absolute;top:0;left:0;width:100%;height:100%;display:none;clip-path:inset(0 50% 0 0);-webkit-clip-path:inset(0 50% 0 0);pointer-events:none}
 #cmpLabels{position:absolute;top:8px;left:8px;right:8px;display:none;justify-content:space-between;pointer-events:none}
 #cmpLabels span{background:rgba(10,6,3,.75);color:var(--paper);font-family:var(--font-mono);font-size:9.5px;font-weight:600;padding:3px 9px;border-radius:2px;letter-spacing:.06em}
 #cmpHandle{position:absolute;top:0;bottom:0;left:50%;width:0;display:none;pointer-events:none}
 #cmpHandle::before{content:'';position:absolute;top:0;bottom:0;left:-1px;width:2px;background:var(--safelight);box-shadow:0 0 8px rgba(194,67,27,.8)}
+
 #cmpBar{display:none;margin-top:8px;padding:8px 10px;background:var(--surface);border:1px solid var(--line);border-radius:3px}
 .cmpBarLabels{display:flex;justify-content:space-between;font-family:var(--font-mono);font-size:9.5px;font-weight:500;color:var(--paper-dim);letter-spacing:.04em;margin-bottom:4px}
 #cmpRange{width:100%;accent-color:var(--safelight)}
@@ -174,7 +177,6 @@ input[type=range]{width:100%;accent-color:var(--safelight)}
     <div id="previewStickySpacer"></div>
     <div id="previewSticky">
       <div id="cw">
-        <!-- ORIGINAL HTML STRUCTURE RESTORED -->
         <div id="previewWrap">
           <canvas id="preview"></canvas>
           <canvas id="previewOrig"></canvas>
@@ -363,7 +365,7 @@ const FS_SOURCE = `#version 300 es
 
   float compressChan(float v) {
     if (v < 0.0) return 0.0;
-    if (v > 0.75) { return 0.75 + 0.25 * tanh((v - 0.75) / 0.25); } // Using GLSL native tanh prevents NaN overflows
+    if (v > 0.75) { return 0.75 + 0.25 * tanh((v - 0.75) / 0.25); } 
     return v;
   }
   vec3 compressGamut(vec3 v) { return vec3(compressChan(v.r), compressChan(v.g), compressChan(v.b)); }
@@ -429,7 +431,10 @@ class WebGL2Engine {
   constructor(canvas) {
     this.canvas = canvas;
     this.gl = canvas.getContext('webgl2', { preserveDrawingBuffer: true });
-    if (!this.gl) alert('WebGL2 unsupported. App will run in slow CPU mode.');
+    if (!this.gl) {
+      alert('WebGL2 unsupported. The live preview requires WebGL2 hardware acceleration.');
+      return;
+    }
     this.initShaders();
     this.initBuffers();
     this.texture = null;
@@ -486,6 +491,7 @@ class WebGL2Engine {
   }
 
   render(p) {
+    if (!this.gl) return;
     const gl = this.gl; 
     gl.useProgram(this.program);
     gl.bindVertexArray(this.vao);
@@ -496,7 +502,6 @@ class WebGL2Engine {
     gl.uniform1f(this.uLocs.exposure, Math.pow(2, p.exposure / 100)); gl.uniform1f(this.uLocs.hue, p.hue / 360);
     gl.uniform1f(this.uLocs.sat, p.sat / 100); gl.uniform1f(this.uLocs.blackPt, p.blackPt);
     
-    // Explicitly re-bind textures in case browser drops context bindings
     gl.activeTexture(gl.TEXTURE0); gl.bindTexture(gl.TEXTURE_2D, this.texture);
     gl.uniform1i(this.uLocs.image, 0);
     
@@ -527,7 +532,7 @@ const IR_PRESETS = [
   { n: "720nm Classic 🌲", m: [0,0,100, 0,100,0, 100,0,0] }
 ];
 
-// --- Sticky Preview & Compare Logic (ORIGINAL VERSION RESTORED) ---
+// --- Sticky Preview & Compare Logic ---
 let floatingPreviewInit = false;
 function initFloatingPreview() {
   if (floatingPreviewInit) return; floatingPreviewInit = true;
@@ -546,14 +551,17 @@ function initFloatingPreview() {
 }
 
 function setupCompareOverlay() {
-  const po = $('previewOrig'); 
-  po.width = rawCanvas.width; po.height = rawCanvas.height;
-  po.getContext('2d').drawImage(rawCanvas, 0, 0); 
-  po.style.display = 'block';
+  const po = $('previewOrig'); po.width = rawCanvas.width; po.height = rawCanvas.height;
+  po.getContext('2d').drawImage(rawCanvas, 0, 0); po.style.display = 'block';
   $('cmpLabels').style.display = 'flex'; $('cmpHandle').style.display = 'block'; $('cmpBar').style.display = 'block';
   $('cmpRange').value = 50; setComparePos(50);
 }
-function setComparePos(pct) { pct = Math.max(0, Math.min(100, +pct)); $('previewOrig').style.clipPath = 'inset(0 ' + (100 - pct) + '% 0 0)'; $('cmpHandle').style.left = pct + '%'; }
+function setComparePos(pct) { 
+  pct = Math.max(0, Math.min(100, +pct)); 
+  $('previewOrig').style.clipPath = 'inset(0 ' + (100 - pct) + '% 0 0)'; 
+  $('previewOrig').style.webkitClipPath = 'inset(0 ' + (100 - pct) + '% 0 0)'; 
+  $('cmpHandle').style.left = pct + '%'; 
+}
 $('cmpRange').addEventListener('input', e => setComparePos(e.target.value));
 
 function normalizeMatrix(m) {
@@ -563,7 +571,7 @@ function normalizeMatrix(m) {
 }
 function getMatrixUI() { const raw = MCELLS.map(id => (+$(id).value || 0) / 100); return $('chkNormalize').checked ? normalizeMatrix(raw) : raw; }
 function render() {
-  if (!engine || !loadedImage) return;
+  if (!engine || !engine.gl || !loadedImage) return;
   engine.render({ matrix: getMatrixUI(), preWB: preWB, postWB: postWB, exposure: +$('bright').value || 0, hue: +$('hue').value || 0, sat: +$('sat').value || 100, blackPt: +$('blackPt').value || 0, lutMix: +$('lutMix').value || 100 });
 }
 
@@ -622,17 +630,24 @@ async function loadFile(file) {
 
     $('emptyStateGroup').style.display = 'none'; $('main').style.display = 'block'; document.body.classList.add('has-image');
     if (!engine) engine = new WebGL2Engine($('preview'));
-    engine.setImage(rawCanvas); if(currentLUT) engine.setLUT(currentLUT);
+    if (engine.gl) {
+      engine.setImage(rawCanvas); if(currentLUT) engine.setLUT(currentLUT);
+    }
     initFloatingPreview(); setupCompareOverlay(); render();
   };
   img.src = URL.createObjectURL(file);
 }
 
 $('fi').onchange = e => loadFile(e.target.files[0]); $('fi2').onchange = e => loadFile(e.target.files[0]);
+
+// Intercept Global Drag-and-Drop to prevent accidental redirects
+window.addEventListener('dragover', e => { e.preventDefault(); });
+window.addEventListener('drop', e => { e.preventDefault(); });
+
 const dz = $('dropzone');
-['dragover', 'dragenter'].forEach(ev => dz.addEventListener(ev, e => { e.preventDefault(); dz.classList.add('dragover'); }));
-['dragleave', 'dragend', 'drop'].forEach(ev => dz.addEventListener(ev, e => { e.preventDefault(); dz.classList.remove('dragover'); }));
-dz.addEventListener('drop', e => { const f = e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files[0]; if (f) loadFile(f); });
+['dragover', 'dragenter'].forEach(ev => dz.addEventListener(ev, e => { e.preventDefault(); e.stopPropagation(); dz.classList.add('dragover'); }));
+['dragleave', 'dragend'].forEach(ev => dz.addEventListener(ev, e => { e.preventDefault(); e.stopPropagation(); dz.classList.remove('dragover'); }));
+dz.addEventListener('drop', e => { e.preventDefault(); e.stopPropagation(); dz.classList.remove('dragover'); const f = e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files[0]; if (f) loadFile(f); });
 
 // --- LUT Handling ---
 function parseCubeLUT(text){
@@ -677,6 +692,7 @@ $('preview').onclick = e => {
 $('bReset').onclick = () => {
   const identity = [100,0,0, 0,100,0, 0,0,100]; MCELLS.forEach((id, i) => $(id).value = identity[i]); preWB = [1, 1, 1]; postWB = [1, 1, 1];
   ['bright','hue','blackPt'].forEach(id => { $(id).value = 0; $('v_' + id).textContent = 0; }); $('sat').value = 100; $('v_sat').textContent = 100;
+  $('lutMix').value = 100; $('v_lutMix').textContent = 100;
   $('wbPreStatus').textContent = 'Pre-WB: Not set'; $('wbPostStatus').textContent = 'Post-WB: Not set'; document.querySelectorAll('.pb').forEach(x => x.classList.remove('on')); render();
 };
 
@@ -764,23 +780,37 @@ $('bDl').onclick = async () => {
   
   setTimeout(async () => {
     try {
-      let srcCanvas = rawCanvas;
+      let W, H, srcData;
+
       if (useOrig) {
         $('busy').textContent = 'Decoding Original Image...';
         const img = new Image(); await new Promise(r => { img.onload=r; img.src=URL.createObjectURL(origFile); });
-        srcCanvas = document.createElement('canvas'); srcCanvas.width = img.width; srcCanvas.height = img.height;
-        srcCanvas.getContext('2d').drawImage(img,0,0);
+        W = img.width; H = img.height;
+        srcData = new Uint8ClampedArray(W * H * 4);
+        
+        // Strip-based rendering to prevent iOS Canvas Memory Crash
+        const stripH = 1024;
+        const tmpCanvas = document.createElement('canvas');
+        tmpCanvas.width = W; tmpCanvas.height = stripH;
+        const ctx = tmpCanvas.getContext('2d', { willReadFrequently: true });
+        
+        for (let y = 0; y < H; y += stripH) {
+          const curH = Math.min(stripH, H - y);
+          ctx.clearRect(0, 0, W, stripH);
+          ctx.drawImage(img, 0, -y);
+          srcData.set(ctx.getImageData(0, 0, W, curH).data, y * W * 4);
+        }
+      } else {
+        W = rawCanvas.width; H = rawCanvas.height;
+        srcData = rawCtx.getImageData(0, 0, W, H).data;
       }
-      
-      const W = srcCanvas.width, H = srcCanvas.height;
-      const srcData = srcCanvas.getContext('2d').getImageData(0,0,W,H).data;
       
       const workerBlob = new Blob([getWorkerScript()], { type: 'application/javascript' });
       const worker = new Worker(URL.createObjectURL(workerBlob));
 
       worker.onmessage = async (e) => {
         if (e.data.type === 'progress') {
-          $('busy').textContent = `Processing CPU Export... ${e.data.pct}%`;
+          $('busy').textContent = typeof e.data.pct === 'number' ? `Processing CPU Export... ${e.data.pct}%` : e.data.pct;
         } else if (e.data.type === 'done') {
           $('busy').textContent = 'Encoding File...';
           let finalBlob, ext, mime;
