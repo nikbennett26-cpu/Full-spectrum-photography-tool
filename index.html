@@ -46,6 +46,8 @@ body{background:var(--bg);color:var(--paper);font-family:var(--font-body);font-s
 body.has-image{overflow-y:auto;height:auto}
 @media (min-width:900px){body{max-width:1400px;padding:24px 40px}}
 @media (min-width:1600px){body{max-width:92vw;padding:32px 4vw}}
+
+/* Desktop vs Mobile Layout */
 @media (min-width:1100px){
   body.has-image{overflow:hidden;height:100vh}
   #editorLeft{height:68vh;overflow:hidden;flex-shrink:0;display:flex;flex-direction:column}
@@ -55,6 +57,24 @@ body.has-image{overflow-y:auto;height:auto}
   #preview{max-height:100%!important;max-width:100%!important;height:auto;width:auto}
   #reorderZone{height:calc(32vh - 24px);overflow-y:auto;overflow-x:hidden;border-top:1px solid var(--line);padding-top:12px;scrollbar-width:thin;scrollbar-color:var(--line2) transparent}
 }
+
+/* Sticky Preview & Compare Features */
+#previewSticky{position:sticky;top:0;z-index:40;background:var(--bg);padding:8px 12px 10px;margin:0 -12px;box-shadow:0 8px 16px -8px rgba(0,0,0,.5)}
+#previewSticky.floating{position:fixed;top:0;left:0;right:0;margin:0;padding:6px 12px 8px;background:var(--bg);box-shadow:0 8px 16px -8px rgba(0,0,0,.5)}
+#previewSticky.floating #cw{max-height:30vh}
+#previewSticky.floating #preview{max-height:30vh!important}
+#previewSticky.floating #cmpBar{display:none}
+#previewStickySpacer{display:none}
+#previewStickySpacer.active{display:block}
+
+#previewOrig{position:absolute;top:0;left:0;width:100%;height:100%;display:none;clip-path:inset(0 50% 0 0);pointer-events:none}
+#cmpLabels{position:absolute;top:8px;left:8px;right:8px;display:none;justify-content:space-between;pointer-events:none}
+#cmpLabels span{background:rgba(10,6,3,.75);color:var(--paper);font-family:var(--font-mono);font-size:9.5px;font-weight:600;padding:3px 9px;border-radius:2px;letter-spacing:.06em}
+#cmpHandle{position:absolute;top:0;bottom:0;left:50%;width:0;display:none;pointer-events:none}
+#cmpHandle::before{content:'';position:absolute;top:0;bottom:0;left:-1px;width:2px;background:var(--safelight);box-shadow:0 0 8px rgba(194,67,27,.8)}
+#cmpBar{display:none;margin-top:8px;padding:8px 10px;background:var(--surface);border:1px solid var(--line);border-radius:3px}
+.cmpBarLabels{display:flex;justify-content:space-between;font-family:var(--font-mono);font-size:9.5px;font-weight:500;color:var(--paper-dim);letter-spacing:.04em;margin-bottom:4px}
+#cmpRange{width:100%;accent-color:var(--safelight)}
 
 header{margin-bottom:clamp(6px,1.6vh,14px)}
 header h1{font-family:var(--font-display);font-weight:700;font-size:clamp(20px,5vh,28px);letter-spacing:.01em;text-transform:uppercase;color:var(--paper);line-height:1}
@@ -128,11 +148,22 @@ input[type=range]{width:100%;accent-color:var(--safelight)}
       <button id="bReset">Reset all</button>
     </div>
 
+    <div id="previewStickySpacer"></div>
     <div id="previewSticky">
       <div id="cw">
         <div id="previewWrap">
           <canvas id="preview"></canvas>
+          <canvas id="previewOrig"></canvas>
+          <div id="cmpLabels">
+            <span id="cmpLabelBefore">BEFORE</span>
+            <span id="cmpLabelAfter">AFTER</span>
+          </div>
+          <div id="cmpHandle"></div>
         </div>
+      </div>
+      <div id="cmpBar">
+        <div class="cmpBarLabels"><span>◀ Before</span><span>After ▶</span></div>
+        <input type="range" id="cmpRange" min="0" max="100" value="50">
       </div>
     </div>
   </div>
@@ -223,7 +254,7 @@ const FS_SOURCE = `
     return mix(clamped * 12.92, 1.055 * pow(clamped, vec3(1.0 / 2.4)) - 0.055, step(vec3(0.0031308), clamped));
   }
 
-  // Darktable Hyperbolic Tangent Gamut Protection (GLSL ES 1.00 Compatible)
+  // Darktable Hyperbolic Tangent Gamut Protection
   float compressChan(float v) {
     if (v < 0.0) return 0.0;
     if (v > 0.75) {
@@ -365,7 +396,7 @@ class WebGLEngine {
     const gl = this.gl;
     gl.useProgram(this.program);
     
-    // Transpose 3x3 matrix from Row-Major (UI) to Column-Major (WebGL)
+    // Transpose matrix from Row-Major (UI) to Column-Major (WebGL)
     const m = p.matrix;
     const transposed = [
       m[0], m[3], m[6],
@@ -384,7 +415,7 @@ class WebGLEngine {
   }
 }
 
-// --- App State & Offscreen Buffer ---
+// --- App State & UI Logic ---
 const $ = id => document.getElementById(id);
 const MCELLS = ['m00','m01','m02','m10','m11','m12','m20','m21','m22'];
 let engine = null, preWB = [1, 1, 1], postWB = [1, 1, 1], loadedImage = null, pickMode = null;
@@ -404,6 +435,68 @@ const IR_PRESETS = [
   { n: "720nm Classic 🌲", m: [0,0,100, 0,100,0, 100,0,0] }
 ];
 
+// 1. Sticky Preview Setup
+let floatingPreviewInit = false;
+function initFloatingPreview() {
+  if (floatingPreviewInit) return;
+  floatingPreviewInit = true;
+  const ps = $('previewSticky'), spacer = $('previewStickySpacer');
+  if (!ps || !spacer) return;
+  let naturalTop = 0, isFloating = false;
+  
+  function measure() {
+    if (ps.classList.contains('floating')) return;
+    const r = ps.getBoundingClientRect();
+    naturalTop = r.top + window.scrollY;
+  }
+  function setFloating(on) {
+    if (on === isFloating) return;
+    isFloating = on;
+    if (on) {
+      spacer.style.height = (Math.round(window.innerHeight * 0.30) + 16) + 'px';
+      spacer.classList.add('active');
+      ps.classList.add('floating');
+    } else {
+      ps.classList.remove('floating');
+      spacer.classList.remove('active');
+    }
+  }
+  requestAnimationFrame(measure);
+  window.addEventListener('resize', () => {
+    if (window.innerWidth >= 1100) { setFloating(false); return; }
+    setFloating(false);
+    requestAnimationFrame(measure);
+  });
+  window.addEventListener('scroll', () => {
+    if (window.innerWidth >= 1100) return;
+    const y = window.scrollY;
+    if (!isFloating && y > naturalTop + 40) setFloating(true);
+    else if (isFloating && y < naturalTop - 20) setFloating(false);
+  }, { passive: true });
+}
+
+// 2. Before & After Slider Setup
+function setupCompareOverlay() {
+  const po = $('previewOrig');
+  po.width = rawCanvas.width;
+  po.height = rawCanvas.height;
+  po.getContext('2d').drawImage(rawCanvas, 0, 0);
+  po.style.display = 'block';
+  $('cmpLabels').style.display = 'flex';
+  $('cmpHandle').style.display = 'block';
+  $('cmpBar').style.display = 'block';
+  $('cmpRange').value = 50;
+  setComparePos(50);
+}
+
+function setComparePos(pct) {
+  pct = Math.max(0, Math.min(100, +pct));
+  $('previewOrig').style.clipPath = 'inset(0 ' + (100 - pct) + '% 0 0)';
+  $('cmpHandle').style.left = pct + '%';
+}
+$('cmpRange').addEventListener('input', e => setComparePos(e.target.value));
+
+// 3. Matrix & Render Logic
 function normalizeMatrix(m) {
   const norm = [...m];
   for (let r = 0; r < 3; r++) {
@@ -433,17 +526,12 @@ function render() {
   });
 }
 
-// Wire Sliders
 ['bright','hue','sat','blackPt'].forEach(id => {
-  $(id).addEventListener('input', () => {
-    $('v_' + id).textContent = $(id).value;
-    render();
-  });
+  $(id).addEventListener('input', () => { $('v_' + id).textContent = $(id).value; render(); });
 });
 MCELLS.forEach(id => $(id).addEventListener('input', render));
 $('chkNormalize').addEventListener('change', render);
 
-// Build Presets
 function buildPresetButtons(list, containerId) {
   list.forEach(p => {
     const b = document.createElement('button');
@@ -460,12 +548,11 @@ function buildPresetButtons(list, containerId) {
 buildPresetButtons(UV_PRESETS, 'pgUV');
 buildPresetButtons(IR_PRESETS, 'pgIR');
 
-// Image Loading with Size Cap
+// 4. File Loading
 function loadFile(file) {
   if (!file) return;
   const img = new Image();
   img.onload = () => {
-    // Cap max texture dimension to 2048px for mobile GPU safety
     const maxDim = 2048;
     let w = img.width, h = img.height;
     if (w > maxDim || h > maxDim) {
@@ -473,17 +560,19 @@ function loadFile(file) {
       w = Math.round(w * scale);
       h = Math.round(h * scale);
     }
-
-    rawCanvas.width = w;
-    rawCanvas.height = h;
+    rawCanvas.width = w; rawCanvas.height = h;
     rawCtx.drawImage(img, 0, 0, w, h);
     loadedImage = rawCanvas;
 
     $('emptyStateGroup').style.display = 'none';
     $('main').style.display = 'block';
     document.body.classList.add('has-image');
+    
     if (!engine) engine = new WebGLEngine($('preview'));
     engine.setImage(rawCanvas);
+    
+    initFloatingPreview();
+    setupCompareOverlay();
     render();
   };
   img.src = URL.createObjectURL(file);
@@ -492,7 +581,6 @@ function loadFile(file) {
 $('fi').onchange = e => loadFile(e.target.files[0]);
 $('fi2').onchange = e => loadFile(e.target.files[0]);
 
-// Drag & Drop Setup
 const dz = $('dropzone');
 ['dragover', 'dragenter'].forEach(ev => dz.addEventListener(ev, e => { e.preventDefault(); dz.classList.add('dragover'); }));
 ['dragleave', 'dragend', 'drop'].forEach(ev => dz.addEventListener(ev, e => { e.preventDefault(); dz.classList.remove('dragover'); }));
@@ -501,12 +589,10 @@ dz.addEventListener('drop', e => {
   if (f) loadFile(f);
 });
 
-// Reset Button (True 1:1 Identity)
 $('bReset').onclick = () => {
   const identity = [100,0,0, 0,100,0, 0,0,100];
   MCELLS.forEach((id, i) => $(id).value = identity[i]);
-  preWB = [1, 1, 1];
-  postWB = [1, 1, 1];
+  preWB = [1, 1, 1]; postWB = [1, 1, 1];
   ['bright','hue','blackPt'].forEach(id => { $(id).value = 0; $('v_' + id).textContent = 0; });
   $('sat').value = 100; $('v_sat').textContent = 100;
   $('wbPreStatus').textContent = 'Pre-WB: Not set';
@@ -515,7 +601,6 @@ $('bReset').onclick = () => {
   render();
 };
 
-// White Balance Eyedropper (Sampled from Un-Adjusted Raw 2D Buffer)
 $('wbPre').onclick = () => { pickMode = 'pre'; $('wbPre').classList.add('armed'); $('wbPost').classList.remove('armed'); $('preview').classList.add('pick'); };
 $('wbPost').onclick = () => { pickMode = 'post'; $('wbPost').classList.add('armed'); $('wbPre').classList.remove('armed'); $('preview').classList.add('pick'); };
 $('wbPreReset').onclick = () => { preWB = [1,1,1]; $('wbPreStatus').textContent = 'Pre-WB: Cleared'; render(); };
@@ -527,7 +612,6 @@ $('preview').onclick = e => {
   const x = Math.floor((e.clientX - rect.left) / rect.width * rawCanvas.width);
   const y = Math.floor((e.clientY - rect.top) / rect.height * rawCanvas.height);
   
-  // Sample a 5x5 region from the original raw canvas buffer
   const rad = 2;
   const pix = rawCtx.getImageData(Math.max(0, x - rad), Math.max(0, y - rad), 5, 5).data;
   let r = 0, g = 0, b = 0, count = 0;
@@ -553,7 +637,6 @@ $('preview').onclick = e => {
   render();
 };
 
-// Export Image
 $('bDl').onclick = () => {
   const a = document.createElement('a');
   a.download = 'channel-swap-' + Date.now() + '.png';
