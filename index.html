@@ -34,8 +34,6 @@ body.has-image{overflow-y:auto;height:auto}
   #editorLeft{height:68vh;overflow:hidden;flex-shrink:0;display:flex;flex-direction:column}
   #previewSticky{position:static;margin:0;padding:4px 0;background:transparent;box-shadow:none;flex:1;min-height:0;display:flex;flex-direction:column}
   #cw{flex:1;min-height:0}
-  #previewWrap{height:100%;max-width:100%;display:flex;align-items:center;justify-content:center}
-  #preview{max-height:100%!important;max-width:100%!important;height:auto;width:auto}
   #reorderZone{height:calc(32vh - 24px);overflow-y:auto;overflow-x:hidden;border-top:1px solid var(--line);padding-top:12px;scrollbar-width:thin;scrollbar-color:var(--line2) transparent}
 }
 
@@ -53,14 +51,12 @@ header .tagline{font-size:11.5px;color:var(--paper-dim);margin-top:4px;display:b
   box-shadow:0 0 14px rgba(194,67,27,.35);
   opacity:0;transform:scaleX(0);transform-origin:left center;
   animation:barFadeIn 1.6s cubic-bezier(.16,.8,.3,1) .25s forwards}
-#spectrumBar::after{content:'';position:absolute;inset:0;
-  background:linear-gradient(90deg,transparent,rgba(255,255,255,.65),transparent);
-  transform:translateX(-100%);animation:barShimmer 1.3s ease-out 1.9s forwards}
+#spectrumBar::after{content:'';position:absolute;inset:0;background:linear-gradient(90deg,transparent,rgba(255,255,255,.65),transparent);transform:translateX(-100%);animation:barShimmer 1.3s ease-out 1.9s forwards}
 #spectrumTicks{display:flex;justify-content:space-between;font-family:var(--font-mono);font-size:9px;color:var(--muted);letter-spacing:.02em;margin-bottom:2px}
 
 .panel{background:var(--surface);border:1px solid var(--line);border-top:2px solid var(--line2);border-radius:var(--radius);padding:14px;margin-bottom:10px;position:relative}
 
-/* Filter Reference & Summary Tags */
+/* Filter Reference Table */
 details summary{list-style:none; cursor:pointer;}
 details summary::-webkit-details-marker{display:none}
 details summary::after{content:'+';font-family:var(--font-mono);color:var(--safelight);margin-left:8px}
@@ -85,7 +81,7 @@ details[open] summary{margin-bottom:4px}
 
 .pt{font-family:var(--font-display);font-size:13px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--paper-dim);margin-bottom:10px;display:flex;align-items:center;gap:8px}
 
-#dropzone{border:1.5px dashed rgba(205,45,25,.6);border-radius:var(--radius);text-align:center;aspect-ratio:1/1;max-width:min(62vh,560px);width:100%;margin:0 auto;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;padding:1.2rem;box-shadow:0 0 0 1px rgba(205,45,25,.08),0 0 60px -20px rgba(205,45,25,.35);transition:box-shadow .2s,border-color .2s}
+#dropzone{border:1.5px dashed rgba(205,45,25,.6);border-radius:var(--radius);text-align:center;aspect-ratio:1/1;max-width:min(62vh,560px);width:100%;margin:0 auto;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;padding:1.2rem;box-shadow:0 0 0 1px rgba(205,45,25,.08),0 0 60px -20px rgba(205,45,25,.35);transition:border-color .2s,box-shadow .2s}
 #dropzone:hover, #dropzone.dragover{border-color:rgba(205,45,25,.9);box-shadow:0 0 0 1px rgba(205,45,25,.15),0 0 70px -15px rgba(205,45,25,.5)}
 #dropzone .big{font-family:var(--font-display);font-size:clamp(18px,4.2vh,26px);font-weight:600;color:var(--paper)}
 
@@ -111,25 +107,28 @@ button.primary{background:var(--safelight);border-color:var(--safelight);color:#
 button.primary:hover{background:var(--safelight-dim)}
 button.armed{background:var(--safelight);color:#fff}
 
+/* CSS Fix for Preview Alignment */
 #cw{background:#0a0603;border:1px solid var(--line);border-radius:var(--radius);overflow:hidden;text-align:center;min-height:120px;display:flex;align-items:center;justify-content:center;position:relative}
-#previewWrap{position:relative;display:inline-block;line-height:0}
-#preview{max-width:100%;max-height:34vh;width:auto;height:auto;display:block;margin:0 auto}
-@media (min-width:900px){#preview{max-height:62vh}}
-#preview.pick{cursor:crosshair}
+#previewWrap{position:relative;display:inline-block;line-height:0;max-width:100%;max-height:100%}
+.preview-canvas{display:block;max-width:100%;width:auto;height:auto;max-height:34vh;margin:0 auto}
+@media (min-width:900px){.preview-canvas{max-height:62vh}}
+@media (min-width:1100px){.preview-canvas{max-height:68vh}}
 
 #previewSticky{position:sticky;top:0;z-index:40;background:var(--bg);padding:8px 12px 10px;margin:0 -12px;box-shadow:0 8px 16px -8px rgba(0,0,0,.5)}
 #previewSticky.floating{position:fixed;top:0;left:0;right:0;margin:0;padding:6px 12px 8px;background:var(--bg);box-shadow:0 8px 16px -8px rgba(0,0,0,.5)}
 #previewSticky.floating #cw{max-height:30vh}
-#previewSticky.floating #preview{max-height:30vh!important}
+#previewSticky.floating .preview-canvas{max-height:30vh!important}
 #previewSticky.floating #cmpBar{display:none}
 #previewStickySpacer{display:none}
 #previewStickySpacer.active{display:block}
 
-#previewOrig{position:absolute;top:0;left:0;width:100%;height:100%;display:none;clip-path:inset(0 50% 0 0);pointer-events:none}
-#cmpLabels{position:absolute;top:8px;left:8px;right:8px;display:none;justify-content:space-between;pointer-events:none}
-#cmpLabels span{background:rgba(10,6,3,.75);color:var(--paper);font-family:var(--font-mono);font-size:9.5px;font-weight:600;padding:3px 9px;border-radius:2px;letter-spacing:.06em}
-#cmpHandle{position:absolute;top:0;bottom:0;left:50%;width:0;display:none;pointer-events:none}
+/* Stacking Order fixed with Z-Index */
+#previewOrig{position:absolute;top:0;left:0;display:none;clip-path:inset(0 50% 0 0);pointer-events:none;z-index:10}
+#cmpHandle{position:absolute;top:0;bottom:0;left:50%;width:0;display:none;pointer-events:none;z-index:20}
 #cmpHandle::before{content:'';position:absolute;top:0;bottom:0;left:-1px;width:2px;background:var(--safelight);box-shadow:0 0 8px rgba(194,67,27,.8)}
+#cmpLabels{position:absolute;top:8px;left:8px;right:8px;display:none;justify-content:space-between;pointer-events:none;z-index:30}
+#cmpLabels span{background:rgba(10,6,3,.75);color:var(--paper);font-family:var(--font-mono);font-size:9.5px;font-weight:600;padding:3px 9px;border-radius:2px;letter-spacing:.06em}
+
 #cmpBar{display:none;margin-top:8px;padding:8px 10px;background:var(--surface);border:1px solid var(--line);border-radius:3px}
 .cmpBarLabels{display:flex;justify-content:space-between;font-family:var(--font-mono);font-size:9.5px;font-weight:500;color:var(--paper-dim);letter-spacing:.04em;margin-bottom:4px}
 #cmpRange{width:100%;accent-color:var(--safelight)}
@@ -177,8 +176,8 @@ input[type=range]{width:100%;accent-color:var(--safelight)}
     <div id="previewSticky">
       <div id="cw">
         <div id="previewWrap">
-          <canvas id="preview"></canvas>
-          <canvas id="previewOrig"></canvas>
+          <canvas id="preview" class="preview-canvas"></canvas>
+          <canvas id="previewOrig" class="preview-canvas"></canvas>
           <div id="cmpLabels">
             <span id="cmpLabelBefore">BEFORE</span>
             <span id="cmpLabelAfter">AFTER</span>
@@ -364,7 +363,7 @@ const FS_SOURCE = `#version 300 es
 
   float compressChan(float v) {
     if (v < 0.0) return 0.0;
-    if (v > 0.75) { float x = (v - 0.75) / 0.25; return 0.75 + 0.25 * ((exp(x) - exp(-x)) / (exp(x) + exp(-x))); }
+    if (v > 0.75) { return 0.75 + 0.25 * tanh((v - 0.75) / 0.25); } // Using GLSL native tanh prevents NaN overflows
     return v;
   }
   vec3 compressGamut(vec3 v) { return vec3(compressChan(v.r), compressChan(v.g), compressChan(v.b)); }
@@ -456,10 +455,15 @@ class WebGL2Engine {
 
   initBuffers() {
     const gl = this.gl;
+    this.vao = gl.createVertexArray();
+    gl.bindVertexArray(this.vao);
+    
     const posBuf = gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER, posBuf); gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1,-1, 1,-1, -1,1, 1,1]), gl.STATIC_DRAW);
     const aPos = gl.getAttribLocation(this.program, 'a_position'); gl.enableVertexAttribArray(aPos); gl.vertexAttribPointer(aPos, 2, gl.FLOAT, false, 0, 0);
     const texBuf = gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER, texBuf); gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([0,0, 1,0, 0,1, 1,1]), gl.STATIC_DRAW);
     const aTex = gl.getAttribLocation(this.program, 'a_texCoord'); gl.enableVertexAttribArray(aTex); gl.vertexAttribPointer(aTex, 2, gl.FLOAT, false, 0, 0);
+    
+    gl.bindVertexArray(null);
   }
 
   setImage(img) {
@@ -482,18 +486,27 @@ class WebGL2Engine {
   }
 
   render(p) {
-    const gl = this.gl; gl.useProgram(this.program);
+    const gl = this.gl; 
+    gl.useProgram(this.program);
+    gl.bindVertexArray(this.vao);
+    
     const m = p.matrix, transposed = [m[0],m[3],m[6], m[1],m[4],m[7], m[2],m[5],m[8]];
     gl.uniformMatrix3fv(this.uLocs.matrix, false, new Float32Array(transposed));
     gl.uniform3fv(this.uLocs.preWB, new Float32Array(p.preWB)); gl.uniform3fv(this.uLocs.postWB, new Float32Array(p.postWB));
     gl.uniform1f(this.uLocs.exposure, Math.pow(2, p.exposure / 100)); gl.uniform1f(this.uLocs.hue, p.hue / 360);
     gl.uniform1f(this.uLocs.sat, p.sat / 100); gl.uniform1f(this.uLocs.blackPt, p.blackPt);
+    
+    // Explicitly re-bind textures in case browser drops context bindings
+    gl.activeTexture(gl.TEXTURE0); gl.bindTexture(gl.TEXTURE_2D, this.texture);
     gl.uniform1i(this.uLocs.image, 0);
+    
     if (this.lutTexture) {
-      gl.uniform1i(this.uLocs.hasLut, 1); gl.uniform1i(this.uLocs.lut, 1); gl.uniform1f(this.uLocs.lutMix, p.lutMix / 100);
       gl.activeTexture(gl.TEXTURE1); gl.bindTexture(gl.TEXTURE_3D, this.lutTexture);
-    } else gl.uniform1i(this.uLocs.hasLut, 0);
+      gl.uniform1i(this.uLocs.hasLut, 1); gl.uniform1i(this.uLocs.lut, 1); gl.uniform1f(this.uLocs.lutMix, p.lutMix / 100);
+    } else { gl.uniform1i(this.uLocs.hasLut, 0); }
+    
     gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+    gl.bindVertexArray(null);
   }
 }
 
@@ -712,6 +725,7 @@ function getWorkerScript() {
         for(let p=off; p<end; p+=4) {
           let R = SRGB[src[p]] * pr, G = SRGB[src[p+1]] * pg, B = SRGB[src[p+2]] * pb;
           let lR = (m[0]*R + m[1]*G + m[2]*B) * qr * exp, lG = (m[3]*R + m[4]*G + m[5]*B) * qg * exp, lB = (m[6]*R + m[7]*G + m[8]*B) * qb * exp;
+          
           const comp = v => { if(v<0)return 0; if(v>0.75){let x=(v-0.75)/0.25; return 0.75+0.25*((Math.exp(x)-Math.exp(-x))/(Math.exp(x)+Math.exp(-x)));} return v; };
           let r = Math.round(lin2srgb(comp(lR))*255), g = Math.round(lin2srgb(comp(lG))*255), b = Math.round(lin2srgb(comp(lB))*255);
 
