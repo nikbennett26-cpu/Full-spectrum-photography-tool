@@ -34,13 +34,14 @@ body.has-image{overflow-y:auto;height:auto}
   #editorLeft{height:68vh;overflow:hidden;flex-shrink:0;display:flex;flex-direction:column}
   #previewSticky{position:static;margin:0;padding:4px 0;background:transparent;box-shadow:none;flex:1;min-height:0;display:flex;flex-direction:column}
   #cw{flex:1;min-height:0}
+  #previewWrap{height:100%;max-width:100%;display:flex;align-items:center;justify-content:center}
+  #preview{max-height:100%!important;max-width:100%!important;height:auto;width:auto}
   #reorderZone{height:calc(32vh - 24px);overflow-y:auto;overflow-x:hidden;border-top:1px solid var(--line);padding-top:12px;scrollbar-width:thin;scrollbar-color:var(--line2) transparent}
 }
 
 /* Animations */
 @keyframes barFadeIn{from{opacity:0;transform:scaleX(0)}to{opacity:1;transform:scaleX(1)}}
 @keyframes barShimmer{to{transform:translateX(100%)}}
-@keyframes glowFadeIn{from{opacity:0;transform:translateY(24px)}to{opacity:.85;transform:translateY(0)}}
 
 header{margin-bottom:clamp(6px,1.6vh,14px)}
 header h1{font-family:var(--font-display);font-weight:700;font-size:clamp(20px,5vh,28px);letter-spacing:.01em;text-transform:uppercase;color:var(--paper);line-height:1}
@@ -81,7 +82,7 @@ details[open] summary{margin-bottom:4px}
 
 .pt{font-family:var(--font-display);font-size:13px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--paper-dim);margin-bottom:10px;display:flex;align-items:center;gap:8px}
 
-#dropzone{border:1.5px dashed rgba(205,45,25,.6);border-radius:var(--radius);text-align:center;aspect-ratio:1/1;max-width:min(62vh,560px);width:100%;margin:0 auto;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;padding:1.2rem;box-shadow:0 0 0 1px rgba(205,45,25,.08),0 0 60px -20px rgba(205,45,25,.35);transition:border-color .2s,box-shadow .2s}
+#dropzone{border:1.5px dashed rgba(205,45,25,.6);border-radius:var(--radius);text-align:center;aspect-ratio:1/1;max-width:min(62vh,560px);width:100%;margin:0 auto;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;padding:1.2rem;box-shadow:0 0 0 1px rgba(205,45,25,.08),0 0 60px -20px rgba(205,45,25,.35);transition:box-shadow .2s,border-color .2s}
 #dropzone:hover, #dropzone.dragover{border-color:rgba(205,45,25,.9);box-shadow:0 0 0 1px rgba(205,45,25,.15),0 0 70px -15px rgba(205,45,25,.5)}
 #dropzone .big{font-family:var(--font-display);font-size:clamp(18px,4.2vh,26px);font-weight:600;color:var(--paper)}
 
@@ -107,28 +108,26 @@ button.primary{background:var(--safelight);border-color:var(--safelight);color:#
 button.primary:hover{background:var(--safelight-dim)}
 button.armed{background:var(--safelight);color:#fff}
 
-/* CSS Fix for Preview Alignment */
-#cw{background:#0a0603;border:1px solid var(--line);border-radius:var(--radius);overflow:hidden;text-align:center;min-height:120px;display:flex;align-items:center;justify-content:center;position:relative}
-#previewWrap{position:relative;display:inline-block;line-height:0;max-width:100%;max-height:100%}
-.preview-canvas{display:block;max-width:100%;width:auto;height:auto;max-height:34vh;margin:0 auto}
-@media (min-width:900px){.preview-canvas{max-height:62vh}}
-@media (min-width:1100px){.preview-canvas{max-height:68vh}}
-
+/* ORIGINAL CSS FOR PREVIEW & SLIDER (RESTORED) */
+#cw{background:#0a0603;border:1px solid var(--line);border-radius:var(--radius);overflow:hidden;text-align:center;min-height:120px;display:flex;align-items:center;justify-content:center;position:relative;user-select:none;-webkit-user-select:none}
 #previewSticky{position:sticky;top:0;z-index:40;background:var(--bg);padding:8px 12px 10px;margin:0 -12px;box-shadow:0 8px 16px -8px rgba(0,0,0,.5)}
 #previewSticky.floating{position:fixed;top:0;left:0;right:0;margin:0;padding:6px 12px 8px;background:var(--bg);box-shadow:0 8px 16px -8px rgba(0,0,0,.5)}
 #previewSticky.floating #cw{max-height:30vh}
-#previewSticky.floating .preview-canvas{max-height:30vh!important}
+#previewSticky.floating #preview{max-height:30vh!important}
 #previewSticky.floating #cmpBar{display:none}
 #previewStickySpacer{display:none}
 #previewStickySpacer.active{display:block}
 
-/* Stacking Order fixed with Z-Index */
-#previewOrig{position:absolute;top:0;left:0;display:none;clip-path:inset(0 50% 0 0);pointer-events:none;z-index:10}
-#cmpHandle{position:absolute;top:0;bottom:0;left:50%;width:0;display:none;pointer-events:none;z-index:20}
-#cmpHandle::before{content:'';position:absolute;top:0;bottom:0;left:-1px;width:2px;background:var(--safelight);box-shadow:0 0 8px rgba(194,67,27,.8)}
-#cmpLabels{position:absolute;top:8px;left:8px;right:8px;display:none;justify-content:space-between;pointer-events:none;z-index:30}
+#previewWrap{position:relative;display:inline-block;line-height:0}
+#preview{max-width:100%;max-height:34vh;width:auto;height:auto;display:block;margin:0 auto}
+@media (min-width:900px){#preview{max-height:62vh}}
+@media (min-width:1600px){#preview{max-height:72vh}}
+#preview.pick{cursor:crosshair}
+#previewOrig{position:absolute;top:0;left:0;width:100%;height:100%;display:none;clip-path:inset(0 50% 0 0);pointer-events:none}
+#cmpLabels{position:absolute;top:8px;left:8px;right:8px;display:none;justify-content:space-between;pointer-events:none}
 #cmpLabels span{background:rgba(10,6,3,.75);color:var(--paper);font-family:var(--font-mono);font-size:9.5px;font-weight:600;padding:3px 9px;border-radius:2px;letter-spacing:.06em}
-
+#cmpHandle{position:absolute;top:0;bottom:0;left:50%;width:0;display:none;pointer-events:none}
+#cmpHandle::before{content:'';position:absolute;top:0;bottom:0;left:-1px;width:2px;background:var(--safelight);box-shadow:0 0 8px rgba(194,67,27,.8)}
 #cmpBar{display:none;margin-top:8px;padding:8px 10px;background:var(--surface);border:1px solid var(--line);border-radius:3px}
 .cmpBarLabels{display:flex;justify-content:space-between;font-family:var(--font-mono);font-size:9.5px;font-weight:500;color:var(--paper-dim);letter-spacing:.04em;margin-bottom:4px}
 #cmpRange{width:100%;accent-color:var(--safelight)}
@@ -175,9 +174,10 @@ input[type=range]{width:100%;accent-color:var(--safelight)}
     <div id="previewStickySpacer"></div>
     <div id="previewSticky">
       <div id="cw">
+        <!-- ORIGINAL HTML STRUCTURE RESTORED -->
         <div id="previewWrap">
-          <canvas id="preview" class="preview-canvas"></canvas>
-          <canvas id="previewOrig" class="preview-canvas"></canvas>
+          <canvas id="preview"></canvas>
+          <canvas id="previewOrig"></canvas>
           <div id="cmpLabels">
             <span id="cmpLabelBefore">BEFORE</span>
             <span id="cmpLabelAfter">AFTER</span>
@@ -527,7 +527,7 @@ const IR_PRESETS = [
   { n: "720nm Classic 🌲", m: [0,0,100, 0,100,0, 100,0,0] }
 ];
 
-// --- Sticky Preview & Compare Logic ---
+// --- Sticky Preview & Compare Logic (ORIGINAL VERSION RESTORED) ---
 let floatingPreviewInit = false;
 function initFloatingPreview() {
   if (floatingPreviewInit) return; floatingPreviewInit = true;
@@ -546,8 +546,10 @@ function initFloatingPreview() {
 }
 
 function setupCompareOverlay() {
-  const po = $('previewOrig'); po.width = rawCanvas.width; po.height = rawCanvas.height;
-  po.getContext('2d').drawImage(rawCanvas, 0, 0); po.style.display = 'block';
+  const po = $('previewOrig'); 
+  po.width = rawCanvas.width; po.height = rawCanvas.height;
+  po.getContext('2d').drawImage(rawCanvas, 0, 0); 
+  po.style.display = 'block';
   $('cmpLabels').style.display = 'flex'; $('cmpHandle').style.display = 'block'; $('cmpBar').style.display = 'block';
   $('cmpRange').value = 50; setComparePos(50);
 }
