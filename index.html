@@ -39,22 +39,65 @@ body.has-image{overflow-y:auto;height:auto}
   #reorderZone{height:calc(32vh - 24px);overflow-y:auto;overflow-x:hidden;border-top:1px solid var(--line);padding-top:12px;scrollbar-width:thin;scrollbar-color:var(--line2) transparent}
 }
 
+/* Animations */
+@keyframes barFadeIn{from{opacity:0;transform:scaleX(0)}to{opacity:1;transform:scaleX(1)}}
+@keyframes barShimmer{to{transform:translateX(100%)}}
+@keyframes glowFadeIn{from{opacity:0;transform:translateY(24px)}to{opacity:.85;transform:translateY(0)}}
+
 header{margin-bottom:clamp(6px,1.6vh,14px)}
 header h1{font-family:var(--font-display);font-weight:700;font-size:clamp(20px,5vh,28px);letter-spacing:.01em;text-transform:uppercase;color:var(--paper);line-height:1}
 header .tagline{font-size:11.5px;color:var(--paper-dim);margin-top:4px;display:block}
+
+#spectrumBar{height:5px;border-radius:2px;margin:clamp(4px,1.2vh,10px) 0 4px;position:relative;overflow:hidden;
+  background:linear-gradient(90deg,#6a3fb0 0%,#3f6fd6 14%,#3fa0c9 26%,#3fb583 40%,#7fc23f 52%,#d6c23f 63%,#d6903f 72%,#d6503f 82%,#a8321f 91%,#4a1108 100%);
+  box-shadow:0 0 14px rgba(194,67,27,.35);
+  opacity:0;transform:scaleX(0);transform-origin:left center;
+  animation:barFadeIn 1.6s cubic-bezier(.16,.8,.3,1) .25s forwards}
+#spectrumBar::after{content:'';position:absolute;inset:0;
+  background:linear-gradient(90deg,transparent,rgba(255,255,255,.65),transparent);
+  transform:translateX(-100%);animation:barShimmer 1.3s ease-out 1.9s forwards}
+#spectrumTicks{display:flex;justify-content:space-between;font-family:var(--font-mono);font-size:9px;color:var(--muted);letter-spacing:.02em;margin-bottom:2px}
+
 .panel{background:var(--surface);border:1px solid var(--line);border-top:2px solid var(--line2);border-radius:var(--radius);padding:14px;margin-bottom:10px;position:relative}
+
+/* Filter Reference & Summary Tags */
+details summary{list-style:none; cursor:pointer;}
+details summary::-webkit-details-marker{display:none}
+details summary::after{content:'+';font-family:var(--font-mono);color:var(--safelight);margin-left:8px}
+details[open] summary::after{content:'–'}
+details[open] summary{margin-bottom:4px}
+.frtable{width:100%;border-collapse:collapse;font-size:12px;margin-top:8px;}
+.frtable th{text-align:left;font-family:var(--font-mono);font-size:9.5px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);padding:6px 8px;border-bottom:1px solid var(--line)}
+.frtable td{padding:8px;border-bottom:1px solid var(--line);vertical-align:top}
+.frtable tr:last-child td{border-bottom:none}
+.frtable .fname{font-weight:600;color:var(--paper)}
+.frtable .fmeta{font-family:var(--font-mono);font-size:10px;color:var(--muted);display:block;margin-top:2px}
+
+/* Stage Headers */
+.stageHeader{display:flex;align-items:center;gap:10px;margin:22px 0 8px;padding:0}
+.stageHeader:first-child{margin-top:0}
+.stageHeader .stageNum{font-family:var(--font-mono);font-size:11px;color:var(--bg);background:var(--safelight);width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex:none;font-weight:700;cursor:pointer;user-select:none}
+.stageHeader .stageLabel{font-family:var(--font-display);font-size:15px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--paper-dim);cursor:pointer;user-select:none}
+.stageHeader .stageLine{flex:1;height:1px;background:linear-gradient(90deg,var(--line2),transparent)}
+.stageHeader .stageChevron{font-size:11px;color:var(--muted);transition:transform .15s;flex:none}
+.stageGroup.collapsed .stageChevron{transform:rotate(-90deg)}
+.stageGroup.collapsed > .panel {display:none}
+
 .pt{font-family:var(--font-display);font-size:13px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--paper-dim);margin-bottom:10px;display:flex;align-items:center;gap:8px}
-#dropzone{border:1.5px dashed rgba(205,45,25,.6);border-radius:var(--radius);text-align:center;aspect-ratio:1/1;max-width:min(62vh,560px);width:100%;margin:0 auto;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;padding:1.2rem;box-shadow:0 0 60px -20px rgba(205,45,25,.35);transition:border-color .2s}
-#dropzone.dragover{border-color:var(--safelight)}
+
+#dropzone{border:1.5px dashed rgba(205,45,25,.6);border-radius:var(--radius);text-align:center;aspect-ratio:1/1;max-width:min(62vh,560px);width:100%;margin:0 auto;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;padding:1.2rem;box-shadow:0 0 0 1px rgba(205,45,25,.08),0 0 60px -20px rgba(205,45,25,.35);transition:box-shadow .2s,border-color .2s}
+#dropzone:hover, #dropzone.dragover{border-color:rgba(205,45,25,.9);box-shadow:0 0 0 1px rgba(205,45,25,.15),0 0 70px -15px rgba(205,45,25,.5)}
 #dropzone .big{font-family:var(--font-display);font-size:clamp(18px,4.2vh,26px);font-weight:600;color:var(--paper)}
 
 .subhdr{font-family:var(--font-mono);font-size:10.5px;color:var(--paper-dim);font-weight:500;letter-spacing:.03em;margin:10px 0 6px;text-transform:uppercase}
 .pgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(155px,1fr));gap:6px}
-.pb{background:var(--surface2);border:1px solid var(--line);border-left:3px solid var(--line2);border-radius:3px;padding:9px;font-size:12px;cursor:pointer;text-align:left;color:var(--paper);font-family:inherit}
+.pb{background:var(--surface2);border:1px solid var(--line);border-left:3px solid var(--line2);border-radius:3px;padding:9px;font-size:12px;cursor:pointer;text-align:left;color:var(--paper);font-family:inherit;transition:border-color .1s,background .1s}
 .pb:hover{background:var(--line)}
 .pb.on{border-left-color:var(--safelight);background:rgba(194,67,27,.12)}
+.pgrid.uv .pb{border-left-color:var(--phosphor-dim)}
 .pgrid.uv .pb.on{border-left-color:var(--phosphor);background:rgba(111,171,150,.12)}
 .pb b{font-family:var(--font-mono);display:block;font-size:12px;font-weight:600;margin-bottom:2px}
+.pb small{font-size:10px;color:var(--paper-dim);display:block}
 
 .matrix{display:grid;grid-template-columns:auto repeat(3,1fr);gap:6px 8px;align-items:center}
 .matrix .hdr{text-align:center;font-family:var(--font-mono);font-weight:500;font-size:9.5px;color:var(--muted);text-transform:uppercase}
@@ -62,8 +105,10 @@ header .tagline{font-size:11.5px;color:var(--paper-dim);margin-top:4px;display:b
 .matrix input{width:100%;background:#120b07;border:1px solid var(--line);border-radius:3px;color:var(--phosphor);padding:6px;font-family:var(--font-mono);font-size:13px;text-align:center}
 .rl-r{color:var(--red)}.rl-g{color:var(--green)}.rl-b{color:var(--blue)}
 
-button{background:var(--surface2);border:1px solid var(--line2);border-radius:3px;color:var(--paper);padding:9px 14px;font-size:12.5px;font-weight:500;cursor:pointer;font-family:inherit}
+button{background:var(--surface2);border:1px solid var(--line2);border-radius:3px;color:var(--paper);padding:9px 14px;font-size:12.5px;font-weight:500;cursor:pointer;font-family:inherit;transition:border-color .1s,background .1s}
+button:hover{background:var(--line)}
 button.primary{background:var(--safelight);border-color:var(--safelight);color:#fff;font-weight:600}
+button.primary:hover{background:var(--safelight-dim)}
 button.armed{background:var(--safelight);color:#fff}
 
 #cw{background:#0a0603;border:1px solid var(--line);border-radius:var(--radius);overflow:hidden;text-align:center;min-height:120px;display:flex;align-items:center;justify-content:center;position:relative}
@@ -72,12 +117,30 @@ button.armed{background:var(--safelight);color:#fff}
 @media (min-width:900px){#preview{max-height:62vh}}
 #preview.pick{cursor:crosshair}
 
+#previewSticky{position:sticky;top:0;z-index:40;background:var(--bg);padding:8px 12px 10px;margin:0 -12px;box-shadow:0 8px 16px -8px rgba(0,0,0,.5)}
+#previewSticky.floating{position:fixed;top:0;left:0;right:0;margin:0;padding:6px 12px 8px;background:var(--bg);box-shadow:0 8px 16px -8px rgba(0,0,0,.5)}
+#previewSticky.floating #cw{max-height:30vh}
+#previewSticky.floating #preview{max-height:30vh!important}
+#previewSticky.floating #cmpBar{display:none}
+#previewStickySpacer{display:none}
+#previewStickySpacer.active{display:block}
+
+#previewOrig{position:absolute;top:0;left:0;width:100%;height:100%;display:none;clip-path:inset(0 50% 0 0);pointer-events:none}
+#cmpLabels{position:absolute;top:8px;left:8px;right:8px;display:none;justify-content:space-between;pointer-events:none}
+#cmpLabels span{background:rgba(10,6,3,.75);color:var(--paper);font-family:var(--font-mono);font-size:9.5px;font-weight:600;padding:3px 9px;border-radius:2px;letter-spacing:.06em}
+#cmpHandle{position:absolute;top:0;bottom:0;left:50%;width:0;display:none;pointer-events:none}
+#cmpHandle::before{content:'';position:absolute;top:0;bottom:0;left:-1px;width:2px;background:var(--safelight);box-shadow:0 0 8px rgba(194,67,27,.8)}
+#cmpBar{display:none;margin-top:8px;padding:8px 10px;background:var(--surface);border:1px solid var(--line);border-radius:3px}
+.cmpBarLabels{display:flex;justify-content:space-between;font-family:var(--font-mono);font-size:9.5px;font-weight:500;color:var(--paper-dim);letter-spacing:.04em;margin-bottom:4px}
+#cmpRange{width:100%;accent-color:var(--safelight)}
+
 #main{display:none}
 .sl label{font-size:12px;color:var(--paper-dim);display:flex;justify-content:space-between;margin-bottom:4px}
 .sl label b{font-family:var(--font-mono);color:var(--phosphor)}
 input[type=range]{width:100%;accent-color:var(--safelight)}
 .note{font-size:11px;color:var(--muted);margin-top:6px;line-height:1.4}
 .filelabel{display:inline-block;background:rgb(205,45,25);color:#fff;font-weight:600;padding:10px 20px;border-radius:3px;cursor:pointer}
+.filelabel:hover{background:rgb(175,35,18)}
 .wbrow{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:6px}
 .fmt{display:flex;gap:16px;align-items:center;font-size:12.5px;color:var(--paper-dim);flex-wrap:wrap}
 .fmt label{cursor:pointer;display:flex;align-items:center;gap:5px}
@@ -91,6 +154,8 @@ input[type=range]{width:100%;accent-color:var(--safelight)}
   <header style="text-align:center">
     <h1>Channel Swap Pro</h1>
     <span class="tagline">Dual Engine: WebGL2 Preview & CPU Export</span>
+    <div id="spectrumTicks"><span>400</span><span>500</span><span>600</span><span>700nm</span><span>850</span><span>IR →</span></div>
+    <div id="spectrumBar"></div>
   </header>
 
   <div id="dropzone">
@@ -103,111 +168,165 @@ input[type=range]{width:100%;accent-color:var(--safelight)}
 <div id="main">
   <div id="editorLeft">
     <div style="display:flex;gap:8px;margin-bottom:10px;">
-      <label class="filelabel" style="padding:8px 14px">New image<input type="file" id="fi2" accept="image/*" style="display:none"></label>
+      <label class="filelabel" style="padding:8px 14px; margin-top:0;">New image<input type="file" id="fi2" accept="image/*" style="display:none"></label>
       <button id="bReset">Reset all</button>
       <button id="btnExportLUT">Save .cube preset</button>
     </div>
 
+    <div id="previewStickySpacer"></div>
     <div id="previewSticky">
       <div id="cw">
         <div id="previewWrap">
           <canvas id="preview"></canvas>
+          <canvas id="previewOrig"></canvas>
+          <div id="cmpLabels">
+            <span id="cmpLabelBefore">BEFORE</span>
+            <span id="cmpLabelAfter">AFTER</span>
+          </div>
+          <div id="cmpHandle"></div>
         </div>
         <div class="busy" id="busy">Processing…</div>
+      </div>
+      <div id="cmpBar">
+        <div class="cmpBarLabels"><span>◀ Before</span><span>After ▶</span></div>
+        <input type="range" id="cmpRange" min="0" max="100" value="50">
       </div>
     </div>
   </div>
 
   <div id="reorderZone">
-    <div class="panel">
-      <div class="pt">1. Match Your Filter</div>
-      <div class="subhdr">UV Presets</div>
-      <div class="pgrid uv" id="pgUV"></div>
-      <div class="subhdr" style="margin-top:12px">IR Presets</div>
-      <div class="pgrid" id="pgIR"></div>
-    </div>
-
-    <div class="panel">
-      <div class="pt">2. White Balance</div>
-      <div class="wbrow">
-        <button id="wbPre">Pre-Swap Neutral</button>
-        <button id="wbPreReset">Clear Pre</button>
-        <span class="note" id="wbPreStatus">Pre-WB: Not set</span>
-      </div>
-      <div class="wbrow" style="margin-top:10px">
-        <button id="wbPost">Post-Swap Neutral</button>
-        <button id="wbPostReset">Clear Post</button>
-        <span class="note" id="wbPostStatus">Post-WB: Not set</span>
+    <div class="stageGroup">
+      <div class="stageHeader"><span class="stageNum">1</span><span class="stageLabel">Setup</span><span class="stageLine"></span><span class="stageChevron">▾</span></div>
+      <div class="panel">
+        <details id="filterRefDetails">
+          <summary class="pt" style="cursor:pointer;display:inline-block">Filter reference — which physical filter, which preset?</summary>
+          <div id="filterRefTable"></div>
+        </details>
       </div>
     </div>
 
-    <div class="panel">
-      <div class="pt">3. Channel Mixer Matrix (%)</div>
-      <div class="matrix" id="mx">
-        <div></div><div class="hdr rl-r">from R</div><div class="hdr rl-g">from G</div><div class="hdr rl-b">from B</div>
-        <div class="rowlbl rl-r">R out</div>
-        <input type="number" id="m00" value="100" step="5"><input type="number" id="m01" value="0" step="5"><input type="number" id="m02" value="0" step="5">
-        <div class="rowlbl rl-g">G out</div>
-        <input type="number" id="m10" value="0" step="5"><input type="number" id="m11" value="100" step="5"><input type="number" id="m12" value="0" step="5">
-        <div class="rowlbl rl-b">B out</div>
-        <input type="number" id="m20" value="0" step="5"><input type="number" id="m21" value="0" step="5"><input type="number" id="m22" value="100" step="5">
-      </div>
-      <label style="font-family:var(--font-mono);font-size:11.5px;color:var(--paper);display:flex;align-items:center;gap:8px;margin-top:10px;cursor:pointer">
-        <input type="checkbox" id="chkNormalize"> Normalize matrix rows (Darktable exposure lock)
-      </label>
-    </div>
-
-    <div class="panel">
-      <div class="pt">4. Finishing Controls</div>
-      <div class="sl"><label>Exposure <b id="v_bright">0</b></label><input type="range" id="bright" min="-100" max="100" value="0"></div>
-      <div class="sl" style="margin-top:8px"><label>Hue shift <b id="v_hue">0</b>°</label><input type="range" id="hue" min="-180" max="180" value="0"></div>
-      <div class="sl" style="margin-top:8px"><label>Saturation <b id="v_sat">100</b>%</label><input type="range" id="sat" min="0" max="200" value="100"></div>
-      <div class="sl" style="margin-top:8px"><label>Black point <b id="v_blackPt">0</b></label><input type="range" id="blackPt" min="0" max="120" value="0"></div>
-    </div>
-
-    <div class="panel">
-      <div class="pt">5. LUT (.cube) Colour Grade</div>
-      <div class="wbrow">
-        <label class="filelabel" style="margin-top:0;padding:8px 14px">Load .cube LUT<input type="file" id="fiLut" accept=".cube" style="display:none"></label>
-        <button id="lutClear" style="display:none">Clear LUT</button>
-        <span class="note" id="lutStatus" style="margin-top:0">No LUT loaded</span>
-      </div>
-      <div id="lutControls" style="display:none;margin-top:10px">
-        <div class="sl"><label>LUT intensity <b id="v_lutMix">100</b>%</label><input type="range" id="lutMix" min="0" max="100" value="100"></div>
+    <div class="stageGroup">
+      <div class="stageHeader"><span class="stageNum">2</span><span class="stageLabel">Match Filter</span><span class="stageLine"></span><span class="stageChevron">▾</span></div>
+      <div class="panel">
+        <div class="subhdr">UV Presets</div>
+        <div class="pgrid uv" id="pgUV"></div>
+        <div class="subhdr" style="margin-top:12px">IR Presets</div>
+        <div class="pgrid" id="pgIR"></div>
       </div>
     </div>
 
-    <div class="panel">
-      <div class="pt">6. Export Settings</div>
-      <div class="fmt" style="margin-bottom:10px">
-        <label><input type="radio" name="fmt" value="tiff16" checked> 16-bit TIFF</label>
-        <label><input type="radio" name="fmt" value="png"> PNG</label>
-        <label><input type="radio" name="fmt" value="jpeg"> JPEG</label>
-      </div>
-      <div class="fmt" id="resChoice">
-        <label><input type="radio" name="res" value="working" checked> Working preview size</label>
-        <label><input type="radio" name="res" value="original"> Original photo size (Full CPU Render)</label>
+    <div class="stageGroup">
+      <div class="stageHeader"><span class="stageNum">3</span><span class="stageLabel">White Balance</span><span class="stageLine"></span><span class="stageChevron">▾</span></div>
+      <div class="panel">
+        <div class="wbrow">
+          <button id="wbPre">Pre-Swap Neutral</button>
+          <button id="wbPreReset">Clear Pre</button>
+          <span class="note" id="wbPreStatus">Pre-WB: Not set</span>
+        </div>
+        <div class="wbrow" style="margin-top:10px">
+          <button id="wbPost">Post-Swap Neutral</button>
+          <button id="wbPostReset">Clear Post</button>
+          <span class="note" id="wbPostStatus">Post-WB: Not set</span>
+        </div>
       </div>
     </div>
 
-    <button id="bDl" class="primary" style="width:100%;padding:14px;font-size:15px;margin-bottom:10px">Export Image</button>
+    <div class="stageGroup">
+      <div class="stageHeader"><span class="stageNum">4</span><span class="stageLabel">Matrix Adjust</span><span class="stageLine"></span><span class="stageChevron">▾</span></div>
+      <div class="panel">
+        <div class="pt">Channel Mixer Matrix (%)</div>
+        <div class="matrix" id="mx">
+          <div></div><div class="hdr rl-r">from R</div><div class="hdr rl-g">from G</div><div class="hdr rl-b">from B</div>
+          <div class="rowlbl rl-r">R out</div>
+          <input type="number" id="m00" value="100" step="5"><input type="number" id="m01" value="0" step="5"><input type="number" id="m02" value="0" step="5">
+          <div class="rowlbl rl-g">G out</div>
+          <input type="number" id="m10" value="0" step="5"><input type="number" id="m11" value="100" step="5"><input type="number" id="m12" value="0" step="5">
+          <div class="rowlbl rl-b">B out</div>
+          <input type="number" id="m20" value="0" step="5"><input type="number" id="m21" value="0" step="5"><input type="number" id="m22" value="100" step="5">
+        </div>
+        <label style="font-family:var(--font-mono);font-size:11.5px;color:var(--paper);display:flex;align-items:center;gap:8px;margin-top:10px;cursor:pointer">
+          <input type="checkbox" id="chkNormalize"> Normalize matrix rows (Darktable exposure lock)
+        </label>
+      </div>
+
+      <div class="panel">
+        <div class="pt">Finishing Controls</div>
+        <div class="sl"><label>Exposure <b id="v_bright">0</b></label><input type="range" id="bright" min="-100" max="100" value="0"></div>
+        <div class="sl" style="margin-top:8px"><label>Hue shift <b id="v_hue">0</b>°</label><input type="range" id="hue" min="-180" max="180" value="0"></div>
+        <div class="sl" style="margin-top:8px"><label>Saturation <b id="v_sat">100</b>%</label><input type="range" id="sat" min="0" max="200" value="100"></div>
+        <div class="sl" style="margin-top:8px"><label>Black point <b id="v_blackPt">0</b></label><input type="range" id="blackPt" min="0" max="120" value="0"></div>
+      </div>
+    </div>
+
+    <div class="stageGroup">
+      <div class="stageHeader"><span class="stageNum">5</span><span class="stageLabel">Export</span><span class="stageLine"></span><span class="stageChevron">▾</span></div>
+      <div class="panel">
+        <div class="pt">LUT (.cube) Colour Grade</div>
+        <div class="wbrow">
+          <label class="filelabel" style="margin-top:0;padding:8px 14px">Load .cube LUT<input type="file" id="fiLut" accept=".cube" style="display:none"></label>
+          <button id="lutClear" style="display:none">Clear LUT</button>
+          <span class="note" id="lutStatus" style="margin-top:0">No LUT loaded</span>
+        </div>
+        <div id="lutControls" style="display:none;margin-top:10px">
+          <div class="sl"><label>LUT intensity <b id="v_lutMix">100</b>%</label><input type="range" id="lutMix" min="0" max="100" value="100"></div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <div class="pt">Export Settings</div>
+        <div class="fmt" style="margin-bottom:10px">
+          <label><input type="radio" name="fmt" value="tiff16" checked> 16-bit TIFF</label>
+          <label><input type="radio" name="fmt" value="png"> PNG</label>
+          <label><input type="radio" name="fmt" value="jpeg"> JPEG</label>
+        </div>
+        <div class="fmt" id="resChoice">
+          <label><input type="radio" name="res" value="working" checked> Working preview size</label>
+          <label><input type="radio" name="res" value="original"> Original photo size (Full CPU Render)</label>
+        </div>
+      </div>
+
+      <button id="bDl" class="primary" style="width:100%;padding:14px;font-size:15px;margin-bottom:10px">Export Image</button>
+    </div>
   </div>
 </div>
 
 <script>
 'use strict';
 
-const SRGB_TO_LINEAR = new Float32Array(256);
-for (let i = 0; i < 256; i++) {
-  const c = i / 255;
-  SRGB_TO_LINEAR[i] = c <= 0.04045 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4);
-}
+// Stage Collapse Toggles
+document.querySelectorAll('.stageHeader').forEach(hdr => {
+  const group = hdr.parentElement;
+  const toggle = () => group.classList.toggle('collapsed');
+  hdr.querySelector('.stageNum').addEventListener('click', toggle);
+  hdr.querySelector('.stageLabel').addEventListener('click', toggle);
+});
 
-function linearToSrgbFloat(c) {
-  if (c <= 0) return 0;
-  if (c >= 1) return 1;
-  return c <= 0.0031308 ? c * 12.92 : 1.055 * Math.pow(c, 1 / 2.4) - 0.055;
-}
+// Build Filter Reference Table
+const FILTER_DB=[
+  {cat:'UV',name:'Baader U (Venus U)',spec:'~320–380nm bandpass',look:'Classic UV-pass for flower/insect UV patterns'},
+  {cat:'UV',name:'Kolari UV Bandpass',spec:'50% peak @365nm, >25% 345–380nm',look:'High-transmission absorption-glass UV-pass, consistent across the frame'},
+  {cat:'UV',name:'ZWB3 + TSN575',spec:'~320–395nm UV-pass + IR-block stack',look:'Budget UV-pass combo — the stack behind the Bug vision preset'},
+  {cat:'IR',name:'Kolari 550nm',spec:'~550nm long-pass',look:'Deep blue sky, pink/crimson foliage, most natural skin tones'},
+  {cat:'IR',name:'Super Color / 590nm (Goldie)',spec:'~590nm long-pass',look:'Golden-yellow foliage, bright blue sky after swap'},
+  {cat:'IR',name:'Enhanced Color / 665nm',spec:'~665nm long-pass',look:'Light yellow/white foliage, strong B&W contrast option'},
+  {cat:'IR',name:'Standard / R72 (Wratten 89B), 720nm',spec:'~720nm long-pass',look:'Classic white foliage + pale blue sky (needs foliage WB)'},
+  {cat:'IR',name:'87C / 830nm ("Deep Black")',spec:'~830nm long-pass',look:'Near-total Wood Effect: brilliant white foliage, near-black sky'},
+  {cat:'IR',name:'Kolari IR Chrome',spec:'Custom multi-layer glass, full-spectrum only',look:'Aerochrome colour optically, in-camera — no swap needed'}
+];
+
+(function buildFilterRefTable(){
+  const wrap = document.createElement('table'); wrap.className = 'frtable';
+  wrap.innerHTML = '<tr><th>Filter</th><th>Spec</th><th>Look</th></tr>';
+  FILTER_DB.forEach(f => {
+    const tr = document.createElement('tr');
+    const tdName = document.createElement('td'); tdName.innerHTML = `<span class="fname">${f.name}</span><span class="fmeta">${f.cat}</span>`;
+    const tdSpec = document.createElement('td'); tdSpec.textContent = f.spec;
+    const tdLook = document.createElement('td'); tdLook.textContent = f.look;
+    tr.append(tdName, tdSpec, tdLook);
+    wrap.appendChild(tr);
+  });
+  document.getElementById('filterRefTable').appendChild(wrap);
+})();
 
 // --- WebGL2 Shaders ---
 const VS_SOURCE = `#version 300 es
@@ -240,33 +359,19 @@ const FS_SOURCE = `#version 300 es
   in vec2 v_texCoord;
   out vec4 outColor;
 
-  vec3 srgbToLinear(vec3 c) {
-    return mix(c / 12.92, pow((c + 0.055) / 1.055, vec3(2.4)), step(vec3(0.04045), c));
-  }
-
-  vec3 linearToSrgb(vec3 c) {
-    vec3 clamped = clamp(c, 0.0, 1.0);
-    return mix(clamped * 12.92, 1.055 * pow(clamped, vec3(1.0 / 2.4)) - 0.055, step(vec3(0.0031308), clamped));
-  }
+  vec3 srgbToLinear(vec3 c) { return mix(c / 12.92, pow((c + 0.055) / 1.055, vec3(2.4)), step(vec3(0.04045), c)); }
+  vec3 linearToSrgb(vec3 c) { vec3 clamped = clamp(c, 0.0, 1.0); return mix(clamped * 12.92, 1.055 * pow(clamped, vec3(1.0 / 2.4)) - 0.055, step(vec3(0.0031308), clamped)); }
 
   float compressChan(float v) {
     if (v < 0.0) return 0.0;
-    if (v > 0.75) {
-      float x = (v - 0.75) / 0.25;
-      return 0.75 + 0.25 * ((exp(x) - exp(-x)) / (exp(x) + exp(-x)));
-    }
+    if (v > 0.75) { float x = (v - 0.75) / 0.25; return 0.75 + 0.25 * ((exp(x) - exp(-x)) / (exp(x) + exp(-x))); }
     return v;
   }
-
-  vec3 compressGamut(vec3 v) {
-    return vec3(compressChan(v.r), compressChan(v.g), compressChan(v.b));
-  }
+  vec3 compressGamut(vec3 v) { return vec3(compressChan(v.r), compressChan(v.g), compressChan(v.b)); }
 
   vec3 rgb2hsl(vec3 c) {
-    float maxC = max(max(c.r, c.g), c.b);
-    float minC = min(min(c.r, c.g), c.b);
-    float delta = maxC - minC;
-    float h = 0.0, s = 0.0, l = (maxC + minC) / 2.0;
+    float maxC = max(max(c.r, c.g), c.b), minC = min(min(c.r, c.g), c.b);
+    float delta = maxC - minC, h = 0.0, s = 0.0, l = (maxC + minC) / 2.0;
     if (delta > 0.00001) {
       s = l > 0.5 ? delta / (2.0 - maxC - minC) : delta / (maxC + minC);
       if (maxC == c.r) h = (c.g - c.b) / delta + (c.g < c.b ? 6.0 : 0.0);
@@ -276,16 +381,13 @@ const FS_SOURCE = `#version 300 es
     }
     return vec3(h, s, l);
   }
-
   float hue2rgb(float p, float q, float t) {
-    if (t < 0.0) t += 1.0;
-    if (t > 1.0) t -= 1.0;
+    if (t < 0.0) t += 1.0; if (t > 1.0) t -= 1.0;
     if (t < 1.0/6.0) return p + (q - p) * 6.0 * t;
     if (t < 0.5) return q;
     if (t < 2.0/3.0) return p + (q - p) * (2.0/3.0 - t) * 6.0;
     return p;
   }
-
   vec3 hsl2rgb(vec3 hsl) {
     if (hsl.y <= 0.0) return vec3(hsl.z);
     float q = hsl.z < 0.5 ? hsl.z * (1.0 + hsl.y) : hsl.z + hsl.y - hsl.z * hsl.y;
@@ -320,7 +422,6 @@ const FS_SOURCE = `#version 300 es
       float bp = u_blackPt / 255.0;
       srgb = clamp((srgb - bp) / (1.0 - bp), 0.0, 1.0);
     }
-
     outColor = vec4(srgb, texColor.a);
   }
 `;
@@ -338,107 +439,60 @@ class WebGL2Engine {
 
   initShaders() {
     const gl = this.gl;
-    const vs = gl.createShader(gl.VERTEX_SHADER);
-    gl.shaderSource(vs, VS_SOURCE); gl.compileShader(vs);
-    const fs = gl.createShader(gl.FRAGMENT_SHADER);
-    gl.shaderSource(fs, FS_SOURCE); gl.compileShader(fs);
-
-    this.program = gl.createProgram();
-    gl.attachShader(this.program, vs);
-    gl.attachShader(this.program, fs);
-    gl.linkProgram(this.program);
-    gl.useProgram(this.program);
+    const vs = gl.createShader(gl.VERTEX_SHADER); gl.shaderSource(vs, VS_SOURCE); gl.compileShader(vs);
+    const fs = gl.createShader(gl.FRAGMENT_SHADER); gl.shaderSource(fs, FS_SOURCE); gl.compileShader(fs);
+    this.program = gl.createProgram(); gl.attachShader(this.program, vs); gl.attachShader(this.program, fs);
+    gl.linkProgram(this.program); gl.useProgram(this.program);
 
     this.uLocs = {
-      matrix: gl.getUniformLocation(this.program, 'u_matrix'),
-      preWB: gl.getUniformLocation(this.program, 'u_preWB'),
-      postWB: gl.getUniformLocation(this.program, 'u_postWB'),
-      exposure: gl.getUniformLocation(this.program, 'u_exposure'),
-      hue: gl.getUniformLocation(this.program, 'u_hue'),
-      sat: gl.getUniformLocation(this.program, 'u_sat'),
-      blackPt: gl.getUniformLocation(this.program, 'u_blackPt'),
-      hasLut: gl.getUniformLocation(this.program, 'u_hasLut'),
-      lutMix: gl.getUniformLocation(this.program, 'u_lutMix'),
-      image: gl.getUniformLocation(this.program, 'u_image'),
+      matrix: gl.getUniformLocation(this.program, 'u_matrix'), preWB: gl.getUniformLocation(this.program, 'u_preWB'),
+      postWB: gl.getUniformLocation(this.program, 'u_postWB'), exposure: gl.getUniformLocation(this.program, 'u_exposure'),
+      hue: gl.getUniformLocation(this.program, 'u_hue'), sat: gl.getUniformLocation(this.program, 'u_sat'),
+      blackPt: gl.getUniformLocation(this.program, 'u_blackPt'), hasLut: gl.getUniformLocation(this.program, 'u_hasLut'),
+      lutMix: gl.getUniformLocation(this.program, 'u_lutMix'), image: gl.getUniformLocation(this.program, 'u_image'),
       lut: gl.getUniformLocation(this.program, 'u_lut')
     };
   }
 
   initBuffers() {
     const gl = this.gl;
-    const posBuf = gl.createBuffer();
-    gl.bindBuffer(gl.ARRAY_BUFFER, posBuf);
-    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1,-1, 1,-1, -1,1, 1,1]), gl.STATIC_DRAW);
-    const aPos = gl.getAttribLocation(this.program, 'a_position');
-    gl.enableVertexAttribArray(aPos);
-    gl.vertexAttribPointer(aPos, 2, gl.FLOAT, false, 0, 0);
-
-    const texBuf = gl.createBuffer();
-    gl.bindBuffer(gl.ARRAY_BUFFER, texBuf);
-    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([0,0, 1,0, 0,1, 1,1]), gl.STATIC_DRAW);
-    const aTex = gl.getAttribLocation(this.program, 'a_texCoord');
-    gl.enableVertexAttribArray(aTex);
-    gl.vertexAttribPointer(aTex, 2, gl.FLOAT, false, 0, 0);
+    const posBuf = gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER, posBuf); gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1,-1, 1,-1, -1,1, 1,1]), gl.STATIC_DRAW);
+    const aPos = gl.getAttribLocation(this.program, 'a_position'); gl.enableVertexAttribArray(aPos); gl.vertexAttribPointer(aPos, 2, gl.FLOAT, false, 0, 0);
+    const texBuf = gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER, texBuf); gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([0,0, 1,0, 0,1, 1,1]), gl.STATIC_DRAW);
+    const aTex = gl.getAttribLocation(this.program, 'a_texCoord'); gl.enableVertexAttribArray(aTex); gl.vertexAttribPointer(aTex, 2, gl.FLOAT, false, 0, 0);
   }
 
   setImage(img) {
     const gl = this.gl;
-    this.canvas.width = img.width; this.canvas.height = img.height;
-    gl.viewport(0, 0, img.width, img.height);
+    this.canvas.width = img.width; this.canvas.height = img.height; gl.viewport(0, 0, img.width, img.height);
     if (!this.texture) this.texture = gl.createTexture();
-    
-    gl.activeTexture(gl.TEXTURE0);
-    gl.bindTexture(gl.TEXTURE_2D, this.texture);
+    gl.activeTexture(gl.TEXTURE0); gl.bindTexture(gl.TEXTURE_2D, this.texture);
     gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, img);
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE); gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
   }
 
   setLUT(lutObj) {
     const gl = this.gl;
-    if (!lutObj) {
-      if (this.lutTexture) { gl.deleteTexture(this.lutTexture); this.lutTexture = null; }
-      return;
-    }
-    gl.activeTexture(gl.TEXTURE1);
-    this.lutTexture = gl.createTexture();
-    gl.bindTexture(gl.TEXTURE_3D, this.lutTexture);
+    if (!lutObj) { if (this.lutTexture) { gl.deleteTexture(this.lutTexture); this.lutTexture = null; } return; }
+    gl.activeTexture(gl.TEXTURE1); this.lutTexture = gl.createTexture(); gl.bindTexture(gl.TEXTURE_3D, this.lutTexture);
     gl.texImage3D(gl.TEXTURE_3D, 0, gl.RGB32F, lutObj.size, lutObj.size, lutObj.size, 0, gl.RGB, gl.FLOAT, lutObj.data);
-    gl.texParameteri(gl.TEXTURE_3D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
-    gl.texParameteri(gl.TEXTURE_3D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-    gl.texParameteri(gl.TEXTURE_3D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-    gl.texParameteri(gl.TEXTURE_3D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-    gl.texParameteri(gl.TEXTURE_3D, gl.TEXTURE_WRAP_R, gl.CLAMP_TO_EDGE);
+    gl.texParameteri(gl.TEXTURE_3D, gl.TEXTURE_MIN_FILTER, gl.LINEAR); gl.texParameteri(gl.TEXTURE_3D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+    gl.texParameteri(gl.TEXTURE_3D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE); gl.texParameteri(gl.TEXTURE_3D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE); gl.texParameteri(gl.TEXTURE_3D, gl.TEXTURE_WRAP_R, gl.CLAMP_TO_EDGE);
   }
 
   render(p) {
-    const gl = this.gl;
-    gl.useProgram(this.program);
-    
-    const m = p.matrix;
-    const transposed = [m[0],m[3],m[6], m[1],m[4],m[7], m[2],m[5],m[8]];
-
+    const gl = this.gl; gl.useProgram(this.program);
+    const m = p.matrix, transposed = [m[0],m[3],m[6], m[1],m[4],m[7], m[2],m[5],m[8]];
     gl.uniformMatrix3fv(this.uLocs.matrix, false, new Float32Array(transposed));
-    gl.uniform3fv(this.uLocs.preWB, new Float32Array(p.preWB));
-    gl.uniform3fv(this.uLocs.postWB, new Float32Array(p.postWB));
-    gl.uniform1f(this.uLocs.exposure, Math.pow(2, p.exposure / 100));
-    gl.uniform1f(this.uLocs.hue, p.hue / 360);
-    gl.uniform1f(this.uLocs.sat, p.sat / 100);
-    gl.uniform1f(this.uLocs.blackPt, p.blackPt);
-
+    gl.uniform3fv(this.uLocs.preWB, new Float32Array(p.preWB)); gl.uniform3fv(this.uLocs.postWB, new Float32Array(p.postWB));
+    gl.uniform1f(this.uLocs.exposure, Math.pow(2, p.exposure / 100)); gl.uniform1f(this.uLocs.hue, p.hue / 360);
+    gl.uniform1f(this.uLocs.sat, p.sat / 100); gl.uniform1f(this.uLocs.blackPt, p.blackPt);
     gl.uniform1i(this.uLocs.image, 0);
-    
     if (this.lutTexture) {
-      gl.uniform1i(this.uLocs.hasLut, 1);
-      gl.uniform1i(this.uLocs.lut, 1);
-      gl.uniform1f(this.uLocs.lutMix, p.lutMix / 100);
-      gl.activeTexture(gl.TEXTURE1);
-      gl.bindTexture(gl.TEXTURE_3D, this.lutTexture);
-    } else {
-      gl.uniform1i(this.uLocs.hasLut, 0);
-    }
-
+      gl.uniform1i(this.uLocs.hasLut, 1); gl.uniform1i(this.uLocs.lut, 1); gl.uniform1f(this.uLocs.lutMix, p.lutMix / 100);
+      gl.activeTexture(gl.TEXTURE1); gl.bindTexture(gl.TEXTURE_3D, this.lutTexture);
+    } else gl.uniform1i(this.uLocs.hasLut, 0);
     gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
   }
 }
@@ -460,180 +514,132 @@ const IR_PRESETS = [
   { n: "720nm Classic 🌲", m: [0,0,100, 0,100,0, 100,0,0] }
 ];
 
+// --- Sticky Preview & Compare Logic ---
+let floatingPreviewInit = false;
+function initFloatingPreview() {
+  if (floatingPreviewInit) return; floatingPreviewInit = true;
+  const ps = $('previewSticky'), spacer = $('previewStickySpacer');
+  if (!ps || !spacer) return;
+  let naturalTop = 0, isFloating = false;
+  function measure() { if (!ps.classList.contains('floating')) naturalTop = ps.getBoundingClientRect().top + window.scrollY; }
+  function setFloating(on) {
+    if (on === isFloating) return; isFloating = on;
+    if (on) { spacer.style.height = (Math.round(window.innerHeight * 0.30) + 16) + 'px'; spacer.classList.add('active'); ps.classList.add('floating'); } 
+    else { ps.classList.remove('floating'); spacer.classList.remove('active'); }
+  }
+  requestAnimationFrame(measure);
+  window.addEventListener('resize', () => { if (window.innerWidth >= 1100) setFloating(false); requestAnimationFrame(measure); });
+  window.addEventListener('scroll', () => { if (window.innerWidth >= 1100) return; const y = window.scrollY; if (!isFloating && y > naturalTop + 40) setFloating(true); else if (isFloating && y < naturalTop - 20) setFloating(false); }, { passive: true });
+}
+
+function setupCompareOverlay() {
+  const po = $('previewOrig'); po.width = rawCanvas.width; po.height = rawCanvas.height;
+  po.getContext('2d').drawImage(rawCanvas, 0, 0); po.style.display = 'block';
+  $('cmpLabels').style.display = 'flex'; $('cmpHandle').style.display = 'block'; $('cmpBar').style.display = 'block';
+  $('cmpRange').value = 50; setComparePos(50);
+}
+function setComparePos(pct) { pct = Math.max(0, Math.min(100, +pct)); $('previewOrig').style.clipPath = 'inset(0 ' + (100 - pct) + '% 0 0)'; $('cmpHandle').style.left = pct + '%'; }
+$('cmpRange').addEventListener('input', e => setComparePos(e.target.value));
+
 function normalizeMatrix(m) {
   const norm = [...m];
-  for (let r = 0; r < 3; r++) {
-    const sum = Math.abs(norm[r*3]) + Math.abs(norm[r*3+1]) + Math.abs(norm[r*3+2]);
-    if (sum > 0.0001) { norm[r*3] /= sum; norm[r*3+1] /= sum; norm[r*3+2] /= sum; }
-  }
+  for (let r = 0; r < 3; r++) { const sum = Math.abs(norm[r*3]) + Math.abs(norm[r*3+1]) + Math.abs(norm[r*3+2]); if (sum > 0.0001) { norm[r*3] /= sum; norm[r*3+1] /= sum; norm[r*3+2] /= sum; } }
   return norm;
 }
-
-function getMatrixUI() {
-  const raw = MCELLS.map(id => (+$(id).value || 0) / 100);
-  return $('chkNormalize').checked ? normalizeMatrix(raw) : raw;
-}
-
+function getMatrixUI() { const raw = MCELLS.map(id => (+$(id).value || 0) / 100); return $('chkNormalize').checked ? normalizeMatrix(raw) : raw; }
 function render() {
   if (!engine || !loadedImage) return;
-  engine.render({
-    matrix: getMatrixUI(), preWB: preWB, postWB: postWB,
-    exposure: +$('bright').value || 0, hue: +$('hue').value || 0,
-    sat: +$('sat').value || 100, blackPt: +$('blackPt').value || 0,
-    lutMix: +$('lutMix').value || 100
-  });
+  engine.render({ matrix: getMatrixUI(), preWB: preWB, postWB: postWB, exposure: +$('bright').value || 0, hue: +$('hue').value || 0, sat: +$('sat').value || 100, blackPt: +$('blackPt').value || 0, lutMix: +$('lutMix').value || 100 });
 }
 
-// --- Wire UI ---
-['bright','hue','sat','blackPt','lutMix'].forEach(id => {
-  $(id).addEventListener('input', () => { $('v_' + id).textContent = $(id).value; render(); });
-});
+['bright','hue','sat','blackPt','lutMix'].forEach(id => { $(id).addEventListener('input', () => { $('v_' + id).textContent = $(id).value; render(); }); });
 MCELLS.forEach(id => $(id).addEventListener('input', render));
 $('chkNormalize').addEventListener('change', render);
 
 function buildPresetButtons(list, containerId) {
   list.forEach(p => {
-    const b = document.createElement('button');
-    b.className = 'pb'; b.innerHTML = '<b>' + p.n + '</b>';
-    b.onclick = () => {
-      document.querySelectorAll('.pb').forEach(x => x.classList.remove('on'));
-      b.classList.add('on');
-      MCELLS.forEach((id, i) => $(id).value = p.m[i]);
-      render();
-    };
+    const b = document.createElement('button'); b.className = 'pb'; b.innerHTML = `<b>${p.n}</b><small>${p.m[2]===100?'R←B Swap':(p.m[0]===100?'Standard':'Cycle')}</small>`;
+    b.onclick = () => { document.querySelectorAll('.pb').forEach(x => x.classList.remove('on')); b.classList.add('on'); MCELLS.forEach((id, i) => $(id).value = p.m[i]); render(); };
     $(containerId).appendChild(b);
   });
 }
-buildPresetButtons(UV_PRESETS, 'pgUV');
-buildPresetButtons(IR_PRESETS, 'pgIR');
+buildPresetButtons(UV_PRESETS, 'pgUV'); buildPresetButtons(IR_PRESETS, 'pgIR');
 
 // --- File Handling & EXIF ---
 function extractExifSegment(bytes){
   if(bytes.length<4||bytes[0]!==0xFF||bytes[1]!==0xD8)return null;
   let i=2;
   while(i<bytes.length-4){
-    if(bytes[i]!==0xFF)break;
-    const marker=bytes[i+1];
-    if(marker===0xD8||marker===0xD9||marker===0xDA)break;
-    const len=(bytes[i+2]<<8)|bytes[i+3];
-    if(len<2)break;
-    if(marker===0xE1&&i+4+6<=bytes.length){
-      let sig='';for(let k=0;k<6;k++)sig+=String.fromCharCode(bytes[i+4+k]);
-      if(sig==='Exif\u0000\u0000')return bytes.slice(i,i+2+len);
-    }
+    if(bytes[i]!==0xFF)break; const marker=bytes[i+1]; if(marker===0xD8||marker===0xD9||marker===0xDA)break;
+    const len=(bytes[i+2]<<8)|bytes[i+3]; if(len<2)break;
+    if(marker===0xE1&&i+4+6<=bytes.length){ let sig='';for(let k=0;k<6;k++)sig+=String.fromCharCode(bytes[i+4+k]); if(sig==='Exif\u0000\u0000')return bytes.slice(i,i+2+len); }
     i+=2+len;
   }
   return null;
 }
-
 function spliceExifIntoJpegBytes(jpegBytes,exifSegment){
   if(!exifSegment||jpegBytes[0]!==0xFF||jpegBytes[1]!==0xD8)return jpegBytes;
-  const out=new Uint8Array(2+exifSegment.length+(jpegBytes.length-2));
-  out.set([0xFF,0xD8],0); out.set(exifSegment,2); out.set(jpegBytes.subarray(2),2+exifSegment.length);
-  return out;
+  const out=new Uint8Array(2+exifSegment.length+(jpegBytes.length-2)); out.set([0xFF,0xD8],0); out.set(exifSegment,2); out.set(jpegBytes.subarray(2),2+exifSegment.length); return out;
 }
-
 const CRC_TABLE=(()=>{const t=new Uint32Array(256);for(let n=0;n<256;n++){let c=n;for(let k=0;k<8;k++)c=c&1?(0xEDB88320^(c>>>1)):(c>>>1);t[n]=c>>>0;}return t;})();
 function crc32(bytes){let c=0xFFFFFFFF;for(let i=0;i<bytes.length;i++)c=CRC_TABLE[(c^bytes[i])&0xFF]^(c>>>8);return(c^0xFFFFFFFF)>>>0;}
 function u32be(n){return[(n>>>24)&0xFF,(n>>>16)&0xFF,(n>>>8)&0xFF,n&0xFF];}
-
 function spliceExifIntoPngBytes(pngBytes,exifSegment){
-  if(!exifSegment || exifSegment.length<=10)return pngBytes;
-  const tiffData=exifSegment.subarray(10);
+  if(!exifSegment || exifSegment.length<=10)return pngBytes; const tiffData=exifSegment.subarray(10);
   try{
-    const ihdrLen=(pngBytes[8]<<24)|(pngBytes[9]<<16)|(pngBytes[10]<<8)|pngBytes[11];
-    const ihdrEnd=8+4+4+ihdrLen+4;
-    const typeBytes=new Uint8Array([0x65,0x58,0x49,0x66]);
-    const crcInput=new Uint8Array(typeBytes.length+tiffData.length);
-    crcInput.set(typeBytes,0);crcInput.set(tiffData,typeBytes.length);
-    const chunk=new Uint8Array(4+4+tiffData.length+4);
-    chunk.set(u32be(tiffData.length),0); chunk.set(typeBytes,4); chunk.set(tiffData,8); chunk.set(u32be(crc32(crcInput)),8+tiffData.length);
-    const out=new Uint8Array(pngBytes.length+chunk.length);
-    out.set(pngBytes.subarray(0,ihdrEnd),0); out.set(chunk,ihdrEnd); out.set(pngBytes.subarray(ihdrEnd),ihdrEnd+chunk.length);
+    const ihdrLen=(pngBytes[8]<<24)|(pngBytes[9]<<16)|(pngBytes[10]<<8)|pngBytes[11], ihdrEnd=8+4+4+ihdrLen+4;
+    const typeBytes=new Uint8Array([0x65,0x58,0x49,0x66]); const crcInput=new Uint8Array(typeBytes.length+tiffData.length); crcInput.set(typeBytes,0);crcInput.set(tiffData,typeBytes.length);
+    const chunk=new Uint8Array(4+4+tiffData.length+4); chunk.set(u32be(tiffData.length),0); chunk.set(typeBytes,4); chunk.set(tiffData,8); chunk.set(u32be(crc32(crcInput)),8+tiffData.length);
+    const out=new Uint8Array(pngBytes.length+chunk.length); out.set(pngBytes.subarray(0,ihdrEnd),0); out.set(chunk,ihdrEnd); out.set(pngBytes.subarray(ihdrEnd),ihdrEnd+chunk.length);
     return out;
   }catch(e){return pngBytes;}
 }
 
 async function loadFile(file) {
-  if (!file) return;
-  origFile = file;
+  if (!file) return; origFile = file;
   try { exifSegment = extractExifSegment(new Uint8Array(await file.arrayBuffer())); } catch(e){}
 
   const img = new Image();
   img.onload = () => {
-    origW = img.width; origH = img.height;
-    const maxDim = 2048;
-    let w = img.width, h = img.height;
-    if (w > maxDim || h > maxDim) {
-      const scale = maxDim / Math.max(w, h);
-      w = Math.round(w * scale); h = Math.round(h * scale);
-    }
-    rawCanvas.width = w; rawCanvas.height = h;
-    rawCtx.drawImage(img, 0, 0, w, h);
-    loadedImage = rawCanvas;
+    origW = img.width; origH = img.height; const maxDim = 2048; let w = img.width, h = img.height;
+    if (w > maxDim || h > maxDim) { const scale = maxDim / Math.max(w, h); w = Math.round(w * scale); h = Math.round(h * scale); }
+    rawCanvas.width = w; rawCanvas.height = h; rawCtx.drawImage(img, 0, 0, w, h); loadedImage = rawCanvas;
 
-    $('emptyStateGroup').style.display = 'none';
-    $('main').style.display = 'block';
-    document.body.classList.add('has-image');
-    
+    $('emptyStateGroup').style.display = 'none'; $('main').style.display = 'block'; document.body.classList.add('has-image');
     if (!engine) engine = new WebGL2Engine($('preview'));
-    engine.setImage(rawCanvas);
-    if(currentLUT) engine.setLUT(currentLUT);
-    render();
+    engine.setImage(rawCanvas); if(currentLUT) engine.setLUT(currentLUT);
+    initFloatingPreview(); setupCompareOverlay(); render();
   };
   img.src = URL.createObjectURL(file);
 }
 
-$('fi').onchange = e => loadFile(e.target.files[0]);
-$('fi2').onchange = e => loadFile(e.target.files[0]);
-
+$('fi').onchange = e => loadFile(e.target.files[0]); $('fi2').onchange = e => loadFile(e.target.files[0]);
 const dz = $('dropzone');
 ['dragover', 'dragenter'].forEach(ev => dz.addEventListener(ev, e => { e.preventDefault(); dz.classList.add('dragover'); }));
 ['dragleave', 'dragend', 'drop'].forEach(ev => dz.addEventListener(ev, e => { e.preventDefault(); dz.classList.remove('dragover'); }));
-dz.addEventListener('drop', e => {
-  const f = e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files[0];
-  if (f) loadFile(f);
-});
+dz.addEventListener('drop', e => { const f = e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files[0]; if (f) loadFile(f); });
 
 // --- LUT Handling ---
 function parseCubeLUT(text){
-  const lines=text.split(/\r?\n/);
-  let size=0,domainMin=[0,0,0],domainMax=[1,1,1];
-  const data=[];
+  const lines=text.split(/\r?\n/); let size=0,domainMin=[0,0,0],domainMax=[1,1,1]; const data=[];
   for(const raw of lines){
-    const line=raw.trim();
-    if(!line||line.startsWith('#'))continue;
-    if(/^TITLE/i.test(line))continue;
+    const line=raw.trim(); if(!line||line.startsWith('#')||/^TITLE/i.test(line))continue;
     if(/^LUT_3D_SIZE/i.test(line)){size=parseInt(line.split(/\s+/)[1],10);continue;}
     if(/^DOMAIN_MIN/i.test(line)){domainMin=line.split(/\s+/).slice(1).map(Number);continue;}
     if(/^DOMAIN_MAX/i.test(line)){domainMax=line.split(/\s+/).slice(1).map(Number);continue;}
-    const parts=line.split(/\s+/).map(Number);
-    if(parts.length===3&&parts.every(n=>!isNaN(n)))data.push(parts[0],parts[1],parts[2]);
+    const parts=line.split(/\s+/).map(Number); if(parts.length===3&&parts.every(n=>!isNaN(n)))data.push(parts[0],parts[1],parts[2]);
   }
   if(!size||data.length!==size*size*size*3)throw new Error('invalid or incomplete .cube file');
   return{size,domainMin,domainMax,data:new Float32Array(data)};
 }
-
 $('fiLut').onchange = async e => {
-  const f = e.target.files[0]; e.target.value = '';
-  if(!f) return;
+  const f = e.target.files[0]; e.target.value = ''; if(!f) return;
   try {
-    currentLUT = parseCubeLUT(await f.text());
-    $('lutStatus').textContent = '✓ ' + f.name;
-    $('lutControls').style.display = 'block';
-    $('lutClear').style.display = 'inline-block';
-    if(engine) engine.setLUT(currentLUT);
-    render();
+    currentLUT = parseCubeLUT(await f.text()); $('lutStatus').textContent = '✓ ' + f.name; $('lutControls').style.display = 'block'; $('lutClear').style.display = 'inline-block';
+    if(engine) engine.setLUT(currentLUT); render();
   } catch(err) { $('lutStatus').textContent = 'Error: ' + err.message; }
 };
-$('lutClear').onclick = () => {
-  currentLUT = null;
-  $('lutStatus').textContent = 'No LUT loaded';
-  $('lutControls').style.display = 'none';
-  $('lutClear').style.display = 'none';
-  if(engine) engine.setLUT(null);
-  render();
-};
+$('lutClear').onclick = () => { currentLUT = null; $('lutStatus').textContent = 'No LUT loaded'; $('lutControls').style.display = 'none'; $('lutClear').style.display = 'none'; if(engine) engine.setLUT(null); render(); };
 
 // --- White Balance ---
 $('wbPre').onclick = () => { pickMode = 'pre'; $('wbPre').classList.add('armed'); $('wbPost').classList.remove('armed'); $('preview').classList.add('pick'); };
@@ -643,18 +649,10 @@ $('wbPostReset').onclick = () => { postWB = [1,1,1]; $('wbPostStatus').textConte
 
 $('preview').onclick = e => {
   if (!pickMode || !loadedImage) return;
-  const rect = $('preview').getBoundingClientRect();
-  const x = Math.floor((e.clientX - rect.left) / rect.width * rawCanvas.width);
-  const y = Math.floor((e.clientY - rect.top) / rect.height * rawCanvas.height);
-  
-  const rad = 2;
-  const pix = rawCtx.getImageData(Math.max(0, x - rad), Math.max(0, y - rad), 5, 5).data;
-  let r = 0, g = 0, b = 0, count = 0;
-  for (let i = 0; i < pix.length; i += 4) { r += pix[i]; g += pix[i+1]; b += pix[i+2]; count++; }
-  r /= count; g /= count; b /= count;
-
-  const avg = (r + g + b) / 3;
-  const gains = [r > 0 ? avg / r : 1, g > 0 ? avg / g : 1, b > 0 ? avg / b : 1];
+  const rect = $('preview').getBoundingClientRect(), x = Math.floor((e.clientX - rect.left) / rect.width * rawCanvas.width), y = Math.floor((e.clientY - rect.top) / rect.height * rawCanvas.height);
+  const pix = rawCtx.getImageData(Math.max(0, x - 2), Math.max(0, y - 2), 5, 5).data;
+  let r = 0, g = 0, b = 0, count = 0; for (let i = 0; i < pix.length; i += 4) { r += pix[i]; g += pix[i+1]; b += pix[i+2]; count++; }
+  r /= count; g /= count; b /= count; const avg = (r + g + b) / 3, gains = [r > 0 ? avg / r : 1, g > 0 ? avg / g : 1, b > 0 ? avg / b : 1];
 
   if (pickMode === 'pre') { preWB = gains; $('wbPreStatus').textContent = `Set ✓ R:${preWB[0].toFixed(2)} G:${preWB[1].toFixed(2)} B:${preWB[2].toFixed(2)}`; $('wbPre').classList.remove('armed'); } 
   else { postWB = gains; $('wbPostStatus').textContent = `Set ✓ R:${postWB[0].toFixed(2)} G:${postWB[1].toFixed(2)} B:${postWB[2].toFixed(2)}`; $('wbPost').classList.remove('armed'); }
@@ -662,95 +660,88 @@ $('preview').onclick = e => {
 };
 
 $('bReset').onclick = () => {
-  const identity = [100,0,0, 0,100,0, 0,0,100];
-  MCELLS.forEach((id, i) => $(id).value = identity[i]);
-  preWB = [1, 1, 1]; postWB = [1, 1, 1];
-  ['bright','hue','blackPt'].forEach(id => { $(id).value = 0; $('v_' + id).textContent = 0; });
-  $('sat').value = 100; $('v_sat').textContent = 100;
-  $('wbPreStatus').textContent = 'Pre-WB: Not set';
-  $('wbPostStatus').textContent = 'Post-WB: Not set';
-  document.querySelectorAll('.pb').forEach(x => x.classList.remove('on'));
-  render();
+  const identity = [100,0,0, 0,100,0, 0,0,100]; MCELLS.forEach((id, i) => $(id).value = identity[i]); preWB = [1, 1, 1]; postWB = [1, 1, 1];
+  ['bright','hue','blackPt'].forEach(id => { $(id).value = 0; $('v_' + id).textContent = 0; }); $('sat').value = 100; $('v_sat').textContent = 100;
+  $('wbPreStatus').textContent = 'Pre-WB: Not set'; $('wbPostStatus').textContent = 'Post-WB: Not set'; document.querySelectorAll('.pb').forEach(x => x.classList.remove('on')); render();
 };
 
-// --- CPU Export Engine (Original Resolution, TIFF, EXIF) ---
-function rgbToHsl(r,g,b){
-  r/=255;g/=255;b/=255;const mx=Math.max(r,g,b),mn=Math.min(r,g,b);let h,s,l=(mx+mn)/2;
-  if(mx===mn){h=s=0;}else{const d=mx-mn;s=l>.5?d/(2-mx-mn):d/(mx+mn);
-    if(mx===r)h=((g-b)/d+(g<b?6:0))/6;else if(mx===g)h=((b-r)/d+2)/6;else h=((r-g)/d+4)/6;}
-  return[h,s,l];
-}
-function hue2(p,q,t){if(t<0)t+=1;if(t>1)t-=1;if(t<1/6)return p+(q-p)*6*t;if(t<.5)return q;if(t<2/3)return p+(q-p)*(2/3-t)*6;return p;}
-function hslToRgb(h,s,l){if(s<=0){const v=Math.round(l*255);return[v,v,v];}const q=l<.5?l*(1+s):l+s-l*s,p=2*l-q;return[Math.round(hue2(p,q,h+1/3)*255),Math.round(hue2(p,q,h)*255),Math.round(hue2(p,q,h-1/3)*255)];}
+// --- BLOB WORKER CPU EXPORT ---
+function getWorkerScript() {
+  return `
+    const SRGB = new Float32Array(256);
+    for(let i=0; i<256; i++) { const c=i/255; SRGB[i] = c<=0.04045 ? c/12.92 : Math.pow((c+0.055)/1.055, 2.4); }
+    function lin2srgb(c) { if(c<=0)return 0; if(c>=1)return 1; return c<=0.0031308 ? c*12.92 : 1.055*Math.pow(c,1/2.4)-0.055; }
+    function rgbToHsl(r,g,b){ r/=255;g/=255;b/=255;const mx=Math.max(r,g,b),mn=Math.min(r,g,b);let h,s,l=(mx+mn)/2; if(mx===mn){h=s=0;}else{const d=mx-mn;s=l>.5?d/(2-mx-mn):d/(mx+mn); if(mx===r)h=((g-b)/d+(g<b?6:0))/6;else if(mx===g)h=((b-r)/d+2)/6;else h=((r-g)/d+4)/6;} return[h,s,l]; }
+    function hue2(p,q,t){if(t<0)t+=1;if(t>1)t-=1;if(t<1/6)return p+(q-p)*6*t;if(t<.5)return q;if(t<2/3)return p+(q-p)*(2/3-t)*6;return p;}
+    function hslToRgb(h,s,l){if(s<=0){const v=Math.round(l*255);return[v,v,v];}const q=l<.5?l*(1+s):l+s-l*s,p=2*l-q;return[Math.round(hue2(p,q,h+1/3)*255),Math.round(hue2(p,q,h)*255),Math.round(hue2(p,q,h-1/3)*255)];}
+    function sampleLut(lut, r, g, b, mix) {
+      if(!lut || mix<=0) return [r,g,b]; const N=lut.size, d=lut.data, fx=(r/255)*(N-1), fy=(g/255)*(N-1), fz=(b/255)*(N-1);
+      const x0=Math.floor(fx), y0=Math.floor(fy), z0=Math.floor(fz), x1=Math.min(x0+1,N-1), y1=Math.min(y0+1,N-1), z1=Math.min(z0+1,N-1);
+      const dx=fx-x0, dy=fy-y0, dz=fz-z0, idx=(x,y,z)=>((z*N+y)*N+x)*3; const out=[0,0,0];
+      for(let c=0; c<3; c++) {
+        const c00=d[idx(x0,y0,z0)+c]*(1-dx)+d[idx(x1,y0,z0)+c]*dx, c10=d[idx(x0,y1,z0)+c]*(1-dx)+d[idx(x1,y1,z0)+c]*dx;
+        const c01=d[idx(x0,y0,z1)+c]*(1-dx)+d[idx(x1,y0,z1)+c]*dx, c11=d[idx(x0,y1,z1)+c]*(1-dx)+d[idx(x1,y1,z1)+c]*dx;
+        out[c]= (c00*(1-dy)+c10*dy)*(1-dz) + (c01*(1-dy)+c11*dy)*dz;
+      }
+      const or=Math.max(0,Math.min(255,Math.round(out[0]*255))), og=Math.max(0,Math.min(255,Math.round(out[1]*255))), ob=Math.max(0,Math.min(255,Math.round(out[2]*255)));
+      if(mix>=1) return [or,og,ob]; return [Math.round(r+(or-r)*mix), Math.round(g+(og-g)*mix), Math.round(b+(ob-b)*mix)];
+    }
 
-function sampleLutPixel(lut, r, g, b, mix) {
-  if(!lut || mix<=0) return [r,g,b];
-  const N = lut.size, d = lut.data;
-  const fx = (r/255)*(N-1), fy = (g/255)*(N-1), fz = (b/255)*(N-1);
-  const x0 = Math.floor(fx), y0 = Math.floor(fy), z0 = Math.floor(fz);
-  const x1 = Math.min(x0+1,N-1), y1 = Math.min(y0+1,N-1), z1 = Math.min(z0+1,N-1);
-  const dx = fx-x0, dy = fy-y0, dz = fz-z0;
-  const idx = (x,y,z) => ((z*N+y)*N+x)*3;
-  const out = [0,0,0];
-  for(let c=0; c<3; c++) {
-    const c00 = d[idx(x0,y0,z0)+c]*(1-dx)+d[idx(x1,y0,z0)+c]*dx, c10 = d[idx(x0,y1,z0)+c]*(1-dx)+d[idx(x1,y1,z0)+c]*dx;
-    const c01 = d[idx(x0,y0,z1)+c]*(1-dx)+d[idx(x1,y0,z1)+c]*dx, c11 = d[idx(x0,y1,z1)+c]*(1-dx)+d[idx(x1,y1,z1)+c]*dx;
-    const c0 = c00*(1-dy)+c10*dy, c1 = c01*(1-dy)+c11*dy;
-    out[c] = c0*(1-dz)+c1*dz;
-  }
-  const or = Math.max(0, Math.min(255, Math.round(out[0]*255))), og = Math.max(0, Math.min(255, Math.round(out[1]*255))), ob = Math.max(0, Math.min(255, Math.round(out[2]*255)));
-  if(mix>=1) return [or, og, ob];
-  return [Math.round(r+(or-r)*mix), Math.round(g+(og-g)*mix), Math.round(b+(ob-b)*mix)];
-}
+    const LE=(()=>{const b=new ArrayBuffer(2);new Uint16Array(b)[0]=1;return new Uint8Array(b)[0]===1;})();
+    function encodeTIFF16(rgba,w,h){
+      const pixelBytes=w*h*6, ifdOffset=8, ifdSize=2+14*12+4, after=ifdOffset+ifdSize, bpsOff=after, xResOff=bpsOff+6, yResOff=xResOff+8, pixOff=yResOff+8;
+      const buf=new ArrayBuffer(pixOff+pixelBytes), dv=new DataView(buf);
+      dv.setUint8(0,LE?0x49:0x4D); dv.setUint8(1,LE?0x49:0x4D); dv.setUint16(2,42,LE); dv.setUint32(4,ifdOffset,LE);
+      let o=ifdOffset; dv.setUint16(o,14,LE); o+=2;
+      const en=(t,ty,c,v)=>{dv.setUint16(o,t,LE);dv.setUint16(o+2,ty,LE);dv.setUint32(o+4,c,LE);dv.setUint32(o+8,v,LE);o+=12;};
+      en(256,4,1,w); en(257,4,1,h); en(258,3,3,bpsOff); en(259,3,1,1); en(262,3,1,2); en(273,4,1,pixOff); en(277,3,1,3); en(278,4,1,h); en(279,4,1,pixelBytes); en(282,5,1,xResOff); en(283,5,1,yResOff); en(284,3,1,1); en(296,3,1,2); en(339,3,1,1); dv.setUint32(o,0,LE);
+      dv.setUint16(bpsOff,16,LE); dv.setUint16(bpsOff+2,16,LE); dv.setUint16(bpsOff+4,16,LE);
+      dv.setUint32(xResOff,72,LE); dv.setUint32(xResOff+4,1,LE); dv.setUint32(yResOff,72,LE); dv.setUint32(yResOff+4,1,LE);
+      const px=new Uint16Array(buf,pixOff,w*h*3); let j=0;
+      for(let i=0;i<rgba.length;i+=4){px[j++]=rgba[i]*257;px[j++]=rgba[i+1]*257;px[j++]=rgba[i+2]*257;}
+      return buf;
+    }
 
-function processCPUChunk(src, dst, mat, pr, pg, pb, qr, qg, qb, exp, hShft, sat, bp, lut, lMix, start, end) {
-  for (let p = start; p < end; p += 4) {
-    let R = SRGB_TO_LINEAR[src[p]] * pr, G = SRGB_TO_LINEAR[src[p+1]] * pg, B = SRGB_TO_LINEAR[src[p+2]] * pb;
-    let lR = (mat[0]*R + mat[1]*G + mat[2]*B) * qr * exp;
-    let lG = (mat[3]*R + mat[4]*G + mat[5]*B) * qg * exp;
-    let lB = (mat[6]*R + mat[7]*G + mat[8]*B) * qb * exp;
+    self.onmessage = function(e) {
+      const { srcBuffer, w, h, m, pr, pg, pb, qr, qg, qb, exp, hShft, sat, bp, lut, lMix, fmt } = e.data;
+      const src = new Uint8ClampedArray(srcBuffer), dst = new Uint8ClampedArray(src.length);
+      const total = src.length, CHUNK = 1<<21; let off = 0;
 
-    const comp = v => {
-      if(v<0) return 0;
-      if(v>0.75) { let x=(v-0.75)/0.25; return 0.75+0.25*((Math.exp(x)-Math.exp(-x))/(Math.exp(x)+Math.exp(-x))); }
-      return v;
+      function process() {
+        const end = Math.min(off + CHUNK, total);
+        for(let p=off; p<end; p+=4) {
+          let R = SRGB[src[p]] * pr, G = SRGB[src[p+1]] * pg, B = SRGB[src[p+2]] * pb;
+          let lR = (m[0]*R + m[1]*G + m[2]*B) * qr * exp, lG = (m[3]*R + m[4]*G + m[5]*B) * qg * exp, lB = (m[6]*R + m[7]*G + m[8]*B) * qb * exp;
+          const comp = v => { if(v<0)return 0; if(v>0.75){let x=(v-0.75)/0.25; return 0.75+0.25*((Math.exp(x)-Math.exp(-x))/(Math.exp(x)+Math.exp(-x)));} return v; };
+          let r = Math.round(lin2srgb(comp(lR))*255), g = Math.round(lin2srgb(comp(lG))*255), b = Math.round(lin2srgb(comp(lB))*255);
+
+          if(hShft || sat!==1){ let [hh,ss,ll]=rgbToHsl(r,g,b); hh=(hh+hShft+1)%1; ss=Math.max(0,Math.min(1,ss*sat)); [r,g,b]=hslToRgb(hh,ss,ll); }
+          if(lut) [r,g,b] = sampleLut(lut,r,g,b,lMix);
+          if(bp>0){ r=Math.max(0,Math.min(255,Math.round((r-bp)/(255-bp)*255))); g=Math.max(0,Math.min(255,Math.round((g-bp)/(255-bp)*255))); b=Math.max(0,Math.min(255,Math.round((b-bp)/(255-bp)*255))); }
+          dst[p]=r; dst[p+1]=g; dst[p+2]=b; dst[p+3]=src[p+3];
+        }
+        off = end;
+        if(off < total) {
+          self.postMessage({ type: 'progress', pct: Math.round((off/total)*100) });
+          setTimeout(process, 0);
+        } else {
+          if (fmt === 'tiff16') {
+            self.postMessage({ type: 'progress', pct: 'Encoding TIFF...' });
+            const tiffBuf = encodeTIFF16(dst, w, h);
+            self.postMessage({ type: 'done', outBuffer: tiffBuf, isTiff: true }, [tiffBuf]);
+          } else {
+            self.postMessage({ type: 'done', outBuffer: dst.buffer, isTiff: false }, [dst.buffer]);
+          }
+        }
+      }
+      process();
     };
-    let r = Math.round(linearToSrgbFloat(comp(lR))*255), g = Math.round(linearToSrgbFloat(comp(lG))*255), b = Math.round(linearToSrgbFloat(comp(lB))*255);
-
-    if (hShft || sat!==1) {
-      let [hh, ss, ll] = rgbToHsl(r, g, b);
-      hh = (hh + hShft + 1) % 1; ss = Math.max(0, Math.min(1, ss * sat));
-      [r, g, b] = hslToRgb(hh, ss, ll);
-    }
-    if (lut) [r, g, b] = sampleLutPixel(lut, r, g, b, lMix);
-    if (bp > 0) {
-      r = Math.max(0, Math.min(255, Math.round((r-bp)/(255-bp)*255)));
-      g = Math.max(0, Math.min(255, Math.round((g-bp)/(255-bp)*255)));
-      b = Math.max(0, Math.min(255, Math.round((b-bp)/(255-bp)*255)));
-    }
-    dst[p]=r; dst[p+1]=g; dst[p+2]=b; dst[p+3]=src[p+3];
-  }
-}
-
-const LE=(()=>{const b=new ArrayBuffer(2);new Uint16Array(b)[0]=1;return new Uint8Array(b)[0]===1;})();
-function encodeTIFF16(rgba,w,h){
-  const pixelBytes=w*h*6, ifdOffset=8, ifdSize=2+14*12+4, after=ifdOffset+ifdSize;
-  const bpsOff=after, xResOff=bpsOff+6, yResOff=xResOff+8, pixOff=yResOff+8;
-  const buf=new ArrayBuffer(pixOff+pixelBytes), dv=new DataView(buf);
-  dv.setUint8(0,LE?0x49:0x4D); dv.setUint8(1,LE?0x49:0x4D); dv.setUint16(2,42,LE); dv.setUint32(4,ifdOffset,LE);
-  let o=ifdOffset; dv.setUint16(o,14,LE); o+=2;
-  const en=(t,ty,c,v)=>{dv.setUint16(o,t,LE);dv.setUint16(o+2,ty,LE);dv.setUint32(o+4,c,LE);dv.setUint32(o+8,v,LE);o+=12;};
-  en(256,4,1,w); en(257,4,1,h); en(258,3,3,bpsOff); en(259,3,1,1); en(262,3,1,2); en(273,4,1,pixOff); en(277,3,1,3); en(278,4,1,h); en(279,4,1,pixelBytes); en(282,5,1,xResOff); en(283,5,1,yResOff); en(284,3,1,1); en(296,3,1,2); en(339,3,1,1); dv.setUint32(o,0,LE);
-  dv.setUint16(bpsOff,16,LE); dv.setUint16(bpsOff+2,16,LE); dv.setUint16(bpsOff+4,16,LE);
-  dv.setUint32(xResOff,72,LE); dv.setUint32(xResOff+4,1,LE); dv.setUint32(yResOff,72,LE); dv.setUint32(yResOff+4,1,LE);
-  const px=new Uint16Array(buf,pixOff,w*h*3); let j=0;
-  for(let i=0;i<rgba.length;i+=4){px[j++]=rgba[i]*257;px[j++]=rgba[i+1]*257;px[j++]=rgba[i+2]*257;}
-  return new Blob([buf],{type:'image/tiff'});
+  `;
 }
 
 $('bDl').onclick = async () => {
   if (!loadedImage) return;
-  $('busy').style.display = 'flex'; $('busy').textContent = 'Preparing CPU Render...';
+  $('busy').style.display = 'flex'; $('busy').textContent = 'Preparing Export...';
   
   const fmt = document.querySelector('input[name=fmt]:checked').value;
   const useOrig = document.querySelector('input[name=res]:checked').value === 'original' && origFile;
@@ -760,69 +751,53 @@ $('bDl').onclick = async () => {
       let srcCanvas = rawCanvas;
       if (useOrig) {
         $('busy').textContent = 'Decoding Original Image...';
-        const img = new Image();
-        await new Promise(r => { img.onload=r; img.src=URL.createObjectURL(origFile); });
+        const img = new Image(); await new Promise(r => { img.onload=r; img.src=URL.createObjectURL(origFile); });
         srcCanvas = document.createElement('canvas'); srcCanvas.width = img.width; srcCanvas.height = img.height;
         srcCanvas.getContext('2d').drawImage(img,0,0);
       }
       
       const W = srcCanvas.width, H = srcCanvas.height;
       const srcData = srcCanvas.getContext('2d').getImageData(0,0,W,H).data;
-      const outData = new Uint8ClampedArray(srcData.length);
       
-      const m = getMatrixUI(), pr=preWB[0], pg=preWB[1], pb=preWB[2], qr=postWB[0], qg=postWB[1], qb=postWB[2];
-      const exp = Math.pow(2, (+$('bright').value||0)/100), hShft = (+$('hue').value||0)/360, sat = (+$('sat').value||100)/100, bp = +$('blackPt').value||0;
-      const lMix = (+$('lutMix').value||100)/100;
+      const workerBlob = new Blob([getWorkerScript()], { type: 'application/javascript' });
+      const worker = new Worker(URL.createObjectURL(workerBlob));
 
-      const CHUNK = 1<<21; let off = 0;
-      function processNext() {
-        const end = Math.min(off + CHUNK, srcData.length);
-        processCPUChunk(srcData, outData, m, pr,pg,pb, qr,qg,qb, exp, hShft, sat, bp, currentLUT, lMix, off, end);
-        off = end;
-        $('busy').textContent = `Processing CPU Export... ${Math.round(off/srcData.length*100)}%`;
-        if (off < srcData.length) setTimeout(processNext, 0);
-        else finalizeExport();
-      }
-      
-      function finalizeExport() {
-        $('busy').textContent = 'Encoding File...';
-        setTimeout(async () => {
-          let blob, ext, mime;
-          if (fmt === 'tiff16') { blob = encodeTIFF16(outData, W, H); ext = 'tiff'; mime = 'image/tiff'; }
-          else {
+      worker.onmessage = async (e) => {
+        if (e.data.type === 'progress') {
+          $('busy').textContent = `Processing CPU Export... ${e.data.pct}%`;
+        } else if (e.data.type === 'done') {
+          $('busy').textContent = 'Encoding File...';
+          let finalBlob, ext, mime;
+
+          if (e.data.isTiff) {
+            finalBlob = new Blob([e.data.outBuffer], { type: 'image/tiff' }); ext = 'tiff';
+          } else {
+            const outArray = new Uint8ClampedArray(e.data.outBuffer);
             const oc = document.createElement('canvas'); oc.width=W; oc.height=H;
-            const ox = oc.getContext('2d'); const id = ox.createImageData(W,H); id.data.set(outData); ox.putImageData(id,0,0);
+            const ox = oc.getContext('2d'); const id = ox.createImageData(W,H); id.data.set(outArray); ox.putImageData(id,0,0);
             mime = fmt==='png' ? 'image/png' : 'image/jpeg'; ext = fmt==='png' ? 'png' : 'jpg';
             const b = await new Promise(r => oc.toBlob(r, mime, 1.0));
             if (exifSegment) {
               const buf = new Uint8Array(await b.arrayBuffer());
-              blob = new Blob([fmt==='png' ? spliceExifIntoPngBytes(buf, exifSegment) : spliceExifIntoJpegBytes(buf, exifSegment)], {type:mime});
-            } else blob = b;
+              finalBlob = new Blob([fmt==='png' ? spliceExifIntoPngBytes(buf, exifSegment) : spliceExifIntoJpegBytes(buf, exifSegment)], {type:mime});
+            } else finalBlob = b;
           }
-          const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `channelswap-${Date.now()}.${ext}`; a.click();
+
+          const a = document.createElement('a'); a.href = URL.createObjectURL(finalBlob); a.download = `channelswap-${Date.now()}.${ext}`; a.click();
           $('busy').style.display = 'none';
-        }, 50);
-      }
-      
-      processNext();
+          worker.terminate();
+        }
+      };
+
+      worker.postMessage({
+        srcBuffer: srcData.buffer, w: W, h: H, fmt: fmt,
+        m: getMatrixUI(), pr: preWB[0], pg: preWB[1], pb: preWB[2], qr: postWB[0], qg: postWB[1], qb: postWB[2],
+        exp: Math.pow(2, (+$('bright').value||0)/100), hShft: (+$('hue').value||0)/360, sat: (+$('sat').value||100)/100, bp: +$('blackPt').value||0,
+        lut: currentLUT, lMix: (+$('lutMix').value||100)/100
+      }, [srcData.buffer]);
+
     } catch(e) { alert('Export Failed: ' + e); $('busy').style.display = 'none'; }
   }, 50);
-};
-
-// --- LUT Export ---
-$('btnExportLUT').onclick = () => {
-  const m = getMatrixUI(), pr=preWB[0], pg=preWB[1], pb=preWB[2], qr=postWB[0], qg=postWB[1], qb=postWB[2];
-  const exp = Math.pow(2, (+$('bright').value||0)/100), hShft = (+$('hue').value||0)/360, sat = (+$('sat').value||100)/100, bp = +$('blackPt').value||0;
-  const lMix = (+$('lutMix').value||100)/100;
-  
-  const size = 32, N = size-1; let text = `TITLE "ChannelSwap_LUT"\nLUT_3D_SIZE ${size}\nDOMAIN_MIN 0 0 0\nDOMAIN_MAX 1 1 1\n`;
-  const tmp = new Uint8ClampedArray(4);
-  for(let z=0;z<size;z++) for(let y=0;y<size;y++) for(let x=0;x<size;x++){
-    const src = new Uint8ClampedArray([Math.round(x/N*255), Math.round(y/N*255), Math.round(z/N*255), 255]);
-    processCPUChunk(src, tmp, m, pr,pg,pb, qr,qg,qb, exp, hShft, sat, bp, currentLUT, lMix, 0, 4);
-    text += `${(tmp[0]/255).toFixed(6)} ${(tmp[1]/255).toFixed(6)} ${(tmp[2]/255).toFixed(6)}\n`;
-  }
-  const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([text],{type:'text/plain'})); a.download = `ChannelSwap_${Date.now()}.cube`; a.click();
 };
 </script>
 </body>
