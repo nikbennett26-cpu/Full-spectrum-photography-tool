@@ -1,0 +1,1600 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Infrared Colour Swap — Aerochrome & False Colour Tool for UV/IR Photography</title>
+<meta name="description" content="Free browser-based channel swap tool for full-spectrum, UV and infrared photography. Aerochrome presets, WebGL channel mixer, Darktable row normalization.">
+<meta name="keywords" content="channel swap, Aerochrome, false colour, infrared photography, UV photography, full spectrum, WebGL">
+<meta name="robots" content="index, follow">
+<link rel="canonical" href="https://irlab.uk/">
+<meta name="theme-color" content="#160f0a">
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebApplication",
+  "name": "Infrared Colour Swap — Aerochrome & False Colour Tool",
+  "alternateName": "IR Lab Infrared Colour Swap",
+  "url": "https://irlab.uk/",
+  "description": "Free browser-based WebGL channel swap tool for full-spectrum, UV and infrared photography.",
+  "applicationCategory": "MultimediaApplication",
+  "operatingSystem": "Any (runs in any modern web browser)",
+  "browserRequirements": "Requires JavaScript and WebGL",
+  "isAccessibleForFree": true
+}
+</script>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+
+<style>
+:root{
+  --bg:#19191a;--surface:#20160f;--surface2:#2a1d13;--line:#40301f;--line2:#54402a;
+  --paper:#ede2ce;--paper-dim:#a89372;--muted:#7a6a52;
+  --safelight:#c2431b;--safelight-dim:#8f3417;
+  --phosphor:#6fab96;--phosphor-dim:#4d7d6e;
+  --red:#c2543a;--green:#6fab8a;--blue:#5f8fa8;
+  --radius:4px;--accent:var(--safelight);
+  --font-display:'Barlow Condensed',system-ui,sans-serif;
+  --font-mono:'JetBrains Mono',ui-monospace,Consolas,monospace;
+  --font-body:system-ui,-apple-system,sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--paper);font-family:var(--font-body);font-size:14px;line-height:1.45;padding:12px;max-width:920px;margin:0 auto;min-height:100vh;display:flex;flex-direction:column}
+body.has-image{overflow-y:auto;height:auto}
+@media (min-width:900px){body{max-width:1400px;padding:24px 40px}}
+@media (min-width:1600px){body{max-width:92vw;padding:32px 4vw}}
+
+/* Desktop vs Mobile Layout */
+@media (min-width:1100px){
+  body.has-image{overflow:hidden;height:100vh}
+  #editorLeft{height:68vh;overflow:hidden;flex-shrink:0;display:flex;flex-direction:column}
+  #previewSticky{position:static;margin:0;padding:4px 0;background:transparent;box-shadow:none;flex:1;min-height:0;display:flex;flex-direction:column}
+  #cw{flex:1;min-height:0}
+  #previewWrap{height:100%;max-width:100%;display:flex;align-items:center;justify-content:center}
+  #preview{max-height:100%!important;max-width:100%!important;height:auto;width:auto}
+  #reorderZone{height:calc(32vh - 24px);overflow-y:auto;overflow-x:hidden;border-top:1px solid var(--line);padding-top:12px;scrollbar-width:thin;scrollbar-color:var(--line2) transparent}
+}
+
+/* Sticky Preview & Compare Features */
+#previewSticky{position:relative;z-index:40;background:var(--bg);padding:8px 12px 10px;margin:0 -12px;will-change:transform}
+#previewSticky.floating{box-shadow:0 8px 16px -8px rgba(0,0,0,.5)}
+#previewStickySpacer{display:none}
+
+#previewOrig{position:absolute;top:0;left:0;width:100%;height:100%;display:none;clip-path:inset(0 50% 0 0);pointer-events:none}
+#cmpLabels{position:absolute;top:8px;left:8px;right:8px;display:none;justify-content:space-between;pointer-events:none}
+#cmpLabels span{background:rgba(10,6,3,.75);color:var(--paper);font-family:var(--font-mono);font-size:9.5px;font-weight:600;padding:3px 9px;border-radius:2px;letter-spacing:.06em}
+#cmpHandle{position:absolute;top:0;bottom:0;left:50%;width:0;display:none;pointer-events:none}
+#cmpHandle::before{content:'';position:absolute;top:0;bottom:0;left:-1px;width:2px;background:var(--safelight);box-shadow:0 0 8px rgba(194,67,27,.8)}
+#btnExpandPreview{position:absolute;bottom:8px;right:8px;width:34px;height:34px;padding:0;border-radius:50%;
+  background:rgba(10,6,3,.7);border:1px solid rgba(237,226,206,.3);color:var(--paper);font-size:16px;
+  display:flex;align-items:center;justify-content:center;cursor:pointer;backdrop-filter:blur(2px)}
+#previewFullscreen{display:none;position:fixed;inset:0;z-index:200;background:rgba(6,4,2,.96);
+  align-items:center;justify-content:center;touch-action:pinch-zoom}
+#previewFullscreen.on{display:flex}
+#previewFull{max-width:100vw;max-height:100vh;width:auto;height:auto;display:block}
+#btnCloseFullscreen{position:absolute;top:14px;right:14px;width:40px;height:40px;padding:0;border-radius:50%;
+  background:rgba(237,226,206,.12);border:1px solid rgba(237,226,206,.3);color:var(--paper);font-size:18px;
+  display:flex;align-items:center;justify-content:center;cursor:pointer}
+.pickmarker{position:absolute;width:28px;height:28px;transform:translate(-50%,-50%);
+  border-radius:50%;box-shadow:0 0 0 1px rgba(0,0,0,.6),0 0 8px rgba(0,0,0,.5);
+  display:none;z-index:6;cursor:grab;touch-action:none}
+.pickmarker::after{content:'';position:absolute;top:50%;left:50%;width:3px;height:3px;
+  background:#fff;border-radius:50%;transform:translate(-50%,-50%);box-shadow:0 0 0 1px rgba(0,0,0,.6)}
+.pickmarker.dragging{cursor:grabbing}
+#pickMarkerPre{border:2.5px solid var(--phosphor)}
+#pickMarkerPost{border:2.5px solid var(--safelight)}
+#cmpBar{display:none;margin-top:8px;padding:8px 10px;background:var(--surface);border:1px solid var(--line);border-radius:3px}
+.cmpBarLabels{display:flex;justify-content:space-between;font-family:var(--font-mono);font-size:9.5px;font-weight:500;color:var(--paper-dim);letter-spacing:.04em;margin-bottom:4px}
+#cmpRange{width:100%;accent-color:var(--safelight)}
+
+header{margin-bottom:clamp(6px,1.6vh,14px)}
+header h1{font-family:var(--font-display);font-weight:700;font-size:clamp(20px,5vh,28px);letter-spacing:.01em;text-transform:uppercase;color:var(--paper);line-height:1}
+header .tagline{font-size:11.5px;color:var(--paper-dim);margin-top:4px;display:block}
+#spectrumBar{height:5px;border-radius:2px;margin:clamp(4px,1.2vh,10px) 0 4px;position:relative;overflow:hidden;
+  opacity:0;transform:scaleX(0);transform-origin:left center;
+  animation:barFadeIn 1.6s cubic-bezier(.16,.8,.3,1) .25s forwards;
+  background:linear-gradient(90deg,#6a3fb0 0%,#3f6fd6 14%,#3fa0c9 26%,#3fb583 40%,#7fc23f 52%,#d6c23f 63%,#d6903f 72%,#d6503f 82%,#a8321f 91%,#4a1108 100%);
+  box-shadow:0 0 14px rgba(194,67,27,.35)}
+#spectrumBar::after{content:'';position:absolute;inset:0;
+  background:linear-gradient(90deg,transparent,rgba(255,255,255,.65),transparent);
+  transform:translateX(-100%);animation:barShimmer 1.3s ease-out 1.9s forwards}
+@keyframes barFadeIn{from{opacity:0;transform:scaleX(0)}to{opacity:1;transform:scaleX(1)}}
+@keyframes barShimmer{to{transform:translateX(100%)}}
+#spectrumTicks{display:flex;justify-content:space-between;font-family:var(--font-mono);font-size:9px;color:var(--muted);margin-bottom:2px}
+
+.panel{background:var(--surface);border:1px solid var(--line);border-top:2px solid var(--line2);border-radius:var(--radius);padding:14px;margin-bottom:10px;position:relative}
+.pt{font-family:var(--font-display);font-size:13px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--paper-dim);margin-bottom:10px;display:flex;align-items:center;gap:8px}
+
+#dropzone{border:1.5px dashed rgba(205,45,25,.6);border-radius:var(--radius);text-align:center;aspect-ratio:1/1;max-width:min(62vh,560px);width:100%;margin:0 auto;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;padding:1.2rem;box-shadow:0 0 60px -20px rgba(205,45,25,.35);transition:border-color .2s,box-shadow .2s}
+#dropzone:hover{border-color:rgba(205,45,25,.9);box-shadow:0 0 0 1px rgba(205,45,25,.15),0 0 70px -15px rgba(205,45,25,.5)}
+#dropzone.dragover{border-color:var(--safelight);box-shadow:0 0 0 1px rgba(205,45,25,.25),0 0 80px -10px rgba(205,45,25,.65)}
+#dropzone .big{font-family:var(--font-display);font-weight:600;color:var(--paper);white-space:nowrap;font-size:clamp(15px,5.6vw,26px)}
+
+/* Filter Reference Details Table Styling */
+details summary{list-style:none}
+details summary::-webkit-details-marker{display:none}
+details summary::after{content:'+';font-family:var(--font-mono);color:var(--safelight);margin-left:8px}
+details[open] summary::after{content:'–'}
+details[open] summary{margin-bottom:4px}
+.frtable{width:100%;border-collapse:collapse;font-size:12px}
+.frtable th{text-align:left;font-family:var(--font-mono);font-size:9.5px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);padding:6px 8px;border-bottom:1px solid var(--line)}
+.frtable td{padding:8px;border-bottom:1px solid var(--line);vertical-align:top}
+.frtable tr:last-child td{border-bottom:none}
+.frtable .fname{font-weight:600;color:var(--paper)}
+.frtable .fmeta{font-family:var(--font-mono);font-size:10px;color:var(--muted);display:block;margin-top:2px}
+
+.subhdr{font-family:var(--font-mono);font-size:10.5px;color:var(--paper-dim);font-weight:500;letter-spacing:.03em;margin:10px 0 6px;text-transform:uppercase}
+.pgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(155px,1fr));gap:6px}
+.pb{background:var(--surface2);border:1px solid var(--line);border-left:3px solid var(--line2);border-radius:3px;padding:9px;font-size:12px;cursor:pointer;text-align:left;color:var(--paper);font-family:inherit}
+.pb:hover{background:var(--line)}
+.pb.on{border-left-color:var(--safelight);background:rgba(194,67,27,.12)}
+.pgrid.uv .pb.on{border-left-color:var(--phosphor);background:rgba(111,171,150,.12)}
+.pb b{font-family:var(--font-mono);display:block;font-size:12px;font-weight:600;margin-bottom:2px}
+
+.matrix{display:grid;grid-template-columns:auto repeat(3,1fr);gap:6px 8px;align-items:center}
+.matrix .hdr{text-align:center;font-family:var(--font-mono);font-weight:500;font-size:9.5px;color:var(--muted);text-transform:uppercase}
+.matrix .rowlbl{font-family:var(--font-mono);font-weight:600;font-size:11.5px}
+.matrix input{width:100%;background:#120b07;border:1px solid var(--line);border-radius:3px;color:var(--phosphor);padding:6px;font-family:var(--font-mono);font-size:13px;text-align:center}
+.rl-r{color:var(--red)}.rl-g{color:var(--green)}.rl-b{color:var(--blue)}
+
+button{background:var(--surface2);border:1px solid var(--line2);border-radius:3px;color:var(--paper);padding:9px 14px;font-size:12.5px;font-weight:500;cursor:pointer;font-family:inherit}
+button.primary{background:var(--safelight);border-color:var(--safelight);color:#fff;font-weight:600}
+button.armed{background:var(--safelight);color:#fff}
+#toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:var(--surface2);border:1px solid var(--line2);border-left:3px solid var(--phosphor);color:var(--paper);font-family:var(--font-mono);font-size:12px;padding:10px 16px;border-radius:3px;opacity:0;transition:opacity .25s;pointer-events:none;z-index:50}
+#btnUndo{position:fixed;right:16px;bottom:20px;z-index:60;border-radius:50px;padding:12px 20px;box-shadow:0 4px 14px rgba(0,0,0,.4)}
+#btnUndo:active{transform:scale(.94)}
+#btnUndo:disabled{background:var(--surface2);color:var(--muted);border-color:var(--line2);box-shadow:none;opacity:.5}
+
+#cw{background:#0a0603;border:1px solid var(--line);border-radius:var(--radius);overflow:hidden;text-align:center;min-height:120px;display:flex;align-items:center;justify-content:center;position:relative}
+#previewWrap{position:relative;display:inline-block;line-height:0}
+#preview{max-width:100%;max-height:34vh;width:auto;height:auto;display:block;margin:0 auto}
+@media (min-width:900px){#preview{max-height:62vh}}
+#preview.pick{cursor:crosshair}
+
+#main{display:none}
+.sl label{font-size:12px;color:var(--paper-dim);display:flex;justify-content:space-between;margin-bottom:4px}
+.sl label b{font-family:var(--font-mono);color:var(--phosphor)}
+input[type=range]{width:100%;accent-color:var(--safelight)}
+.note{font-size:11px;color:var(--muted);margin-top:6px;line-height:1.4}
+.filelabel{display:inline-block;background:rgb(205,45,25);color:#fff;font-weight:600;padding:10px 20px;border-radius:3px;cursor:pointer}
+.wbrow{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:6px}
+</style>
+</head>
+<body>
+
+<div id="emptyStateGroup" style="margin:auto 0;width:100%;display:flex;flex-direction:column;align-items:center">
+  <header style="text-align:center">
+    <h1>Infrared Colour Swap</h1>
+    <span class="tagline">Darkroom for light you can't see — 60 FPS WebGL GPU Engine</span>
+    <div id="spectrumTicks"><span>400</span><span>500</span><span>600</span><span>700nm</span><span>850</span><span>IR →</span></div>
+    <div id="spectrumBar"></div>
+  </header>
+
+  <div id="dropzone">
+    <div class="big">Load your IR/UV capture to begin</div>
+    <p style="font-size:11.5px;margin-top:6px">Note: This tool is exclusively calibrated for images from converted full-spectrum cameras.</p>
+    <label class="filelabel" style="margin-top:14px">Choose image<input type="file" id="fi" style="display:none"></label>
+  </div>
+</div>
+
+<div id="main">
+  <div id="editorLeft">
+    <div style="display:flex;gap:8px;margin-bottom:10px;">
+      <label class="filelabel" style="padding:8px 14px">New image<input type="file" id="fi2" style="display:none"></label>
+      <button id="bReset">Reset all</button>
+      <button id="btnExportLUT">Save look as .cube preset</button>
+      <button id="btnUndo" disabled title="Undo the last slider/matrix change">↶ Undo</button>
+    </div>
+
+    <div id="previewStickySpacer"></div>
+    <div id="previewSticky">
+      <div id="cw">
+        <div id="previewWrap">
+          <canvas id="preview"></canvas>
+          <canvas id="previewOrig"></canvas>
+          <div id="cmpLabels">
+            <span id="cmpLabelBefore">BEFORE</span>
+            <span id="cmpLabelAfter">AFTER</span>
+          </div>
+          <div id="cmpHandle"></div>
+          <div id="pickMarkerPre" class="pickmarker"></div>
+          <div id="pickMarkerPost" class="pickmarker"></div>
+          <button id="btnExpandPreview" title="View full size">⤢</button>
+        </div>
+      </div>
+      <div id="cmpBar">
+        <div class="cmpBarLabels"><span>◀ Before</span><span>After ▶</span></div>
+        <input type="range" id="cmpRange" min="0" max="100" value="50">
+      </div>
+    </div>
+  </div>
+
+  <div id="reorderZone">
+    <div class="panel">
+      <details id="filterRefDetails">
+        <summary class="pt" style="cursor:pointer;display:inline-block">Filter reference — which physical filter, which preset?</summary>
+        <div style="margin:8px 0 4px"><a href="filters.html" style="font-family:var(--font-mono);font-size:11.5px;color:var(--safelight);text-decoration:none;border:1px solid var(--line2);padding:5px 10px;border-radius:3px;display:inline-block">Transmission curves &amp; stacking calculator →</a></div>
+        <div id="filterRefTable"></div>
+      </details>
+    </div>
+
+    <div class="panel">
+      <div class="pt">1. Match Your Filter</div>
+      <div class="subhdr">UV Presets</div>
+      <div class="pgrid uv" id="pgUV"></div>
+      <div class="subhdr" style="margin-top:12px">IR Presets</div>
+      <div class="pgrid" id="pgIR"></div>
+    </div>
+
+    <div class="panel">
+      <div class="pt">2. White Balance</div>
+      <div class="wbrow">
+        <button id="wbPre">Pre-Swap Neutral</button>
+        <button id="wbPreReset">Clear Pre</button>
+        <span class="note" id="wbPreStatus">Pre-WB: Not set</span>
+      </div>
+      <div class="wbrow" style="margin-top:10px">
+        <button id="wbPost">Post-Swap Neutral</button>
+        <button id="wbPostReset">Clear Post</button>
+        <span class="note" id="wbPostStatus">Post-WB: Not set</span>
+      </div>
+      <div class="sl" style="margin-top:14px"><label>Temperature <b id="v_temp">0</b></label><input type="range" id="temp" min="-100" max="100" value="0"></div>
+      <div class="sl" style="margin-top:8px"><label>Tint <b id="v_tint">0</b></label><input type="range" id="tint" min="-100" max="100" value="0"></div>
+      <p class="note">Temperature: cool ← → warm · Tint: green ← → magenta. Applied after the picker, so use these to push a deliberate cast on top of a neutral result.</p>
+    </div>
+
+    <div class="panel">
+      <div class="pt">3. Channel Mixer Matrix (%)</div>
+      <div class="matrix" id="mx">
+        <div></div><div class="hdr rl-r">from R</div><div class="hdr rl-g">from G</div><div class="hdr rl-b">from B</div>
+        <div class="rowlbl rl-r">R out</div>
+        <input type="number" id="m00" value="100" step="5"><input type="number" id="m01" value="0" step="5"><input type="number" id="m02" value="0" step="5">
+        <div class="rowlbl rl-g">G out</div>
+        <input type="number" id="m10" value="0" step="5"><input type="number" id="m11" value="100" step="5"><input type="number" id="m12" value="0" step="5">
+        <div class="rowlbl rl-b">B out</div>
+        <input type="number" id="m20" value="0" step="5"><input type="number" id="m21" value="0" step="5"><input type="number" id="m22" value="100" step="5">
+      </div>
+      <label style="font-family:var(--font-mono);font-size:11.5px;color:var(--paper);display:flex;align-items:center;gap:8px;margin-top:10px;cursor:pointer">
+        <input type="checkbox" id="chkNormalize"> Normalize matrix rows (Darktable exposure lock)
+      </label>
+    </div>
+
+    <div class="panel">
+      <div class="pt">4. Finishing Controls</div>
+      <!-- TONE: set overall brightness and tonal range first, since every
+           colour judgement below depends on the image being correctly exposed -->
+      <div class="sl"><label>Exposure <b id="v_bright">0</b></label><input type="range" id="bright" min="-100" max="100" value="0"></div>
+      <div class="sl" style="margin-top:8px"><label>Contrast <b id="v_contrast">25</b></label><input type="range" id="contrast" min="-100" max="100" value="25"></div>
+      <div class="sl" style="margin-top:8px"><label>Black point <b id="v_blackPt">0</b></label><input type="range" id="blackPt" min="0" max="120" value="0"></div>
+
+      <!-- COLOUR: only meaningful once tone is settled -->
+      <div class="sl" style="margin-top:14px"><label>Hue shift <b id="v_hue">0</b>°</label><input type="range" id="hue" min="-180" max="180" value="0"></div>
+      <div class="sl" style="margin-top:8px"><label>Saturation <b id="v_sat">100</b>%</label><input type="range" id="sat" min="0" max="200" value="100"></div>
+
+      <!-- CORRECTIVE: last, because how much fringing is visible depends on
+           the contrast and saturation set above -->
+      <div class="sl" style="margin-top:14px"><label>Defringe <b id="v_defringe">0</b></label><input type="range" id="defringe" min="0" max="100" value="0"></div>
+      <p class="note">Defringe removes the purple/magenta halos IR lenses leave on high-contrast edges. It smooths colour only — edge sharpness is unaffected. Start low; too much desaturates fine detail.</p>
+    </div>
+
+    <div class="panel">
+      <details>
+        <summary class="pt" style="cursor:pointer;display:inline-block">LUT (.cube) — optional colour grade</summary>
+        <div class="wbrow" style="margin-top:8px">
+          <label class="filelabel" style="margin-top:0">Load .cube LUT<input type="file" id="fiLut" accept=".cube" style="display:none"></label>
+          <button id="lutClear" style="display:none">Clear LUT</button>
+          <span class="note" id="lutStatus">No LUT loaded — applied at export time, as a film-style grade layered on top of the channel swap.</span>
+        </div>
+        <div id="lutControls" style="display:none;margin-top:10px">
+          <div class="sl"><label>LUT intensity <b id="v_lutMix">100</b>%</label><input type="range" id="lutMix" min="0" max="100" value="100"></div>
+        </div>
+      </details>
+    </div>
+
+    <div class="panel">
+      <details open>
+        <summary class="pt" style="cursor:pointer;display:inline-block">Export format</summary>
+        <div class="wbrow" style="flex-direction:column;align-items:flex-start;gap:6px;margin-top:8px">
+          <label><input type="radio" name="fmt" value="tiff16" checked> 16-bit TIFF <span style="color:var(--muted)">(best for Lightroom)</span></label>
+          <label><input type="radio" name="fmt" value="png"> PNG (8-bit)</label>
+          <label><input type="radio" name="fmt" value="jpeg"> JPEG (q100)</label>
+        </div>
+      </details>
+    </div>
+
+    <div class="panel" id="resPanel" style="display:none">
+      <details open>
+        <summary class="pt" style="cursor:pointer;display:inline-block">Export resolution</summary>
+        <div class="wbrow" style="flex-direction:column;align-items:flex-start;gap:6px;margin-top:8px">
+          <label><input type="radio" name="res" value="working" checked> Working size <span id="resWorkingLbl" style="color:var(--muted)"></span></label>
+          <label><input type="radio" name="res" value="original"> Original full size <span id="resOrigLbl" style="color:var(--muted)"></span></label>
+        </div>
+        <p class="note" id="resNote"></p>
+      </details>
+    </div>
+
+    <button id="bDl" class="primary" style="width:100%;padding:14px;font-size:15px;margin-bottom:10px">Export Image</button>
+
+    <footer style="text-align:center;padding:10px 0;font-size:11px;color:var(--muted)">
+      Tool by <a href="https://www.instagram.com/irlab.uk" target="_blank" rel="noopener" style="color:var(--safelight);font-weight:600;text-decoration:none">@irlab.uk</a>
+    </footer>
+  </div>
+</div>
+
+<div id="previewFullscreen">
+  <button id="btnCloseFullscreen" title="Close">✕</button>
+  <canvas id="previewFull"></canvas>
+</div>
+
+<script>
+'use strict';
+
+// --- WebGL Shaders ---
+const VS_SOURCE = `
+  attribute vec2 a_position;
+  attribute vec2 a_texCoord;
+  varying vec2 v_texCoord;
+  void main() {
+    gl_Position = vec4(a_position, 0.0, 1.0);
+    v_texCoord = vec2(a_texCoord.x, 1.0 - a_texCoord.y);
+  }
+`;
+
+const FS_SOURCE = `
+  precision highp float;
+  uniform sampler2D u_image;
+  uniform mat3 u_matrix;
+  uniform vec3 u_preWB;
+  uniform vec3 u_postWB;
+  uniform vec3 u_tempTint;
+  uniform vec2 u_texel;
+  uniform float u_defringe;
+  uniform float u_contrast;
+  uniform float u_exposure;
+  uniform float u_hue;
+  uniform float u_sat;
+  uniform float u_blackPt;
+  varying vec2 v_texCoord;
+
+  vec3 srgbToLinear(vec3 c) {
+    return mix(c / 12.92, pow((c + 0.055) / 1.055, vec3(2.4)), step(vec3(0.04045), c));
+  }
+
+  vec3 linearToSrgb(vec3 c) {
+    vec3 clamped = clamp(c, 0.0, 1.0);
+    return mix(clamped * 12.92, 1.055 * pow(clamped, vec3(1.0 / 2.4)) - 0.055, step(vec3(0.0031308), clamped));
+  }
+
+  // Soft-knee highlight protection — a standard tanh-based soft clip, the
+  // same generic technique used broadly in HDR tone mapping and audio
+  // limiting, not specific to any one tool. Values above the threshold ease
+  // toward 1.0 instead of hard-clipping. The threshold sits deliberately
+  // high (0.96, not compressing until near-true-white) after checking the
+  // old lower threshold (0.75) directly: it was already compressing 0.75-
+  // 0.95 linear-light values — a realistic range for ordinary sunlit
+  // highlight detail, well short of blown-out — down to 83% of their
+  // natural spread before this fix, which flattens exactly the kind of
+  // shadow-to-highlight tonal separation (e.g. deep red in shaded foliage
+  // easing toward gold in sunlit foliage) that should survive a channel
+  // swap. This range is now left completely untouched; only genuine
+  // near-white values get the soft roll-off.
+  float compressChan(float v) {
+    const float threshold = 0.96;
+    const float softness = 0.04; // threshold+softness must not exceed 1.0
+    if (v < 0.0) return 0.0;
+    if (v <= threshold) return v;
+    float x = (v - threshold) / softness;
+    return threshold + softness * ((exp(x) - exp(-x)) / (exp(x) + exp(-x)));
+  }
+
+  vec3 compressGamut(vec3 v) {
+    return vec3(compressChan(v.r), compressChan(v.g), compressChan(v.b));
+  }
+
+  // Gentle S-curve contrast, pivoting on mid-grey and preserving pure black
+  // and pure white — standard power-curve tone shaping. Applied to LUMINANCE
+  // only, then all three channels are rescaled by the same factor, so hue
+  // and chroma are mathematically untouched — only the tonal weight changes.
+  // (An earlier version applied this per-channel, which is a well-known
+  // characteristic of per-channel tone curves: it can shift colour balance
+  // in the midtones even though black/white/mid-grey stay anchored, since
+  // three unequal channel values move by different absolute amounts under
+  // the same curve. Luminance-only avoids that entirely.) A flat linear
+  // transform with no contrast tends to look thin and forces saturation to
+  // do all the work of making colours feel rich, which clips and flattens
+  // tone rather than deepening it. This runs automatically; no control.
+  float sCurve(float x, float strength) {
+    x = clamp(x, 0.0, 1.0);
+    if (x < 0.5) return 0.5 * pow(2.0 * x, strength);
+    return 1.0 - 0.5 * pow(2.0 * (1.0 - x), strength);
+  }
+  vec3 applyContrast(vec3 c, float strength) {
+    float lum = 0.2126 * c.r + 0.7152 * c.g + 0.0722 * c.b;
+    if (lum <= 0.00001) return c;
+    float newLum = sCurve(lum, strength);
+    return c * (newLum / lum);
+  }
+
+  vec3 rgb2hsl(vec3 c) {
+    float maxC = max(max(c.r, c.g), c.b);
+    float minC = min(min(c.r, c.g), c.b);
+    float delta = maxC - minC;
+    float h = 0.0, s = 0.0, l = (maxC + minC) / 2.0;
+    if (delta > 0.00001) {
+      s = l > 0.5 ? delta / (2.0 - maxC - minC) : delta / (maxC + minC);
+      if (maxC == c.r) h = (c.g - c.b) / delta + (c.g < c.b ? 6.0 : 0.0);
+      else if (maxC == c.g) h = (c.b - c.r) / delta + 2.0;
+      else h = (c.r - c.g) / delta + 4.0;
+      h /= 6.0;
+    }
+    return vec3(h, s, l);
+  }
+
+  float hue2rgb(float p, float q, float t) {
+    if (t < 0.0) t += 1.0;
+    if (t > 1.0) t -= 1.0;
+    if (t < 1.0/6.0) return p + (q - p) * 6.0 * t;
+    if (t < 0.5) return q;
+    if (t < 2.0/3.0) return p + (q - p) * (2.0/3.0 - t) * 6.0;
+    return p;
+  }
+
+  vec3 hsl2rgb(vec3 hsl) {
+    if (hsl.y <= 0.0) return vec3(hsl.z);
+    float q = hsl.z < 0.5 ? hsl.z * (1.0 + hsl.y) : hsl.z + hsl.y - hsl.z * hsl.y;
+    float p = 2.0 * hsl.z - q;
+    return vec3(hue2rgb(p, q, hsl.x + 1.0/3.0), hue2rgb(p, q, hsl.x), hue2rgb(p, q, hsl.x - 1.0/3.0));
+  }
+
+  /* Chroma-only smoothing to suppress colour fringing.
+     Chromatic aberration puts a false colour halo on high-contrast edges,
+     but it lives entirely in CHROMA while real detail lives in LUMINANCE.
+     So we average neighbouring pixels' chroma and re-anchor it to THIS
+     pixel's luminance: the fringe washes out, edge sharpness is
+     mathematically untouched. Applied to the input, before the channel
+     swap gets a chance to amplify the fringe into vivid magenta. */
+  vec3 defringed(vec2 uv) {
+    vec3 c = texture2D(u_image, uv).rgb;
+    if (u_defringe <= 0.0) return c;
+    float r = u_defringe * 2.0;
+    vec3 sum = c;
+    sum += texture2D(u_image, uv + vec2( u_texel.x*r, 0.0)).rgb;
+    sum += texture2D(u_image, uv + vec2(-u_texel.x*r, 0.0)).rgb;
+    sum += texture2D(u_image, uv + vec2(0.0,  u_texel.y*r)).rgb;
+    sum += texture2D(u_image, uv + vec2(0.0, -u_texel.y*r)).rgb;
+    sum += texture2D(u_image, uv + vec2( u_texel.x*r,  u_texel.y*r)).rgb;
+    sum += texture2D(u_image, uv + vec2(-u_texel.x*r, -u_texel.y*r)).rgb;
+    sum += texture2D(u_image, uv + vec2( u_texel.x*r, -u_texel.y*r)).rgb;
+    sum += texture2D(u_image, uv + vec2(-u_texel.x*r,  u_texel.y*r)).rgb;
+    vec3 avg = sum / 9.0;
+    float lumC = dot(c,   vec3(0.2126,0.7152,0.0722));
+    float lumA = dot(avg, vec3(0.2126,0.7152,0.0722));
+    return mix(c, lumC + (avg - lumA), clamp(u_defringe, 0.0, 1.0));
+  }
+
+  void main() {
+    vec4 texColor = texture2D(u_image, v_texCoord);
+    texColor.rgb = defringed(v_texCoord);
+    vec3 rgb = srgbToLinear(texColor.rgb);
+
+    rgb *= u_preWB;
+    rgb = u_matrix * rgb;
+    rgb *= u_postWB;
+    // Temperature/tint applied as a SEPARATE stage after the picker, so a
+    // deliberate warm/magenta push layers on top of a neutral result
+    // rather than the two fighting each other.
+    rgb *= u_tempTint;
+    rgb *= u_exposure;
+    rgb = applyContrast(rgb, u_contrast);
+    rgb = compressGamut(rgb);
+
+    vec3 srgb = linearToSrgb(rgb);
+
+    if (u_blackPt > 0.0) {
+      float bp = u_blackPt / 255.0;
+      srgb = clamp((srgb - bp) / (1.0 - bp), 0.0, 1.0);
+    }
+
+    if (u_hue != 0.0 || u_sat != 1.0) {
+      vec3 hsl = rgb2hsl(srgb);
+      hsl.x = fract(hsl.x + u_hue);
+      hsl.y = clamp(hsl.y * u_sat, 0.0, 1.0);
+      srgb = hsl2rgb(hsl);
+    }
+
+    gl_FragColor = vec4(srgb, texColor.a);
+  }
+`;
+
+// --- WebGL Engine Class ---
+class WebGLEngine {
+  constructor(canvas) {
+    this.canvas = canvas;
+    this.gl = canvas.getContext('webgl', { preserveDrawingBuffer: true });
+    if (!this.gl) alert('WebGL unsupported in this browser');
+    this.initShaders();
+    this.initBuffers();
+    this.texture = null;
+  }
+
+  initShaders() {
+    const gl = this.gl;
+    const vs = gl.createShader(gl.VERTEX_SHADER);
+    gl.shaderSource(vs, VS_SOURCE); gl.compileShader(vs);
+    const fs = gl.createShader(gl.FRAGMENT_SHADER);
+    gl.shaderSource(fs, FS_SOURCE); gl.compileShader(fs);
+
+    this.program = gl.createProgram();
+    gl.attachShader(this.program, vs);
+    gl.attachShader(this.program, fs);
+    gl.linkProgram(this.program);
+    gl.useProgram(this.program);
+
+    this.uLocs = {
+      matrix: gl.getUniformLocation(this.program, 'u_matrix'),
+      preWB: gl.getUniformLocation(this.program, 'u_preWB'),
+      postWB: gl.getUniformLocation(this.program, 'u_postWB'),
+      tempTint: gl.getUniformLocation(this.program, 'u_tempTint'),
+      texel: gl.getUniformLocation(this.program, 'u_texel'),
+      defringe: gl.getUniformLocation(this.program, 'u_defringe'),
+      contrast: gl.getUniformLocation(this.program, 'u_contrast'),
+      exposure: gl.getUniformLocation(this.program, 'u_exposure'),
+      hue: gl.getUniformLocation(this.program, 'u_hue'),
+      sat: gl.getUniformLocation(this.program, 'u_sat'),
+      blackPt: gl.getUniformLocation(this.program, 'u_blackPt')
+    };
+  }
+
+  initBuffers() {
+    const gl = this.gl;
+    const posBuf = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, posBuf);
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1,-1, 1,-1, -1,1, 1,1]), gl.STATIC_DRAW);
+    const aPos = gl.getAttribLocation(this.program, 'a_position');
+    gl.enableVertexAttribArray(aPos);
+    gl.vertexAttribPointer(aPos, 2, gl.FLOAT, false, 0, 0);
+
+    const texBuf = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, texBuf);
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([0,0, 1,0, 0,1, 1,1]), gl.STATIC_DRAW);
+    const aTex = gl.getAttribLocation(this.program, 'a_texCoord');
+    gl.enableVertexAttribArray(aTex);
+    gl.vertexAttribPointer(aTex, 2, gl.FLOAT, false, 0, 0);
+  }
+
+  setImage(img) {
+    const gl = this.gl;
+    this.canvas.width = img.width;
+    this.canvas.height = img.height;
+    gl.viewport(0, 0, img.width, img.height);
+
+    if (!this.texture) this.texture = gl.createTexture();
+    gl.bindTexture(gl.TEXTURE_2D, this.texture);
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, img);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+  }
+
+  readPixels() {
+    // WebGL's origin is bottom-left, canvas/image convention is top-left —
+    // flip rows so the exported pixel data matches what's actually on screen
+    const gl = this.gl, w = this.canvas.width, h = this.canvas.height;
+    const raw = new Uint8Array(w * h * 4);
+    gl.readPixels(0, 0, w, h, gl.RGBA, gl.UNSIGNED_BYTE, raw);
+    const out = new Uint8ClampedArray(w * h * 4);
+    const rowBytes = w * 4;
+    for (let y = 0; y < h; y++) {
+      const srcRow = raw.subarray((h - 1 - y) * rowBytes, (h - y) * rowBytes);
+      out.set(srcRow, y * rowBytes);
+    }
+    return out;
+  }
+
+  render(p) {
+    const gl = this.gl;
+    gl.useProgram(this.program);
+    
+    // Transpose matrix from Row-Major (UI) to Column-Major (WebGL)
+    const m = p.matrix;
+    const transposed = [
+      m[0], m[3], m[6],
+      m[1], m[4], m[7],
+      m[2], m[5], m[8]
+    ];
+
+    gl.uniformMatrix3fv(this.uLocs.matrix, false, new Float32Array(transposed));
+    gl.uniform3fv(this.uLocs.preWB, new Float32Array(p.preWB));
+    gl.uniform3fv(this.uLocs.postWB, new Float32Array(p.postWB));
+    gl.uniform3fv(this.uLocs.tempTint, new Float32Array(p.tempTint || [1,1,1]));
+    gl.uniform2f(this.uLocs.texel, 1.0/this.canvas.width, 1.0/this.canvas.height);
+    gl.uniform1f(this.uLocs.defringe, (p.defringe || 0) / 100);
+    gl.uniform1f(this.uLocs.contrast, contrastStrength(p.contrast));
+    gl.uniform1f(this.uLocs.exposure, Math.pow(2, p.exposure / 100));
+    gl.uniform1f(this.uLocs.hue, p.hue / 360);
+    gl.uniform1f(this.uLocs.sat, p.sat / 100);
+    gl.uniform1f(this.uLocs.blackPt, p.blackPt);
+    gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+  }
+}
+
+// --- App State & UI Logic ---
+const $ = id => document.getElementById(id);
+const MCELLS = ['m00','m01','m02','m10','m11','m12','m20','m21','m22'];
+let engine = null, preWB = [1, 1, 1], postWB = [1, 1, 1], loadedImage = null, pickMode = null;
+let currentLUT = null; // {size,domainMin,domainMax,data:Float32Array}
+let origFile = null, origW = 0, origH = 0, exifSegment = null;
+const WORKING_MAX_DIM = 2048;
+const LE=(()=>{const b=new ArrayBuffer(2);new Uint16Array(b)[0]=1;return new Uint8Array(b)[0]===1;})();
+function cl(v){return v<0?0:v>255?255:v;}
+
+let rawCanvas = document.createElement('canvas');
+let rawCtx = rawCanvas.getContext('2d', { willReadFrequently: true });
+
+const FILTER_DB=[
+  {cat:'UV',name:'Baader U (Venus U)',spec:'~320–380nm bandpass',look:'Classic UV-pass for flower/insect UV patterns'},
+  {cat:'UV',name:'Kolari UV Bandpass',spec:'50% peak @365nm, >25% 345–380nm',look:'High-transmission absorption-glass UV-pass, consistent across the frame'},
+  {cat:'UV',name:'ZWB3 + TSN575 (Tangsinuo)',spec:'~320–395nm UV-pass + IR-block stack',look:'Budget UV-pass combo — the stack behind the Bug vision preset, from Fedia (UVP forum)'},
+  {cat:'UV',name:'Schott UG1 / UG5 + S8612',spec:'UV-pass + IR-block stack',look:'Cleaner UV-only capture, less visible/IR leak than ZWB alone'},
+  {cat:'IR',name:'Kolari 550nm',spec:'~550nm long-pass',look:'Deep blue sky, pink/crimson foliage, most natural skin tones'},
+  {cat:'IR',name:'Super Color / 590nm (Goldie)',spec:'~590nm long-pass',look:'Golden-yellow foliage, bright blue sky after swap'},
+  {cat:'IR',name:'Enhanced Color / 665nm',spec:'~665nm long-pass',look:'Light yellow/white foliage, strong B&W contrast option'},
+  {cat:'IR',name:'Standard / R72 (Wratten 89B), 720nm',spec:'~720nm long-pass',look:'Classic white foliage + pale blue sky (needs foliage WB)'},
+  {cat:'IR',name:'87C / 830nm ("Deep Black")',spec:'~830nm long-pass',look:'Near-total Wood Effect: brilliant white foliage, near-black sky, colour swap has no effect'},
+  {cat:'IR',name:'Kolari IR Chrome / Candy Chrome',spec:'Custom multi-layer glass, full-spectrum only',look:'Aerochrome colour optically, in-camera — no swap needed, just WB/hue fine-tune'}
+];
+
+(function buildFilterRefTable(){
+  const wrap=document.createElement('table');wrap.className='frtable';
+  wrap.innerHTML='<tr><th>Filter</th><th>Spec</th><th>Look</th></tr>';
+  FILTER_DB.forEach(f=>{
+    const tr=document.createElement('tr');
+    const tdName=document.createElement('td');
+    tdName.innerHTML='<span class="fname">'+f.name+'</span><span class="fmeta">'+f.cat+'</span>';
+    const tdSpec=document.createElement('td');tdSpec.textContent=f.spec;
+    const tdLook=document.createElement('td');tdLook.textContent=f.look;
+    tr.append(tdName,tdSpec,tdLook);
+    wrap.appendChild(tr);
+  });
+  $('filterRefTable').appendChild(wrap);
+})();
+
+const UV_PRESETS = [
+  { n: "Bug vision", m: [0,100,0, 0,0,100, 100,0,0] }
+];
+
+/* Preset audit note: 590nm / 665nm / 720nm were three separate buttons all
+   loading the identical R<->B swap, and 550nm was identical to Aerochrome
+   because its distinguishing hue offset had been dropped. Consolidated to
+   genuinely distinct entries — each one below is a different matrix, or the
+   same matrix with a real hue offset. `hue` is optional and sets the Hue
+   shift slider; `sub` variants subtract IR bleed from G and B for cleaner
+   colour separation. */
+const IR_PRESETS = [
+  { n: "550nm",          m: [0,0,100, 100,0,0, 0,100,0], hue: -15 },
+  { n: "Aerochrome",     m: [0,0,100, 100,0,0, 0,100,0] },
+  { n: "Aerochrome IR-sub", m: [0,0,100, 100,0,-30, 0,100,-30] },
+  { n: "R-B swap",       m: [0,0,100, 0,100,0, 100,0,0] },
+  { n: "R-B IR-sub",     m: [0,0,100, 0,100,-30, 100,0,-30] },
+  { n: "Pink & Teal",    m: [0,0,100, 100,0,0, 100,0,0] }
+];
+
+// 1. Sticky Preview Setup
+let floatingPreviewInit = false;
+function initFloatingPreview() {
+  if (floatingPreviewInit) return;
+  floatingPreviewInit = true;
+  const ps = $('previewSticky');
+  if (!ps) return;
+  let naturalTop = 0, offset = 0, ticking = false;
+
+  /* Transform-based pinning rather than position:fixed + a spacer.
+     The spacer approach caused the flicker: toggling it changed the
+     document height, which nudged the scroll position, which re-fired
+     this handler — a feedback loop right at the threshold. Hysteresis
+     only masked it. A transform is purely visual: it never affects
+     layout, so document height is constant and the loop can't exist.
+     It's also GPU-composited, so it stays smooth while scrolling. */
+  function measure() {
+    ps.style.transform = '';
+    offset = 0;
+    naturalTop = ps.getBoundingClientRect().top + window.scrollY;
+    apply();
+  }
+  function apply() {
+    if (window.innerWidth >= 1100) {
+      if (offset !== 0) { offset = 0; ps.style.transform = ''; ps.classList.remove('floating'); }
+      return;
+    }
+    const want = Math.max(0, window.scrollY - naturalTop);
+    if (want === offset) return;
+    offset = want;
+    ps.style.transform = want ? 'translateY(' + want + 'px)' : '';
+    ps.classList.toggle('floating', want > 0);
+  }
+  requestAnimationFrame(measure);
+  window.addEventListener('resize', () => requestAnimationFrame(measure));
+  window.addEventListener('scroll', () => {
+    if (ticking) return;
+    ticking = true;
+    requestAnimationFrame(() => { ticking = false; apply(); });
+  }, { passive: true });
+}
+
+// 2. Before & After Slider Setup
+function setupCompareOverlay() {
+  const po = $('previewOrig');
+  po.width = rawCanvas.width;
+  po.height = rawCanvas.height;
+  po.getContext('2d').drawImage(rawCanvas, 0, 0);
+  po.style.display = 'block';
+  $('cmpLabels').style.display = 'flex';
+  $('cmpHandle').style.display = 'block';
+  $('cmpBar').style.display = 'block';
+  $('cmpRange').value = 50;
+  setComparePos(50);
+}
+
+function setComparePos(pct) {
+  pct = Math.max(0, Math.min(100, +pct));
+  $('previewOrig').style.clipPath = 'inset(0 ' + (100 - pct) + '% 0 0)';
+  $('cmpHandle').style.left = pct + '%';
+}
+$('cmpRange').addEventListener('input', e => setComparePos(e.target.value));
+
+/* ---------- fullscreen preview ----------
+   #preview's actual pixel buffer is the full working resolution, shown
+   shrunk via CSS to fit the page. "Expand" just copies the already-rendered
+   pixels onto a bigger canvas and lets CSS scale that up to fill the
+   screen, rather than re-rendering anything. drawImage() works with any
+   canvas as its source regardless of context type, and the WebGL context
+   was created with preserveDrawingBuffer:true specifically so a snapshot
+   like this can read back what's currently on screen. */
+function openPreviewFullscreen(){
+  const src=$('preview'),full=$('previewFull');
+  if(!src.width||!src.height)return; // nothing loaded yet
+  full.width=src.width;full.height=src.height;
+  full.getContext('2d').drawImage(src,0,0);
+  $('previewFullscreen').classList.add('on');
+}
+function closePreviewFullscreen(){$('previewFullscreen').classList.remove('on');}
+$('btnExpandPreview').addEventListener('click',ev=>{ev.stopPropagation();openPreviewFullscreen();});
+$('btnCloseFullscreen').addEventListener('click',closePreviewFullscreen);
+$('previewFullscreen').addEventListener('click',ev=>{if(ev.target.id==='previewFullscreen')closePreviewFullscreen();});
+
+// 3. Matrix & Render Logic
+function normalizeMatrix(m) {
+  const norm = [...m];
+  for (let r = 0; r < 3; r++) {
+    const sum = Math.abs(norm[r*3]) + Math.abs(norm[r*3+1]) + Math.abs(norm[r*3+2]);
+    if (sum > 0.0001) {
+      norm[r*3] /= sum; norm[r*3+1] /= sum; norm[r*3+2] /= sum;
+    }
+  }
+  return norm;
+}
+
+function getMatrixUI() {
+  const raw = MCELLS.map(id => (+$(id).value || 0) / 100);
+  return $('chkNormalize').checked ? normalizeMatrix(raw) : raw;
+}
+
+// Temperature/tint as RGB gains, normalised so LUMINANCE stays constant —
+// these shift colour only, they don't brighten or darken. Temperature moves
+// red against blue (warm/cool); tint moves green against red+blue
+// (green/magenta), which is the axis Lightroom's tint slider works on.
+// suppressTempTint is set while the WB picker samples, so the picker
+// measures a clean neutral rather than trying to cancel a deliberate cast.
+let suppressTempTint = false;
+/* Contrast slider -> S-curve strength. The curve was previously hardcoded at
+   1.18; the slider's default of 25 maps to exactly that, so the out-of-box
+   look is unchanged and only deliberate movement alters it. 0 means strength
+   1.0 (a true no-op), negatives flatten. The two slopes differ because
+   flattening is far more visually aggressive than adding contrast, so the
+   negative side is deliberately gentler. */
+function contrastStrength(v) {
+  v = (v === undefined || v === null) ? 25 : v;
+  return v >= 0 ? 1 + v * 0.0072 : 1 + v * 0.004;
+}
+function tempTintGains() {
+  if (suppressTempTint) return [1, 1, 1];
+  const t = (+($('temp') && $('temp').value) || 0) / 100;
+  const m = (+($('tint') && $('tint').value) || 0) / 100;
+  if (t === 0 && m === 0) return [1, 1, 1];
+  let r = 1 + 0.28 * t + 0.12 * m;
+  let g = 1              - 0.16 * m;
+  let b = 1 - 0.28 * t + 0.12 * m;
+  const lum = 0.2126 * r + 0.7152 * g + 0.0722 * b;
+  return [r / lum, g / lum, b / lum];
+}
+
+function render() {
+  if (!engine || !loadedImage) return;
+  engine.render({
+    matrix: getMatrixUI(),
+    preWB: preWB,
+    postWB: postWB,
+    tempTint: tempTintGains(),
+    exposure: +$('bright').value || 0,
+    hue: +$('hue').value || 0,
+    sat: +$('sat').value || 100,
+    blackPt: +$('blackPt').value || 0,
+    defringe: +($('defringe') && $('defringe').value) || 0,
+    contrast: (function(){const e=$('contrast');return e?+e.value:25;})()
+  });
+}
+
+['bright','hue','sat','blackPt','temp','tint','defringe','contrast'].forEach(id => {
+  $(id).addEventListener('input', () => { $('v_' + id).textContent = $(id).value; render(); });
+});
+MCELLS.forEach(id => $(id).addEventListener('input', render));
+$('chkNormalize').addEventListener('change', () => { armUndoCapture(); render(); commitUndoCapture(); });
+
+function buildPresetButtons(list, containerId) {
+  list.forEach(p => {
+    const b = document.createElement('button');
+    b.className = 'pb'; b.innerHTML = '<b>' + p.n + '</b>';
+    b.onclick = () => {
+      armUndoCapture();
+      document.querySelectorAll('.pb').forEach(x => x.classList.remove('on'));
+      b.classList.add('on');
+      MCELLS.forEach((id, i) => $(id).value = p.m[i]);
+      // a preset may carry a hue offset — that's what distinguishes e.g. 550nm
+      // from Aerochrome, which share the same matrix. Presets without one
+      // explicitly reset hue to 0 so a previous preset's offset can't linger.
+      const hv = p.hue || 0;
+      $('hue').value = hv; $('v_hue').textContent = hv;
+      render();
+      commitUndoCapture();
+    };
+    $(containerId).appendChild(b);
+  });
+}
+buildPresetButtons(UV_PRESETS, 'pgUV');
+buildPresetButtons(IR_PRESETS, 'pgIR');
+
+// 4. File Loading
+function loadFile(file) {
+  if (!file) return;
+  const img = new Image();
+  img.onload = async () => {
+    const maxDim = WORKING_MAX_DIM;
+    let w = img.width, h = img.height;
+    origFile = file; origW = img.width; origH = img.height;
+    if (w > maxDim || h > maxDim) {
+      const scale = maxDim / Math.max(w, h);
+      w = Math.round(w * scale);
+      h = Math.round(h * scale);
+    }
+    rawCanvas.width = w; rawCanvas.height = h;
+    rawCtx.drawImage(img, 0, 0, w, h);
+    loadedImage = rawCanvas;
+
+    exifSegment = null;
+    extractExifFromFile(file).then(seg => { exifSegment = seg; });
+
+    $('emptyStateGroup').style.display = 'none';
+    $('main').style.display = 'block';
+    document.body.classList.add('has-image');
+    
+    if (!engine) engine = new WebGLEngine($('preview'));
+    engine.setImage(rawCanvas);
+    
+    initFloatingPreview();
+    setupCompareOverlay();
+    updateExportResOptions();
+    render();
+  };
+  // Browsers can only decode what they natively support — JPEG, PNG, WEBP and
+  // (mostly) AVIF. They CANNOT decode TIFF or camera RAW, so a 16-bit TIFF
+  // exported from Lightroom will fail here. Without this handler that failure
+  // was completely silent: tapping a TIFF simply did nothing, with no clue why.
+  img.onerror = () => {
+    URL.revokeObjectURL(img.src);
+    const ext = (file.name.split('.').pop() || '').toUpperCase();
+    const known = ['TIF','TIFF','DNG','CR2','CR3','NEF','ARW','ORF','RW2','PEF','RAF','SRW','HEIC','HEIF'];
+    if (known.includes(ext)) {
+      alert(ext + " files can't be opened directly — web browsers have no decoder for them.\n\nExport as JPEG or PNG instead (16-bit TIFF is still available for EXPORTING from this tool, just not for loading).");
+    } else {
+      alert("Couldn't read that file — it may be corrupt or in a format this browser can't decode. Try JPEG or PNG.");
+    }
+  };
+  img.src = URL.createObjectURL(file);
+}
+
+$('fi').onchange = e => loadFile(e.target.files[0]);
+$('fi2').onchange = e => loadFile(e.target.files[0]);
+
+const dz = $('dropzone');
+['dragover', 'dragenter'].forEach(ev => dz.addEventListener(ev, e => { e.preventDefault(); dz.classList.add('dragover'); }));
+['dragleave', 'dragend', 'drop'].forEach(ev => dz.addEventListener(ev, e => { e.preventDefault(); dz.classList.remove('dragover'); }));
+dz.addEventListener('drop', e => {
+  const f = e.dataTransfer && e.dataTransfer.files && e.dataTransfer.files[0];
+  if (f) loadFile(f);
+});
+
+$('bReset').onclick = () => {
+  const identity = [100,0,0, 0,100,0, 0,0,100];
+  MCELLS.forEach((id, i) => $(id).value = identity[i]);
+  preWB = [1, 1, 1]; postWB = [1, 1, 1];
+  ['bright','hue','blackPt','temp','tint','defringe'].forEach(id => { $(id).value = 0; $('v_' + id).textContent = 0; });
+  $('contrast').value = 25; $('v_contrast').textContent = 25;  // 25 = the default S-curve, not 0
+  $('sat').value = 100; $('v_sat').textContent = 100;
+  $('wbPreStatus').textContent = 'Pre-WB: Not set';
+  $('wbPostStatus').textContent = 'Post-WB: Not set';
+  document.querySelectorAll('.pb').forEach(x => x.classList.remove('on'));
+  render();
+};
+
+$('wbPre').addEventListener('click', () => pickMode === 'pre' ? exitPick() : enterPick('pre'));
+$('wbPost').addEventListener('click', () => pickMode === 'post' ? exitPick() : enterPick('post'));
+$('wbPreReset').onclick = () => { armUndoCapture(); preWB = [1,1,1]; $('wbPreStatus').textContent = 'Pre-WB: Not set'; $('pickMarkerPre').style.display = 'none'; commitUndoCapture(); render(); };
+$('wbPostReset').onclick = () => { armUndoCapture(); postWB = [1,1,1]; $('wbPostStatus').textContent = 'Post-WB: Not set'; $('pickMarkerPost').style.display = 'none'; commitUndoCapture(); render(); };
+
+// ---------- undo ----------
+// Range sliders are the classic mobile-scroll trap: a swipe that starts on
+// or near a slider thumb can get hijacked as a drag instead of a page
+// scroll, silently changing a value while you were just trying to scroll
+// past it. This snapshots the full adjustable state right before each
+// change settles, so one tap on Undo cleanly reverts exactly that.
+const UNDO_MAX = 25;
+let undoStack = [];
+let preChangeSnapshot = null;
+const HASH_SLIDERS = ['hue', 'sat', 'bright', 'blackPt', 'lutMix', 'temp', 'tint', 'defringe', 'contrast'];
+
+function haptic(ms) {
+  if (navigator.vibrate) { try { navigator.vibrate(ms); } catch (e) {} }
+}
+function toast(msg) {
+  let t = $('toast');
+  if (!t) { t = document.createElement('div'); t.id = 'toast'; document.body.appendChild(t); }
+  t.textContent = msg; t.style.opacity = '1';
+  clearTimeout(t._t); t._t = setTimeout(() => { t.style.opacity = '0'; }, 1800);
+}
+function captureState() {
+  return {
+    m: MCELLS.map(id => +$(id).value || 0),
+    s: HASH_SLIDERS.map(id => { const el = $(id); return el ? +el.value || 0 : 0; }),
+    preWB: [...preWB], postWB: [...postWB],
+    normalize: $('chkNormalize').checked,
+    lut: currentLUT,
+    lutStatusText: $('lutStatus').textContent,
+    activePreset: (document.querySelector('.pb.on b') || {}).textContent || null,
+  };
+}
+function applyState(snap) {
+  MCELLS.forEach((id, i) => $(id).value = snap.m[i]);
+  HASH_SLIDERS.forEach((id, i) => {
+    const el = $(id); if (!el) return;
+    el.value = snap.s[i];
+    const lbl = $('v_' + id); if (lbl) lbl.textContent = el.value;
+  });
+  if (snap.preWB) {
+    preWB = [...snap.preWB];
+    const set = preWB[0] !== 1 || preWB[1] !== 1 || preWB[2] !== 1;
+    $('wbPreStatus').textContent = set ? ('Set ✓ R:' + preWB[0].toFixed(2) + ' G:' + preWB[1].toFixed(2) + ' B:' + preWB[2].toFixed(2)) : 'Pre-WB: Not set';
+  }
+  if (snap.postWB) {
+    postWB = [...snap.postWB];
+    const set = postWB[0] !== 1 || postWB[1] !== 1 || postWB[2] !== 1;
+    $('wbPostStatus').textContent = set ? ('Set ✓ R:' + postWB[0].toFixed(2) + ' G:' + postWB[1].toFixed(2) + ' B:' + postWB[2].toFixed(2)) : 'Post-WB: Not set';
+  }
+  if (snap.normalize !== undefined) $('chkNormalize').checked = snap.normalize;
+  if ('lut' in snap) {
+    currentLUT = snap.lut;
+    $('lutStatus').textContent = snap.lutStatusText || 'No LUT loaded — applied at export time, as a film-style grade layered on top of the channel swap.';
+    $('lutControls').style.display = currentLUT ? 'block' : 'none';
+    $('lutClear').style.display = currentLUT ? 'inline-block' : 'none';
+  }
+  document.querySelectorAll('.pb').forEach(p => {
+    p.classList.toggle('on', snap.activePreset && p.querySelector('b') && p.querySelector('b').textContent === snap.activePreset);
+  });
+  render();
+  updateUndoButton();
+}
+function updateUndoButton() {
+  const btn = $('btnUndo');
+  btn.disabled = undoStack.length === 0;
+  btn.textContent = undoStack.length ? '↶ Undo (' + undoStack.length + ')' : '↶ Undo';
+}
+function armUndoCapture() { preChangeSnapshot = captureState(); }
+function commitUndoCapture() {
+  if (!preChangeSnapshot) return;
+  const now = captureState();
+  const changed = JSON.stringify(now) !== JSON.stringify(preChangeSnapshot);
+  if (changed) {
+    undoStack.push(preChangeSnapshot);
+    if (undoStack.length > UNDO_MAX) undoStack.shift();
+    updateUndoButton();
+  }
+  preChangeSnapshot = null;
+}
+// arm on the first touch/click of an interaction, commit once it settles —
+// one undo step per completed adjustment, not one per pixel of drag.
+[...MCELLS, ...HASH_SLIDERS].forEach(id => {
+  const el = $(id); if (!el) return;
+  el.addEventListener('pointerdown', armUndoCapture);
+  el.addEventListener('focus', armUndoCapture);
+  el.addEventListener('change', commitUndoCapture);
+  el.addEventListener('pointerup', () => setTimeout(commitUndoCapture, 0));
+  el.addEventListener('pointercancel', () => { preChangeSnapshot = null; });
+});
+$('btnUndo').addEventListener('click', () => {
+  if (!undoStack.length) return;
+  haptic(20);
+  const snap = undoStack.pop();
+  applyState(snap);
+  toast(undoStack.length ? 'Undone — ' + undoStack.length + ' more step' + (undoStack.length === 1 ? '' : 's') : 'Undone');
+});
+
+$('btnExportLUT').addEventListener('click', () => {
+  if (!loadedImage) { toast('Load an image first'); return; }
+  try {
+    const { text, name } = buildCubeLUT(32);
+    const blob = new Blob([text], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a'); a.href = url; a.download = name;
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    setTimeout(() => URL.revokeObjectURL(url), 4000);
+    toast('LUT saved — ' + name);
+  } catch (e) { toast('LUT export failed: ' + e.message); }
+});
+
+// ---------- white balance picking ----------
+// core sampling logic, shared by first-tap placement and by dragging.
+// baseWB (post mode only) is a fixed reference snapshotted at drag-start, so
+// every point along a drag is evaluated fresh from that base rather than
+// compounding onto whatever the previous drag frame happened to produce.
+function sampleAvgFrom(pixels, w, h, cx, cy, rad) {
+  let r = 0, g = 0, b = 0, n = 0;
+  const x0 = Math.max(0, cx - rad), x1 = Math.min(w - 1, cx + rad);
+  const y0 = Math.max(0, cy - rad), y1 = Math.min(h - 1, cy + rad);
+  for (let y = y0; y <= y1; y++) {
+    for (let x = x0; x <= x1; x++) {
+      const p = (y * w + x) * 4;
+      r += pixels[p]; g += pixels[p+1]; b += pixels[p+2]; n++;
+    }
+  }
+  return n ? [r/n, g/n, b/n] : [128,128,128];
+}
+function sampleAt(mode, clientX, clientY, baseWB) {
+  const cv = $('preview'), rect = cv.getBoundingClientRect();
+  const cx = Math.max(rect.left, Math.min(rect.right, clientX));
+  const cy = Math.max(rect.top, Math.min(rect.bottom, clientY));
+  const x = Math.round((cx - rect.left) / rect.width * cv.width);
+  const y = Math.round((cy - rect.top) / rect.height * cv.height);
+  // larger sample patch so an imprecise fingertip tap/drag still averages
+  // the intended neutral surface rather than a single stray pixel
+  const rad = Math.max(6, Math.round(cv.width * 0.02));
+  if (mode === 'pre') {
+    if (!loadedImage) return false;
+    // pre-swap WB samples the ORIGINAL unprocessed image
+    const [r,g,b] = sampleAvgFrom(rawCtx.getImageData(0,0,rawCanvas.width,rawCanvas.height).data, rawCanvas.width, rawCanvas.height, x, y, rad);
+    preWB = gainsFor(r,g,b);
+    $('wbPreStatus').textContent = `Set ✓ R:${preWB[0].toFixed(2)} G:${preWB[1].toFixed(2)} B:${preWB[2].toFixed(2)} — drag the dot to fine-tune`;
+  } else {
+    // post-swap WB must sample the ACTUAL RENDERED result — the whole point
+    // is correcting a cast that only exists after the channel swap — so this
+    // reads back real WebGL output via readPixels(), not the source image
+    const base = baseWB || postWB;
+    // suppress temp/tint for the sampling render — otherwise the picker would
+    // measure the deliberate cast and compute gains that cancel it out
+    suppressTempTint = true;
+    postWB = [...base]; render();
+    const [r,g,b] = sampleAvgFrom(engine.readPixels(), cv.width, cv.height, x, y, rad);
+    suppressTempTint = false;
+    const gains = gainsFor(r,g,b);
+    postWB = [base[0]*gains[0], base[1]*gains[1], base[2]*gains[2]];
+    $('wbPostStatus').textContent = `Set ✓ R:${postWB[0].toFixed(2)} G:${postWB[1].toFixed(2)} B:${postWB[2].toFixed(2)} — drag the dot to fine-tune`;
+  }
+  positionMarker(mode, cx-rect.left, cy-rect.top, rect.width, rect.height);
+  render();
+  return true;
+}
+function gainsFor(r,g,b){const grey=(r+g+b)/3;const s=v=>v<1?1:grey/v;return[s(r),s(g),s(b)];}
+function positionMarker(mode, px, py, cw, ch) {
+  const m = $(mode === 'pre' ? 'pickMarkerPre' : 'pickMarkerPost');
+  m.style.left = (px/cw*100) + '%';
+  m.style.top = (py/ch*100) + '%';
+  m.style.display = 'block';
+}
+function doPick(clientX, clientY) {
+  if (!pickMode) return;
+  const mode = pickMode;
+  // A fresh tap starts from IDENTITY, not from the current correction —
+  // otherwise each new tap multiplies on top of the last one, so moving the
+  // picker to a different spot compounds instead of re-evaluating cleanly.
+  // (Dragging is different: it passes its own baseWB, snapshotted once at
+  // drag-start, so a continuous drag re-evaluates from that fixed point
+  // rather than compounding frame by frame.)
+  const baseWB = mode === 'post' ? [1, 1, 1] : null;
+  armUndoCapture();
+  if (!sampleAt(mode, clientX, clientY, baseWB)) { preChangeSnapshot = null; return; }
+  haptic(25);
+  commitUndoCapture();
+  exitPick();
+  attachDrag(mode);
+}
+$('preview').addEventListener('click', ev => doPick(ev.clientX, ev.clientY));
+$('preview').addEventListener('touchend', ev => {
+  if (!pickMode) return;
+  ev.preventDefault();
+  const t = ev.changedTouches[0];
+  doPick(t.clientX, t.clientY);
+}, { passive: false });
+
+// draggable marker: once a neutral point has been placed the first time,
+// grab the marker itself at any point afterward to nudge it — the preview
+// updates live as you move, same math as the initial pick, just
+// continuously re-evaluated at the new position.
+let dragState = null, dragLatestX = 0, dragLatestY = 0, dragRafPending = false;
+function scheduleDragSample() {
+  if (dragRafPending || !dragState) return;
+  dragRafPending = true;
+  requestAnimationFrame(() => {
+    dragRafPending = false;
+    if (!dragState) return;
+    sampleAt(dragState.mode, dragLatestX, dragLatestY, dragState.baseWB);
+  });
+}
+function attachDrag(mode) {
+  const m = $(mode === 'pre' ? 'pickMarkerPre' : 'pickMarkerPost');
+  if (m._dragBound) return;
+  m._dragBound = true;
+  m.addEventListener('pointerdown', ev => {
+    ev.preventDefault();
+    m.setPointerCapture(ev.pointerId);
+    m.classList.add('dragging');
+    haptic(12);
+    armUndoCapture();
+    // identity base, same as a fresh tap — the marker's POSITION alone should
+    // determine the white balance, so dragging re-evaluates cleanly rather
+    // than stacking onto whatever the initial tap produced
+    dragState = { mode, baseWB: mode === 'post' ? [1, 1, 1] : null, pointerId: ev.pointerId };
+  });
+  m.addEventListener('pointermove', ev => {
+    if (!dragState || dragState.pointerId !== ev.pointerId) return;
+    ev.preventDefault();
+    dragLatestX = ev.clientX; dragLatestY = ev.clientY;
+    scheduleDragSample();
+  });
+  const endDrag = ev => {
+    if (!dragState || dragState.pointerId !== ev.pointerId) return;
+    try { m.releasePointerCapture(ev.pointerId); } catch (e) {}
+    m.classList.remove('dragging');
+    dragState = null;
+    commitUndoCapture();
+  };
+  m.addEventListener('pointerup', endDrag);
+  m.addEventListener('pointercancel', endDrag);
+}
+function enterPick(m) {
+  pickMode = m;
+  $('preview').classList.add('pick');
+  $('wbPre').classList.toggle('armed', m === 'pre');
+  $('wbPost').classList.toggle('armed', m === 'post');
+}
+function exitPick() {
+  pickMode = null;
+  $('preview').classList.remove('pick');
+  $('wbPre').classList.remove('armed');
+  $('wbPost').classList.remove('armed');
+}
+
+// ---------- LUT (.cube) support ----------
+// Standard Adobe/Resolve .cube format: a text file with a LUT_3D_SIZE header
+// and N^3 lines of "R G B" floats (0..1). Applied CPU-side to the pixels read
+// back from the WebGL canvas, at export time only — the shader itself doesn't
+// sample LUTs live, so the on-screen preview shows the swap/WB/exposure/hue/
+// sat/black-point result without the grade; the exported file has it baked in.
+function parseCubeLUT(text){
+  const lines=text.split(/\r?\n/);
+  let size=0,domainMin=[0,0,0],domainMax=[1,1,1];
+  const data=[];
+  for(const raw of lines){
+    const line=raw.trim();
+    if(!line||line.startsWith('#'))continue;
+    if(/^TITLE/i.test(line))continue;
+    if(/^LUT_3D_SIZE/i.test(line)){size=parseInt(line.split(/\s+/)[1],10);continue;}
+    if(/^DOMAIN_MIN/i.test(line)){domainMin=line.split(/\s+/).slice(1).map(Number);continue;}
+    if(/^DOMAIN_MAX/i.test(line)){domainMax=line.split(/\s+/).slice(1).map(Number);continue;}
+    if(/^LUT_1D_SIZE/i.test(line))throw new Error('1D LUTs aren\u2019t supported \u2014 only 3D .cube files');
+    const parts=line.split(/\s+/).map(Number);
+    if(parts.length===3&&parts.every(n=>!isNaN(n)))data.push(parts[0],parts[1],parts[2]);
+  }
+  if(!size||data.length!==size*size*size*3)throw new Error('invalid or incomplete .cube file');
+  return{size,domainMin,domainMax,data:new Float32Array(data)};
+}
+function sampleLUT(lut,r,g,b){
+  const N=lut.size,d=lut.data;
+  const nr=Math.max(0,Math.min(1,(r-lut.domainMin[0])/((lut.domainMax[0]-lut.domainMin[0])||1)));
+  const ng=Math.max(0,Math.min(1,(g-lut.domainMin[1])/((lut.domainMax[1]-lut.domainMin[1])||1)));
+  const nb=Math.max(0,Math.min(1,(b-lut.domainMin[2])/((lut.domainMax[2]-lut.domainMin[2])||1)));
+  const fx=nr*(N-1),fy=ng*(N-1),fz=nb*(N-1);
+  const x0=Math.floor(fx),y0=Math.floor(fy),z0=Math.floor(fz);
+  const x1=Math.min(x0+1,N-1),y1=Math.min(y0+1,N-1),z1=Math.min(z0+1,N-1);
+  const dx=fx-x0,dy=fy-y0,dz=fz-z0;
+  const idx=(x,y,z)=>((z*N+y)*N+x)*3;
+  const out=[0,0,0];
+  for(let c=0;c<3;c++){
+    const c000=d[idx(x0,y0,z0)+c],c100=d[idx(x1,y0,z0)+c];
+    const c010=d[idx(x0,y1,z0)+c],c110=d[idx(x1,y1,z0)+c];
+    const c001=d[idx(x0,y0,z1)+c],c101=d[idx(x1,y0,z1)+c];
+    const c011=d[idx(x0,y1,z1)+c],c111=d[idx(x1,y1,z1)+c];
+    const c00=c000*(1-dx)+c100*dx,c10=c010*(1-dx)+c110*dx;
+    const c01=c001*(1-dx)+c101*dx,c11=c011*(1-dx)+c111*dx;
+    const c0=c00*(1-dy)+c10*dy,c1=c01*(1-dy)+c11*dy;
+    out[c]=c0*(1-dz)+c1*dz;
+  }
+  return out;
+}
+function applyLutPixel(r,g,b,mix){
+  if(!currentLUT||mix<=0)return[r,g,b];
+  const out=sampleLUT(currentLUT,r/255,g/255,b/255);
+  const or_=cl(Math.round(out[0]*255)),og=cl(Math.round(out[1]*255)),ob=cl(Math.round(out[2]*255));
+  if(mix>=1)return[or_,og,ob];
+  return[Math.round(r+(or_-r)*mix),Math.round(g+(og-g)*mix),Math.round(b+(ob-b)*mix)];
+}
+function applyLUT(lut,label){
+  currentLUT=lut;
+  $('lutStatus').textContent='\u2713 '+label+' \u2014 '+lut.size+'\u00b3 grid';
+  $('lutControls').style.display='block';
+  $('lutClear').style.display='inline-block';
+}
+function clearLUT(){
+  currentLUT=null;
+  $('lutStatus').textContent='No LUT loaded \u2014 applied at export time, as a film-style grade layered on top of the channel swap.';
+  $('lutControls').style.display='none';
+  $('lutClear').style.display='none';
+}
+$('fiLut').addEventListener('change',async e=>{
+  const f=e.target.files&&e.target.files[0];
+  e.target.value='';
+  if(!f)return;
+  $('lutStatus').textContent='Reading '+f.name+'\u2026';
+  try{
+    armUndoCapture();
+    const text=await f.text();
+    const lut=parseCubeLUT(text);
+    applyLUT(lut,f.name.replace(/\.cube$/i,''));
+    commitUndoCapture();
+  }catch(err){
+    preChangeSnapshot=null;
+    $('lutStatus').textContent='Couldn\u2019t read that LUT ('+err.message+'). Make sure it\u2019s a standard 3D .cube file.';
+    $('lutControls').style.display='none';
+  }
+});
+$('lutClear').addEventListener('click',()=>{armUndoCapture();clearLUT();commitUndoCapture();});
+
+// ---------- JS mirror of the shader's colour math ----------
+// Needed because building an export .cube LUT means running every possible
+// input colour through the SAME pipeline the shader applies live — and a
+// .cube file is baked on the CPU, not the GPU, so this has to exist twice.
+// Operates on 0..1 floats throughout, matching the shader exactly, rather
+// than round-tripping through 0..255 integers.
+function srgbToLinearF(c){return c<=0.04045?c/12.92:Math.pow((c+0.055)/1.055,2.4);}
+function linearToSrgbF(c){c=Math.max(0,Math.min(1,c));return c<=0.0031308?c*12.92:1.055*Math.pow(c,1/2.4)-0.055;}
+function compressChanF(v){
+  const threshold=0.96, softness=0.04; // matches the shader; see compressChan's comment
+  if(v<0)return 0;
+  if(v<=threshold)return v;
+  return threshold+softness*Math.tanh((v-threshold)/softness);
+}
+function rgb2hslF(r,g,b){
+  const mx=Math.max(r,g,b),mn=Math.min(r,g,b),d=mx-mn;
+  let h=0,s=0,l=(mx+mn)/2;
+  if(d>0.00001){
+    s=l>0.5?d/(2-mx-mn):d/(mx+mn);
+    if(mx===r)h=((g-b)/d+(g<b?6:0));
+    else if(mx===g)h=((b-r)/d+2);
+    else h=((r-g)/d+4);
+    h/=6;
+  }
+  return[h,s,l];
+}
+function hue2rgbF(p,q,t){
+  if(t<0)t+=1;if(t>1)t-=1;
+  if(t<1/6)return p+(q-p)*6*t;
+  if(t<0.5)return q;
+  if(t<2/3)return p+(q-p)*(2/3-t)*6;
+  return p;
+}
+function hsl2rgbF(h,s,l){
+  if(s<=0)return[l,l,l];
+  const q=l<0.5?l*(1+s):l+s-l*s,p=2*l-q;
+  return[hue2rgbF(p,q,h+1/3),hue2rgbF(p,q,h),hue2rgbF(p,q,h-1/3)];
+}
+// One pixel through the full live pipeline (matrix/WB/exposure/gamut/hue/sat/
+// black point), then the currently-loaded LUT if any — matches what's on
+// screen right now, in 0..1 floats in and out.
+function sCurveF(x,strength){
+  x=Math.max(0,Math.min(1,x));
+  if(x<0.5)return 0.5*Math.pow(2*x,strength);
+  return 1-0.5*Math.pow(2*(1-x),strength);
+}
+function applyContrastF(r,g,b,strength){
+  const lum=0.2126*r+0.7152*g+0.0722*b;
+  if(lum<=0.00001)return[r,g,b];
+  const newLum=sCurveF(lum,strength);
+  const scale=newLum/lum;
+  return[r*scale,g*scale,b*scale];
+}
+function pipelineRGB(r,g,b,matrix,pre,post,exposure,hueFrac,satFactor,blackPt,lutMix,tt,ct){
+  let lr=srgbToLinearF(r),lg=srgbToLinearF(g),lb=srgbToLinearF(b);
+  lr*=pre[0];lg*=pre[1];lb*=pre[2];
+  const[a,b1,c,d,e,f,g1,h,i]=matrix;
+  let mr=a*lr+b1*lg+c*lb, mg=d*lr+e*lg+f*lb, mb=g1*lr+h*lg+i*lb;
+  mr*=post[0];mg*=post[1];mb*=post[2];
+  const T = tt || [1,1,1];   // temperature/tint, matching the shader's separate stage
+  mr*=T[0];mg*=T[1];mb*=T[2];
+  mr*=exposure;mg*=exposure;mb*=exposure;
+  [mr,mg,mb]=applyContrastF(mr,mg,mb,contrastStrength(ct));
+  mr=compressChanF(mr);mg=compressChanF(mg);mb=compressChanF(mb);
+  let sr=linearToSrgbF(mr),sg=linearToSrgbF(mg),sb=linearToSrgbF(mb);
+  if(blackPt>0){
+    const bp=blackPt/255;
+    sr=Math.max(0,Math.min(1,(sr-bp)/(1-bp)));
+    sg=Math.max(0,Math.min(1,(sg-bp)/(1-bp)));
+    sb=Math.max(0,Math.min(1,(sb-bp)/(1-bp)));
+  }
+  if(hueFrac!==0||satFactor!==1){
+    let[hh,ss,ll]=rgb2hslF(sr,sg,sb);
+    hh=((hh+hueFrac)%1+1)%1;
+    ss=Math.max(0,Math.min(1,ss*satFactor));
+    [sr,sg,sb]=hsl2rgbF(hh,ss,ll);
+  }
+  if(currentLUT&&lutMix>0){
+    const out=sampleLUT(currentLUT,sr,sg,sb);
+    if(lutMix>=1){sr=out[0];sg=out[1];sb=out[2];}
+    else{sr=sr+(out[0]-sr)*lutMix;sg=sg+(out[1]-sg)*lutMix;sb=sb+(out[2]-sb)*lutMix;}
+  }
+  return[sr,sg,sb];
+}
+function buildCubeLUT(size){
+  size=size||32;
+  const matrix=getMatrixUI(),exposure=Math.pow(2,(+$('bright').value||0)/100);
+  const hueFrac=(+$('hue').value||0)/360, satFactor=(+$('sat').value||100)/100;
+  const blackPt=+$('blackPt').value||0;
+  const lutMix=(+($('lutMix')&&$('lutMix').value)||100)/100;
+  const tt=tempTintGains();
+  const ct=(function(){const e=$('contrast');return e?+e.value:25;})();
+  const look=(document.querySelector('.pb.on b')||{}).textContent||'Custom';
+  const lookName=look.replace(/[^A-Za-z0-9]+/g,'-').replace(/^-|-$/g,'')||'Custom';
+  const out=[];
+  out.push('# Generated by Infrared Colour Swap — @irlab.uk');
+  out.push('# Look: '+lookName);
+  out.push('TITLE "ChannelSwap_'+lookName+'"');
+  out.push('LUT_3D_SIZE '+size);
+  out.push('DOMAIN_MIN 0.0 0.0 0.0');
+  out.push('DOMAIN_MAX 1.0 1.0 1.0');
+  const N=size-1;
+  for(let z=0;z<size;z++)for(let y=0;y<size;y++)for(let x=0;x<size;x++){
+    const o=pipelineRGB(x/N,y/N,z/N,matrix,preWB,postWB,exposure,hueFrac,satFactor,blackPt,lutMix,tt,ct);
+    out.push(o[0].toFixed(6)+' '+o[1].toFixed(6)+' '+o[2].toFixed(6));
+  }
+  return{text:out.join('\n')+'\n',name:'ChannelSwap_'+lookName+'.cube'};
+}
+
+// ---------- EXIF preservation ----------
+// Canvas-based export strips all metadata by nature. To carry it through, we
+// read the raw EXIF (APP1) segment straight out of the source JPEG bytes at
+// load time, then splice those exact same bytes into the exported file: as
+// an APP1 segment for JPEG output, or a PNG "eXIf" chunk for PNG output.
+// (16-bit TIFF export doesn't carry this yet.)
+function extractExifSegment(bytes){
+  if(bytes.length<4||bytes[0]!==0xFF||bytes[1]!==0xD8)return null;
+  let i=2;
+  while(i<bytes.length-4){
+    if(bytes[i]!==0xFF)break;
+    const marker=bytes[i+1];
+    if(marker===0xD8||marker===0xD9||marker===0xDA)break;
+    const len=(bytes[i+2]<<8)|bytes[i+3];
+    if(len<2)break;
+    if(marker===0xE1&&i+4+6<=bytes.length){
+      let sig='';for(let k=0;k<6;k++)sig+=String.fromCharCode(bytes[i+4+k]);
+      if(sig==='Exif\u0000\u0000')return bytes.slice(i,i+2+len);
+    }
+    i+=2+len;
+  }
+  return null;
+}
+async function extractExifFromFile(fileOrBlob){
+  try{
+    const buf=await fileOrBlob.arrayBuffer();
+    return extractExifSegment(new Uint8Array(buf));
+  }catch(e){return null;}
+}
+function spliceExifIntoJpegBytes(jpegBytes,exif){
+  if(!exif||jpegBytes[0]!==0xFF||jpegBytes[1]!==0xD8)return jpegBytes;
+  const out=new Uint8Array(2+exif.length+(jpegBytes.length-2));
+  out.set([0xFF,0xD8],0);
+  out.set(exif,2);
+  out.set(jpegBytes.subarray(2),2+exif.length);
+  return out;
+}
+const CRC_TABLE=(()=>{const t=new Uint32Array(256);for(let n=0;n<256;n++){let c=n;for(let k=0;k<8;k++)c=c&1?(0xEDB88320^(c>>>1)):(c>>>1);t[n]=c>>>0;}return t;})();
+function crc32(bytes){let c=0xFFFFFFFF;for(let i=0;i<bytes.length;i++)c=CRC_TABLE[(c^bytes[i])&0xFF]^(c>>>8);return(c^0xFFFFFFFF)>>>0;}
+function u32be(n){return[(n>>>24)&0xFF,(n>>>16)&0xFF,(n>>>8)&0xFF,n&0xFF];}
+function spliceExifIntoPngBytes(pngBytes,exif){
+  if(!exif||exif.length<=10)return pngBytes;
+  const tiffData=exif.subarray(10);
+  try{
+    const ihdrLen=(pngBytes[8]<<24)|(pngBytes[9]<<16)|(pngBytes[10]<<8)|pngBytes[11];
+    const ihdrEnd=8+4+4+ihdrLen+4;
+    const typeBytes=new Uint8Array([0x65,0x58,0x49,0x66]);
+    const crcInput=new Uint8Array(typeBytes.length+tiffData.length);
+    crcInput.set(typeBytes,0);crcInput.set(tiffData,typeBytes.length);
+    const crc=crc32(crcInput);
+    const chunk=new Uint8Array(4+4+tiffData.length+4);
+    chunk.set(u32be(tiffData.length),0);
+    chunk.set(typeBytes,4);
+    chunk.set(tiffData,8);
+    chunk.set(u32be(crc),8+tiffData.length);
+    const out=new Uint8Array(pngBytes.length+chunk.length);
+    out.set(pngBytes.subarray(0,ihdrEnd),0);
+    out.set(chunk,ihdrEnd);
+    out.set(pngBytes.subarray(ihdrEnd),ihdrEnd+chunk.length);
+    return out;
+  }catch(e){return pngBytes;}
+}
+
+// ---------- original-resolution export ----------
+// The live preview and on-screen WebGL canvas work at a capped size (up to
+// WORKING_MAX_DIM) so the tab never freezes on a huge photo. Exporting at
+// the original resolution means decoding the source file fresh at full
+// size and rendering it through a SEPARATE, temporary WebGL context sized
+// to match — never touching the visible preview canvas — then discarding
+// that context immediately after reading the result back.
+function decodeNative(file){
+  return new Promise((resolve, reject) => {
+    const url = URL.createObjectURL(file);
+    const img = new Image();
+    img.decoding = 'async';
+    img.onload = () => {
+      const w = img.naturalWidth, h = img.naturalHeight;
+      if (!w || !h) { URL.revokeObjectURL(url); return reject(new Error('zero size')); }
+      URL.revokeObjectURL(url);
+      resolve({ img, w, h });
+    };
+    img.onerror = () => { URL.revokeObjectURL(url); reject(new Error('decode failed')); };
+    img.src = url;
+  });
+}
+async function renderAtOriginalRes() {
+  const { img, w, h } = await decodeNative(origFile);
+  const oc = document.createElement('canvas');
+  oc.width = w; oc.height = h;
+  const octx = oc.getContext('2d', { willReadFrequently: true });
+  octx.drawImage(img, 0, 0);
+
+  const testGl = oc.getContext('webgl');
+  const maxTex = testGl ? testGl.getParameter(testGl.MAX_TEXTURE_SIZE) : 4096;
+  if (w > maxTex || h > maxTex) {
+    toast('Original (' + w + '×' + h + ') exceeds this device\u2019s GPU texture limit (' + maxTex + 'px) — using working size instead');
+    return null;
+  }
+
+  const exportCanvas = document.createElement('canvas');
+  const exportEngine = new WebGLEngine(exportCanvas);
+  exportEngine.setImage(oc);
+  exportEngine.render({
+    matrix: getMatrixUI(), preWB, postWB,
+    exposure: +$('bright').value || 0,
+    hue: +$('hue').value || 0,
+    sat: +$('sat').value || 100,
+    blackPt: +$('blackPt').value || 0,
+    defringe: +($('defringe') && $('defringe').value) || 0,
+    contrast: (function(){const e=$('contrast');return e?+e.value:25;})()
+  });
+  const px = exportEngine.readPixels();
+  // release the temporary GL context explicitly rather than waiting on GC —
+  // browsers cap concurrent WebGL contexts, and exports could happen repeatedly
+  const loseCtx = exportEngine.gl.getExtension('WEBGL_lose_context');
+  if (loseCtx) loseCtx.loseContext();
+  return { px, w, h };
+}
+
+// ---------- 16-bit TIFF ----------
+function encodeTIFF16(rgba,w,h){
+  // 14 IFD entries, written in ascending tag order as the TIFF spec requires.
+  const spp=3,pixelBytes=w*h*spp*2,numEntries=14,ifdOffset=8,ifdSize=2+numEntries*12+4,after=ifdOffset+ifdSize;
+  const bpsOff=after,xResOff=bpsOff+6,yResOff=xResOff+8,pixOff=yResOff+8;
+  const buf=new ArrayBuffer(pixOff+pixelBytes),dv=new DataView(buf);
+  dv.setUint8(0,LE?0x49:0x4D);dv.setUint8(1,LE?0x49:0x4D);dv.setUint16(2,42,LE);dv.setUint32(4,ifdOffset,LE);
+  let o=ifdOffset;dv.setUint16(o,numEntries,LE);o+=2;
+  const en=(t,ty,c,v)=>{dv.setUint16(o,t,LE);dv.setUint16(o+2,ty,LE);dv.setUint32(o+4,c,LE);dv.setUint32(o+8,v,LE);o+=12;};
+  en(256,4,1,w);en(257,4,1,h);en(258,3,3,bpsOff);en(259,3,1,1);en(262,3,1,2);en(273,4,1,pixOff);en(277,3,1,3);en(278,4,1,h);en(279,4,1,pixelBytes);en(282,5,1,xResOff);en(283,5,1,yResOff);en(284,3,1,1);en(296,3,1,2);en(339,3,1,1);dv.setUint32(o,0,LE);
+  dv.setUint16(bpsOff,16,LE);dv.setUint16(bpsOff+2,16,LE);dv.setUint16(bpsOff+4,16,LE);
+  dv.setUint32(xResOff,72,LE);dv.setUint32(xResOff+4,1,LE);dv.setUint32(yResOff,72,LE);dv.setUint32(yResOff+4,1,LE);
+  const px=new Uint16Array(buf,pixOff,w*h*3);let j=0;
+  for(let i=0;i<rgba.length;i+=4){px[j++]=rgba[i]*257;px[j++]=rgba[i+1]*257;px[j++]=rgba[i+2]*257;}
+  return new Blob([buf],{type:'image/tiff'});
+}
+
+function bytesPerPixelFor(fmt){return fmt==='tiff16'?6:fmt==='png'?3:0.3;}
+function updateExportResOptions(){
+  const panel = $('resPanel');
+  if (!origW || !origH || (origW === $('preview').width && origH === $('preview').height)) {
+    panel.style.display = 'none';
+    return;
+  }
+  panel.style.display = 'block';
+  const fmt = document.querySelector('input[name=fmt]:checked').value;
+  const bpp = bytesPerPixelFor(fmt);
+  const w = $('preview').width, h = $('preview').height;
+  const mbWorking = (w*h*bpp/1048576).toFixed(1);
+  $('resWorkingLbl').textContent = '(' + w + '×' + h + ' · ~' + mbWorking + ' MB)';
+  const mbOrig = (origW*origH*bpp/1048576).toFixed(1);
+  $('resOrigLbl').textContent = '(' + origW + '×' + origH + ' · ~' + mbOrig + ' MB)';
+  $('resNote').textContent = 'Your source photo is ' + origW + '×' + origH + '. Working size is downscaled for smooth live preview — original renders fresh at export time and takes longer.';
+}
+document.querySelectorAll('input[name=fmt]').forEach(r => r.addEventListener('change', updateExportResOptions));
+
+$('bDl').onclick = async () => {
+  if (!engine || !loadedImage) return;
+  const resChoice = (document.querySelector('input[name=res]:checked') || { value: 'working' }).value;
+  const useOriginal = resChoice === 'original' && origFile && (origW !== $('preview').width || origH !== $('preview').height);
+
+  let px, w, h;
+  if (useOriginal) {
+    $('bDl').disabled = true; $('bDl').textContent = 'Rendering original…';
+    try {
+      const result = await renderAtOriginalRes();
+      if (result) { px = result.px; w = result.w; h = result.h; }
+    } catch (e) { toast('Original render failed (' + e.message + ') — using working size'); }
+    $('bDl').disabled = false; $('bDl').textContent = 'Export Image';
+  }
+  if (!px) { px = engine.readPixels(); w = $('preview').width; h = $('preview').height; }
+
+  const lutMix = (+($('lutMix') && $('lutMix').value) || 100) / 100;
+  if (currentLUT && lutMix > 0) {
+    for (let p = 0; p < px.length; p += 4) {
+      const [r, g, b] = applyLutPixel(px[p], px[p+1], px[p+2], lutMix);
+      px[p] = r; px[p+1] = g; px[p+2] = b;
+    }
+  }
+
+  const fmt = document.querySelector('input[name=fmt]:checked').value;
+  const stamp = Date.now();
+
+  if (fmt === 'tiff16') {
+    const blob = encodeTIFF16(px, w, h);
+    const a = document.createElement('a');
+    a.download = 'channel-swap-' + stamp + '.tiff';
+    a.href = URL.createObjectURL(blob);
+    a.click();
+    setTimeout(() => URL.revokeObjectURL(a.href), 10000);
+    return;
+  }
+
+  const oc = document.createElement('canvas');
+  oc.width = w; oc.height = h;
+  const ox = oc.getContext('2d');
+  const id = ox.createImageData(w, h);
+  id.data.set(px);
+  ox.putImageData(id, 0, 0);
+  const mime = fmt === 'png' ? 'image/png' : 'image/jpeg';
+  const ext = fmt === 'png' ? 'png' : 'jpg';
+  oc.toBlob(async b => {
+    if (!b) { alert('Export failed.'); return; }
+    let finalBlob = b;
+    if (exifSegment) {
+      try {
+        const buf = new Uint8Array(await b.arrayBuffer());
+        const spliced = fmt === 'png' ? spliceExifIntoPngBytes(buf, exifSegment) : spliceExifIntoJpegBytes(buf, exifSegment);
+        finalBlob = new Blob([spliced], { type: mime });
+      } catch (e) {}
+    }
+    const a = document.createElement('a');
+    a.download = 'channel-swap-' + stamp + '.' + ext;
+    a.href = URL.createObjectURL(finalBlob);
+    a.click();
+    setTimeout(() => URL.revokeObjectURL(a.href), 10000);
+  }, mime, fmt === 'jpeg' ? 1.0 : undefined);
+};
+</script>
+</body>
+</html>
