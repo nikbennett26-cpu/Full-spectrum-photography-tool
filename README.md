@@ -1,7 +1,7 @@
 # Channel Swap & Filter Curves
 
 **A darkroom for full-spectrum, UV and infrared photography**
-Built by [@king_of_little_germany](https://instagram.com/king_of_little_germany) · [irlab.uk](https://irlab.uk)
+Built by [irlab.uk](https://irlab.uk)
 
 Two connected browser tools, built from scratch, running entirely client-side — no server, no install, no account. Open the link, drop in a photo, done. Built for photographers shooting UV, infrared and full-spectrum converted cameras who are tired of hunting through forum threads and Photoshop actions to get a real Aerochrome look.
 
