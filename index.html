@@ -268,6 +268,16 @@ button.armed{background:var(--safelight);color:#fff}
    for a real workflow. The panel and its logic are untouched underneath;
    delete this one rule to bring it straight back with nothing else to redo. */
 #calibDetails{display:none}
+/* ---------- Targeted colour bands ---------- */
+.bandRow{border:1px solid var(--line);border-radius:var(--radius);padding:10px 12px;margin-bottom:8px;background:var(--surface2)}
+.bandHead{display:flex;align-items:center;gap:10px;margin-bottom:4px}
+.bandSwatch{width:26px;height:26px;border-radius:50%;border:2px solid var(--line2);flex:none;box-shadow:0 0 0 2px var(--surface2)}
+.bandTitle{font-family:var(--font-mono);font-size:12px;color:var(--paper-dim);flex:1}
+.bandRemove{background:transparent;border:1px solid var(--line2);color:var(--muted);width:26px;height:26px;line-height:1;border-radius:50%;flex:none;font-size:15px;padding:0}
+.bandRemove:hover{border-color:var(--safelight);color:var(--safelight)}
+.bandRow .sl{padding:3px 0}
+.bandRow .sl label{font-size:12px}
+#btnAddBand[disabled]{opacity:.45}
 #undoRedoBar{position:fixed;right:16px;bottom:20px;z-index:60;display:flex;gap:8px}
 #undoRedoBar button{border-radius:50px;padding:12px 20px;box-shadow:0 4px 14px rgba(0,0,0,.4)}
 #undoRedoBar button:active{transform:scale(.94)}
@@ -568,7 +578,15 @@ input[type=range]{width:100%;accent-color:var(--safelight);touch-action:pan-y;
 
 
     <div class="panel">
-      <div class="pt">1. Match Your Filter</div>
+      <div class="pt">1. Targeted Colour <span style="font-weight:400;font-size:11px;color:var(--muted);text-transform:none;letter-spacing:0">— straight-out-of-camera, before the swap</span></div>
+      <p class="note">Pick a colour from the untouched camera file and push its hue, saturation or lightness. Runs before white balance and the matrix, on the colour as the camera captured it — the reason for that order is that the matrix mixes channels together, so there is no longer a single "SOOC red" to target once it has run. Fixes a stray cast here instead of in another app first.</p>
+      <button id="btnAddBand" title="Tap a colour in the image to target it">+ Pick a colour</button>
+      <p class="note" id="bandLimitNote" style="display:none">5 bands is the limit — remove one to add another.</p>
+      <div id="bandList"></div>
+    </div>
+
+    <div class="panel">
+      <div class="pt">2. Match Your Filter</div>
       <div class="subhdr">UV Presets</div>
       <div class="pgrid uv" id="pgUV"></div>
       <div class="subhdr" style="margin-top:12px">IR Presets</div>
@@ -578,7 +596,7 @@ input[type=range]{width:100%;accent-color:var(--safelight);touch-action:pan-y;
     </div>
 
     <div class="panel">
-      <div class="pt">2. White Balance</div>
+      <div class="pt">3. White Balance</div>
       <div class="wbrow">
         <button id="wbPre">Pre-Swap Neutral</button>
         <button id="wbPreReset">Clear Pre</button>
@@ -608,7 +626,7 @@ input[type=range]{width:100%;accent-color:var(--safelight);touch-action:pan-y;
     </div>
 
     <div class="panel">
-      <div class="pt">3. Channel Mixer Matrix (%)</div>
+      <div class="pt">4. Channel Mixer Matrix (%)</div>
       <div class="matrix" id="mx">
         <div></div><div class="hdr rl-r">from R</div><div class="hdr rl-g">from G</div><div class="hdr rl-b">from B</div><div class="hdr">total</div>
         <div class="rowlbl rl-r">R out</div>
@@ -626,7 +644,7 @@ input[type=range]{width:100%;accent-color:var(--safelight);touch-action:pan-y;
 
 
     <div class="panel">
-      <div class="pt">4. Finishing Controls</div>
+      <div class="pt">5. Finishing Controls</div>
       <!-- TONE: set overall brightness and tonal range first, since every
            colour judgement below depends on the image being correctly exposed -->
       <div class="sl"><label>Exposure <b id="v_bright">0</b></label><input type="range" id="bright" aria-label="Exposure" min="-100" max="100" value="0"></div>
@@ -996,6 +1014,62 @@ const FS_SOURCE = `
       -0.0041960863 * lms.x - 0.7034186147 * lms.y + 1.7076147010 * lms.z);
   }
   // hueFrac is turns (slider degrees / 360); sat is a plain chroma multiplier
+
+  /* ---------- Targeted colour (SOOC, pre-swap) ----------
+
+     Lightroom's HSL targeted-adjustment tool, running on the camera's own
+     colour before anything else touches it. This exists to remove Lightroom
+     from the workflow: fixing a stray cast on the straight-out-of-camera
+     file used to mean a trip through another app before the swap even
+     started, on a colour that only exists at this one point in the
+     pipeline — the matrix mixes channels together immediately afterward, so
+     there is no "SOOC red" left to target once it's run.
+
+     Up to 5 bands, applied in sequence. Each is a hue centre, a width, and a
+     hue/saturation/lightness delta, all in OKLab for the same reason the
+     rest of the file uses it: rotating hue here rotates hue and nothing
+     else, so a push on the reds cannot drag lightness or a neighbouring hue
+     along with it by accident.
+
+     Falloff is smoothstepped rather than a hard edge, so a band fades out
+     approaching its own boundary instead of drawing a visible seam across a
+     gradient — the same reason the width control exists at all. */
+  const int MAX_BANDS = 5;
+  uniform int u_bandCount;
+  uniform float u_bandHue[MAX_BANDS];    // degrees, 0..360
+  uniform float u_bandWidth[MAX_BANDS];  // degrees, half-width to zero falloff
+  uniform float u_bandDH[MAX_BANDS];     // degrees to rotate, at full weight
+  uniform float u_bandDS[MAX_BANDS];     // -1..1, chroma multiplier delta
+  uniform float u_bandDL[MAX_BANDS];     // -1..1, scaled below to a sane range
+
+  float hueDegOf(vec2 ab) {
+    float d = degrees(atan(ab.y, ab.x));
+    return d < 0.0 ? d + 360.0 : d;
+  }
+  float angDelta(float a, float b) {
+    float d = mod(a - b + 180.0, 360.0) - 180.0;
+    return d;
+  }
+  vec3 targetedHSL(vec3 lin) {
+    if (u_bandCount <= 0) return lin;
+    vec3 lab = linearToOklab(lin);
+    float L = lab.x;
+    float C = length(lab.yz);
+    float H = hueDegOf(lab.yz);
+    for (int i = 0; i < MAX_BANDS; i++) {
+      if (i >= u_bandCount) break;
+      float delta = angDelta(H, u_bandHue[i]);
+      float t = clamp(1.0 - abs(delta) / max(u_bandWidth[i], 1e-3), 0.0, 1.0);
+      float w = t * t * (3.0 - 2.0 * t);   // smoothstep, so the edge of the band is invisible
+      if (w <= 0.0) continue;
+      H += u_bandDH[i] * w;
+      C = max(0.0, C * (1.0 + u_bandDS[i] * w));
+      L = clamp(L + u_bandDL[i] * 0.4 * w, 0.0, 1.0);
+    }
+    float r = radians(H);
+    return oklabToLinear(vec3(L, C * cos(r), C * sin(r)));
+  }
+  // hueFrac is turns (slider degrees / 360); sat is a plain chroma multiplier
   /* Largest saturation (C/L) the sRGB gamut allows in a given hue direction.
      Ottosson's analytic approximation plus one Halley step — accurate to
      0.0014 in chroma against a numerical search, checked over the full hue
@@ -1211,6 +1285,7 @@ const FS_SOURCE = `
     vec4 texColor = texture2D(u_image, v_texCoord);
     texColor.rgb = defringed(v_texCoord);
     vec3 rgb = srgbToLinear(texColor.rgb);
+    rgb = targetedHSL(rgb);   // SOOC colour only — before white balance, before the swap
 
     float pull1 = 0.0, pull2 = 0.0;
     g_over = 0.0; g_under = 0.0;
@@ -1444,6 +1519,12 @@ class WebGLEngine {
       lutDomainMin: gl.getUniformLocation(this.program, 'u_lutDomainMin'),
       lutDomainMax: gl.getUniformLocation(this.program, 'u_lutDomainMax'),
       matrix: gl.getUniformLocation(this.program, 'u_matrix'),
+      bandCount: gl.getUniformLocation(this.program, 'u_bandCount'),
+      bandHue: gl.getUniformLocation(this.program, 'u_bandHue'),
+      bandWidth: gl.getUniformLocation(this.program, 'u_bandWidth'),
+      bandDH: gl.getUniformLocation(this.program, 'u_bandDH'),
+      bandDS: gl.getUniformLocation(this.program, 'u_bandDS'),
+      bandDL: gl.getUniformLocation(this.program, 'u_bandDL'),
       preWB: gl.getUniformLocation(this.program, 'u_preWB'),
       postWB: gl.getUniformLocation(this.program, 'u_postWB'),
       tempTint: gl.getUniformLocation(this.program, 'u_tempTint'),
@@ -1598,6 +1679,27 @@ class WebGLEngine {
     ];
 
     gl.uniformMatrix3fv(this.uLocs.matrix, false, new Float32Array(transposed));
+
+    // Targeted colour bands. Padded to 5 slots always — a uniform array in
+    // GLSL ES 1.00 has to be sized at compile time, so the unused tail is
+    // just sent as zeros and u_bandCount tells the shader where to stop.
+    {
+      const bands = p.bands || [];
+      const n = Math.min(5, bands.length);
+      const hue = new Float32Array(5), width = new Float32Array(5),
+            dH = new Float32Array(5), dS = new Float32Array(5), dL = new Float32Array(5);
+      for (let i = 0; i < n; i++) {
+        hue[i] = bands[i].hue; width[i] = bands[i].width;
+        dH[i] = bands[i].dH; dS[i] = bands[i].dS; dL[i] = bands[i].dL;
+      }
+      gl.uniform1i(this.uLocs.bandCount, n);
+      gl.uniform1fv(this.uLocs.bandHue, hue);
+      gl.uniform1fv(this.uLocs.bandWidth, width);
+      gl.uniform1fv(this.uLocs.bandDH, dH);
+      gl.uniform1fv(this.uLocs.bandDS, dS);
+      gl.uniform1fv(this.uLocs.bandDL, dL);
+    }
+
     gl.uniform3fv(this.uLocs.preWB, new Float32Array(p.preWB));
     gl.uniform3fv(this.uLocs.postWB, new Float32Array(p.postWB));
     gl.uniform3fv(this.uLocs.tempTint, new Float32Array(p.tempTint || [1,1,1]));
@@ -1740,6 +1842,9 @@ function halfTable() {
 const $ = id => document.getElementById(id);
 const MCELLS = ['m00','m01','m02','m10','m11','m12','m20','m21','m22'];
 let engine = null, preWB = [1, 1, 1], postWB = [1, 1, 1], loadedImage = null, pickMode = null;
+let targetedBands = [];   // {id, hue, width, dH, dS, dL, swatch}
+let bandNextId = 1;
+const BAND_MAX = 5;
 let currentLUT = null; // {size,domainMin,domainMax,data:Float32Array}
 let origFile = null, origW = 0, origH = 0, exifSegment = null;
 const WORKING_MAX_DIM = 2048;
@@ -2104,6 +2209,10 @@ document.querySelectorAll('.sl input[type=range]').forEach(r => { sliderDefaults
    gesture that fires accidentally during momentum scrolling. Mouse and pen
    are exempt entirely — they are precise, and clicking a track to jump is
    expected behaviour there. */
+/* Pulled out of the old self-contained IIFE so dynamically-created sliders
+   (targeted-colour bands, added after page load) can opt into the exact same
+   gesture handling via wireSliderGesture() below, rather than a second,
+   drifting copy of this logic. */
 (function () {
   let g = null;
 
@@ -2155,7 +2264,7 @@ document.querySelectorAll('.sl input[type=range]').forEach(r => { sliderDefaults
     haptic(def !== undefined && String(v) === String(def) ? 22 : 14);
   }
 
-  document.querySelectorAll('.sl input[type=range]').forEach(el => {
+  function wire(el) {
     el.addEventListener('input', () => { if (g && g.el === el && g.released) detentTick(el); });
     el.addEventListener('pointerdown', e => {
       if (e.pointerType === 'mouse' || e.pointerType === 'pen') { g = null; return; }
@@ -2178,7 +2287,9 @@ document.querySelectorAll('.sl input[type=range]').forEach(r => { sliderDefaults
     };
     el.addEventListener('pointerup', end);
     el.addEventListener('pointercancel', end);
-  });
+  }
+  document.querySelectorAll('.sl input[type=range]').forEach(wire);
+  window.wireSliderGesture = wire;   // for sliders created after this ran — see targetedHSL's band list
 })();
 
 /* ---------- Auto tone ----------
@@ -2677,7 +2788,7 @@ function buildChannelStrip() {
    enormously after a swap. */
 function showLoupe(mode, clientX, clientY) {
   const lp = $('loupe'), pv = $('preview'), cwEl = $('cw');
-  const src = mode === 'pre' ? rawCanvas : pv;
+  const src = (mode === 'pre' || mode === 'targeted') ? rawCanvas : pv;
   if (!src || !src.width) return;
   const rect = pv.getBoundingClientRect(), cwr = cwEl.getBoundingClientRect();
   const fx = (clientX - rect.left) / rect.width, fy = (clientY - rect.top) / rect.height;
@@ -3204,6 +3315,7 @@ function contrastUI() { const e = $('contrast'); return e ? +e.value : 0; }
 function currentParams() {
   return {
     matrix: getMatrixUI(),
+    bands: targetedBands,
     preWB: preWB,
     postWB: postWB,
     tempTint: tempTintGains(),
@@ -4434,6 +4546,7 @@ $('bReset').onclick = () => {
   MCELLS.forEach((id, i) => $(id).value = identity[i]);
   updateRowTotals();
   preWB = [1, 1, 1]; postWB = [1, 1, 1];
+  targetedBands = []; bandRenderList();
   ['bright','hue','blackPt','temp','tint','defringe','satPreserve','contrast','shSat','hiSat','splitBal','triMix'].forEach(id => { $(id).value = 0; $('v_' + id).textContent = 0; });
   [['triA',118],['triB',80],['triC',149],['triSat',25]].forEach(([id,v]) => { $(id).value = v; $('v_' + id).textContent = v; });
   triCache = null; triCacheKey = '';
@@ -4526,6 +4639,10 @@ function captureState() {
     m: MCELLS.map(id => +$(id).value || 0),
     s: HASH_SLIDERS.map(id => { const el = $(id); return el ? +el.value || 0 : 0; }),
     preWB: [...preWB], postWB: [...postWB],
+    // deep-copied, not just spread — these are edited in place by the
+    // per-band sliders, so a shallow reference here would let a LATER edit
+    // silently rewrite a snapshot that undo is already holding onto
+    bands: targetedBands.map(b => ({...b})),
     normalize: $('chkNormalize').checked,
     lut: currentLUT,
     lutStatusText: $('lutStatus').textContent,
@@ -4544,6 +4661,8 @@ function applyState(snap) {
     el.value = snap.s[i] !== undefined ? snap.s[i] : 0;
     const lbl = $('v_' + id); if (lbl) lbl.textContent = el.value;
   });
+  targetedBands = (snap.bands || []).map(b => ({...b}));
+  bandRenderList();
   if (snap.preWB) {
     preWB = [...snap.preWB];
     const set = preWB[0] !== 1 || preWB[1] !== 1 || preWB[2] !== 1;
@@ -4589,7 +4708,7 @@ function updateUndoButton() {
    and free. */
 function stateKey(s) {
   return JSON.stringify({
-    m: s.m, s: s.s, preWB: s.preWB, postWB: s.postWB,
+    m: s.m, s: s.s, preWB: s.preWB, postWB: s.postWB, bands: s.bands,
     normalize: s.normalize, activePreset: s.activePreset
   });
 }
@@ -4988,10 +5107,12 @@ function positionMarker(mode, px, py, cw, ch) {
 }
 function doPick(clientX, clientY) {
   if (!pickMode) return;
-  // calibration patches are a different kind of pick — they sample the raw
-  // source only, never touch preWB/postWB, and feed the solver rather than
-  // a white-balance gain — so they are handled entirely separately
+  // calibration patches and targeted-colour bands are both a different kind
+  // of pick from pre/post WB — they sample the raw source only, never touch
+  // preWB/postWB, and each tap adds a new thing rather than moving one
+  // existing marker — so they're handled entirely separately
   if (pickMode === 'calib') { calibDoPick(clientX, clientY); return; }
+  if (pickMode === 'targeted') { targetedDoPick(clientX, clientY); return; }
   const mode = pickMode;
   // A fresh tap starts from IDENTITY, not from the current correction —
   // otherwise each new tap multiplies on top of the last one, so moving the
@@ -5071,6 +5192,7 @@ function enterPick(m) {
   $('preview').classList.add('pick');
   $('wbPre').classList.toggle('armed', m === 'pre');
   $('wbPost').classList.toggle('armed', m === 'post');
+  if ($('btnAddBand')) $('btnAddBand').classList.toggle('armed', m === 'targeted');
 }
 function exitPick() {
   pickMode = null;
@@ -5078,7 +5200,100 @@ function exitPick() {
   $('wbPre').classList.remove('armed');
   $('wbPost').classList.remove('armed');
   if ($('btnCalibAdd')) $('btnCalibAdd').classList.remove('armed');
+  if ($('btnAddBand')) $('btnAddBand').classList.remove('armed');
 }
+
+/* ---------- Targeted colour bands ----------
+   One tap adds one band, sampled from the untouched source — same rawPixels
+   buffer the pre-swap WB picker already reads, so no fresh canvas read is
+   needed. The hue is computed in OKLab, matching targetedHSL()/targetedHSLF()
+   exactly, so the band centres on the same hue value the shader will compare
+   against rather than an HSL or HSV approximation of it. */
+function targetedDoPick(clientX, clientY) {
+  if (!loadedImage || !rawPixels) { exitPick(); return; }
+  if (targetedBands.length >= BAND_MAX) { exitPick(); return; }
+  const cv = $('preview'), rect = cv.getBoundingClientRect();
+  const cx = Math.max(rect.left, Math.min(rect.right, clientX));
+  const cy = Math.max(rect.top, Math.min(rect.bottom, clientY));
+  const x = Math.round((cx - rect.left) / rect.width * cv.width);
+  const y = Math.round((cy - rect.top) / rect.height * cv.height);
+  const rad = Math.max(6, Math.round(cv.width * 0.02));
+  const [r, g, b] = sampleAvgFrom(rawPixels, rawCanvas.width, rawCanvas.height, x, y, rad);
+  const lin = [srgbToLinearF(r / 255), srgbToLinearF(g / 255), srgbToLinearF(b / 255)];
+  const [L, A, B] = linearToOklabF(lin[0], lin[1], lin[2]);
+  const hue = hueDegOfF(A, B);
+  armUndoCapture();
+  targetedBands.push({ id: bandNextId++, hue, width: 30, dH: 0, dS: 0, dL: 0, swatch: rgbToHex(r, g, b) });
+  commitUndoCapture();
+  bandRenderList();
+  haptic('select');
+  exitPick();
+  render();
+}
+function bandRenderList() {
+  const wrap = $('bandList');
+  wrap.innerHTML = '';
+  targetedBands.forEach(band => {
+    const row = document.createElement('div');
+    row.className = 'bandRow';
+
+    const head = document.createElement('div');
+    head.className = 'bandHead';
+    const sw = document.createElement('div');
+    sw.className = 'bandSwatch';
+    sw.style.background = band.swatch;
+    sw.title = 'Sampled: ' + band.swatch;
+    head.appendChild(sw);
+    const title = document.createElement('div');
+    title.className = 'bandTitle';
+    title.textContent = 'Hue ' + Math.round(band.hue) + '°';
+    head.appendChild(title);
+    const rm = document.createElement('button');
+    rm.type = 'button'; rm.className = 'bandRemove'; rm.textContent = '×';
+    rm.title = 'Remove this band';
+    rm.onclick = () => {
+      armUndoCapture();
+      targetedBands = targetedBands.filter(x => x.id !== band.id);
+      commitUndoCapture();
+      bandRenderList();
+      render();
+    };
+    head.appendChild(rm);
+    row.appendChild(head);
+
+    // key, min, max, step, value, format, apply
+    const specs = [
+      ['dH', -180, 180, 1, band.dH, v => Math.round(v) + '°', v => band.dH = v],
+      ['dS', -100, 100, 1, band.dS * 100, v => Math.round(v) + '%', v => band.dS = v / 100],
+      ['dL', -100, 100, 1, band.dL * 100, v => Math.round(v) + '%', v => band.dL = v / 100],
+      ['width', 5, 90, 1, band.width, v => Math.round(v) + '°', v => band.width = v],
+    ];
+    const labels = { dH: 'Hue', dS: 'Saturation', dL: 'Lightness', width: 'Width' };
+    specs.forEach(([key, min, max, step, val, fmt, apply]) => {
+      const id = 'band' + band.id + '_' + key;
+      const sl = document.createElement('div');
+      sl.className = 'sl';
+      sl.innerHTML = '<label>' + labels[key] + ' <b id="v_' + id + '">' + fmt(val) + '</b></label>' +
+        '<input type="range" id="' + id + '" min="' + min + '" max="' + max + '" step="' + step + '" value="' + val + '">';
+      row.appendChild(sl);
+      const el = sl.querySelector('input');
+      el.addEventListener('input', () => {
+        apply(+el.value);
+        $('v_' + id).textContent = fmt(+el.value);
+        if (key !== 'width') title.textContent = 'Hue ' + Math.round(band.hue) + '°';
+        render();
+      });
+      wireSliderGesture(el);
+    });
+
+    wrap.appendChild(row);
+  });
+  $('btnAddBand').disabled = targetedBands.length >= BAND_MAX;
+  $('bandLimitNote').style.display = targetedBands.length >= BAND_MAX ? 'block' : 'none';
+}
+$('btnAddBand').addEventListener('click', () => {
+  pickMode === 'targeted' ? exitPick() : enterPick('targeted');
+});
 
 
 
@@ -5303,6 +5518,28 @@ function hueCuspF(a,b){
 function maxChromaAtF(L,cx,cy){
   return L<=cx ? cy*L/Math.max(cx,1e-6) : cy*(1-L)/Math.max(1-cx,1e-6);
 }
+function hueDegOfF(a,b){const d=Math.atan2(b,a)*180/Math.PI;return d<0?d+360:d;}
+function angDeltaF(a,b){let d=(a-b+180)%360;if(d<0)d+=360;return d-180;}
+/* Mirrors targetedHSL from the shader — see its comment for the design.
+   Kept line-for-line equivalent so a baked .cube matches the live preview. */
+function targetedHSLF(r,g,b,bands){
+  if(!bands||!bands.length) return [r,g,b];
+  let [L,A,B]=linearToOklabF(r,g,b);
+  let C=Math.hypot(A,B), H=hueDegOfF(A,B);
+  const n=Math.min(5,bands.length);
+  for(let i=0;i<n;i++){
+    const band=bands[i];
+    const delta=angDeltaF(H,band.hue);
+    const t=Math.max(0,Math.min(1,1-Math.abs(delta)/Math.max(band.width,1e-3)));
+    const w=t*t*(3-2*t);
+    if(w<=0) continue;
+    H+=band.dH*w;
+    C=Math.max(0,C*(1+band.dS*w));
+    L=Math.max(0,Math.min(1,L+band.dL*0.4*w));
+  }
+  const rad=H*Math.PI/180;
+  return oklabToLinearF(L,C*Math.cos(rad),C*Math.sin(rad));
+}
 function hueSatF(r,g,b,hueFrac,sat,keepSat){
   const[L0,A,B]=linearToOklabF(r,g,b);
   const C=Math.hypot(A,B)*sat;
@@ -5343,8 +5580,9 @@ function applyContrastF(r,g,b,strength){
   const scale=newLum/lum;
   return[r*scale,g*scale,b*scale];
 }
-function pipelineRGB(r,g,b,matrix,pre,post,exposure,hueFrac,satFactor,blackPt,lutMix,tt,ct,satPreserve){
+function pipelineRGB(r,g,b,matrix,pre,post,exposure,hueFrac,satFactor,blackPt,lutMix,tt,ct,satPreserve,bands){
   let lr=srgbToLinearF(r),lg=srgbToLinearF(g),lb=srgbToLinearF(b);
+  [lr,lg,lb]=targetedHSLF(lr,lg,lb,bands);   // SOOC colour only — before pre-WB, before the swap
   lr*=pre[0];lg*=pre[1];lb*=pre[2];
   const[a,b1,c,d,e,f,g1,h,i]=matrix;
   let mr=a*lr+b1*lg+c*lb, mg=d*lr+e*lg+f*lb, mb=g1*lr+h*lg+i*lb;
@@ -5436,7 +5674,7 @@ function buildCubeLUT(size){
   out.push('DOMAIN_MAX 1.0 1.0 1.0');
   const N=size-1;
   for(let z=0;z<size;z++)for(let y=0;y<size;y++)for(let x=0;x<size;x++){
-    const o=pipelineRGB(x/N,y/N,z/N,matrix,preWB,postWB,exposure,hueFrac,satFactor,blackPt,lutMix,tt,ct,satPreserve);
+    const o=pipelineRGB(x/N,y/N,z/N,matrix,preWB,postWB,exposure,hueFrac,satFactor,blackPt,lutMix,tt,ct,satPreserve,targetedBands);
     out.push(o[0].toFixed(6)+' '+o[1].toFixed(6)+' '+o[2].toFixed(6));
   }
   return{text:out.join('\n')+'\n',name:'ChannelSwap_'+lookName+'.cube'};
