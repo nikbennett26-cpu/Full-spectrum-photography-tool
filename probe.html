@@ -1,0 +1,559 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Pipeline probe</title>
+<style>
+:root{--bg:#19191a;--panel:#221f1e;--panel2:#2a2624;--line:#3a3532;--ink:#e8e2dc;
+ --mute:#9a938d;--dim:#6b645f;--accent:#c85a2a;--num:#4fd6c0;--warn:#e0a92e;--bad:#d8503a;
+ --mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 system-ui,-apple-system,sans-serif;-webkit-text-size-adjust:100%}
+body{padding:14px 12px 60px;max-width:760px;margin:0 auto}
+h1{font:600 13px/1 var(--mono);letter-spacing:.16em;text-transform:uppercase;color:var(--accent);margin:0 0 4px}
+.sub{color:var(--mute);font-size:13px;margin:0 0 18px}
+section{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:14px;margin-bottom:12px}
+h2{font:600 12px/1 var(--mono);letter-spacing:.14em;text-transform:uppercase;color:var(--mute);margin:0 0 12px}
+label{display:block;font:500 11px/1 var(--mono);letter-spacing:.08em;text-transform:uppercase;color:var(--dim);margin:0 0 5px}
+input,select{width:100%;background:var(--panel2);border:1px solid var(--line);color:var(--ink);font:14px var(--mono);padding:9px 10px;border-radius:6px}
+input:focus,select:focus,button:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+button{background:var(--accent);color:#fff;border:0;font:600 13px/1 var(--mono);letter-spacing:.06em;padding:12px 14px;border-radius:7px;width:100%;cursor:pointer}
+button.ghost{background:transparent;border:1px solid var(--line);color:var(--mute)}
+button[disabled]{opacity:.45}
+.row{display:flex;gap:8px;margin-bottom:10px}.row>*{flex:1;min-width:0}
+.g3{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+.file{border:1px dashed var(--line);border-radius:8px;padding:16px;text-align:center;color:var(--mute);font:13px var(--mono)}
+.file input{display:none}
+.note{color:var(--mute);font-size:13px;margin:10px 0 0}
+.ok{color:var(--num)}.warn{color:var(--warn)}.bad{color:var(--bad)}
+table{width:100%;border-collapse:collapse;font:12px var(--mono)}
+th{text-align:left;color:var(--dim);font-weight:500;padding:5px 4px;border-bottom:1px solid var(--line)}
+td{padding:5px 4px;border-bottom:1px solid #2c2827}
+.sw{width:14px;height:14px;border-radius:3px;display:inline-block;vertical-align:-2px;border:1px solid #0006}
+.scroll{overflow-x:auto;-webkit-overflow-scrolling:touch}
+.tag{display:inline-block;font:11px var(--mono);padding:2px 6px;border-radius:4px;background:var(--panel2);color:var(--mute);margin:0 4px 4px 0}
+.hide{display:none}
+details summary{font:12px var(--mono);color:var(--mute);cursor:pointer;letter-spacing:.06em;text-transform:uppercase}
+details[open] summary{margin-bottom:10px}
+.bar{height:3px;background:var(--panel2);border-radius:2px;overflow:hidden;margin-top:10px}
+.bar i{display:block;height:100%;background:var(--accent);width:0;transition:width .12s}
+</style>
+</head>
+<body>
+
+<h1>Pipeline probe</h1>
+<p class="sub">Lifts <span style="font-family:var(--mono)">pipelineRGB</span> out of a build as text and runs it on its own &mdash; no page load, no WebGL. Solves backwards from an output colour, then shows which stage moved it.</p>
+
+<section>
+  <h2>1 &middot; Load a build</h2>
+  <label class="file" for="fileA" id="labA">Tap to choose index.html
+    <input type="file" id="fileA" accept=".html,.htm,.js,text/html"></label>
+  <p class="note" id="statA">No build loaded.</p>
+  <details style="margin-top:12px"><summary>Compare against a second build</summary>
+    <label class="file" for="fileB" id="labB">Tap to choose the other build
+      <input type="file" id="fileB" accept=".html,.htm,.js,text/html"></label>
+    <p class="note" id="statB">No second build.</p>
+  </details>
+</section>
+
+<section id="secParams" class="hide">
+  <h2>2 &middot; Settings</h2>
+  <label>Swap matrix &mdash; rows are output R, G, B</label>
+  <div class="g3" id="mat"></div>
+  <div class="row" style="margin-top:10px">
+    <div><label>Keep saturation</label><input type="number" id="satPreserve" value="1" step="0.05" min="0" max="1"></div>
+    <div><label>Exposure</label><input type="number" id="exposure" value="0" step="0.1"></div>
+  </div>
+  <div class="row">
+    <div><label>Hue</label><input type="number" id="hueFrac" value="0" step="0.01"></div>
+    <div><label>Saturation</label><input type="number" id="satFactor" value="1" step="0.05"></div>
+    <div><label>Black</label><input type="number" id="blackPt" value="0" step="0.01"></div>
+  </div>
+  <details><summary>More</summary>
+    <div class="row" style="margin-top:10px">
+      <div><label>LUT mix</label><input type="number" id="lutMix" value="0" step="0.05"></div>
+      <div><label>Temp</label><input type="number" id="tt" value="0" step="0.01"></div>
+      <div><label>Tint</label><input type="number" id="ct" value="0" step="0.01"></div>
+    </div>
+    <label>Pre gains</label><div class="g3" id="pre"></div>
+    <label style="margin-top:10px">Post gains</label><div class="g3" id="post"></div>
+  </details>
+</section>
+
+<section id="secSolve" class="hide">
+  <h2>3 &middot; Solve backwards</h2>
+  <label>Output colour you measured (0&ndash;255)</label>
+  <div class="g3">
+    <input type="number" id="tR" value="234"><input type="number" id="tG" value="163"><input type="number" id="tB" value="75">
+  </div>
+  <button id="btnSolve" style="margin-top:12px">Find the input that produces this</button>
+  <div class="bar"><i id="barSolve"></i></div>
+  <div id="solveOut"></div>
+</section>
+
+<section id="secTrace" class="hide">
+  <h2>4 &middot; Stage trace</h2>
+  <p class="note" style="margin:0 0 12px">Reruns the pixel with one stage neutralised at a time. Whichever stage changes the result most is the one moving it.</p>
+  <label>Input colour (0&ndash;255)</label>
+  <div class="g3">
+    <input type="number" id="pR" value="200"><input type="number" id="pG" value="30"><input type="number" id="pB" value="20">
+  </div>
+  <button id="btnTrace" style="margin-top:12px">Trace this pixel</button>
+  <div id="traceOut"></div>
+</section>
+
+<section id="secStrip" class="hide">
+  <h2>5 &middot; Probe strip</h2>
+  <p class="note" style="margin:0 0 12px">Deep red through saturated yellow, each hue pushed progressively further out of gamut. Anything landing on 0 or 255 is clamped.</p>
+  <button id="btnStrip">Run the strip</button>
+  <div id="stripOut"></div>
+  <button class="ghost hide" style="margin-top:10px" id="btnSave">Download results as JSON</button>
+</section>
+
+<script>
+"use strict";
+const $=id=>document.getElementById(id);
+
+/* ---------- source extraction ---------- */
+/* Pull named declarations out of JS source text without executing it.
+   Walks character by character so braces inside strings, comments, template
+   literals and regex literals don't throw the depth count off. */
+function scanTop(src){
+  const decls = {};          // name -> source text
+  let i = 0, depth = 0, paren = 0, n = src.length;
+  let prevSig = "";          // last significant char, for regex detection
+
+  function skipString(q){
+    i++;
+    while(i < n){
+      const c = src[i];
+      if(c === "\\"){ i += 2; continue; }
+      if(c === q){ i++; return; }
+      if(q === "`" && c === "$" && src[i+1] === "{"){
+        i += 2; let d = 1;
+        while(i < n && d > 0){
+          const k = src[i];
+          if(k === "'" || k === '"' || k === "`"){ skipString(k); continue; }
+          if(k === "{") d++;
+          if(k === "}") d--;
+          i++;
+        }
+        continue;
+      }
+      i++;
+    }
+  }
+  function skipComment(){
+    if(src[i+1] === "/"){ while(i < n && src[i] !== "\n") i++; return true; }
+    if(src[i+1] === "*"){ i += 2; while(i < n && !(src[i] === "*" && src[i+1] === "/")) i++; i += 2; return true; }
+    return false;
+  }
+  function maybeRegex(){
+    // a slash is a regex only where a value is expected
+    return prevSig === "" || "(,=:[!&|?{};+-*%~^<>".includes(prevSig) ||
+           /[^\w$)\]]$/.test(prevSig);
+  }
+  function skipRegex(){
+    i++; let cls = false;
+    while(i < n){
+      const c = src[i];
+      if(c === "\\"){ i += 2; continue; }
+      if(c === "[") cls = true;
+      else if(c === "]") cls = false;
+      else if(c === "/" && !cls){ i++; while(i < n && /[a-z]/i.test(src[i])) i++; return; }
+      else if(c === "\n") return;
+      i++;
+    }
+  }
+
+  while(i < n){
+    const c = src[i];
+    if(c === "'" || c === '"' || c === "`"){ skipString(c); prevSig = "x"; continue; }
+    if(c === "/"){
+      if(skipComment()) continue;
+      if(maybeRegex()){ skipRegex(); prevSig = "x"; continue; }
+      i++; prevSig = "/"; continue;
+    }
+    if(c === "(") paren++;
+    if(c === ")") paren--;
+    if(c === "{") depth++;
+    if(c === "}") depth--;
+
+    if(depth === 0 && paren === 0 && /[A-Za-z_$]/.test(c) && !/[\w$.]/.test(src[i-1] || " ")){
+      const rest = src.slice(i);
+      let m = /^function\s*\*?\s*([A-Za-z_$][\w$]*)\s*\(/.exec(rest);
+      if(m){
+        const end = matchBody(src, i);
+        if(end > i){ decls[m[1]] = src.slice(i, end); i = end; prevSig = "}"; continue; }
+      }
+      m = /^(?:const|let|var)\s+([A-Za-z_$][\w$]*)\s*=/.exec(rest);
+      if(m){
+        const end = stmtEnd(src, i);
+        if(end > i){
+          const text = src.slice(i, end);
+          // `const A=1, B=2;` declares both names but is one statement
+          for(const nm of declNames(text)) decls[nm] = text;
+          i = end; prevSig = ";"; continue;
+        }
+      }
+    }
+    if(!/\s/.test(c)) prevSig = c;
+    i++;
+  }
+  return decls;
+}
+
+/* From `function name(...)` forward to the closing brace of its body. */
+function matchBody(src, start){
+  let i = src.indexOf("{", src.indexOf("(", start));
+  if(i < 0) return -1;
+  let d = 0, n = src.length;
+  while(i < n){
+    const c = src[i];
+    if(c === "'" || c === '"' || c === "`"){ i = strEnd(src, i); continue; }
+    if(c === "/" && src[i+1] === "/"){ while(i < n && src[i] !== "\n") i++; continue; }
+    if(c === "/" && src[i+1] === "*"){ i = src.indexOf("*/", i) + 2; continue; }
+    if(c === "{") d++;
+    if(c === "}"){ d--; if(d === 0) return i + 1; }
+    i++;
+  }
+  return -1;
+}
+/* From `const name =` forward to the semicolon or newline that ends it. */
+function stmtEnd(src, start){
+  let i = start, d = 0, n = src.length;
+  while(i < n){
+    const c = src[i];
+    if(c === "'" || c === '"' || c === "`"){ i = strEnd(src, i); continue; }
+    if(c === "/" && src[i+1] === "/"){ while(i < n && src[i] !== "\n") i++; continue; }
+    if(c === "/" && src[i+1] === "*"){ i = src.indexOf("*/", i) + 2; continue; }
+    if("([{".includes(c)) d++;
+    if(")]}".includes(c)) d--;
+    if(d === 0 && c === ";") return i + 1;
+    if(d === 0 && c === "\n" && i > start + 3){
+      const nx = /^\s*(?:const|let|var|function|\/\/|\/\*)/.test(src.slice(i));
+      if(nx) return i;
+    }
+    i++;
+  }
+  return n;
+}
+function strEnd(src, i){
+  const q = src[i]; i++;
+  while(i < src.length){
+    if(src[i] === "\\"){ i += 2; continue; }
+    if(src[i] === q) return i + 1;
+    i++;
+  }
+  return i;
+}
+
+
+/* Every name a `const A=1, B=2;` statement introduces, at declarator depth. */
+function declNames(text){
+  const out = [];
+  let i = text.search(/(?:const|let|var)\s/);
+  if(i < 0) return out;
+  i = text.indexOf(" ", i) + 1;
+  let d = 0, expect = true, buf = "";
+  for(; i < text.length; i++){
+    const c = text[i];
+    if("([{".includes(c)) d++;
+    else if(")]}".includes(c)) d--;
+    if(d > 0) continue;
+    if(expect && /[A-Za-z_$]/.test(c) && buf === ""){ buf = c; continue; }
+    if(buf && /[\w$]/.test(c)){ buf += c; continue; }
+    if(buf){ out.push(buf); buf = ""; expect = false; }
+    if(c === ",") expect = true;
+    if(c === ";") break;
+  }
+  if(buf) out.push(buf);
+  return out;
+}
+
+/* Which of the available names does this chunk of source refer to? */
+function refs(code, names){
+  const out = new Set();
+  const ids = code.match(/[A-Za-z_$][\w$]*/g) || [];
+  for(const id of ids) if(names.has(id)) out.add(id);
+  return out;
+}
+/* Walk outward from a root declaration collecting everything it needs. */
+function collect(decls, root){
+  const names = new Set(Object.keys(decls));
+  if(!names.has(root)) return null;
+  const need = new Set([root]);
+  const queue = [root];
+  while(queue.length){
+    const cur = queue.pop();
+    for(const r of refs(decls[cur], names))
+      if(!need.has(r)){ need.add(r); queue.push(r); }
+  }
+  // constants first so they exist before any function runs
+  const list = [...need];
+  const seen = new Set();
+  const pick = pred => list.filter(k => pred(decls[k].trim()))
+    .map(k => decls[k]).filter(t => seen.has(t) ? false : (seen.add(t), true));
+  const consts = pick(t => !/^function\b/.test(t));
+  const funcs  = pick(t =>  /^function\b/.test(t));
+  return { names: list, code: consts.concat(funcs).join("\n;\n") };
+}
+
+/* ---------- inputs ---------- */
+const IDENT=[1,0,0,0,1,0,0,0,1];
+function grid(host,vals){host.innerHTML="";vals.forEach(v=>{const e=document.createElement("input");
+  e.type="number";e.step=".01";e.value=v;host.appendChild(e);});}
+const readGrid=h=>[...h.querySelectorAll("input")].map(e=>+e.value||0);
+grid($("mat"),IDENT);grid($("pre"),[1,1,1]);grid($("post"),[1,1,1]);
+
+/* ---------- loading ---------- */
+const builds={A:null,B:null};
+const ROOT="pipelineRGB";
+
+function loadBuild(slot,file,labEl,statEl){
+  statEl.textContent="Reading…";statEl.className="note";
+  const rd=new FileReader();
+  rd.onerror=()=>{statEl.textContent="Could not read that file.";statEl.className="note bad";};
+  rd.onload=()=>{
+    let text=rd.result;
+    const scripts=[...text.matchAll(/<script\b[^>]*>([\s\S]*?)<\/script>/gi)].map(m=>m[1]);
+    const src=scripts.length?scripts.join("\n;\n"):text;
+    let decls,bundle;
+    try{ decls=scanTop(src); bundle=collect(decls,ROOT); }
+    catch(e){ statEl.innerHTML="Could not read the source: "+e.message; statEl.className="note bad"; return; }
+    if(!bundle){
+      statEl.innerHTML="No top-level <b>"+ROOT+"</b> in that file. "+
+        (Object.keys(decls).length? "Found "+Object.keys(decls).length+" other declarations, so the file parsed &mdash; "+ROOT+" may sit inside a module or a closure."
+        : "Nothing parsed at all &mdash; is this the right file?");
+      statEl.className="note bad"; return;
+    }
+    let api;
+    try{ api=new Function(bundle.code+"\nreturn {"+bundle.names.filter(n=>/^[A-Za-z_$][\w$]*$/.test(n)).join(",")+"};")(); }
+    catch(e){
+      statEl.innerHTML="Extracted "+bundle.names.length+" declarations but they wouldn't run: "+e.message+
+        "<br><span style=\"color:var(--dim)\">Probably a dependency that lives inside a closure.</span>";
+      statEl.className="note bad"; return;
+    }
+    if(typeof api[ROOT]!=="function"){statEl.textContent=ROOT+" didn't come out as a function.";statEl.className="note bad";return;}
+    const b={name:file.name,api,fn:api[ROOT]};
+    b.params=signature(b.fn);
+    b.domain=detectDomain(b);
+    builds[slot]=b;
+    labEl.textContent=file.name;
+    statEl.innerHTML='<span class="ok">Ready.</span> '+bundle.names.length+" declarations pulled in, "+
+      b.params.length+" parameters, values in "+(b.domain===1?"0&ndash;1":"0&ndash;255")+".<br>"+
+      bundle.names.slice(0,14).map(n=>'<span class="tag">'+n+"</span>").join("")+
+      (bundle.names.length>14?'<span class="tag">+'+(bundle.names.length-14)+" more</span>":"");
+    onReady();
+  };
+  rd.readAsText(file);
+}
+
+function signature(fn){const s=fn.toString();
+  return s.slice(s.indexOf("(")+1,s.indexOf(")")).split(",").map(x=>x.trim().split("=")[0]).filter(Boolean);}
+
+/* Feed a mid grey through and see which scale returns something grey-ish,
+   rather than guessing whether the pipeline works in 0-1 or 0-255. */
+function detectDomain(b){
+  for(const dom of [1,255]){
+    try{const m=dom===1?.5:128;
+      const o=call(b,[m,m,m],neutral(),dom);
+      if(o&&o.every(v=>isFinite(v)&&v>=0&&v<=dom*1.05)&&o.some(v=>v>dom*.15))return dom;
+    }catch(e){}
+  }
+  return 1;
+}
+
+/* ---------- calling ---------- */
+function neutral(){return{matrix:IDENT.slice(),pre:[1,1,1],post:[1,1,1],exposure:0,hueFrac:0,
+  satFactor:1,blackPt:0,lutMix:0,tt:0,ct:0,satPreserve:1,lumPreserve:1};}
+function uiSettings(){const sp=+$("satPreserve").value;
+  return{matrix:readGrid($("mat")),pre:readGrid($("pre")),post:readGrid($("post")),
+    exposure:+$("exposure").value,hueFrac:+$("hueFrac").value,satFactor:+$("satFactor").value,
+    blackPt:+$("blackPt").value,lutMix:+$("lutMix").value,tt:+$("tt").value,ct:+$("ct").value,
+    satPreserve:sp,lumPreserve:sp};}
+/* Arguments are matched to the live signature by name, so a build with a
+   different parameter order still runs correctly. */
+function call(b,rgb,st){
+  const args=b.params.map((p,i)=>i<3?rgb[i]:(p in st?st[p]:0));
+  const o=b.fn.apply(null,args);
+  return o?[o[0],o[1],o[2]]:null;
+}
+function run255(b,rgb,st){
+  const s=b.domain===1?1/255:1, k=b.domain===1?255:1;
+  const o=call(b,[rgb[0]*s,rgb[1]*s,rgb[2]*s],st);
+  return o?[o[0]*k,o[1]*k,o[2]*k]:null;
+}
+
+/* ---------- colour ---------- */
+const sat=p=>{const mx=Math.max.apply(null,p),mn=Math.min.apply(null,p);return mx<=0?0:(mx-mn)/mx*100;};
+const lum=p=>.2126*p[0]+.7152*p[1]+.0722*p[2];
+function hue(p){const[r,g,b]=p,mx=Math.max(r,g,b),mn=Math.min(r,g,b),d=mx-mn;
+  if(d<1e-9)return 0;let h;if(mx===r)h=((g-b)/d)%6;else if(mx===g)h=(b-r)/d+2;else h=(r-g)/d+4;
+  h*=60;return h<0?h+360:h;}
+const dist=(a,b)=>Math.hypot(a[0]-b[0],a[1]-b[1],a[2]-b[2]);
+const fmt=p=>p.map(v=>Math.round(v)).join(", ");
+const cl=v=>v<0?0:v>255?255:Math.round(v);
+const css=p=>"rgb("+p.map(cl).join(",")+")";
+const yield_=()=>new Promise(r=>setTimeout(r,0));
+
+/* ---------- solve ---------- */
+/* Coarse grid over the whole cube, then refinement passes that shrink the
+   window around the best point. Chunked so the page stays responsive. */
+async function solve(b,target,st,onProg){
+  let lo=[0,0,0],hi=[255,255,255],best=null,N=16;
+  for(let pass=0;pass<5;pass++){
+    let lb=null;const step=lo.map((v,i)=>(hi[i]-lo[i])/(N-1));
+    for(let i=0;i<N;i++){
+      for(let j=0;j<N;j++)for(let k=0;k<N;k++){
+        const inp=[lo[0]+i*step[0],lo[1]+j*step[1],lo[2]+k*step[2]];
+        let out;try{out=run255(b,inp,st);}catch(e){continue;}
+        if(!out||!out.every(isFinite))continue;
+        const d=dist(out,target);
+        if(!lb||d<lb.d)lb={inp,out,d};
+      }
+      if((i&3)===0){onProg((pass+i/N)/5);await yield_();}
+    }
+    if(!lb)break;
+    if(!best||lb.d<best.d)best=lb;
+    const span=step.map(s=>s*1.6);
+    lo=best.inp.map((v,i)=>Math.max(0,v-span[i]));
+    hi=best.inp.map((v,i)=>Math.min(255,v+span[i]));
+    N=12;
+  }
+  onProg(1);
+  return best;
+}
+/* Where a channel clamps the pipeline is many-to-one, so more than one input
+   reaches the same output. Worth saying so rather than presenting one answer
+   as if it were the only one. */
+async function alternates(b,target,st,found){
+  let count=0,example=null;
+  for(let i=0;i<=255;i+=9){
+    for(let j=0;j<=255;j+=9)for(let k=0;k<=255;k+=9){
+      const inp=[i,j,k];
+      if(dist(inp,found)<12)continue;
+      let out;try{out=run255(b,inp,st);}catch(e){continue;}
+      if(out&&dist(out,target)<1.5){count++;if(!example)example=inp;}
+    }
+    if((i/9|0)%6===0)await yield_();
+  }
+  return{count,example};
+}
+
+$("btnSolve").onclick=async()=>{
+  const b=builds.A,st=uiSettings();
+  const target=[+$("tR").value,+$("tG").value,+$("tB").value];
+  const btn=$("btnSolve");btn.disabled=true;$("solveOut").innerHTML="";
+  const res=await solve(b,target,st,f=>{$("barSolve").style.width=(f*100)+"%";});
+  if(!res){$("solveOut").innerHTML='<p class="note bad">The pipeline returned nothing usable.</p>';btn.disabled=false;return;}
+  const exact=res.d<1.5;
+  let h='<div class="scroll"><table style="margin-top:14px"><tr><th></th><th>RGB</th><th>Sat</th><th>Hue</th><th>Y</th></tr>'+
+    row("input",res.inp)+row("output",res.out)+row("you wanted",target)+"</table></div>";
+  h+=exact?'<p class="note ok">Matched to within '+res.d.toFixed(1)+' levels.</p>'
+    :'<p class="note warn">Closest reachable output is '+res.d.toFixed(1)+' levels away. With these settings no input produces your target &mdash; which is itself a result: either the settings are wrong, or the colour is being clamped.</p>';
+  $("solveOut").innerHTML=h;
+  if(exact&&res.out.some(v=>v<=.01||v>=254.99)){
+    const alt=await alternates(b,target,st,res.inp);
+    if(alt.count>0)$("solveOut").innerHTML+='<p class="note warn">A channel is clamped, so this output has more than one possible input &mdash; '+fmt(alt.example)+' reaches it too. Treat the value above as one candidate.</p>';
+  }
+  $("solveOut").innerHTML+='<button class="ghost" style="margin-top:10px" id="btnUse">Send this input to the trace</button>';
+  $("btnUse").onclick=()=>{$("pR").value=Math.round(res.inp[0]);$("pG").value=Math.round(res.inp[1]);
+    $("pB").value=Math.round(res.inp[2]);$("secTrace").scrollIntoView({behavior:"smooth"});};
+  btn.disabled=false;
+};
+function row(label,p){return "<tr><td><span class=\"sw\" style=\"background:"+css(p)+"\"></span> "+label+
+  "</td><td>"+fmt(p)+"</td><td>"+sat(p).toFixed(0)+"%</td><td>"+hue(p).toFixed(0)+"&deg;</td><td>"+lum(p).toFixed(0)+"</td></tr>";}
+
+/* ---------- trace ---------- */
+const STAGES=[
+  ["Swap matrix",s=>({...s,matrix:IDENT.slice()})],
+  ["Pre gains",s=>({...s,pre:[1,1,1]})],
+  ["Post gains",s=>({...s,post:[1,1,1]})],
+  ["Exposure",s=>({...s,exposure:0})],
+  ["Temp / tint",s=>({...s,tt:0,ct:0})],
+  ["Hue rotation",s=>({...s,hueFrac:0})],
+  ["Saturation",s=>({...s,satFactor:1})],
+  ["Black point",s=>({...s,blackPt:0})],
+  ["LUT",s=>({...s,lutMix:0})],
+  ["Keep saturation",s=>({...s,satPreserve:0,lumPreserve:0})]
+];
+$("btnTrace").onclick=()=>{
+  const b=builds.A,st=uiSettings();
+  const inp=[+$("pR").value,+$("pG").value,+$("pB").value];
+  let full;try{full=run255(b,inp,st);}catch(e){full=null;}
+  if(!full){$("traceOut").innerHTML='<p class="note bad">No output for that input.</p>';return;}
+  const rows=STAGES.map(([name,mod])=>{
+    let out;try{out=run255(b,inp,mod(st));}catch(e){out=null;}
+    return out?{name,out,d:dist(out,full),dB:out[2]-full[2]}:null;
+  }).filter(Boolean).sort((a,b)=>b.d-a.d);
+  let h='<div class="scroll"><table style="margin-top:14px"><tr><th>Stage removed</th><th>Result</th><th>Moves</th><th>&Delta;B</th></tr>'+
+    '<tr><td><span class="sw" style="background:'+css(full)+'"></span> nothing</td><td>'+fmt(full)+"</td><td>&mdash;</td><td>&mdash;</td></tr>";
+  rows.forEach(r=>{const c=r.d>20?"bad":r.d>5?"warn":"";
+    h+='<tr><td><span class="sw" style="background:'+css(r.out)+'"></span> '+r.name+"</td><td>"+fmt(r.out)+
+      '</td><td class="'+c+'">'+r.d.toFixed(1)+'</td><td class="'+c+'">'+(r.dB>0?"+":"")+r.dB.toFixed(0)+"</td></tr>";});
+  h+="</table></div>";
+  const top=rows[0];
+  h+=top&&top.d>5?'<p class="note">Biggest contributor: <b>'+top.name+"</b> &mdash; removing it moves the result "+
+      top.d.toFixed(0)+" levels and blue by "+top.dB.toFixed(0)+".</p>"
+    :'<p class="note warn">No single stage moves this pixel much. Whatever you\'re chasing isn\'t in these controls.</p>';
+  if(full.some(v=>v<=.01||v>=254.99))h+='<p class="note bad">This pixel lands on a channel limit &mdash; it is being clamped.</p>';
+  if(builds.B){let o;try{o=run255(builds.B,inp,st);}catch(e){}
+    if(o)h+='<p class="note">Second build gives <b>'+fmt(o)+"</b>, "+dist(o,full).toFixed(1)+" levels away.</p>";}
+  $("traceOut").innerHTML=h;
+};
+
+/* ---------- strip ---------- */
+function hsv(h,s,v){const c=v*s,x=c*(1-Math.abs((h/60)%2-1)),m=v-c;let r,g,b;
+  if(h<60)[r,g,b]=[c,x,0];else if(h<120)[r,g,b]=[x,c,0];else if(h<180)[r,g,b]=[0,c,x];
+  else if(h<240)[r,g,b]=[0,x,c];else if(h<300)[r,g,b]=[x,0,c];else[r,g,b]=[c,0,x];
+  return[r+m,g+m,b+m];}
+let lastStrip=null;
+$("btnStrip").onclick=()=>{
+  const b=builds.A,st=uiSettings(),rows=[];
+  for(const hu of [0,12,25,40,55])for(const p of [.55,.75,.9,1]){
+    const inp=hsv(hu,1,p).map(v=>v*255);
+    let out;try{out=run255(b,inp,st);}catch(e){continue;}
+    if(!out)continue;
+    const r={inp,out,clip:out.some(v=>v<=.01||v>=254.99),
+      dSat:sat(out)-sat(inp),dHue:hue(out)-hue(inp),dLum:lum(out)-lum(inp)};
+    if(builds.B){try{r.outB=run255(builds.B,inp,st);}catch(e){}}
+    rows.push(r);
+  }
+  if(!rows.length){$("stripOut").innerHTML='<p class="note bad">No samples ran.</p>';return;}
+  lastStrip=rows;
+  let h='<div class="scroll"><table style="margin-top:14px"><tr><th>In</th><th>Out</th><th>&Delta;Sat</th><th>&Delta;Hue</th><th>&Delta;Y</th>'+(builds.B?"<th>vs B</th>":"")+"</tr>";
+  rows.forEach(r=>{let dh=r.dHue;if(dh>180)dh-=360;if(dh<-180)dh+=360;
+    h+='<tr><td><span class="sw" style="background:'+css(r.inp)+'"></span> '+fmt(r.inp)+
+      '</td><td><span class="sw" style="background:'+css(r.out)+'"></span> '+fmt(r.out)+
+      (r.clip?' <span class="bad">clip</span>':"")+
+      '</td><td class="'+(r.dSat<-10?"bad":r.dSat<-3?"warn":"")+'">'+(r.dSat>0?"+":"")+r.dSat.toFixed(0)+
+      '</td><td class="'+(Math.abs(dh)>3?"warn":"")+'">'+(dh>0?"+":"")+dh.toFixed(1)+"&deg;"+
+      "</td><td>"+(r.dLum>0?"+":"")+r.dLum.toFixed(0)+"</td>"+
+      (builds.B?"<td>"+(r.outB?dist(r.outB,r.out).toFixed(1):"&mdash;")+"</td>":"")+"</tr>";});
+  h+="</table></div>";
+  const clips=rows.filter(r=>r.clip).length;
+  const worst=rows.reduce((a,r)=>r.dSat<a.dSat?r:a,rows[0]);
+  h+='<p class="note">'+clips+" of "+rows.length+" samples hit a channel limit. Worst saturation loss is "+
+    worst.dSat.toFixed(0)+" points, on "+fmt(worst.inp)+".</p>";
+  $("stripOut").innerHTML=h;
+  $("btnSave").classList.remove("hide");
+};
+$("btnSave").onclick=()=>{
+  if(!lastStrip)return;
+  const payload={generated:new Date().toISOString(),build:builds.A.name,
+    compared:builds.B?builds.B.name:null,settings:uiSettings(),
+    samples:lastStrip.map(r=>({in:r.inp.map(Math.round),out:r.out.map(v=>+v.toFixed(2)),
+      clipped:r.clip,dSat:+r.dSat.toFixed(2),dLum:+r.dLum.toFixed(2)}))};
+  const url=URL.createObjectURL(new Blob([JSON.stringify(payload,null,2)],{type:"application/json"}));
+  const a=document.createElement("a");a.href=url;a.download="gamut-probe.json";a.click();
+  setTimeout(()=>URL.revokeObjectURL(url),1000);
+};
+
+function onReady(){["secParams","secSolve","secTrace","secStrip"].forEach(i=>$(i).classList.remove("hide"));}
+$("fileA").onchange=e=>e.target.files[0]&&loadBuild("A",e.target.files[0],$("labA"),$("statA"));
+$("fileB").onchange=e=>e.target.files[0]&&loadBuild("B",e.target.files[0],$("labB"),$("statB"));
+</script>
+</body>
+</html>
