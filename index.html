@@ -1389,6 +1389,13 @@ const FS_SOURCE = `
       float delta = angDelta(H0, u_bandHue[i]);
       float t = clamp(1.0 - abs(delta) / max(u_bandWidth[i], 1e-3), 0.0, 1.0);
       float w = t * t * (3.0 - 2.0 * t);   // smoothstep, so the band edge is invisible
+      /* Weighted by how chromatic the pixel is, not only how close its hue is
+         to the band. Hue is numerically meaningless on a near-neutral pixel,
+         so selecting on hue angle alone grabbed a random scatter of dark
+         foliage and shadow where the hue is just noise — exactly the speckle
+         the selection preview was drawing. Same threshold the solve uses, so
+         both agree on what counts as a real colour. */
+      w *= smoothstep(0.010, 0.050, C0);
       if (i == u_bandPreview) g_bandW = w;
       if (w <= 0.0) continue;
       H += u_bandDH[i] * w;
@@ -5728,7 +5735,11 @@ function bandRenderList() {
     };
     head.appendChild(rm);
     row.appendChild(head);
-    row.addEventListener('pointerdown', () => bandShowPreview(targetedBands.indexOf(band)));
+    /* Preview was also firing on any touch anywhere in the row, so it came up
+       for Hue, Saturation and Lightness too — sitting over the very colour
+       change being made, which is what read as the hue lagging. It is now
+       raised only from the Width slider below, where "which pixels did I
+       grab" is actually the question being asked. */
     if (band.collapsed) { wrap.appendChild(row); return; }
 
     // key, min, max, step, value, format, apply
@@ -5755,7 +5766,7 @@ function bandRenderList() {
            drop it shortly after. Tying it to the interaction rather than a
            toggle means it appears exactly when it answers a question — what
            did I just grab — and is never left on to be mistaken for the edit. */
-        bandShowPreview(targetedBands.indexOf(band));
+        if (key === 'width') bandShowPreview(targetedBands.indexOf(band));
         render();
       });
       wireSliderGesture(el);
@@ -6009,7 +6020,8 @@ function targetedHSLF(r,g,b,bands,keepSat){
     const band=bands[i];
     const delta=angDeltaF(H0,band.hue);
     const t=Math.max(0,Math.min(1,1-Math.abs(delta)/Math.max(band.width,1e-3)));
-    const w=t*t*(3-2*t);
+    const _cw=Math.max(0,Math.min(1,(C0-0.010)/0.040));
+    const w=t*t*(3-2*t)*(_cw*_cw*(3-2*_cw));   // chroma-weighted — see shader
     if(w<=0) continue;
     H+=band.dH*w;
     C=Math.max(0,C*(1+band.dS*w));
