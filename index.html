@@ -6909,6 +6909,32 @@ const RAW_EXT = ['CR2','CR3','NEF','ARW','SR2','ORF','ORI','RW2','PEF','RAF','SR
    that likely does not exist in the same shape here, unmeasured. */
 function rawEngineResultToCanvas(res, doCamSpaceSwap, doCamSpaceSwapMatrix, doCamSpaceSwapName) {
   const srcW = res.width, srcH = res.height, R = res.R, G = res.G, B = res.B;
+  // TEMP DIAGNOSTIC -- remove once X-Trans black-image bug is found
+  {
+    let rMax = 0, gMax = 0, bMax = 0, rSum = 0;
+    for (let i = 0; i < R.length; i += 997) { // sparse sample, not every pixel
+      if (R[i] > rMax) rMax = R[i];
+      if (G[i] > gMax) gMax = G[i];
+      if (B[i] > bMax) bMax = B[i];
+      rSum += R[i];
+    }
+    console.log('XTRANS DEBUG: srcW=', srcW, 'srcH=', srcH,
+                'R.length=', R.length, 'rMax=', rMax, 'gMax=', gMax, 'bMax=', bMax,
+                'rSum=', rSum, 'R[0]=', R[0], 'R[mid]=', R[R.length >> 1]);
+  }
+  // TEMP DIAGNOSTIC -- remove once X-Trans black-image bug is found
+  {
+    let rMax = 0, gMax = 0, bMax = 0, rSum = 0;
+    for (let i = 0; i < R.length; i += 997) { // sparse sample, not every pixel
+      if (R[i] > rMax) rMax = R[i];
+      if (G[i] > gMax) gMax = G[i];
+      if (B[i] > bMax) bMax = B[i];
+      rSum += R[i];
+    }
+    console.log('XTRANS DEBUG: srcW=', srcW, 'srcH=', srcH,
+                'R.length=', R.length, 'rMax=', rMax, 'gMax=', gMax, 'bMax=', bMax,
+                'rSum=', rSum, 'R[0]=', R[0], 'R[mid]=', R[R.length >> 1]);
+  }
   /* Downscaled HERE, before the 8-bit buffer or the PNG encode exist, not
      left to the app's usual WORKING_MAX_DIM resize that runs later on the
      loaded Image. That resize only kicks in once a blob already exists \u2014
