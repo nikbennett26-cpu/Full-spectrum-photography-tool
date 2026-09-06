@@ -1,23 +1,14 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
-//
-// End-to-end smoke test: LibRaw open+unpack -> real X-Trans sensor data
-// -> xtrans_fast_demosaic_port (the verified port in
-// src/amaze/xtrans_fast_port.cc). Not the final production wrapper —
-// that's src/demosaic_xtrans_fast.cpp per the port's own header comment,
-// which will also need black-level subtraction and [0,1] normalisation.
-// This is purely "does the whole pipe work end to end on a real file."
-//
-// Usage: xtrans_e2e_test <path-to.RAF>
-
 #include <cstdio>
 #include <cstdlib>
 #include <cmath>
+#include <vector>
+#include <algorithm>
 #include <libraw/libraw.h>
 
 #define STB_IMAGE_WRITE_IMPLEMENTATION
 #include "stb_image_write.h"
 
-// From xtrans_fast_port.cc
 void xtrans_fast_demosaic_port(int w, int h, const int xtrans[6][6],
                                 float* const* rawData,
                                 float** red, float** green, float** blue);
@@ -48,8 +39,7 @@ int main(int argc, char** argv)
     printf("filters: %u (9 = X-Trans expected)\n", processor.imgdata.idata.filters);
 
     if (processor.imgdata.idata.filters != 9) {
-        fprintf(stderr, "Not an X-Trans sensor (filters=%u) — this test only "
-                        "handles X-Trans files.\n", processor.imgdata.idata.filters);
+        fprintf(stderr, "Not an X-Trans sensor (filters=%u)\n", processor.imgdata.idata.filters);
         return 1;
     }
 
@@ -64,9 +54,7 @@ int main(int argc, char** argv)
 
     const ushort* raw = processor.imgdata.rawdata.raw_image;
     if (!raw) {
-        fprintf(stderr, "raw_image is null — this file may use a color4_image "
-                        "path instead (compressed/other layout). Needs "
-                        "further investigation before proceeding.\n");
+        fprintf(stderr, "raw_image is null\n");
         return 1;
     }
 
@@ -101,26 +89,31 @@ int main(int argc, char** argv)
 
     xtrans_fast_demosaic_port(width, height, xtrans, rawRows, redRows, greenRows, blueRows);
 
-    // --- Real production step: black level, white balance, colour matrix ---
-    const float black = (float)processor.imgdata.color.black;
-    const float maximum = (float)processor.imgdata.color.maximum;
+    const unsigned* cblack = processor.imgdata.color.cblack;
     const float* pre_mul = processor.imgdata.color.pre_mul;
+    const float* cam_mul = processor.imgdata.color.cam_mul;
     const float (*rgb_cam)[4] = processor.imgdata.color.rgb_cam;
 
-    printf("\nblack=%.1f maximum=%.1f\n", black, maximum);
+    printf("\ncblack: R=%u G=%u B=%u G2=%u\n",
+           cblack[0], cblack[1], cblack[2], cblack[3]);
     printf("pre_mul: R=%.4f G=%.4f B=%.4f G2=%.4f\n",
            pre_mul[0], pre_mul[1], pre_mul[2], pre_mul[3]);
+    printf("cam_mul (as-shot, from file metadata): R=%.4f G=%.4f B=%.4f G2=%.4f\n",
+           cam_mul[0], cam_mul[1], cam_mul[2], cam_mul[3]);
     printf("rgb_cam:\n");
     for (int r = 0; r < 3; r++)
         printf("  %.4f %.4f %.4f %.4f\n", rgb_cam[r][0], rgb_cam[r][1], rgb_cam[r][2], rgb_cam[r][3]);
 
-    const float range = (maximum - black) > 1.f ? (maximum - black) : 1.f;
+    const float wbR = cam_mul[0] / cam_mul[1];
+    const float wbG = 1.f;
+    const float wbB = cam_mul[2] / cam_mul[1];
+    printf("normalised as-shot WB gain: R=%.4f G=%.4f B=%.4f\n", wbR, wbG, wbB);
 
     for (int row = 0; row < height; row++) {
         for (int col = 0; col < width; col++) {
-            float rr = (redRows[row][col]   - black) * pre_mul[0];
-            float gg = (greenRows[row][col] - black) * pre_mul[1];
-            float bb = (blueRows[row][col]  - black) * pre_mul[2];
+            float rr = (redRows[row][col]   - (float)cblack[0]) * wbR;
+            float gg = (greenRows[row][col] - (float)cblack[1]) * wbG;
+            float bb = (blueRows[row][col]  - (float)cblack[2]) * wbB;
             if (rr < 0.f) rr = 0.f;
             if (gg < 0.f) gg = 0.f;
             if (bb < 0.f) bb = 0.f;
@@ -134,7 +127,27 @@ int main(int argc, char** argv)
             blueRows[row][col]  = outB;
         }
     }
-    // --- end production step ---
+
+    std::vector<float> luminances;
+    luminances.reserve((size_t)width * height);
+    for (int row = 0; row < height; row++) {
+        for (int col = 0; col < width; col++) {
+            float lum = 0.2126f * redRows[row][col] + 0.7152f * greenRows[row][col] + 0.0722f * blueRows[row][col];
+            luminances.push_back(lum);
+        }
+    }
+    std::sort(luminances.begin(), luminances.end());
+    size_t idx995 = (size_t)(luminances.size() * 0.995);
+    if (idx995 >= luminances.size()) idx995 = luminances.size() - 1;
+    const float whitePoint = luminances[idx995] > 1.f ? luminances[idx995] : 1.f;
+
+    size_t idx005 = (size_t)(luminances.size() * 0.005);
+    const float blackPoint = luminances[idx005];
+
+    const float range = (whitePoint - blackPoint) > 1.f ? (whitePoint - blackPoint) : 1.f;
+
+    printf("\nmeasured black point (0.5th pct): %.1f, white point (99.5th pct): %.1f\n",
+           blackPoint, whitePoint);
 
     int cy = height / 2, cx = width / 2;
     printf("\ncentre pixel (row=%d, col=%d):\n", cy, cx);
@@ -154,9 +167,9 @@ int main(int argc, char** argv)
         for (int row = 0; row < height; row++) {
             for (int col = 0; col < width; col++) {
                 size_t idx = ((size_t)row * width + col) * 3;
-                float r = redRows[row][col]   / range;
-                float g = greenRows[row][col] / range;
-                float b = blueRows[row][col]  / range;
+                float r = (redRows[row][col]   - blackPoint) / range;
+                float g = (greenRows[row][col] - blackPoint) / range;
+                float b = (blueRows[row][col]  - blackPoint) / range;
                 if (r < 0.f) r = 0.f; if (r > 1.f) r = 1.f;
                 if (g < 0.f) g = 0.f; if (g > 1.f) g = 1.f;
                 if (b < 0.f) b = 0.f; if (b > 1.f) b = 1.f;
@@ -170,8 +183,7 @@ int main(int argc, char** argv)
         delete[] png;
 
         if (ok) {
-            printf("\nWrote %s (%dx%d PNG, black/WB/colour-matrix applied, gamma 1/2.2)\n",
-                   argv[2], width, height);
+            printf("\nWrote %s (%dx%d PNG)\n", argv[2], width, height);
         } else {
             fprintf(stderr, "stbi_write_png failed for %s\n", argv[2]);
         }
