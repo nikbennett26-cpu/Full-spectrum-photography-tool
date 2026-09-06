@@ -1,7 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 // Copyright (C) 2026
-//
-// C API exposed to glue/libraw-gpl3.mjs.
 
 #ifdef __EMSCRIPTEN__
 #include <emscripten/emscripten.h>
@@ -35,6 +33,9 @@ int lr_open(const uint8_t* data, int len)
     if (proc->unpack() != LIBRAW_SUCCESS) {
         delete proc;
         return 0;
+    }
+    if (proc->raw2image() == LIBRAW_SUCCESS) {
+        proc->subtract_black();
     }
     int h = g_nextHandle++;
     g_handles[h] = proc;
@@ -145,14 +146,15 @@ int lr_demosaic(int h, int qual, float* outR, float* outG, float* outB)
     xtrans_fast_demosaic_port(width, height, xtrans, rawRows.data(),
                                redRows.data(), greenRows.data(), blueRows.data());
 
+    const float black = (float)proc->imgdata.color.black;
     const unsigned* cblack = proc->imgdata.color.cblack;
     const float white = (float)proc->imgdata.color.maximum;
-    const float scale = (white > 1.f) ? 1.f / white : 1.f;
+    const float scale = (white - black > 1.f) ? 1.f / (white - black) : 1.f;
     const size_t n = (size_t)width * height;
     for (size_t i = 0; i < n; i++) {
-        outR[i] -= (float)cblack[0]; if (outR[i] < 0.f) outR[i] = 0.f;
-        outG[i] -= (float)cblack[1]; if (outG[i] < 0.f) outG[i] = 0.f;
-        outB[i] -= (float)cblack[2]; if (outB[i] < 0.f) outB[i] = 0.f;
+        outR[i] -= (black + (float)cblack[0]); if (outR[i] < 0.f) outR[i] = 0.f;
+        outG[i] -= (black + (float)cblack[1]); if (outG[i] < 0.f) outG[i] = 0.f;
+        outB[i] -= (black + (float)cblack[2]); if (outB[i] < 0.f) outB[i] = 0.f;
         outR[i] *= scale;
         outG[i] *= scale;
         outB[i] *= scale;
