@@ -38,3 +38,20 @@ fi
 
 echo "== Done. Object files in $OUT_DIR/ =="
 ls -la "$OUT_DIR"
+
+echo "== Stage 3: LibRaw core (reduced/no-postprocessing build) =="
+LIBRAW_DIR="vendor/LibRaw"
+LIBRAW_OBJ_DIR="$OUT_DIR/libraw"
+mkdir -p "$LIBRAW_OBJ_DIR"
+
+LIBRAW_FILES=$(cat src/libraw_nopp_filelist.txt)
+
+for f in $LIBRAW_FILES; do
+    outname=$(echo "$f" | tr '/' '_' | sed 's/\.cpp$/.o/')
+    em++ -std=c++17 -O2 \
+        -DLIBRAW_NOTHREADS -DLIBRAW_USE_AUTOPTR \
+        -I "$LIBRAW_DIR" \
+        -c "$LIBRAW_DIR/$f" \
+        -o "$LIBRAW_OBJ_DIR/$outname"
+done
+echo "  -> $(ls $LIBRAW_OBJ_DIR | wc -l) LibRaw object files in $LIBRAW_OBJ_DIR/"
