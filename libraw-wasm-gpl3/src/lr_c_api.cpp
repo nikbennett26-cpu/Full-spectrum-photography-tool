@@ -1,14 +1,7 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
+// Copyright (C) 2026
 //
-// C API exposed to glue/libraw-gpl3.mjs. Function names and signatures
-// match that file's existing calls exactly (_lr_open, _lr_width, etc.)
-// so no JS-side changes are needed once this links into the wasm module.
-//
-// Deliberately minimal: lr_demosaic() does spatial demosaic + basic
-// per-channel black-level subtraction ONLY. White balance, the colour
-// matrix, and gamma are NOT applied here — decode() already hands camMul
-// and rgbCam back to JS separately, and irlab's own Bradford/WB pipeline
-// is where that colour science belongs.
+// C API exposed to glue/libraw-gpl3.mjs.
 
 #ifdef __EMSCRIPTEN__
 #include <emscripten/emscripten.h>
@@ -153,11 +146,16 @@ int lr_demosaic(int h, int qual, float* outR, float* outG, float* outB)
                                redRows.data(), greenRows.data(), blueRows.data());
 
     const unsigned* cblack = proc->imgdata.color.cblack;
+    const float white = (float)proc->imgdata.color.maximum;
+    const float scale = (white > 1.f) ? 1.f / white : 1.f;
     const size_t n = (size_t)width * height;
     for (size_t i = 0; i < n; i++) {
         outR[i] -= (float)cblack[0]; if (outR[i] < 0.f) outR[i] = 0.f;
         outG[i] -= (float)cblack[1]; if (outG[i] < 0.f) outG[i] = 0.f;
         outB[i] -= (float)cblack[2]; if (outB[i] < 0.f) outB[i] = 0.f;
+        outR[i] *= scale;
+        outG[i] *= scale;
+        outB[i] *= scale;
     }
 
     return 1;
