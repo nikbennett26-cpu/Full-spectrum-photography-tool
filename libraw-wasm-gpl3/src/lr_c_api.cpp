@@ -1,5 +1,15 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 // Copyright (C) 2026
+//
+// C API exposed to glue/libraw-gpl3.mjs. Function names and signatures
+// match that file's existing calls exactly (_lr_open, _lr_width, etc.)
+// so no JS-side changes are needed once this links into the wasm module.
+//
+// Deliberately minimal: lr_demosaic() does spatial demosaic + basic
+// per-channel black-level subtraction ONLY. White balance, the colour
+// matrix, and gamma are NOT applied here — decode() already hands camMul
+// and rgbCam back to JS separately, and irlab's own Bradford/WB pipeline
+// is where that colour science belongs.
 
 #ifdef __EMSCRIPTEN__
 #include <emscripten/emscripten.h>
@@ -9,6 +19,7 @@
 
 #include <libraw/libraw.h>
 #include <cstdint>
+#include <cstdio>
 #include <cstring>
 #include <vector>
 #include <unordered_map>
@@ -34,6 +45,20 @@ int lr_open(const uint8_t* data, int len)
         delete proc;
         return 0;
     }
+    // Populate a corrected white/saturation point via LibRaw's own
+    // public pipeline. adjust_bl() itself is protected, but
+    // subtract_black() calls it internally and is public. For this
+    // camera the true combined black level is genuinely 0 through this
+    // path (confirmed via debug instrumentation) — but subtract_black()
+    // does correct the white/saturation point (16383 -> 15360 for the
+    // reference file this session), a real accuracy improvement.
+    //
+    // raw2image() allocates and fills the separate imgdata.image[]
+    // 4-channel array; subtract_black() then subtracts black from THAT
+    // array only. Neither touches imgdata.rawdata.raw_image, which is
+    // what lr_demosaic() actually reads — so this is purely a metadata
+    // side effect, safe to call even though imgdata.image[] itself goes
+    // unused afterward.
     if (proc->raw2image() == LIBRAW_SUCCESS) {
         proc->subtract_black();
     }
