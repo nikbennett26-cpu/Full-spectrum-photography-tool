@@ -9,7 +9,9 @@
 // per-channel black-level subtraction ONLY. White balance, the colour
 // matrix, and gamma are NOT applied here — decode() already hands camMul
 // and rgbCam back to JS separately, and irlab's own Bradford/WB pipeline
-// is where that colour science belongs.
+// is where that colour science belongs. Verified in practice: stacking a
+// colour-correction pass here on top of irlab's own WB pass produced
+// worse results than handing irlab clean, minimally-processed data.
 
 #ifdef __EMSCRIPTEN__
 #include <emscripten/emscripten.h>
@@ -24,9 +26,16 @@
 #include <vector>
 #include <unordered_map>
 
+// From xtrans_fast_port.cc — the verified X-Trans demosaic.
 void xtrans_fast_demosaic_port(int w, int h, const int xtrans[6][6],
                                 float* const* rawData,
                                 float** red, float** green, float** blue);
+
+// From xtrans_markesteijn1_port.cc — higher-quality X-Trans demosaic
+// (RawTherapee's Markesteijn 1-pass algorithm, useCieLab=false variant).
+void xtrans_markesteijn1_demosaic_port(int w, int h, const int xtrans[6][6],
+                                        float* const* rawData,
+                                        float** red, float** green, float** blue);
 
 static std::unordered_map<int, LibRaw*> g_handles;
 static int g_nextHandle = 1;
@@ -45,20 +54,6 @@ int lr_open(const uint8_t* data, int len)
         delete proc;
         return 0;
     }
-    // Populate a corrected white/saturation point via LibRaw's own
-    // public pipeline. adjust_bl() itself is protected, but
-    // subtract_black() calls it internally and is public. For this
-    // camera the true combined black level is genuinely 0 through this
-    // path (confirmed via debug instrumentation) — but subtract_black()
-    // does correct the white/saturation point (16383 -> 15360 for the
-    // reference file this session), a real accuracy improvement.
-    //
-    // raw2image() allocates and fills the separate imgdata.image[]
-    // 4-channel array; subtract_black() then subtracts black from THAT
-    // array only. Neither touches imgdata.rawdata.raw_image, which is
-    // what lr_demosaic() actually reads — so this is purely a metadata
-    // side effect, safe to call even though imgdata.image[] itself goes
-    // unused afterward.
     if (proc->raw2image() == LIBRAW_SUCCESS) {
         proc->subtract_black();
     }
@@ -130,10 +125,15 @@ void lr_rgb_cam(int h, float* out12)
             out12[r * 4 + c] = m[r][c];
 }
 
+// Returns 1 on success, 0 on failure (e.g. unsupported CFA type).
 EMSCRIPTEN_KEEPALIVE
 int lr_demosaic(int h, int qual, float* outR, float* outG, float* outB)
 {
-    (void)qual;
+    // qual==0 (bilinear, the UI's own "fastest" option) uses the fast
+    // X-Trans port; anything else (including the app's own default,
+    // 'amaze'=1, sent for every ordinary RAW load) uses the newer,
+    // higher-quality Markesteijn 1-pass port instead. Bayer quals
+    // (lmmse/rcd/igv/ahd) are still gated behind glibmm -- see below.
     auto it = g_handles.find(h);
     if (it == g_handles.end()) return 0;
     LibRaw* proc = it->second;
@@ -168,8 +168,13 @@ int lr_demosaic(int h, int qual, float* outR, float* outG, float* outB)
         blueRows[row]  = outB + (size_t)row * width;
     }
 
-    xtrans_fast_demosaic_port(width, height, xtrans, rawRows.data(),
-                               redRows.data(), greenRows.data(), blueRows.data());
+    if (qual == 0) {
+        xtrans_fast_demosaic_port(width, height, xtrans, rawRows.data(),
+                                   redRows.data(), greenRows.data(), blueRows.data());
+    } else {
+        xtrans_markesteijn1_demosaic_port(width, height, xtrans, rawRows.data(),
+                                           redRows.data(), greenRows.data(), blueRows.data());
+    }
 
     const float black = (float)proc->imgdata.color.black;
     const unsigned* cblack = proc->imgdata.color.cblack;
