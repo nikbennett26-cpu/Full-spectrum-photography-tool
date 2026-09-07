@@ -369,9 +369,10 @@ body.has-image .rotbtn{display:flex}
   border:1px solid var(--line2);cursor:pointer}
 #btnClearPreset:hover{border-color:var(--safelight);color:var(--paper)}
 #landingLinks{text-align:center;margin:18px auto 4px;max-width:min(62vh,560px)}
-#landingLinks a{display:inline-block;font-family:var(--font-mono);font-size:12px;color:var(--safelight);
-  text-decoration:none;border:1px solid var(--line2);border-radius:var(--radius);padding:9px 14px}
-#landingLinks a:hover{border-color:var(--safelight);background:rgba(194,67,27,.08)}
+#landingLinks a{display:inline-block;font-family:var(--font-mono);font-size:12.5px;font-weight:600;
+  color:var(--safelight);text-decoration:none;border:1px solid var(--safelight-dim);border-radius:var(--radius);
+  padding:11px 18px;background:rgba(194,67,27,.09);box-shadow:0 0 0 1px rgba(194,67,27,.12)}
+#landingLinks a:hover{border-color:var(--safelight);background:rgba(194,67,27,.16)}
 #discordLink:hover{border-color:var(--safelight);background:rgba(194,67,27,.08)}
 #landingLinks p{font-size:11.5px;color:var(--muted);margin-top:7px;line-height:1.4}
 
@@ -927,9 +928,10 @@ input[type=range]:focus-visible::-webkit-slider-thumb, input[type=range]:focus-v
   <div id="whatsNew" style="max-width:420px;margin:22px auto 0;text-align:left;
        font-size:11px;color:var(--muted);line-height:1.5;padding:0 4px">
     <p style="color:var(--phosphor-dim);font-weight:600;margin-bottom:4px;letter-spacing:.03em">RECENTLY ADDED</p>
-    <p style="margin:0 0 3px"><b style="color:var(--phosphor-dim)">Simpler RAW decode: AMaZE, always.</b> This
-      tool's own from-scratch decoder is gone. Every RAW now gets the same real sensor decode by default &mdash;
-      one less setting to think about, and one less thing that could quietly give a worse result than it should.</p>
+    <p style="margin:0 0 3px"><b style="color:var(--phosphor-dim)">Fuji X-Trans RAW files decode properly now.</b> Was
+      rendering solid black &mdash; a bug in the sensor's own colour reconstruction that returned zero for every
+      pixel while still reporting success. Fixed with a separately verified demosaic path just for X-Trans
+      sensors; every other camera's RAW decode is untouched.</p>
     <p style="margin:0 0 3px"><b style="color:var(--phosphor-dim)">Smarter white balance on RAW loads.</b> Was
       just repeating the camera's own meter reading. Now estimates from the actual shape of the image's colour
       distribution instead &mdash; a real published method (Cheng, Prasad &amp; Brown 2014), not a guess, and
@@ -1163,25 +1165,16 @@ input[type=range]:focus-visible::-webkit-slider-thumb, input[type=range]:focus-v
         <p class="note" style="margin:4px 0 0">Hue lands at +20 rather than the action’s own +18 — the number its users settled on to get the reds right.</p>
       </details>
       <button id="btnClearPreset" class="btnGhost" style="margin-top:12px" title="Deselect the filter and return the matrix to identity, keeping your other adjustments">Clear filter</button>
-      <!-- Swaps channels while the data is expressed in Rec2020's wider
-           primaries instead of sRGB, then converts back down — a wide
-           gamut can hold more of a saturated colour's true position before
-           the swap moves it, so more survives being compressed back into
-           sRGB afterward. Only does anything on colour that has real
-           separation to begin with (an embedded JPEG, a TIFF from a
-           developer) — raw sensor decode has none to work with, so this
-           is a no-op there regardless of the setting. Off by default so
-           nothing changes under anyone who hasn't touched it. -->
       <label style="display:flex;align-items:center;gap:6px;margin-top:10px;font-size:11.5px;color:var(--phosphor-dim);cursor:pointer"
              title="Digitised from Kodak's published characteristic curves for Aerochrome 1443 (F009_0385AC). Gamma about 3.1 — far steeper than transparency film — and the three layers staggered by up to a stop, which is what shifts the colour balance with exposure instead of just the brightness.">
         <input type="checkbox" id="chkFilmTone" style="margin:0">
         Colour IR tone response — measured contrast curve (~2.7 stops, very steep)
       </label>
       <div class="sl" id="filmToneRow" style="display:none;margin-top:6px"><label>Strength <b id="v_filmToneAmt">100</b>%</label><input type="range" id="filmToneAmt" aria-label="Aerochrome tone response strength" min="0" max="100" value="100"></div>
-      <label style="display:flex;align-items:center;gap:6px;margin-top:10px;font-size:11.5px;color:var(--phosphor-dim);cursor:pointer">
-        <input type="checkbox" id="swapRec2020" style="margin:0">
-        Swap in Rec2020 (wider gamut) instead of sRGB — more vivid on already-processed colour, no effect on raw sensor decode
-      </label>
+      <!-- Channel swaps always run in ProPhoto's wide primaries now (see
+           the shader's SRGB_TO_PROPHOTO comment) -- no longer a
+           user-facing toggle between doing this in a narrow space or a
+           wide one. -->
       <!-- Every preset above is just a starting point for the same 3x3 —
            they set these same nine numbers, nothing else. Nested here
            rather than given its own step, since editing them by hand isn't
@@ -1461,6 +1454,16 @@ input[type=range]:focus-visible::-webkit-slider-thumb, input[type=range]:focus-v
           <label><input type="radio" name="fmt" value="jpeg"> JPEG (q100)</label>
         </div>
         <p class="note" id="precNote"></p>
+        <!-- JPEG stays sRGB always, deliberately -- JPEG's own colour
+             management support is historically poor, and sRGB is the
+             universal safe default for a format meant to just work
+             everywhere. TIFF and PNG can hold a wider gamut correctly
+             (a real embedded ICC profile, not just untagged numbers), so
+             this only shows for those two. -->
+        <label id="wideGamutRow" style="display:none;align-items:center;gap:6px;margin-top:8px;font-size:11.5px;color:var(--phosphor-dim);cursor:pointer">
+          <input type="checkbox" id="exportProPhoto" style="margin:0">
+          Export in ProPhoto RGB (wide gamut) instead of sRGB — real embedded colour profile, for further editing rather than sharing straight away
+        </label>
       </details>
 
       <!-- Deliberately NOT inside the resolution panel below, even though it
@@ -1663,30 +1666,40 @@ const FS_SOURCE = `
      file has actually been fitted. */
   uniform float u_camFit;              // 0 off, 1 on
   uniform vec3 u_camCoef[20];
-  uniform float u_swapRec2020;
-  /* Fixed, not user-tunable — these are the standard linear Rec.2020 <-> linear
-     sRGB primaries conversion, not something to expose a control for. Found
-     via Fedia: applying a channel swap while the data is expressed in
-     Rec2020's wider primaries, then converting back down to sRGB, comes out
-     different (and on real camera-processed colour \u2014 not raw sensor data,
-     where this has no separation to work with \u2014 more vivid) than swapping
+  /* Fixed, not user-tunable — the standard linear sRGB <-> linear
+     ProPhoto RGB primaries conversion (via Bradford-adapted D65->D50),
+     not something to expose a control for. Found via Fedia: applying a
+     channel swap while the data is expressed in a wide gamut's
+     primaries, then converting back down to sRGB, comes out different
+     (and on real camera-processed colour — not raw sensor data, where
+     this has no separation to work with — more vivid) than swapping
      directly in sRGB, because a wide gamut can hold more of a saturated
-     colour's true position before the swap moves it, so more survives the
-     compression back down. Verified numerically before building this: on
-     the embedded-JPEG bush/ground samples from a real file, ground went from
-     70% to 98% saturation with the existing hue separation intact, not
-     collapsed \u2014 the raw decoder's collinear channels get no such benefit,
-     since composing linear steps stays linear and can't manufacture
-     separation that isn't already there. */
-  const mat3 SRGB_TO_REC2020 = mat3(
-    0.627404, 0.069097, 0.016391,
-    0.329283, 0.919541, 0.088013,
-    0.043313, 0.011362, 0.895595
+     colour's true position before the swap moves it, so more survives
+     the compression back down. Verified numerically before building
+     this: on the embedded-JPEG bush/ground samples from a real file,
+     ground went from 70% to 98% saturation with the existing hue
+     separation intact, not collapsed — the raw decoder's collinear
+     channels get no such benefit, since composing linear steps stays
+     linear and can't manufacture separation that isn't already there.
+
+     ProPhoto instead of Rec2020: ProPhoto's primaries are wider still
+     than Rec2020's, so it holds even more of a saturated colour's true
+     position before the swap moves it — the same reasoning above,
+     taken further. No longer a user-facing toggle between the swap
+     happening in a narrow space (sRGB/"709") versus a wide one either —
+     there was never a real reason to offer doing this specific
+     operation in a narrow space to begin with, so the wide-gamut swap
+     now always runs, silently, matching how this file already treats
+     the ProPhoto-space RAW-decode swap the same way. */
+  const mat3 SRGB_TO_PROPHOTO = mat3(
+    0.529377, 0.098376, 0.016879,
+    0.330109, 0.873450, 0.117656,
+    0.140557, 0.028163, 0.865257
   );
-  const mat3 REC2020_TO_SRGB = mat3(
-    1.660491, -0.124551, -0.018151,
-   -0.587641,  1.132898, -0.100579,
-   -0.072850, -0.008348,  1.118729
+  const mat3 PROPHOTO_TO_SRGB = mat3(
+    2.033966, -0.228808, -0.008564,
+    -0.727392, 1.231754, -0.153302,
+    -0.306733, -0.002924, 1.162106
   );
   uniform vec3 u_preWB;
   uniform vec3 u_postWB;
@@ -2796,15 +2809,15 @@ const FS_SOURCE = `
 
     rgb = u_wbMethod == 1 ? u_preWBM * rgb : rgb * u_preWB;
     float yPreSwap = dot(rgb, u_lumaW);   // Phil's step 2: record before the swap, with the ADAPTIVE weight
-    if (u_swapRec2020 > 0.5) {
-      rgb = SRGB_TO_REC2020 * rgb;
-      rgb = u_matrix * rgb;
-      rgb += u_mOffset;
-      rgb = REC2020_TO_SRGB * rgb;
-    } else {
-      rgb = u_matrix * rgb;
-      rgb += u_mOffset;
-    }
+    /* Always done in ProPhoto's wide primaries now, not a user-facing
+       toggle between a narrow space and a wide one -- see the comment
+       on SRGB_TO_PROPHOTO/PROPHOTO_TO_SRGB above for why there was never
+       a real reason to offer doing this specific operation in sRGB/"709"
+       to begin with. */
+    rgb = SRGB_TO_PROPHOTO * rgb;
+    rgb = u_matrix * rgb;
+    rgb += u_mOffset;
+    rgb = PROPHOTO_TO_SRGB * rgb;
     if (u_lumPreserve == 1) rgb = preserveLuma(rgb, yPreSwap);   // step 4
     /* Bring the swap back into gamut here, rather than letting the values
        run out of range and get clamped per-channel at the very end.
@@ -3204,7 +3217,6 @@ class WebGLEngine {
       mOffset: gl.getUniformLocation(this.program, 'u_mOffset'),
       camFit: gl.getUniformLocation(this.program, 'u_camFit'),
       camCoef: gl.getUniformLocation(this.program, 'u_camCoef'),
-      swapRec2020: gl.getUniformLocation(this.program, 'u_swapRec2020'),
       bandCount: gl.getUniformLocation(this.program, 'u_bandCount'),
       bandHue: gl.getUniformLocation(this.program, 'u_bandHue'),
       bandWidth: gl.getUniformLocation(this.program, 'u_bandWidth'),
@@ -3427,7 +3439,6 @@ class WebGLEngine {
     // 20 vec3s, flattened — see u_camCoef in the shader
     gl.uniform1f(this.uLocs.camFit, p.camCoef ? 1 : 0);
     gl.uniform3fv(this.uLocs.camCoef, new Float32Array(p.camCoef || new Array(60).fill(0)));
-    gl.uniform1f(this.uLocs.swapRec2020, p.swapRec2020 ? 1 : 0);
 
     // Targeted colour bands. Padded to 5 slots always — a uniform array in
     // GLSL ES 1.00 has to be sized at compile time, so the unused tail is
@@ -3631,7 +3642,7 @@ let filmOn = false;        // built-in Aerochrome LUT — see decodeFilmLUT
    NEW state and undo restores straight back to it — the toggle appears to do
    nothing. filmOn avoided this by mirroring into a variable assigned after
    arming; these now do the same. */
-let camMatchOn = false, swapRec2020On = false, filmToneOn = false;
+let camMatchOn = false, filmToneOn = false;
 /* A user LUT running at the EARLY stage rather than the end. Separate from
    currentLUT (which grades at the very end, on top of everything) because
    the two answer different questions: currentLUT is "grade the finished
@@ -3847,6 +3858,8 @@ const IR_PRESETS = [
      datasheet gives EIR the same passbands (700-900 infrared, 380-700
      visible) and describes the same colour formation, so it applies to
      both. */
+  { n: "EIR", s: "Kodak TI2323 \u00b7 same colour formation, same passbands, as Aerochrome 1443 \u2014 shares its matrix",
+    m: [0,0,100, 100,0,0, 0,100,0] },
 
   /* ---- Derived from Kodak's published spectral sensitivity curves ----
      Aerochrome III 1443, figure F002_1103AC. This one is NOT an eyeballed
@@ -5419,7 +5432,6 @@ function currentParams() {
     postWB: postWB,
     preWBM: preWBM,
     postWBM: postWBM,
-    swapRec2020: swapRec2020On,
     // only applied when the toggle is on AND a fit exists for this file
     camCoef: (camCoef && camMatchOn) ? camCoef : null,
     wbMethod: wbMethod,
@@ -6909,32 +6921,6 @@ const RAW_EXT = ['CR2','CR3','NEF','ARW','SR2','ORF','ORI','RW2','PEF','RAF','SR
    that likely does not exist in the same shape here, unmeasured. */
 function rawEngineResultToCanvas(res, doCamSpaceSwap, doCamSpaceSwapMatrix, doCamSpaceSwapName) {
   const srcW = res.width, srcH = res.height, R = res.R, G = res.G, B = res.B;
-  // TEMP DIAGNOSTIC -- remove once X-Trans black-image bug is found
-  {
-    let rMax = 0, gMax = 0, bMax = 0, rSum = 0;
-    for (let i = 0; i < R.length; i += 997) { // sparse sample, not every pixel
-      if (R[i] > rMax) rMax = R[i];
-      if (G[i] > gMax) gMax = G[i];
-      if (B[i] > bMax) bMax = B[i];
-      rSum += R[i];
-    }
-    console.log('XTRANS DEBUG: srcW=', srcW, 'srcH=', srcH,
-                'R.length=', R.length, 'rMax=', rMax, 'gMax=', gMax, 'bMax=', bMax,
-                'rSum=', rSum, 'R[0]=', R[0], 'R[mid]=', R[R.length >> 1]);
-  }
-  // TEMP DIAGNOSTIC -- remove once X-Trans black-image bug is found
-  {
-    let rMax = 0, gMax = 0, bMax = 0, rSum = 0;
-    for (let i = 0; i < R.length; i += 997) { // sparse sample, not every pixel
-      if (R[i] > rMax) rMax = R[i];
-      if (G[i] > gMax) gMax = G[i];
-      if (B[i] > bMax) bMax = B[i];
-      rSum += R[i];
-    }
-    console.log('XTRANS DEBUG: srcW=', srcW, 'srcH=', srcH,
-                'R.length=', R.length, 'rMax=', rMax, 'gMax=', gMax, 'bMax=', bMax,
-                'rSum=', rSum, 'R[0]=', R[0], 'R[mid]=', R[R.length >> 1]);
-  }
   /* Downscaled HERE, before the 8-bit buffer or the PNG encode exist, not
      left to the app's usual WORKING_MAX_DIM resize that runs later on the
      loaded Image. That resize only kicks in once a blob already exists \u2014
@@ -7784,6 +7770,25 @@ async function loadFile(file) {
   camCoef = null;
   if ($('camMatchRow')) $('camMatchRow').style.display = 'none';
   if ($('camMatch')) { $('camMatch').checked = false; $('camMatch').disabled = false; }
+  /* Same reasoning as camCoef just above, applied to the main Channel
+     Swap panel's own matrix (MCELLS): getMatrixUI() is read ONLY by the
+     live render pipeline (currentParams(), used by pipelineRGB/render())
+     -- never at decode time -- so whatever this panel was left set to
+     on a PREVIOUS photo was silently being applied to every freshly
+     loaded photo's "After" immediately, while "Before" (built once at
+     decode time from rawCanvas) never reflected it. Result: Before and
+     After could differ right after opening a brand new file, before the
+     user had touched anything on THIS photo. Resetting just these 9
+     cells to identity (100/0/0/0/100/0/0/0/100) is narrow and safe --
+     unlike an earlier, broader "reset everything on load" idea that was
+     rejected because it also wiped preWBM (the auto-WB matrix), this
+     touches only the Channel Swap panel's own creative choice, the same
+     category as camCoef above, not white balance or the RAW decode
+     itself. */
+  MCELLS.forEach(id => {
+    const el = $(id); if (!el) return;
+    el.value = (id === 'm00' || id === 'm11' || id === 'm22') ? 100 : 0;
+  });
   let ext = (file.name.split('.').pop() || '').toUpperCase();
   /* Some Android providers hand back a generic name ("image", "content", or
      no extension at all) even when the bytes are a CR2. Extension is the only
@@ -8148,6 +8153,24 @@ async function loadFile(file) {
       if ($('wbPreStatus')) $('wbPreStatus').textContent = source.__wbSource === 'eigenvector'
         ? 'Auto \u2714 (eigenvector) \u2014 pick a neutral to override it'
         : 'Auto \u2714 (camera meter) \u2014 pick a neutral to override it';
+      /* No automatic Vibrance push on load, deliberately -- an earlier
+         flat 20% default oversaturated ordinary, well-separated RAW
+         files; a later adaptive version (measuring each photo's actual
+         chromaticity variance) fixed that specific case, but Vibrance is
+         designed to weight its boost toward pixels that are STILL MUTED
+         (see the tool's own note under the slider) -- so even a small,
+         well-reasoned nonzero default still produced a large, visible
+         shift concentrated in naturally muted areas (an overcast sky,
+         confirmed directly on a real photo: sky went from grey-green to
+         vivid blue/purple at only 12% while the already-colourful
+         foreground barely moved). Any nonzero default, however
+         carefully computed, breaks the actual requirement -- Before and
+         After must be pixel-identical until the user makes a real edit.
+         Left at the input's own HTML default (0) instead. A photo that
+         genuinely needs a vibrance push (confirmed useful earlier this
+         session on a genuinely colour-starved full-spectrum capture)
+         still gets one -- the user applies it themselves, same as any
+         other creative choice on this screen. */
     }
     const maxDim = WORKING_MAX_DIM;
     let w = natW, h = natH;
@@ -8583,7 +8606,6 @@ $('bReset').onclick = () => {
   filmToneOn = false; if ($('chkFilmTone')) $('chkFilmTone').checked = false;
   if ($('filmToneRow')) $('filmToneRow').style.display = 'none';
   if ($('filmToneAmt')) { $('filmToneAmt').value = 100; $('v_filmToneAmt').textContent = 100; }
-  swapRec2020On = false; if ($('swapRec2020')) $('swapRec2020').checked = false;
   camMatchOn = false; if ($('camMatch')) $('camMatch').checked = false;
   /* The CR2 preview choice resets too. It is arguably a loading preference
      rather than part of the current edit — it says so on its own label, and
@@ -8746,7 +8768,6 @@ function captureState() {
        loaded file, not to an edit, and a snapshot from before the fit existed
        would otherwise wipe them. Only the on/off state travels. */
     camMatch: camMatchOn,
-    swapRec2020: swapRec2020On,
     filmTone: filmToneOn,
     // deep-copied, not just spread — these are edited in place by the
     // per-band sliders, so a shallow reference here would let a LATER edit
@@ -8801,8 +8822,6 @@ function applyState(snap) {
   // hand or undo walks straight past them
   camMatchOn = !!snap.camMatch;
   if ($('camMatch') && !$('camMatch').disabled) $('camMatch').checked = camMatchOn;
-  swapRec2020On = !!snap.swapRec2020;
-  if ($('swapRec2020')) $('swapRec2020').checked = swapRec2020On;
   filmToneOn = !!snap.filmTone;
   if ($('chkFilmTone')) {
     $('chkFilmTone').checked = filmToneOn;
@@ -8884,7 +8903,7 @@ function stateKey(s) {
        entry, which looks like undo skipping it rather than never recording
        it. Adding a field to captureState without adding it here is silent:
        nothing breaks, the state simply stops being undoable. */
-    camMatch: s.camMatch, swapRec2020: s.swapRec2020, filmTone: s.filmTone,
+    camMatch: s.camMatch, filmTone: s.filmTone,
     /* The LUT, identified rather than serialised. captureState has always
        stored it and applyState has always restored it, but it was never
        compared here \u2014 so loading or clearing a LUT produced two identical
@@ -9688,13 +9707,6 @@ $('lumPreserve').addEventListener('change', () => {
   commitUndoCapture();
   haptic('select');
 });
-$('swapRec2020').addEventListener('change', () => {
-  armUndoCapture();
-  swapRec2020On = $('swapRec2020').checked;
-  render();
-  commitUndoCapture();
-  haptic('select');
-});
 $('camMatch').addEventListener('change', () => {
   armUndoCapture();
   camMatchOn = $('camMatch').checked;
@@ -9746,10 +9758,20 @@ const CAM_SPACE_SWAP_PRESETS = (typeof IR_PRESETS !== 'undefined' ? IR_PRESETS.f
     const on = swap.checked || swapEd.checked;
     sel.style.display = selEd.style.display = on ? 'block' : 'none';
   }
-  [swap, swapEd].forEach(el => el.addEventListener('change', showHide));
+  /* Was previously read-only at decode time: toggling the checkbox or
+     changing the preset here did nothing to an already-loaded photo.
+     Only way to see the effect was to re-load the same file, which ran
+     the ENTIRE finishLoad() pipeline again -- wiping undo/redo history,
+     the WB panel's state, zoom, and pan, as if it were a brand new
+     photo, while ALSO looking like "loading twice" and showing a
+     different image once the setting finally took. Wiring these four
+     controls to reapplyCamSpaceSwap() instead reuses the already-decoded
+     rawEngine.lastResult and only touches the pixel source -- no reset
+     of anything else the user has already changed. */
+  [swap, swapEd].forEach(el => el.addEventListener('change', () => { showHide(); reapplyCamSpaceSwap(); }));
   showHide();
-  sel.addEventListener('change', () => { selEd.value = sel.value; });
-  selEd.addEventListener('change', () => { sel.value = selEd.value; });
+  sel.addEventListener('change', () => { selEd.value = sel.value; reapplyCamSpaceSwap(); });
+  selEd.addEventListener('change', () => { sel.value = selEd.value; reapplyCamSpaceSwap(); });
 })();
 /* Reads whichever of the two dropdowns actually has a selection \u2014 they're
    kept in sync above, so either one reflects the true current choice.
@@ -9766,6 +9788,35 @@ function getCamSpaceSwapName() {
   if (!sel || sel.value === '') return null;
   const preset = CAM_SPACE_SWAP_PRESETS[+sel.value];
   return preset ? preset.n : null;
+}
+/* Live re-apply for the experimental ProPhoto swap and its preset dropdown.
+   No-ops if this photo wasn't decoded via rawEngine (a plain JPEG/PNG/WebP
+   load, or a RAW that fell back to its embedded preview) -- there is no
+   cached sensor result to reapply a swap to in that case, matching how the
+   checkbox/preset are only meaningful for an AMaZE sensor decode to begin
+   with. Recomputes the canvas from the SAME cached rawEngine.lastResult
+   (no re-decode, no worker spin-up, no file re-read) and only touches the
+   pixel source -- current working size, current manual rotation, current
+   zoom/pan/undo/WB-panel state are all left exactly as they were. */
+function reapplyCamSpaceSwap() {
+  if (!rawEngine.lastResult) return;
+  const checked = !!($('camSpaceSwap') && $('camSpaceSwap').checked);
+  const cv2 = rawEngineResultToCanvas(rawEngine.lastResult, checked, getCamSpaceSwapMatrix(), getCamSpaceSwapName());
+  if (!cv2.__hasCameraWB) autoWhiteBalanceRaw(cv2);
+  const maxDim = WORKING_MAX_DIM;
+  let w = cv2.width, h = cv2.height;
+  if (w > maxDim || h > maxDim) {
+    const scale = maxDim / Math.max(w, h);
+    w = Math.round(w * scale);
+    h = Math.round(h * scale);
+  }
+  sourceImg = cv2;
+  drawOriented(rawCanvas, cv2, w, h, srcOrient);
+  loadedImage = rawCanvas;
+  rawPixels = rawCtx.getImageData(0, 0, rawCanvas.width, rawCanvas.height).data;
+  contrastPivot = medianLuminance(rawPixels);
+  if (engine) engine.setImage(rawCanvas);
+  render();
 }
 $('filmOn').addEventListener('change', () => {
   armUndoCapture();
@@ -9994,10 +10045,10 @@ function clearLUT(){
    never asked for.
 
    This clears everything that changes the LOOK: the sliders, the targeted
-   bands, and the four toggles that are easy to forget because they live in
-   other panels (Triple Band, the tone response, Rec2020, and any loaded
-   LUT). It deliberately does NOT touch white balance, crop, or the CR2
-   preview preference \u2014 those describe the FILE rather than the look, and
+   bands, and the toggles that are easy to forget because they live in
+   other panels (Triple Band, the tone response, and any loaded LUT). It
+   deliberately does NOT touch white balance, crop, or the CR2 preview
+   preference \u2014 those describe the FILE rather than the look, and
    throwing away a white balance someone set by hand would be its own bug. */
 /* Nik's own Aerochrome LUT \u2014 a 3x3x3 cube, hand-authored rather than
    captured or fitted. Tiny (27 entries, 116 characters compressed) because
@@ -10084,7 +10135,6 @@ function resetLookBeforeRecipe() {
   filmOn = false;            if ($('filmOn')) $('filmOn').checked = false;
   filmToneOn = false;        if ($('chkFilmTone')) $('chkFilmTone').checked = false;
   if ($('filmToneRow')) $('filmToneRow').style.display = 'none';
-  swapRec2020On = false;     if ($('swapRec2020')) $('swapRec2020').checked = false;
   /* The post-swap white balance, but NOT the pre-swap one.
 
      These are different in kind. Pre-swap WB is a property of the FILE \u2014 it
@@ -10543,7 +10593,7 @@ function hsvRotateF(r,g,b,turns){
   else         o=[cc,0,x];
   return [o[0]+m,o[1]+m,o[2]+m];
 }
-function pipelineRGB(r,g,b,matrix,pre,post,exposure,hueFrac,satFactor,blackPt,lutMix,tt,ct,satPreserve,bands,preM,postM,wbMethod,hueSpaceMode,lumOn,filmEnabled,vibrance=0,swapRec2020=false,camCoefArr=null){
+function pipelineRGB(r,g,b,matrix,pre,post,exposure,hueFrac,satFactor,blackPt,lutMix,tt,ct,satPreserve,bands,preM,postM,wbMethod,hueSpaceMode,lumOn,filmEnabled,vibrance=0,camCoefArr=null){
   /* Camera-colour match, mirrored from the shader and in the same place:
      first, on encoded values, before anything else. See the shader comment
      on why it cannot go at the end. */
@@ -10570,20 +10620,18 @@ function pipelineRGB(r,g,b,matrix,pre,post,exposure,hueFrac,satFactor,blackPt,lu
   else { lr*=pre[0];lg*=pre[1];lb*=pre[2]; }
   const yPreSwap = 0.2126*lr + 0.7152*lg + 0.0722*lb;   // see preserveLuma in the shader
   const[a,b1,c,d,e,f,g1,h,i]=matrix;
-  // mirrors the shader's SRGB_TO_REC2020 / REC2020_TO_SRGB \u2014 same constants,
-  // see the shader comment on u_swapRec2020 for what this is and isn't for
-  let mr, mg, mb;
-  if (swapRec2020) {
-    const rr = 0.627404*lr + 0.329283*lg + 0.043313*lb;
-    const rg = 0.069097*lr + 0.919541*lg + 0.011362*lb;
-    const rb = 0.016391*lr + 0.088013*lg + 0.895595*lb;
-    const xr = a*rr+b1*rg+c*rb, xg = d*rr+e*rg+f*rb, xb = g1*rr+h*rg+i*rb;
-    mr = 1.660491*xr - 0.587641*xg - 0.072850*xb;
-    mg = -0.124551*xr + 1.132898*xg - 0.008348*xb;
-    mb = -0.018151*xr - 0.100579*xg + 1.118729*xb;
-  } else {
-    mr=a*lr+b1*lg+c*lb; mg=d*lr+e*lg+f*lb; mb=g1*lr+h*lg+i*lb;
-  }
+  /* Always done in ProPhoto's wide primaries now, not a user-facing
+     toggle between a narrow space and a wide one — mirrors the shader's
+     SRGB_TO_PROPHOTO / PROPHOTO_TO_SRGB, same constants (see that
+     shader comment for why this uses ProPhoto rather than Rec2020, and
+     why it's no longer conditional). */
+  const rr = 0.529377*lr + 0.330109*lg + 0.140557*lb;
+  const rg = 0.098376*lr + 0.873450*lg + 0.028163*lb;
+  const rb = 0.016879*lr + 0.117656*lg + 0.865257*lb;
+  const xr = a*rr+b1*rg+c*rb, xg = d*rr+e*rg+f*rb, xb = g1*rr+h*rg+i*rb;
+  const mr = 2.033966*xr - 0.727392*xg - 0.306733*xb;
+  const mg = -0.228808*xr + 1.231754*xg - 0.002924*xb;
+  const mb = -0.008564*xr - 0.153302*xg + 1.162106*xb;
   if (lumOn) {
     const yAfter = 0.2126*mr + 0.7152*mg + 0.0722*mb;
     if (yAfter > 1e-5 && yPreSwap > 1e-5) {
@@ -10711,7 +10759,7 @@ function buildCubeLUT(size){
   out.push('DOMAIN_MAX 1.0 1.0 1.0');
   const N=size-1;
   for(let z=0;z<size;z++)for(let y=0;y<size;y++)for(let x=0;x<size;x++){
-    const o=pipelineRGB(x/N,y/N,z/N,matrix,preWB,postWB,exposure,hueFrac,satFactor,blackPt,lutMix,tt,ct,satPreserve,targetedBands,preWBM,postWBM,wbMethod,hueSpace,lumPreserve,filmOn ? 1 : 0,vibrance,$('swapRec2020') ? $('swapRec2020').checked : false,(camCoef && $('camMatch') && $('camMatch').checked) ? camCoef : null);
+    const o=pipelineRGB(x/N,y/N,z/N,matrix,preWB,postWB,exposure,hueFrac,satFactor,blackPt,lutMix,tt,ct,satPreserve,targetedBands,preWBM,postWBM,wbMethod,hueSpace,lumPreserve,filmOn ? 1 : 0,vibrance,(camCoef && $('camMatch') && $('camMatch').checked) ? camCoef : null);
     out.push(o[0].toFixed(6)+' '+o[1].toFixed(6)+' '+o[2].toFixed(6));
   }
   return{text:out.join('\n')+'\n',name:'ChannelSwap_'+lookName+'.cube'};
@@ -10772,6 +10820,54 @@ function spliceExifIntoPngBytes(pngBytes,exif){
     chunk.set(typeBytes,4);
     chunk.set(tiffData,8);
     chunk.set(u32be(crc),8+tiffData.length);
+    const out=new Uint8Array(pngBytes.length+chunk.length);
+    out.set(pngBytes.subarray(0,ihdrEnd),0);
+    out.set(chunk,ihdrEnd);
+    out.set(pngBytes.subarray(ihdrEnd),ihdrEnd+chunk.length);
+    return out;
+  }catch(e){return pngBytes;}
+}
+
+// zlib-wraps (header + deflate + Adler32), NOT raw deflate -- PNG's iCCP
+// spec requires "zlib datastream" specifically (compression method 0).
+// CompressionStream's 'deflate' mode (as opposed to 'deflate-raw') already
+// produces exactly that wrapper, same Web Streams API this file already
+// uses for DecompressionStream elsewhere, so no hand-written zlib needed.
+async function zlibDeflate(bytes){
+  const cs = new CompressionStream('deflate');
+  const writer = cs.writable.getWriter();
+  writer.write(bytes); writer.close();
+  const compressed = await new Response(cs.readable).arrayBuffer();
+  return new Uint8Array(compressed);
+}
+
+// Same splice-right-after-IHDR technique as spliceExifIntoPngBytes above,
+// for an iCCP chunk instead of eXIf. PNG's iCCP chunk layout: profile
+// name (Latin-1, null-terminated, <=79 bytes), one compression-method
+// byte (0 = zlib/deflate, the only method the spec defines), then the
+// zlib-compressed profile bytes themselves -- no other framing needed.
+async function spliceICCIntoPngBytes(pngBytes, iccProfileBytes, profileName){
+  if (!iccProfileBytes || !iccProfileBytes.length) return pngBytes;
+  try{
+    const nameBytes = iccAscii(profileName || 'ProPhoto RGB');
+    const compressed = await zlibDeflate(iccProfileBytes);
+    const data = new Uint8Array(nameBytes.length + 1 + 1 + compressed.length);
+    data.set(nameBytes, 0);
+    data[nameBytes.length] = 0;       // null terminator on the profile name
+    data[nameBytes.length + 1] = 0;   // compression method: 0 = zlib/deflate
+    data.set(compressed, nameBytes.length + 2);
+
+    const ihdrLen=(pngBytes[8]<<24)|(pngBytes[9]<<16)|(pngBytes[10]<<8)|pngBytes[11];
+    const ihdrEnd=8+4+4+ihdrLen+4;
+    const typeBytes=new Uint8Array([0x69,0x43,0x43,0x50]); // 'iCCP'
+    const crcInput=new Uint8Array(typeBytes.length+data.length);
+    crcInput.set(typeBytes,0);crcInput.set(data,typeBytes.length);
+    const crc=crc32(crcInput);
+    const chunk=new Uint8Array(4+4+data.length+4);
+    chunk.set(u32be(data.length),0);
+    chunk.set(typeBytes,4);
+    chunk.set(data,8);
+    chunk.set(u32be(crc),8+data.length);
     const out=new Uint8Array(pngBytes.length+chunk.length);
     out.set(pngBytes.subarray(0,ihdrEnd),0);
     out.set(chunk,ihdrEnd);
@@ -10920,6 +11016,23 @@ function iccSampledCurve(n) {
   }
   return b;
 }
+// Same 'curv' tag shape as iccSampledCurve above, but sampling a plain
+// power-law gamma instead of the sRGB piecewise curve -- used for the
+// ProPhoto profile below. ROMM RGB's real TRC has a small linear toe
+// segment before the power curve, same idea as sRGB's; a pure gamma is
+// the common practical approximation most software actually ships (and
+// is a documented simplification here, not silently passed off as the
+// exact ROMM curve).
+function iccSampledCurveGamma(n, gamma) {
+  const b = new Uint8Array(12 + n * 2), dv = new DataView(b.buffer);
+  b[0]=0x63; b[1]=0x75; b[2]=0x72; b[3]=0x76; // 'curv'
+  dv.setUint32(8, n, false);
+  for (let i = 0; i < n; i++) {
+    const x = i / (n - 1);
+    dv.setUint16(12 + i * 2, Math.round(Math.pow(x, gamma) * 65535), false);
+  }
+  return b;
+}
 
 function iccAscii(str) {
   const out = new Uint8Array(str.length);
@@ -11001,9 +11114,76 @@ function buildSRGBICCProfile() {
   return buf;
 }
 
-function encodeTIFF16(rgba,w,h){
+let _ProPhotoICCCache = null;
+function buildProPhotoICCProfile() {
+  if (_ProPhotoICCCache) return _ProPhotoICCCache;
+
+  // ProPhoto RGB primaries -> XYZ(D50). No Bradford adaptation needed
+  // here (unlike sRGB above) -- ProPhoto's own native white point IS
+  // D50, matching the ICC profile connection space directly. Computed
+  // from this file's own PROPHOTO_RGB_TO_XYZ_D50 matrix (same one the
+  // ProPhoto channel-swap feature already uses) -- verified by summing
+  // all three primaries and confirming the result equals the D50 white
+  // point below, to within rounding.
+  const rXYZ = iccXyzBlock(0.797667, 0.288037, 0.000000);
+  const gXYZ = iccXyzBlock(0.135192, 0.711877, 0.000086);
+  const bXYZ = iccXyzBlock(0.031353, 0.000086, 0.825188);
+  const wtpt = iccXyzBlock(0.9642, 1.0, 0.8249); // D50 PCS white, same for every profile
+  // ROMM RGB's real tone curve has a small linear toe before a 1.8 power
+  // section (the same shape as sRGB's own toe+power curve); a pure 1.8
+  // gamma is the common practical approximation most software ships,
+  // and is what's used here -- a documented simplification, not passed
+  // off as the exact ROMM curve.
+  const trc  = iccSampledCurveGamma(256, 1.8);
+  const desc = iccDescBlock('ProPhoto RGB (irlab.uk)');
+  const cprt = iccTextBlock('Public Domain');
+
+  const blocks = [
+    { sig: 'desc', data: desc }, { sig: 'wtpt', data: wtpt },
+    { sig: 'rXYZ', data: rXYZ }, { sig: 'gXYZ', data: gXYZ }, { sig: 'bXYZ', data: bXYZ },
+    { sig: 'rTRC', data: trc }, { sig: 'cprt', data: cprt },
+  ];
+  const tagList = ['desc','wtpt','rXYZ','gXYZ','bXYZ','rTRC','gTRC','bTRC','cprt'];
+
+  const headerSize = 128, tagCount = tagList.length, tagTableSize = 4 + tagCount * 12;
+  let offset = iccAlign4(headerSize + tagTableSize);
+  const placement = new Map();
+  for (const blk of blocks) {
+    placement.set(blk.sig, { off: offset, size: blk.data.length });
+    offset = iccAlign4(offset + blk.data.length);
+  }
+  const trcPlace = placement.get('rTRC');
+  placement.set('gTRC', trcPlace); placement.set('bTRC', trcPlace); // share one curve block
+
+  const totalSize = offset;
+  const buf = new Uint8Array(totalSize), dv = new DataView(buf.buffer);
+  dv.setUint32(0, totalSize, false);
+  dv.setUint32(8, 0x02100000, false); // ICC v2.1
+  buf.set(iccTagSig('mntr'), 12); buf.set(iccTagSig('RGB '), 16); buf.set(iccTagSig('XYZ '), 20);
+  buf.set(iccTagSig('acsp'), 36);
+  dv.setUint32(64, 0, false); // perceptual rendering intent
+  dv.setInt32(68, s15Fixed16(0.9642), false);
+  dv.setInt32(72, s15Fixed16(1.0), false);
+  dv.setInt32(76, s15Fixed16(0.8249), false);
+
+  let p = headerSize;
+  dv.setUint32(p, tagCount, false); p += 4;
+  for (const sig of tagList) {
+    const place = placement.get(sig);
+    buf.set(iccTagSig(sig), p);
+    dv.setUint32(p + 4, place.off, false);
+    dv.setUint32(p + 8, place.size, false);
+    p += 12;
+  }
+  for (const blk of blocks) buf.set(blk.data, placement.get(blk.sig).off);
+
+  _ProPhotoICCCache = buf;
+  return buf;
+}
+
+function encodeTIFF16(rgba,w,h,useProPhoto){
   const is16 = rgba instanceof Uint16Array;
-  const icc = buildSRGBICCProfile();
+  const icc = useProPhoto ? buildProPhotoICCProfile() : buildSRGBICCProfile();
   // 15 IFD entries now (34675 ICC Profile added), written in ascending tag
   // order as the TIFF spec requires -- 34675 is far larger than every other
   // tag here, so it has to be the LAST entry, not inserted mid-list.
@@ -11085,6 +11265,37 @@ function updatePrecisionNote() {
 }
 
 function bytesPerPixelFor(fmt){return fmt==='tiff16'?6:fmt==='png'?3:0.3;}
+
+/* Converts an sRGB-encoded RGBA pixel buffer to ProPhoto RGB, encoded with
+   ProPhoto's own tone curve (a pure 1.8 gamma here — the same practical
+   approximation used for the embedded ICC profile's TRC above, so the
+   actual pixel values match what the profile tag claims). Reuses this
+   file's own SRGB_LIN_TO_PROPHOTO_LIN matrix (the ProPhoto channel-swap
+   feature's own matrix) rather than deriving a second one. Alpha passes
+   through untouched. Works on either a Uint16Array (16-bit TIFF path) or
+   a Uint8ClampedArray/Uint8Array (8-bit PNG path) — same maths, just a
+   different input/output scale. */
+function convertRGBAtoProPhoto(px, isU16){
+  const scale = isU16 ? 65535 : 255;
+  const out = isU16 ? new Uint16Array(px.length) : new Uint8ClampedArray(px.length);
+  const M = SRGB_LIN_TO_PROPHOTO_LIN;
+  for (let i = 0; i < px.length; i += 4) {
+    const lr = srgbToLinearF(px[i]   / scale);
+    const lg = srgbToLinearF(px[i+1] / scale);
+    const lb = srgbToLinearF(px[i+2] / scale);
+    const pr = M[0]*lr + M[1]*lg + M[2]*lb;
+    const pg = M[3]*lr + M[4]*lg + M[5]*lb;
+    const pb = M[6]*lr + M[7]*lg + M[8]*lb;
+    const cr = Math.max(0, Math.min(1, pr));
+    const cg = Math.max(0, Math.min(1, pg));
+    const cb = Math.max(0, Math.min(1, pb));
+    out[i]   = Math.round(Math.pow(cr, 1/1.8) * scale);
+    out[i+1] = Math.round(Math.pow(cg, 1/1.8) * scale);
+    out[i+2] = Math.round(Math.pow(cb, 1/1.8) * scale);
+    out[i+3] = px[i+3];
+  }
+  return out;
+}
 function updateExportResOptions(){
   const panel = $('resPanel');
   if (!origW || !origH || (origW === $('preview').width && origH === $('preview').height)) {
@@ -11101,7 +11312,20 @@ function updateExportResOptions(){
   $('resOrigLbl').textContent = '(' + origW + '×' + origH + ' · ~' + mbOrig + ' MB)';
   $('resNote').textContent = 'Your source photo is ' + origW + '×' + origH + '. Working size is downscaled for smooth live preview — original renders fresh at export time and takes longer.';
 }
-document.querySelectorAll('input[name=fmt]').forEach(r => r.addEventListener('change', updateExportResOptions));
+document.querySelectorAll('input[name=fmt]').forEach(r => r.addEventListener('change', () => {
+  updateExportResOptions();
+  const fmt = document.querySelector('input[name=fmt]:checked').value;
+  const row = $('wideGamutRow');
+  if (row) row.style.display = (fmt === 'tiff16' || fmt === 'png') ? 'flex' : 'none';
+}));
+// Run once at load too, not just on change -- TIFF is checked by default,
+// so the wide-gamut row should already be visible on first paint, not
+// only after the user touches the format radios.
+(() => {
+  const fmt0 = document.querySelector('input[name=fmt]:checked');
+  const row0 = $('wideGamutRow');
+  if (fmt0 && row0) row0.style.display = (fmt0.value === 'tiff16' || fmt0.value === 'png') ? 'flex' : 'none';
+})();
 
 $('bDl').onclick = async () => {
   if (!engine || !loadedImage) return;
@@ -11131,9 +11355,15 @@ $('bDl').onclick = async () => {
   const fmt = document.querySelector('input[name=fmt]:checked').value;
   const stamp = Date.now();
   const is16 = px instanceof Uint16Array;
+  // JPEG never offers this (checkbox is hidden for it, see the format-change
+  // listener above) -- always sRGB there, deliberately, per the export
+  // panel's own note.
+  const useProPhoto = (fmt === 'tiff16' || fmt === 'png') &&
+    !!($('exportProPhoto') && $('exportProPhoto').checked);
 
   if (fmt === 'tiff16') {
-    const blob = encodeTIFF16(px, w, h);
+    if (useProPhoto) px = convertRGBAtoProPhoto(px, is16);
+    const blob = encodeTIFF16(px, w, h, useProPhoto);
     const a = document.createElement('a');
     a.download = 'channel-swap-' + stamp + '.tiff';
     haptic('confirm');
@@ -11152,6 +11382,7 @@ $('bDl').onclick = async () => {
     return;
   }
 
+  if (useProPhoto) px = convertRGBAtoProPhoto(px, is16);
   const oc = document.createElement('canvas');
   oc.width = w; oc.height = h;
   const ox = oc.getContext('2d');
@@ -11166,13 +11397,16 @@ $('bDl').onclick = async () => {
   oc.toBlob(async b => {
     if (!b) { alert('Export failed.'); return; }
     let finalBlob = b;
-    if (exifSegment) {
-      try {
-        const buf = new Uint8Array(await b.arrayBuffer());
-        const spliced = fmt === 'png' ? spliceExifIntoPngBytes(buf, exifSegment) : spliceExifIntoJpegBytes(buf, exifSegment);
-        finalBlob = new Blob([spliced], { type: mime });
-      } catch (e) {}
-    }
+    try {
+      let buf = new Uint8Array(await b.arrayBuffer());
+      if (fmt === 'png') {
+        if (useProPhoto) buf = await spliceICCIntoPngBytes(buf, buildProPhotoICCProfile(), 'ProPhoto RGB');
+        if (exifSegment) buf = spliceExifIntoPngBytes(buf, exifSegment);
+      } else if (exifSegment) {
+        buf = spliceExifIntoJpegBytes(buf, exifSegment);
+      }
+      finalBlob = new Blob([buf], { type: mime });
+    } catch (e) {}
     const a = document.createElement('a');
     a.download = 'channel-swap-' + stamp + '.' + ext;
     haptic('confirm');
