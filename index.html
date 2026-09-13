@@ -1483,6 +1483,9 @@ input[type=range]:focus-visible::-webkit-slider-thumb, input[type=range]:focus-v
       <div class="sl" style="margin-top:8px"><label>Highlights <b id="v_highlights">0</b></label><input type="range" id="highlights" aria-label="Highlights" min="-100" max="100" value="0"></div>
       <div class="sl" style="margin-top:8px"><label>Shadows <b id="v_shadows">0</b></label><input type="range" id="shadows" aria-label="Shadows" min="-100" max="100" value="0"></div>
       <div class="sl" style="margin-top:8px"><label>Black point <b id="v_blackPt">0</b></label><input type="range" id="blackPt" aria-label="Black point" min="0" max="120" value="0"></div>
+      <div class="sl" style="margin-top:8px"><label>White point <b id="v_whitePt">0</b></label><input type="range" id="whitePt" aria-label="White point" min="0" max="120" value="0"></div>
+      <div class="sl" style="margin-top:8px"><label>Noise reduction <b id="v_noiseReduction">0</b></label><input type="range" id="noiseReduction" aria-label="Noise reduction" min="0" max="100" value="0"></div>
+      <p class="note" style="margin:-4px 0 8px" title="Blends each pixel toward its neighbours, weighted by how similar in colour they already are, so a flat noisy area smooths while a real edge mostly holds. A guess at what counts as noise versus real detail, not something measured against a specific photo — pull back if fine texture starts looking soft.">Smooths flat noisy areas while trying to leave real edges alone. High settings can soften fine detail.</p>
       <p class="note" title="Highlights negative recovers what is still there near white; shadows positive lifts detail out of the dark. Neither can bring back a channel that clipped in camera &mdash; once it reads 1.0 there is nothing left to find.">Neither can bring back a channel that clipped in camera — once it reads 1.0, nothing’s left to find.</p>
 
       <!-- A property of the lens and filter stack, not a grading choice, so
@@ -1777,7 +1780,8 @@ const FS_SOURCE = `
   uniform sampler2D u_lut;
   uniform float u_lutSize;      // 0 = no LUT bound
   uniform float u_lutMix;
-  uniform vec2 u_texelSize;    // 1/width, 1/height of the SOURCE image \u2014 used by the band-matching noise smoothing above
+  uniform vec2 u_texelSize;    // 1/width, 1/height of the SOURCE image \u2014 used by the band-matching noise smoothing above and by noise reduction below
+  uniform float u_noiseReduction;   // 0..1
   uniform sampler2D u_lutPre;    // built-in film LUT, applied EARLY
   uniform float u_lutPreSize;
   uniform float u_lutPreMix;
@@ -1912,6 +1916,7 @@ const FS_SOURCE = `
   uniform float u_sat;
   uniform float u_vibrance;
   uniform float u_blackPt;
+  uniform float u_whitePt;
   varying vec2 v_texCoord;
 
   vec3 srgbToLinear(vec3 c) {
@@ -2833,24 +2838,17 @@ const FS_SOURCE = `
        which is what the labels claim. Re-solved for monotonicity in the new
        space: safe to kS 1.58 and kH 1.08, set well under both. */
     float p = linearToSrgb(vec3(lum)).x;
-    /* Masks widened and gains raised, because both sliders were doing almost
-       nothing on a normally-exposed frame. Measured across their full travel
-       on a real image, Shadows moved the mean from 142.8 to 148.3 \u2014 five
-       levels for the entire range.
-
-       The cause was mask COVERAGE, not gain: at mid-grey the old shadow mask
-       read 0.02 and the highlight mask 0.02, so the middle of the tone range
-       belonged to neither slider and most pixels were simply never touched.
-       Widening the thresholds (0.55 -> 0.75 and 0.45 -> 0.25) lets the masks
-       meet in the middle at about 0.26 each instead of dying there, and
-       raising the exponents gives the shadow lift real reach (up to 3.2x at
-       the darkest end against 2.0x before).
-
-       Re-checked for monotonicity at all four slider extremes across 200
-       tone steps \u2014 no reversals, which is the failure this stage risks. */
+    /* Third round on this slider, not the first — see the two write-ups
+       above. Both previous fixes were measured against a specific real
+       image; this one is a further widening on report alone (still felt
+       weak after both), not a fresh measurement, so treat 1.35 as an
+       estimate to react to rather than a re-derived constant. Monotonicity
+       was re-checked casually at the extremes (hi=-1/+1, sh=-1/+1 combined)
+       but not swept across the full 200-step grid the last round used —
+       worth that fuller check if this still isn't enough. */
     float hw = smoothstep(0.25, 1.00, p);
     float sw = 1.0 - smoothstep(0.00, 0.75, p);
-    float newLum = lum * exp(sh * sw * 1.15 + hi * hw * 0.95);
+    float newLum = lum * exp(sh * sw * 1.15 + hi * hw * 1.35);
     return c * (newLum / lum);
   }
 
@@ -2977,6 +2975,42 @@ const FS_SOURCE = `
 
   void main() {
     vec4 texColor = texture2D(u_image, v_texCoord);
+    /* Runs FIRST, before camera-fit, swap, or anything else touches the
+       pixel, for the same reason camera-fit does (see below): whatever
+       runs later amplifies whatever noise is already there rather than
+       adding its own, so cleaning it up here means white balance's blue
+       gain (routinely large on IR material — see WB_MAX_SPREAD) isn't also
+       amplifying sensor noise along with the colour cast.
+
+       This is a small edge-aware blend, not a real bilateral filter and
+       not a substitute for one: each of the 8 neighbours is weighted by
+       how close its colour already is to the centre pixel, so a flat noisy
+       patch gets smoothed while a real edge — a neighbour that's genuinely
+       a different colour, not just a noisy sample of the same one — keeps
+       most of its own weight and comes through mostly unblurred. SIGMA is
+       a fixed guess at "how different counts as a different colour," not
+       measured against a real noisy photo, and gated behind the slider so
+       it costs nothing at the default of 0. */
+    if (u_noiseReduction > 0.0) {
+      vec3 center = texColor.rgb;
+      vec3 sum = center;
+      float wsum = 1.0;
+      const float SIGMA = 0.09;
+      vec2 offs[8];
+      offs[0] = vec2( u_texelSize.x, 0.0);              offs[1] = vec2(-u_texelSize.x, 0.0);
+      offs[2] = vec2(0.0,  u_texelSize.y);              offs[3] = vec2(0.0, -u_texelSize.y);
+      offs[4] = vec2( u_texelSize.x,  u_texelSize.y);   offs[5] = vec2(-u_texelSize.x,  u_texelSize.y);
+      offs[6] = vec2( u_texelSize.x, -u_texelSize.y);   offs[7] = vec2(-u_texelSize.x, -u_texelSize.y);
+      for (int i = 0; i < 8; i++) {
+        vec3 n = texture2D(u_image, v_texCoord + offs[i]).rgb;
+        float d = distance(n, center);
+        float w = exp(-(d * d) / (2.0 * SIGMA * SIGMA));
+        sum += n * w;
+        wsum += w;
+      }
+      vec3 denoised = sum / wsum;
+      texColor.rgb = mix(center, denoised, u_noiseReduction);
+    }
     /* Camera-colour match runs FIRST, on the encoded value, before anything
        else touches the pixel. It has to: the polynomial was fitted from RAW
        SENSOR colour to the camera's finished JPEG of the same frame, so its
@@ -3150,6 +3184,34 @@ const FS_SOURCE = `
       soft.g = srgb.g >= K ? lifted.g : scaleAtK * pow(srgb.g / K, 2.0);
       soft.b = srgb.b >= K ? lifted.b : scaleAtK * pow(srgb.b / K, 2.0);
       srgb = clamp(soft, 0.0, 1.0);
+    }
+
+    if (u_whitePt > 0.0) {
+      float wp = u_whitePt / 255.0;
+      /* Mirror of the black point's soft toe above, same reasoning at the
+         opposite end: a hard rescale-and-clip sends everything above the
+         threshold to exactly 1.0 with no separation left between any of
+         it — a flat blown highlight, which is precisely what this control
+         exists to avoid rather than manufacture. The shoulder keeps the
+         rescale identical below the knee and rolls the top off instead, so
+         the white point can be pulled down hard while the brightest tones
+         still hold some order.
+         Knee and continuity built the same way as the black point's (knee
+         at twice the distance from the anchor, scale matched at the knee)
+         but mirrored rather than re-derived from scratch, and not
+         separately re-checked for monotonicity across the full slider
+         range the way the black point's was — worth that check if a
+         strong setting is ever seen to invert tone order near white. */
+      vec3 rescaled = srgb / (1.0 - wp);
+      g_over = max(g_over, max(max(rescaled.r, rescaled.g), rescaled.b) - 1.0);
+      float K = max(1.0 - 2.0 * wp, 0.001);
+      float scaleAtK = K / (1.0 - wp);
+      vec3 span = vec3(max(1.0 - K, 1e-5));
+      vec3 shoulder;
+      shoulder.r = srgb.r <= K ? rescaled.r : 1.0 - (1.0 - scaleAtK) * pow((1.0 - srgb.r) / span.r, 2.0);
+      shoulder.g = srgb.g <= K ? rescaled.g : 1.0 - (1.0 - scaleAtK) * pow((1.0 - srgb.g) / span.g, 2.0);
+      shoulder.b = srgb.b <= K ? rescaled.b : 1.0 - (1.0 - scaleAtK) * pow((1.0 - srgb.b) / span.b, 2.0);
+      srgb = clamp(shoulder, 0.0, 1.0);
     }
 
     if (u_hue != 0.0 || u_sat != 1.0 || u_vibrance != 0.0) {
@@ -3533,6 +3595,8 @@ class WebGLEngine {
       sat: gl.getUniformLocation(this.program, 'u_sat'),
       vibrance: gl.getUniformLocation(this.program, 'u_vibrance'),
       blackPt: gl.getUniformLocation(this.program, 'u_blackPt'),
+      whitePt: gl.getUniformLocation(this.program, 'u_whitePt'),
+      noiseReduction: gl.getUniformLocation(this.program, 'u_noiseReduction'),
       contrastPivot: gl.getUniformLocation(this.program, 'u_contrastPivot'),
       filmTone: gl.getUniformLocation(this.program, 'u_filmTone'),
       indexMode: gl.getUniformLocation(this.program, 'u_indexMode'),
@@ -3815,6 +3879,8 @@ class WebGLEngine {
     gl.uniform1f(this.uLocs.sat, p.sat / 100);
     gl.uniform1f(this.uLocs.vibrance, (p.vibrance || 0) / 100);
     gl.uniform1f(this.uLocs.blackPt, p.blackPt);
+    gl.uniform1f(this.uLocs.whitePt, p.whitePt || 0);
+    gl.uniform1f(this.uLocs.noiseReduction, (p.noiseReduction || 0) / 100);
     gl.uniform1f(this.uLocs.clipView, p.clipView ? 1 : 0);
     gl.uniform1f(this.uLocs.cmykWarn, p.cmykWarn ? 1 : 0);
     gl.uniform1i(this.uLocs.bandPreview, (p.bandPreview === undefined || p.bandPreview === null) ? -1 : p.bandPreview);
@@ -5940,6 +6006,8 @@ function currentParams() {
        itself. isFinite is what "did this field parse", not truthiness. */
     sat: (v => isFinite(v) ? v : 100)(+$('sat').value),
     blackPt: +$('blackPt').value || 0,
+    whitePt: +$('whitePt').value || 0,
+    noiseReduction: +$('noiseReduction').value || 0,
     satPreserve: +($('satPreserve') && $('satPreserve').value) || 0,
     vibrance: +($('vibrance') && $('vibrance').value) || 0,
     contrast: contrastUI(),
@@ -6120,7 +6188,7 @@ function updateImplicitStamp() {
   }
 }
 
-['bright','hue','sat','vibrance','filmToneAmt','blackPt','temp','tint','satPreserve','contrast','highlights','shadows','vigAmt','vigFall','vigSpread','shHue','shSat','hiHue','hiSat','splitBal','triMix','triA','triB','triC','triSat','lumaR','lumaG','lumaB','brightness'].forEach(id => {
+['bright','hue','sat','vibrance','filmToneAmt','blackPt','whitePt','noiseReduction','temp','tint','satPreserve','contrast','highlights','shadows','vigAmt','vigFall','vigSpread','shHue','shSat','hiHue','hiSat','splitBal','triMix','triA','triB','triC','triSat','lumaR','lumaG','lumaB','brightness'].forEach(id => {
   $(id).addEventListener('input', () => { $('v_' + id).textContent = $(id).value; render(); });
 });
 MCELLS.forEach(id => $(id).addEventListener('input', () => { render(); mxSync(); }));
@@ -9292,7 +9360,7 @@ function resetAllControls() {
   if ($('filmToneAmt')) { $('filmToneAmt').value = 0; $('v_filmToneAmt').textContent = 0; }
   camMatchOn = false; if ($('camMatch')) $('camMatch').checked = false;
   targetedBands = []; bandRenderList();
-  ['bright','hue','brightness','blackPt','temp','tint','satPreserve','contrast','highlights','shadows','vigAmt','shSat','hiSat','splitBal','triMix','vibrance'].forEach(id => { $(id).value = 0; $('v_' + id).textContent = 0; });
+  ['bright','hue','brightness','blackPt','whitePt','noiseReduction','temp','tint','satPreserve','contrast','highlights','shadows','vigAmt','shSat','hiSat','splitBal','triMix','vibrance'].forEach(id => { $(id).value = 0; $('v_' + id).textContent = 0; });
   $('vigFall').value = 20; $('v_vigFall').textContent = '2.0';
   $('vigSpread').value = 55; $('v_vigSpread').textContent = 55;
   vigCentre = [0.5, 0.5]; $('vigCentreNote').textContent = 'Centre: 0.50, 0.50 (default)';
@@ -9420,7 +9488,7 @@ let preChangeSnapshot = null;
    restoring any session or link saved before the removal. The lookup is
    guarded (`if (!el) return`), so a name with no element simply skips while
    keeping every later index aligned. */
-const HASH_SLIDERS = ['hue', 'sat', 'bright', 'blackPt', 'lutMix', 'temp', 'tint', 'defringe', 'contrast', 'highlights', 'shadows', 'vigAmt', 'vigFall', 'vigSpread', 'shHue', 'shSat', 'hiHue', 'hiSat', 'splitBal', 'triMix', 'triA', 'triB', 'triC', 'triSat', 'satPreserve', 'vibrance', 'filmToneAmt', 'lumaR', 'lumaG', 'lumaB', 'brightness', 'autoGainR', 'autoGainG', 'autoGainB'];
+const HASH_SLIDERS = ['hue', 'sat', 'bright', 'blackPt', 'lutMix', 'temp', 'tint', 'defringe', 'contrast', 'highlights', 'shadows', 'vigAmt', 'vigFall', 'vigSpread', 'shHue', 'shSat', 'hiHue', 'hiSat', 'splitBal', 'triMix', 'triA', 'triB', 'triC', 'triSat', 'satPreserve', 'vibrance', 'filmToneAmt', 'lumaR', 'lumaG', 'lumaB', 'brightness', 'autoGainR', 'autoGainG', 'autoGainB', 'whitePt', 'noiseReduction'];
 
 /* ---------- haptics ----------
 
@@ -10931,7 +10999,7 @@ function resetLookBeforeRecipe() {
     el.value = v;
     const lbl = $('v_' + id); if (lbl) lbl.textContent = v;
   };
-  ['hue','sat','vibrance','bright','brightness','contrast','satPreserve','blackPt',
+  ['hue','sat','vibrance','bright','brightness','contrast','satPreserve','blackPt','whitePt','noiseReduction',
    'highlights','shadows','temp','tint','triMix','triSat','filmToneAmt',
    'splitBal','shSat','hiSat','vigAmt'].forEach(id => {
     if (!$(id)) return;
@@ -10990,7 +11058,7 @@ function resetLookBeforeRecipe() {
    section for why localStorage rather than IndexedDB, and why this is
    per-browser rather than synced anywhere. */
 const USER_PRESETS_KEY = 'irlab_user_presets';
-const USER_PRESET_SLIDER_IDS = ['hue','sat','vibrance','bright','brightness','contrast','satPreserve','blackPt',
+const USER_PRESET_SLIDER_IDS = ['hue','sat','vibrance','bright','brightness','contrast','satPreserve','blackPt','whitePt','noiseReduction',
   'highlights','shadows','temp','tint','triMix','triSat','filmToneAmt','splitBal','shSat','hiSat','vigAmt',
   'lumaR','lumaG','lumaB'];
 
@@ -11845,6 +11913,52 @@ async function extractExifFromFile(fileOrBlob){
     return extractExifSegment(new Uint8Array(buf));
   }catch(e){return null;}
 }
+/* Reset the Orientation tag (0x0112) to 1 ("upright, no rotation needed")
+   in a raw EXIF segment before it's spliced into an export.
+
+   This app's exports are always already pixel-correct — the canvas that
+   produced them has already applied whatever rotation the source file's own
+   EXIF tag asked for (or a manual turn via the rotate buttons), baking it
+   directly into the pixel data, the way any canvas-based render always
+   does. exifSegment is captured from the ORIGINAL file so things like
+   camera model and capture date survive into the export, but that meant
+   its Orientation tag was carried over unmodified too. For the extremely
+   common phone-photo case — physically landscape sensor data plus an
+   Orientation tag saying "rotate 90 to display" — the result was an export
+   with correct pixels AND a stale tag telling every EXIF-respecting viewer
+   (Photos, the OS gallery, anything) to rotate an already-upright image
+   again. That's the actual mechanism behind portraits saving as landscape:
+   not a pixel bug in this app at all, a metadata one that only shows up
+   once you open the saved file somewhere that honours EXIF. Applies
+   whether or not the user touched the manual rotate buttons — an
+   unrotated phone portrait with a landscape-sensor + orientation-tag origin
+   hits this exactly the same way. */
+function normalizeExifOrientation(exif) {
+  if (!exif || exif.length < 20) return exif;
+  const out = new Uint8Array(exif);   // mutate a copy, never the cached original
+  const tiffStart = 10;                // 2 marker + 2 length + 6 "Exif\0\0"
+  try {
+    const dv = new DataView(out.buffer, out.byteOffset, out.byteLength);
+    const b0 = dv.getUint16(tiffStart, false);
+    let le;
+    if (b0 === 0x4949) le = true; else if (b0 === 0x4D4D) le = false; else return exif;
+    if (dv.getUint16(tiffStart + 2, le) !== 42) return exif;
+    const ifdOff = dv.getUint32(tiffStart + 4, le);
+    const ifd = tiffStart + ifdOff;
+    if (!ifdOff || ifd + 2 > out.length) return exif;
+    const n = dv.getUint16(ifd, le);
+    if (n > 512) return exif;
+    for (let i = 0; i < n; i++) {
+      const e = ifd + 2 + i * 12;
+      if (e + 12 > out.length) break;
+      if (dv.getUint16(e, le) === 0x0112) {
+        dv.setUint16(e + 8, 1, le);   // value: 1 = upright, no rotation
+        break;
+      }
+    }
+  } catch (err) { return exif; }
+  return out;
+}
 function spliceExifIntoJpegBytes(jpegBytes,exif){
   if(!exif||jpegBytes[0]!==0xFF||jpegBytes[1]!==0xD8)return jpegBytes;
   const out=new Uint8Array(2+exif.length+(jpegBytes.length-2));
@@ -12401,6 +12515,12 @@ document.querySelectorAll('input[name=fmt]').forEach(r => r.addEventListener('ch
 
 $('bDl').onclick = async () => {
   if (!engine || !loadedImage) return;
+  // The whole handler used to have no error handling at all, so any
+  // exception anywhere in it — a bad readback, a thrown promise, anything —
+  // produced exactly nothing: no toast, no download, no clue. That's a
+  // diagnosis dead end as much as a UX one. Wrapping the whole thing means
+  // the NEXT time an export silently fails, it stops being silent.
+  try {
   const resChoice = (document.querySelector('input[name=res]:checked') || { value: 'working' }).value;
   const useOriginal = resChoice === 'original' && origFile && (origW !== $('preview').width || origH !== $('preview').height);
 
@@ -12473,9 +12593,9 @@ $('bDl').onclick = async () => {
       let buf = new Uint8Array(await b.arrayBuffer());
       if (fmt === 'png') {
         if (useProPhoto) buf = await spliceICCIntoPngBytes(buf, buildProPhotoICCProfile(), 'ProPhoto RGB');
-        if (exifSegment) buf = spliceExifIntoPngBytes(buf, exifSegment);
+        if (exifSegment) buf = spliceExifIntoPngBytes(buf, normalizeExifOrientation(exifSegment));
       } else if (exifSegment) {
-        buf = spliceExifIntoJpegBytes(buf, exifSegment);
+        buf = spliceExifIntoJpegBytes(buf, normalizeExifOrientation(exifSegment));
       }
       finalBlob = new Blob([buf], { type: mime });
     } catch (e) {}
@@ -12487,6 +12607,10 @@ $('bDl').onclick = async () => {
     setTimeout(() => URL.revokeObjectURL(a.href), 10000);
     offerLanding();
   }, mime, fmt === 'jpeg' ? 1.0 : undefined);
+  } catch (e) {
+    $('bDl').disabled = false; $('bDl').textContent = 'Export Image';
+    alert('Export failed: ' + (e && e.message ? e.message : e) + '\n\nA screenshot of this is the fastest way to get it fixed.');
+  }
 };
 </script>
 </body>
