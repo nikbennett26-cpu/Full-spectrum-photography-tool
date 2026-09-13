@@ -1434,27 +1434,6 @@ input[type=range]:focus-visible::-webkit-slider-thumb, input[type=range]:focus-v
              not wherever there happened to be room. -->
         <button id="btnAuto" class="btnGhostSmall" title="Set post-swap white balance and black point from the image's own histogram" data-i18n="autoTone">Auto tone</button>
       </div>
-      <!-- The choice of chromatic adaptation transform used to be entirely
-           invisible \u2014 Bradford, always, no indication a choice was even
-           being made. Per bradfordAdaptMatrix's own comment, Bradford was fit
-           empirically over roughly 2000-25000K, and a neutral point picked on
-           IR-shifted material is often equivalent to something far outside
-           that range: the matrix still computes out there, it's just
-           extrapolating past where anyone validated it. CAT02 is fit the
-           same general way (LMS-space von Kries scaling) but with different
-           coefficients (from CIECAM02) \u2014 not obviously better out here, just
-           a genuinely different extrapolation, worth being able to compare
-           rather than silently assuming one is correct.
-           Re-pick the neutral point after switching \u2014 this does not replay
-           the last pick automatically, since the point before the picked
-           colour's own solve (dragState/baseWBM) isn't retained once a drag
-           ends. -->
-      <p class="note" style="margin:10px 0 4px">Two different formulas for turning your picked point neutral grey. They usually agree; on IR-shifted colour they can disagree, since both were designed and tested on ordinary daylight photos, not this. Try both on the same spot if a neutral pick looks a little off.</p>
-      <div class="wbrow">
-        <button type="button" id="catBradford" class="swapBtn on" style="min-width:0" title="The standard formula this app has always used">Bradford (standard)</button>
-        <button type="button" id="catCAT02" class="swapBtn" style="min-width:0" title="A different, equally standard formula (from CIECAM02) \u2014 not verified as more correct on IR material, just a second option to compare against">CAT02 (alternate)</button>
-      </div>
-      <p class="note" id="catNote" style="margin:2px 0 0">Re-pick the neutral point below after switching \u2014 it won't recompute your last pick automatically.</p>
       <div class="wbrow" style="margin-top:10px">
         <button id="wbPre" data-i18n="preSwapNeutral">Pre-Swap Neutral</button>
         <button id="wbPreReset" data-i18n="clearPre">Clear Pre</button>
@@ -4061,12 +4040,6 @@ const MCELLS = ['m00','m01','m02','m10','m11','m12','m20','m21','m22'];
 const MOFFCELLS = ['m03','m13','m23'];
 let engine = null, preWB = [1, 1, 1], postWB = [1, 1, 1], loadedImage = null, pickMode = null;
 let wbMethod = 'bradford';   // the only method now — see bradfordAdaptMatrix's comment
-// WHICH chromatic adaptation transform the picker below solves with —
-// separate from wbMethod above, which is about whether a full-matrix
-// adaptation runs at all versus simple per-channel gain. This picks between
-// the two matrix options once that path is taken. See the UI note by the
-// Bradford/CAT02 buttons for why this exists.
-let catMethod = 'bradford';
 let hueSpace = 'perceptual';   // 'perceptual' (OKLab) | 'channel' (HSV) — see hsvRotate's comment
 let lumPreserve = false;   // hold luminance across the swap — see preserveLuma
 let filmOn = false;        // built-in Aerochrome LUT — see decodeFilmLUT
@@ -9431,28 +9404,6 @@ document.querySelectorAll('.hueSpaceBtn').forEach(b => {
   });
 });
 
-function syncCATButtons() {
-  const bOn = $('catBradford'), cOn = $('catCAT02');
-  if (bOn) bOn.classList.toggle('on', catMethod === 'bradford');
-  if (cOn) cOn.classList.toggle('on', catMethod === 'cat02');
-}
-function catLabel() { return catMethod === 'cat02' ? 'CAT02' : 'Bradford'; }
-[['catBradford','bradford'], ['catCAT02','cat02']].forEach(([id, method]) => {
-  const el = $(id);
-  if (!el) return;
-  el.addEventListener('click', () => {
-    if (catMethod === method) return;
-    // No undo entry, no re-render: this only changes what the NEXT neutral
-    // pick solves with (bradfordAdaptMatrix reads catMethod live). An
-    // already-picked preWBM/postWBM is a baked matrix by this point, not a
-    // formula this toggle could retroactively recompute — see the note by
-    // these buttons in the markup about needing to re-pick to compare.
-    catMethod = method;
-    syncCATButtons();
-    haptic('select');
-  });
-});
-
 // ---------- undo ----------
 // Range sliders are the classic mobile-scroll trap: a swipe that starts on
 // or near a slider thumb can get hijacked as a drag instead of a page
@@ -9533,12 +9484,6 @@ function captureState() {
     mOff: MOFFCELLS.map(id => +$(id).value || 0),
     s: HASH_SLIDERS.map(id => { const el = $(id); return el ? +el.value || 0 : 0; }),
     preWB: [...preWB], postWB: [...postWB], preWBM: [...preWBM], postWBM: [...postWBM], wbMethod: wbMethod, hueSpace: hueSpace,
-    // Which CAT matrix the Bradford/CAT02 picker solved with -- captured
-    // alongside wbMethod above for the identical reason: it changes what
-    // preWBM/postWBM actually mean, so undoing to a point where CAT02 was
-    // selected must restore CAT02, not silently leave whatever the CURRENT
-    // toggle state happens to be.
-    catMethod: catMethod,
     // the vignette CENTRE is edit state like any slider — it changes the
     // rendered output and is baked into exports — but it lives in a JS
     // variable rather than an <input>, so it is not covered by the
@@ -9595,10 +9540,6 @@ function applyState(snap) {
   targetedBands = (snap.bands || []).map(b => ({...b}));
   bandRenderList();
   wbMethod = 'bradford';   // forced, not read from the snapshot — 'simple' no longer exists as a render mode, so an old saved session or undo entry carrying it must not be trusted
-  // Unlike wbMethod above, both catMethod values remain valid render options
-  // going forward, so this restores from the snapshot rather than forcing one.
-  catMethod = snap.catMethod === 'cat02' ? 'cat02' : 'bradford';
-  syncCATButtons();
   if (snap.vigCentre) {
     vigCentre = [...snap.vigCentre];
     if ($('vigCentreNote')) $('vigCentreNote').textContent =
@@ -9643,7 +9584,7 @@ function applyState(snap) {
   if (snap.preWBM) {
     preWBM = [...snap.preWBM];
     const set = preWBM.some((v,i) => v !== IDENTITY3[i]);
-    $('wbPreStatus').textContent = set ? ('Set ✓ (' + catLabel() + ')') : 'Pre-WB: Not set';
+    $('wbPreStatus').textContent = set ? 'Set ✓ (Bradford)' : 'Pre-WB: Not set';
     // undoing back past the pick left the marker visible over a WB that was
     // no longer applied
     if (!set) $('pickMarkerPre').style.display = 'none';
@@ -9651,7 +9592,7 @@ function applyState(snap) {
   if (snap.postWBM) {
     postWBM = [...snap.postWBM];
     const set = postWBM.some((v,i) => v !== IDENTITY3[i]);
-    $('wbPostStatus').textContent = set ? ('Set ✓ (' + catLabel() + ')') : 'Post-WB: Not set';
+    $('wbPostStatus').textContent = set ? 'Set ✓ (Bradford)' : 'Post-WB: Not set';
     if (!set) $('pickMarkerPost').style.display = 'none';
   }
   if ('lut' in snap) {
@@ -9867,8 +9808,8 @@ function sampleAt(mode, clientX, clientY, baseWBM) {
     // was a fixed string that never checked for clamping at all, so a
     // limited correction reported success with no sign anything happened
     $('wbPreStatus').textContent = bradfordAdaptMatrix.clamped
-      ? ('Set ✓ (' + catLabel() + ') — limited: that point has almost no blue to work with, so a full correction would have blown the frame. Try a lighter grey.')
-      : ('Set ✓ (' + catLabel() + ') — drag the dot to fine-tune');
+      ? 'Set ✓ (Bradford) — limited: that point has almost no blue to work with, so a full correction would have blown the frame. Try a lighter grey.'
+      : 'Set ✓ (Bradford) — drag the dot to fine-tune';
   } else {
     // post-swap WB must sample the ACTUAL RENDERED result — the whole point
     // is correcting a cast that only exists after the channel swap — so this
@@ -9884,8 +9825,8 @@ function sampleAt(mode, clientX, clientY, baseWBM) {
     resetAutoGainSliders();   // this picker sets a full matrix, not a pure
                               // diagonal gain — see the sliders' own note
     $('wbPostStatus').textContent = bradfordAdaptMatrix.clamped
-      ? ('Set ✓ (' + catLabel() + ') — limited: that point has almost no blue to work with, so a full correction would have blown the frame. Try a lighter grey.')
-      : ('Set ✓ (' + catLabel() + ') — drag the dot to fine-tune');
+      ? 'Set ✓ (Bradford) — limited: that point has almost no blue to work with, so a full correction would have blown the frame. Try a lighter grey.'
+      : 'Set ✓ (Bradford) — drag the dot to fine-tune';
   }
   positionMarker(mode, cx-rect.left, cy-rect.top, rect.width, rect.height);
   render();
@@ -9991,11 +9932,6 @@ function gainsFor(r,g,b){
    not a given — hence sitting alongside the existing method for a
    side-by-side rather than replacing it. */
 const BRADFORD_M  = [ 0.8951,0.2664,-0.1614,  -0.7502,1.7135,0.0367,  0.0389,-0.0685,1.0296 ];
-// Standard CIECAM02 matrix, from memory of the published constant rather than
-// a source checked in this session \u2014 worth a quick cross-check against a
-// primary reference (the CIE TC8-01 CIECAM02 spec, or a colour-science
-// library's source) before leaning on this for anything precision-critical.
-const CAT02_M = [ 0.7328,0.4296,-0.1624,  -0.7036,1.6975,0.0061,  0.0030,0.0136,0.9834 ];
 const SRGB2XYZ_M   = [ 0.4124564,0.3575761,0.1804375,  0.2126729,0.7151522,0.0721750,  0.0193339,0.1191920,0.9503041 ];
 const D65_XYZ = [0.95047, 1.0, 1.08883];
 
@@ -10024,7 +9960,6 @@ function bfMat3inv(A) {
 }
 const XYZ2SRGB_M = bfMat3inv(SRGB2XYZ_M);
 const BRADFORD_MI = bfMat3inv(BRADFORD_M);
-const CAT02_MI = bfMat3inv(CAT02_M);
 
 /* ---------- Camera-matrix develop (ported from webraw-extravisual/color.js) ----------
    Real per-camera colorimetry for the AMaZE path specifically, since that's
@@ -10169,8 +10104,6 @@ function toGLMat3(m) {
 }
 
 function bradfordAdaptMatrix(r, g, b) {
-  const M  = catMethod === 'cat02' ? CAT02_M  : BRADFORD_M;
-  const MI = catMethod === 'cat02' ? CAT02_MI : BRADFORD_MI;
   const lin = [srgbToLinearF(r/255), srgbToLinearF(g/255), srgbToLinearF(b/255)];
   const srcXYZ = bfMat3vec(SRGB2XYZ_M, lin);
   const Ysrc = Math.max(srcXYZ[1], 1e-6);
@@ -10199,7 +10132,7 @@ function bradfordAdaptMatrix(r, g, b) {
     bradfordAdaptMatrix.clamped=false;
   }
   const D = [d[0],0,0, 0,d[1],0, 0,0,d[2]];
-  const adaptXYZ = bfMat3mul(MI, bfMat3mul(D, M));
+  const adaptXYZ = bfMat3mul(BRADFORD_MI, bfMat3mul(D, BRADFORD_M));
   return bfMat3mul(XYZ2SRGB_M, bfMat3mul(adaptXYZ, SRGB2XYZ_M));   // linear RGB -> linear RGB
 }
 
