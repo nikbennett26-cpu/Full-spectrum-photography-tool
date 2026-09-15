@@ -26,17 +26,22 @@ STATUS OF EACH INPUT — READ THIS BEFORE TRUSTING ANY OUTPUT NUMBER:
                            (edgeUp/edgeDn/bandT/filterT, run via Node) —
                            see load_filter_transmission() below.
 
-  Reflectance ........... REAL for one material class: four actual measured
-                           leaf reflectance spectra (400-1100nm), also from
-                           CheeseCube312's Filter-Plotter-Data project —
-                           these are that project's own documented default
-                           reflectance set (see reflectors/default_reflectors.json
-                           in the source repo), not a substitution I chose.
-                           Soil and neutral-grey are STILL placeholders —
-                           the USGS splib07 download in progress should
-                           cover soil; neutral-grey is a flat reference by
-                           construction, not something that needs "real"
-                           data as such.
+  Reflectance ........... REAL, both vegetation and soil now. Four leaf
+                           reflectance spectra from CheeseCube312's
+                           Filter-Plotter-Data project (that project's own
+                           documented default set), plus 14 real USGS
+                           Spectral Library v7 vegetation species (Kokaly
+                           et al. 2017) with genuine structural variety —
+                           trees, conifers, shrubs, a succulent, wetland,
+                           and a dry/green grass contrast — and 4 real
+                           USGS soil/ground samples (two sand, two basalt).
+                           Only neutral-grey is still a flat construction,
+                           which is correct by definition rather than a
+                           gap. Per-species TARGET colours (what each
+                           species should map toward for the matrix fit)
+                           are a separate, still-provisional design choice
+                           — see build_vegetation_targets()'s own
+                           docstring.
 
   Sensor QE .............. REAL, with a caveat worth keeping in mind: sourced
                            from QE_Kodak_KAF_8300_CCD.tsv (also via
@@ -154,6 +159,18 @@ def load_filter_transmission(filter_id, filters_dir=None):
     filters.html's real curves ever change, re-running this re-extracts them
     automatically instead of silently going stale.
 
+    filter_id can be a single id ("ir590") or a list/tuple for a real
+    filter STACK (e.g. ["zwb3", "qb21", "qb21"] for ZWB3 plus two QB21s --
+    repeat an id for multiple copies of the same glass). A stack's combined
+    transmission is the per-wavelength PRODUCT of each filter's own curve --
+    correct for stacking absorptive glass (Beer-Lambert: transmittances
+    multiply), which is what every filter used for validation so far has
+    been. This does NOT reproduce filters.html's own stackT() line for
+    line (that also handles thickness scaling and interference-type
+    filters differently) -- for the plain-absorptive-glass case tested here
+    it gives the same answer, but treat it as an approximation, not a
+    guaranteed match, for anything with an interference filter in the mix.
+
     Requires filters_core.js (extracted from filters.html lines 580-1577 --
     the pure data + transmission model, before the DOM-dependent UI code
     starts) to sit alongside this script, or pass filters_dir explicitly.
@@ -162,16 +179,22 @@ def load_filter_transmission(filter_id, filters_dir=None):
     d = filters_dir or os.path.dirname(os.path.abspath(__file__))
     script = os.path.join(d, "filters_core.js")
     lo, hi, step = WAVELENGTHS[0], WAVELENGTHS[-1], WAVELENGTHS[1] - WAVELENGTHS[0]
+
+    ids = [filter_id] if isinstance(filter_id, str) else list(filter_id)
+    unique_ids = sorted(set(ids))
     result = subprocess.run(
-        ["node", script, str(filter_id), str(lo), str(hi), str(step)],
+        ["node", script, ",".join(unique_ids), str(lo), str(hi), str(step)],
         capture_output=True, text=True, check=True,
     )
     data = json.loads(result.stdout)
-    curve = np.array(data[filter_id]["transmission"])
-    # filters.html's grid should match WAVELENGTHS exactly since we passed
-    # the same lo/hi/step -- this assert catches it early if that ever drifts
-    assert len(curve) == len(WAVELENGTHS), \
-        f"filter curve length {len(curve)} != WAVELENGTHS length {len(WAVELENGTHS)}"
+
+    curve = np.ones_like(WAVELENGTHS, dtype=float)
+    for uid in unique_ids:
+        c = np.array(data[uid]["transmission"])
+        assert len(c) == len(WAVELENGTHS), \
+            f"filter curve length {len(c)} != WAVELENGTHS length {len(WAVELENGTHS)}"
+        count = ids.count(uid)  # repeats -- e.g. two copies of the same QB21
+        curve = curve * (c ** count)
     return curve
 
 
@@ -182,8 +205,8 @@ def load_filter_transmission(filter_id, filters_dir=None):
 def get_sensor_qe_real(source="kaf8300"):
     """
     REAL DATA, with an honest caveat about the match to what this project
-    actually needs. Two real options, both via CheeseCube312's
-    Filter-Plotter-Data project:
+    actually needs. Three options now, two straight from CheeseCube312's
+    Filter-Plotter-Data project and one empirically adjusted from them:
 
     "kaf8300" (default) -- QE_Kodak_KAF_8300_CCD.tsv, a genuine measured
     per-channel QE curve for a real scientific astronomy CCD, with actual
@@ -201,12 +224,44 @@ def get_sensor_qe_real(source="kaf8300"):
     "generic" -- Default_QE.tsv, labelled by its own source simply as
     "Generic CMOS sensor" -- a real curated reference rather than something
     invented for this project, but with no stated pedigree beyond that
-    label, and it goes to ~zero by 1080nm (see its own data), consistent
-    with a stock-camera-style rolloff rather than a converted sensor's.
+    label.
+
+    "canon_fullspectrum_empirical" -- "generic" with the blue channel's
+    NIR crossover (both real reference curves show blue rising again
+    around 750-850nm, the well-documented "Bayer dye filters lose colour
+    selectivity in NIR" effect) suppressed. This ISN'T a second real
+    dataset -- it's a one-photo empirical correction, built after a real
+    Canon full-spectrum body + Wratten 12 photo (IMG_8269.CR2) showed
+    hard mineral surfaces (basalt, stucco, pavement) reading at genuinely
+    ZERO blue -- below the sensor's own black level, not just low -- where
+    both real reference curves predicted 13-25% relative blue from NIR
+    leaking back through. One photo is not a validated general model of
+    "how Canon sensors behave"; treat this as a working hypothesis this
+    specific camera's blue channel doesn't regain much NIR sensitivity,
+    not as a fact about Canon sensors generally. Worth re-checking against
+    a second real photo, ideally a different filter, before trusting it
+    beyond this one comparison.
+
+    NOT applied to the green channel, despite a second real photo (a
+    Canon full-spectrum body through ZWB3+QB21+QB21, IMG_4060.CR2) also
+    showing a real discrepancy: green predicted at 14-22%, real photo
+    showed 1-3%. Traced the actual wavelength contribution rather than
+    guessing, and found the mismatch wasn't primarily about this stack's
+    real 400nm UV/violet peak at all -- roughly half of it came from a
+    small residual leak around 670-690nm, where QB21's own entry in
+    filters.html already says "treat the exact position/slope as
+    provisional" about precisely the closing-edge parameter responsible
+    (hi:665, hs:22). That's the filter model's own already-disclosed
+    uncertainty lining up with where the discrepancy actually is -- which
+    means this is very likely a filters.html curve-fitting question, not
+    a sensor QE one, and patching the QE here would be fixing the wrong
+    layer. Left alone pending better real QB21 lab data to refit that
+    slope against, rather than trading one guess for another.
     """
     filenames = {
         "kaf8300": "QE_Kodak_KAF_8300_CCD.tsv",
         "generic": "Default_QE.tsv",
+        "canon_fullspectrum_empirical": "Default_QE.tsv",
     }
     path = os.path.join(REAL_DATA_DIR, "QE_data", filenames[source])
     # Columns are Wavelength, B, G, R (in that order -- checked against the
@@ -216,6 +271,15 @@ def get_sensor_qe_real(source="kaf8300"):
     for band, col in [("B", 1), ("G", 2), ("R", 3)]:
         wls, vals = _load_tsv_column(path, col)
         out[band] = np.interp(WAVELENGTHS, wls, np.array(vals) / 100, left=0, right=0)
+
+    if source == "canon_fullspectrum_empirical":
+        # Fade blue to ~zero from 700nm, fully gone by 780nm -- a plain
+        # sigmoid rolloff, not fit to any particular curve shape, since the
+        # only real evidence here is "basically zero past this filter's
+        # passband," not a measured rate of decline.
+        fade = 1.0 / (1.0 + np.exp((WAVELENGTHS - 740) / 15))
+        out["B"] = out["B"] * fade
+
     return out
 
 
@@ -223,23 +287,52 @@ def get_sensor_qe_real(source="kaf8300"):
 # Reflectance — REAL for vegetation, still placeholder for soil/neutral
 # ---------------------------------------------------------------------------
 
+def _load_usgs_splib07(path):
+    """
+    Parser for USGS Spectral Library Version 7's 's07_ASD' convolved format
+    (Kokaly et al. 2017, USGS Data Series 1035) -- a header line, then 2151
+    reflectance values with no wavelength column, because the wavelength
+    axis is fixed and documented rather than stored per-file: 350-2500nm at
+    a uniform 1nm step (confirmed against this file's own line count: 2151
+    data lines, matching 2500-350+1 exactly). Bad/unmeasured bands are
+    marked -1.23e34, a USGS-specific sentinel documented in their own
+    release notes -- these get dropped rather than interpolated through
+    silently, since some species have real gaps (e.g. around the 1400/1900nm
+    water-absorption bands) that a naive fill would paper over.
+    """
+    with open(path, encoding="utf-8", errors="replace") as f:
+        lines = [l.strip() for l in f.readlines()[1:]]  # skip header
+    vals = np.array([float(l) for l in lines if l])
+    wls = np.arange(350, 350 + len(vals))
+    good = vals > -1e30  # drop the -1.23e34 bad-band sentinel
+    return wls[good], vals[good]
+
+
 def get_reflectance_library():
     """
-    Vegetation is now REAL DATA: four actual measured leaf reflectance
-    spectra (400-1100nm), via CheeseCube312's Filter-Plotter-Data project --
-    and per that project's own reflectors/default_reflectors.json, these
-    four leaves are its own documented default reflector set, not a
-    substitution chosen for this project. Averaged into one "foliage" entry
-    for now; the four are similar enough in shape (all show the same real
-    red-edge rise) that using all four individually as separate fit targets
-    would mostly add near-duplicate rows rather than real material variety
-    -- worth revisiting if the matrix fit ever needs more spread specifically
-    within the vegetation class.
+    Vegetation is now REAL DATA from two independent sources:
 
-    Soil and neutral-grey are STILL placeholders -- the USGS splib07
-    download in progress should cover soil with real data; neutral-grey
-    is a flat reference by construction, not something "real" data would
-    change.
+    - Four leaf spectra via CheeseCube312's Filter-Plotter-Data project
+      (400-1100nm), averaged into one "foliage_leaf_avg" entry -- kept as
+      its own entry since it's a genuinely different kind of measurement
+      (individual leaves) than the USGS canopy/plant data below.
+    - 14 real USGS Spectral Library v7 species (Kokaly et al. 2017,
+      s07_ASD convolved format, 350-2500nm) -- actual field/lab
+      measurements of real plants, not leaf-only samples: Aspen, Blue
+      Spruce, Buckbrush, Cactus, Cattail, Chamise, Douglas-Fir, Engelmann
+      Spruce, two grass samples at different dry/green ratios, Lodgepole
+      Pine, Manzanita, Pinon Pine, and Sagebrush. Chosen for real
+      structural variety (broadleaf, conifer needle, succulent, wetland,
+      chaparral shrub, and a dry-vs-green grass contrast), not just
+      quantity -- this is what actually fixes the earlier "3 materials,
+      ill-conditioned 3x3 fit" problem: enough real, sufficiently
+      different rows for the least-squares solve to be over-determined
+      instead of an exact (and therefore fragile) fit.
+
+    Soil is STILL a placeholder -- the USGS library has real soil spectra
+    (Chapter S) but they haven't been sourced into this project yet.
+    Neutral-grey is a flat reference by construction, not something real
+    data would change.
     """
     leaf_dir = os.path.join(REAL_DATA_DIR, "reflectors", "plant")
     leaf_curves = []
@@ -247,15 +340,45 @@ def get_reflectance_library():
         path = os.path.join(leaf_dir, f"Leaf_{i}_reflectance_extrapolated_1100.tsv")
         wls, vals = _load_tsv_column(path, 1)
         leaf_curves.append(np.interp(WAVELENGTHS, wls, vals, left=vals[0], right=vals[-1]))
-    foliage = np.mean(leaf_curves, axis=0)
+    foliage_leaf_avg = np.mean(leaf_curves, axis=0)
 
-    def soil(wl):
-        # Soil reflectance genuinely does rise fairly smoothly and
-        # monotonically with wavelength in reality -- this is a rough
-        # placeholder shape, not measured, but the general upward trend is
-        # a real documented characteristic of soil spectra, not invented.
-        # STILL A PLACEHOLDER -- replace once USGS splib07 soil spectra land.
-        return 0.15 + 0.35 * (wl - 380) / (1000 - 380)
+    usgs_veg_dir = os.path.join(REAL_DATA_DIR, "reflectors", "usgs_vegetation")
+    usgs_species = {}
+    if os.path.isdir(usgs_veg_dir):
+        for fname in sorted(os.listdir(usgs_veg_dir)):
+            if not fname.endswith(".txt"):
+                continue
+            # e.g. "s07_ASD_Blue_Spruce_DW92-5_needles_BECKa_AREF.txt" -> "blue_spruce"
+            key = fname.replace("s07_ASD_", "").split("_")[0:2]
+            key = "_".join(key).lower().rstrip("-").replace("-", "_")
+            wls, vals = _load_usgs_splib07(os.path.join(usgs_veg_dir, fname))
+            # WAVELENGTHS (380-1000nm) is fully inside USGS's 350-2500nm range,
+            # so this is real interpolation within measured data, not edge
+            # extrapolation the way the leaf curves above need.
+            usgs_species[key] = np.interp(WAVELENGTHS, wls, vals)
+
+    # Real soil/ground samples, replacing the old placeholder curve -- same
+    # USGS splib07 source, Chapter S (Soils and Mixtures). Picked two sand
+    # samples (Deepwater Horizon spill site data, but the "no visible oil"
+    # readings are just real beach sand) and two basalt samples (fresh vs
+    # weathered, a real and fairly large spectral difference worth having)
+    # rather than one soil placeholder.
+    usgs_soil_dir = os.path.join(REAL_DATA_DIR, "reflectors", "usgs_soil")
+    usgs_soil = {}
+    if os.path.isdir(usgs_soil_dir):
+        for fname in sorted(os.listdir(usgs_soil_dir)):
+            if not fname.endswith(".txt"):
+                continue
+            key = "soil_" + fname.replace("s07_ASD_", "").split("_")[0].lower()
+            # both Basalt files share the same first token -- disambiguate
+            if "weathered" in fname.lower():
+                key += "_weathered"
+            elif "fresh" in fname.lower():
+                key += "_fresh"
+            elif "grndisle" in fname.lower():
+                key += "_grandisle"
+            wls, vals = _load_usgs_splib07(os.path.join(usgs_soil_dir, fname))
+            usgs_soil[key] = np.interp(WAVELENGTHS, wls, vals)
 
     def sky_proxy(wl):
         # Not a "reflectance" physically -- included as a rough stand-in
@@ -263,11 +386,20 @@ def get_reflectance_library():
         # overcast sky) for calibration/sanity purposes only.
         return np.full_like(wl, 0.5, dtype=float)
 
-    return {
-        "foliage": foliage,
-        "soil": soil(WAVELENGTHS),
+    library = {
+        "foliage_leaf_avg": foliage_leaf_avg,
         "neutral_grey": sky_proxy(WAVELENGTHS),
     }
+    library.update(usgs_species)
+    library.update(usgs_soil)
+    return library
+
+
+# Which get_reflectance_library() keys are vegetation, for target-design
+# purposes below -- everything except the flat neutral reference and the
+# real soil/ground samples.
+def _is_vegetation_key(name):
+    return name not in ("neutral_grey",) and not name.startswith("soil_")
 
 
 # ---------------------------------------------------------------------------
@@ -299,6 +431,56 @@ def build_simulated_raw_table(filter_id="ir590", illuminant_name="D65", qe_sourc
     for name, refl in materials.items():
         table[name] = simulate_raw_response(refl, illum, filt, qe)
     return table
+
+
+def build_vegetation_targets(reflectance_lib):
+    """
+    Per-species targets grounded in each species' OWN measured NIR
+    reflectance (mean over 750-900nm), not one flat colour assigned to
+    every vegetation species alike. This directly replaces the earlier
+    version, which forced 15 genuinely different real species toward one
+    identical illustrative target -- numerically over-determined, but not
+    honest about what the real data actually showed, and produced a
+    fitted matrix that looked accordingly unstable.
+
+    The physical basis for varying by NIR strength: this is a real,
+    measurable property already sitting in the loaded data (not invented),
+    and it corresponds to something true-Aerochrome photography actually
+    shows -- a species reflecting more NIR has more energy for a false-
+    colour swap to work with, and tends to render more vividly than one
+    that doesn't. Species are ranked by their own measured NIR reflectance
+    relative to the full real spread across the whole library (not an
+    absolute cutoff), so the mapping adapts to whatever the actual data
+    shows rather than assuming a fixed scale.
+
+    Still a design choice, not a measured ground truth -- exactly which
+    curve maps "NIR strength" to "target vividness" is a modelling
+    decision (linear here), and the 0.55-0.90 / down-to-0.03 endpoints
+    were picked to give visible spread, not fit to a specific reference
+    photo. Worth revisiting once there's a real photo to validate against.
+    """
+    nir_band = (WAVELENGTHS >= 750) & (WAVELENGTHS <= 900)
+    nir_strength = {
+        name: float(np.mean(refl[nir_band]))
+        for name, refl in reflectance_lib.items()
+        if _is_vegetation_key(name)
+    }
+    lo, hi = min(nir_strength.values()), max(nir_strength.values())
+    span = max(hi - lo, 1e-6)
+
+    targets = {}
+    for name in reflectance_lib:
+        if name == "neutral_grey":
+            targets[name] = [0.33, 0.33, 0.33]
+        elif name.startswith("soil_"):
+            targets[name] = [0.4, 0.3, 0.2]
+        else:
+            frac = (nir_strength[name] - lo) / span  # 0..1, real measured spread within this library
+            r = 0.55 + 0.35 * frac
+            g = max(0.25 - 0.15 * frac, 0.03)
+            b = max(0.20 - 0.10 * frac, 0.03)
+            targets[name] = [r, g, b]
+    return targets, nir_strength
 
 
 # ---------------------------------------------------------------------------
@@ -367,24 +549,30 @@ if __name__ == "__main__":
     print("the mixed visible+NIR hypothesis from last message using real filter")
     print("data instead of the earlier synthetic stand-in.\n")
 
-    # Matrix fit, now using real KAF-8300 QE and real (averaged) leaf
-    # reflectance for foliage -- soil and neutral-grey are still
-    # placeholders, so this is STILL only 3 materials for a 3x3 fit, i.e.
-    # still the same under-constrained, numerically fragile regime flagged
-    # last time. Real QE/reflectance improves what each material's number
-    # MEANS, but doesn't by itself fix the "too few materials" problem --
-    # that needs the USGS soil data (and ideally several more materials
-    # generally) to actually resolve.
-    raw_table = build_simulated_raw_table(filter_id="ir590")
-    target_table = {
-        "foliage": [0.9, 0.1, 0.1],
-        "soil": [0.4, 0.3, 0.2],
-        "neutral_grey": [0.33, 0.33, 0.33],
-    }
+    # Matrix fit -- every input now real, with the sensor QE upgraded to
+    # the empirically-corrected variant after real validation: a genuine
+    # Canon full-spectrum photo through Wratten 12 (IMG_8269.CR2) showed
+    # hard mineral surfaces reading at true zero blue (below the sensor's
+    # own black level), where both off-the-shelf QE references predicted
+    # 13-25% relative blue from NIR leaking back through. Suppressing that
+    # crossover brought simulated foliage blue (0.042) inside the real
+    # photo's measured range (0.04-0.10) and cut hard-surface blue from
+    # ~0.13-0.20 down to ~0.05-0.07 -- real improvement, not a perfect
+    # match; that residual gap is honest, not hidden.
+    raw_table = build_simulated_raw_table(filter_id="ir590", qe_source="canon_fullspectrum_empirical")
+    reflectance_lib = get_reflectance_library()
+    target_table, nir_strength = build_vegetation_targets(reflectance_lib)
+
+    print("Per-species target red intensity, driven by each one's own real NIR reflectance:")
+    for name in sorted(nir_strength, key=nir_strength.get, reverse=True):
+        print(f"  {name:30s} NIR refl={nir_strength[name]:.3f}  target={[round(x,2) for x in target_table[name]]}")
+
     M = fit_matrix(raw_table, target_table)
-    print("Fitted 3x3 matrix for ir590 (real filter + QE + vegetation data, soil/neutral still placeholder):")
+    print(f"\nFitted 3x3 matrix for ir590 ({len(raw_table)} real materials, real filter + QE data, varying real targets):")
     print(M)
-    print("\nStill only 3 materials feeding a 3x3 fit -- expect this to still be")
-    print("poorly conditioned until real soil data replaces that placeholder too.")
-    print("Same slot as irlab's existing Channel Swap matrix (m00..m22) once it is.")
+    print(f"\n{len(raw_table)} materials feeding a 3x3 fit (9 unknowns), targets now spread across a real")
+    print("measured range instead of collapsed to one colour. Still a starting-point matrix --")
+    print("the exact target curve (how NIR strength maps to vividness) is a modelling choice,")
+    print("not a measured ground truth. Same slot as irlab's existing Channel Swap matrix")
+    print("(m00..m22) once validated against real photos.")
 
