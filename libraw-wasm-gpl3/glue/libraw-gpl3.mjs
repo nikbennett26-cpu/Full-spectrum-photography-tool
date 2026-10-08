@@ -7,13 +7,23 @@
 //   demosaic(dec, qual) -> {R,G,B}
 // LibRaw-backed methods are present only in a "full" build.
 //
-// X-Trans routing note: the core build's own LibRaw-backed X-Trans
-// demosaic (inside dist/libraw-gpl3.js) has a known bug — it reports
-// success but silently returns all-zero pixel data. Rather than patch
-// unrecoverable compiled code (its source isn't in this repo), X-Trans
-// files are routed to a separately built, independently verified module
-// (dist/libraw-gpl3-xtrans.js) instead. Every other camera's decode path
-// is completely unchanged below.
+// Routing note: decode() now goes ENTIRELY through dist/libraw-gpl3-xtrans.js
+// (despite the filename) for every camera, not just X-Trans. Previously only
+// X-Trans files were routed there, because the core build's own LibRaw-backed
+// X-Trans demosaic (inside dist/libraw-gpl3.js) has a known bug -- it reports
+// success but silently returns all-zero pixel data -- and X-Trans was moved
+// to this separately built, independently verified module instead, while
+// every other camera's decode path stayed on the core build.
+//
+// That's no longer the right split: dist/libraw-gpl3-xtrans.js's lr_c_api.cpp
+// now handles Bayer sensors too (RCD demosaic, ported from darktable -- see
+// src/amaze/rcd_demosaic_port.cc), and the core build (dist/libraw-gpl3.js)
+// was returning 0 / failing to decode on Bayer files via its lr_demosaic
+// before that. Rather than leave Bayer on a module with no confirmed working
+// demosaic for it, every camera now goes through the one verified module.
+// The core build + createLibRawGPL3 import are left in place below (and
+// demosaicRaw(), a separate low-level API, is untouched) but decode() no
+// longer calls either.
 import createLibRawGPL3 from '../dist/libraw-gpl3.js';
 import createLibRawGPL3XTrans from '../dist/libraw-gpl3-xtrans.js';
 
@@ -55,19 +65,6 @@ export async function demosaicRaw(mosaic, w, h, cfa, { black = 0, white = 65535,
   }
 }
 
-async function probeOpen(mod, bytes) {
-  const pIn = mod._malloc(bytes.length);
-  mod.HEAPU8.set(bytes, pIn);
-  const h = mod._lr_open(pIn, bytes.length);
-  mod._free(pIn);
-  if (!h) return null;
-  const cfaP = mod._malloc(16);
-  mod._lr_cfa(h, cfaP);
-  const filters = mod.HEAP32[cfaP >> 2];
-  mod._free(cfaP);
-  return { handle: h, filters };
-}
-
 function readDecodeMetadata(mod, h, width, height) {
   const rd = (fn, len, heap, shift) => {
     const p = mod._malloc(len * 4);
@@ -86,62 +83,35 @@ function readDecodeMetadata(mod, h, width, height) {
 }
 
 export async function decode(bytes) {
-  const M = await init();
-  if (!M._lr_open) throw new Error('this is a core build (no LibRaw); rebuild with MODE=full');
-
   const MX = await initXTrans();
-  const probe = await probeOpen(MX, bytes);
+  if (!MX._lr_open) throw new Error('this is a core build (no LibRaw); rebuild with MODE=full');
 
-  if (probe && probe.filters === 9) {
-    const hx = probe.handle;
-    const width = MX._lr_width(hx), height = MX._lr_height(hx);
-    const meta = readDecodeMetadata(MX, hx, width, height);
-
-    return {
-      handle: hx, width, height, cfa: meta.cfa,
-      black: meta.black, white: meta.white,
-      camMul: meta.camMul, rgbCam: meta.rgbCam,
-      isXTrans: true,
-      demosaic(qual = 'amaze') {
-        const n = width * height;
-        const pR = MX._malloc(n * 4), pG = MX._malloc(n * 4), pB = MX._malloc(n * 4);
-        const ok = MX._lr_demosaic(hx, toQual(qual), pR, pG, pB);
-        const R = MX.HEAPF32.slice(pR >> 2, (pR >> 2) + n);
-        const G = MX.HEAPF32.slice(pG >> 2, (pG >> 2) + n);
-        const B = MX.HEAPF32.slice(pB >> 2, (pB >> 2) + n);
-        MX._free(pR); MX._free(pG); MX._free(pB);
-        if (!ok) throw new Error('X-Trans demosaic failed unexpectedly');
-        return { R, G, B, width, height };
-      },
-      free() { MX._lr_free(hx); },
-    };
-  }
-
-  if (probe) MX._lr_free(probe.handle);
-
-  const pIn = M._malloc(bytes.length);
-  M.HEAPU8.set(bytes, pIn);
-  const h = M._lr_open(pIn, bytes.length);
-  M._free(pIn);
+  const pIn = MX._malloc(bytes.length);
+  MX.HEAPU8.set(bytes, pIn);
+  const h = MX._lr_open(pIn, bytes.length);
+  MX._free(pIn);
   if (!h) throw new Error('LibRaw failed to open/unpack this file');
 
-  const width = M._lr_width(h), height = M._lr_height(h);
-  const meta = readDecodeMetadata(M, h, width, height);
+  const width = MX._lr_width(h), height = MX._lr_height(h);
+  const meta = readDecodeMetadata(MX, h, width, height);
+  const isXTrans = meta.cfa[0] === 9;
 
   return {
     handle: h, width, height, cfa: meta.cfa,
     black: meta.black, white: meta.white,
     camMul: meta.camMul, rgbCam: meta.rgbCam,
+    isXTrans,
     demosaic(qual = 'amaze') {
       const n = width * height;
-      const pR = M._malloc(n * 4), pG = M._malloc(n * 4), pB = M._malloc(n * 4);
-      M._lr_demosaic(h, toQual(qual), pR, pG, pB);
-      const R = M.HEAPF32.slice(pR >> 2, (pR >> 2) + n);
-      const G = M.HEAPF32.slice(pG >> 2, (pG >> 2) + n);
-      const B = M.HEAPF32.slice(pB >> 2, (pB >> 2) + n);
-      M._free(pR); M._free(pG); M._free(pB);
+      const pR = MX._malloc(n * 4), pG = MX._malloc(n * 4), pB = MX._malloc(n * 4);
+      const ok = MX._lr_demosaic(h, toQual(qual), pR, pG, pB);
+      const R = MX.HEAPF32.slice(pR >> 2, (pR >> 2) + n);
+      const G = MX.HEAPF32.slice(pG >> 2, (pG >> 2) + n);
+      const B = MX.HEAPF32.slice(pB >> 2, (pB >> 2) + n);
+      MX._free(pR); MX._free(pG); MX._free(pB);
+      if (!ok) throw new Error('demosaic failed unexpectedly');
       return { R, G, B, width, height };
     },
-    free() { M._lr_free(h); },
+    free() { MX._lr_free(h); },
   };
 }
