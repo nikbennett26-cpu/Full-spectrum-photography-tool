@@ -37,6 +37,13 @@ void xtrans_markesteijn1_demosaic_port(int w, int h, const int xtrans[6][6],
                                         float* const* rawData,
                                         float** red, float** green, float** blue);
 
+// From rcd_demosaic_port.cc — RCD (Ratio Corrected Demosaicing), ported from darktable.
+// Bayer-only (does not handle filters==9 / X-Trans). No glibmm dependency, unlike
+// RawTherapee's AMaZE/LMMSE/IGV/AHD, which stay blocked behind rtengine.h for now.
+void rcd_demosaic_port(int w, int h, uint32_t filters,
+                        float* const* rawData,
+                        float** red, float** green, float** blue);
+
 static std::unordered_map<int, LibRaw*> g_handles;
 static int g_nextHandle = 1;
 
@@ -129,11 +136,16 @@ void lr_rgb_cam(int h, float* out12)
 EMSCRIPTEN_KEEPALIVE
 int lr_demosaic(int h, int qual, float* outR, float* outG, float* outB)
 {
-    // qual==0 (bilinear, the UI's own "fastest" option) uses the fast
-    // X-Trans port; anything else (including the app's own default,
-    // 'amaze'=1, sent for every ordinary RAW load) uses the newer,
-    // higher-quality Markesteijn 1-pass port instead. Bayer quals
-    // (lmmse/rcd/igv/ahd) are still gated behind glibmm -- see below.
+    // X-Trans (filters==9): qual==0 (bilinear, the UI's own "fastest" option)
+    // uses the fast X-Trans port; anything else (including the app's own
+    // default, 'amaze'=1, sent for every ordinary RAW load) uses the newer,
+    // higher-quality Markesteijn 1-pass port instead.
+    //
+    // Bayer (filters!=9): routed to RCD (rcd_demosaic_port, ported from
+    // darktable) regardless of `qual` for now -- it's the only Bayer path
+    // wired up so far. The other RawTherapee Bayer quals (lmmse/igv/ahd) are
+    // still gated behind glibmm; AMaZE likewise. RCD was picked first because,
+    // unlike those, its core math has no glibmm/rtengine.h dependency at all.
     auto it = g_handles.find(h);
     if (it == g_handles.end()) return 0;
     LibRaw* proc = it->second;
@@ -147,15 +159,6 @@ int lr_demosaic(int h, int qual, float* outR, float* outG, float* outB)
     const unsigned short* raw = proc->imgdata.rawdata.raw_image;
     if (!raw) return 0;
 
-    if (filters != 9) {
-        return 0;
-    }
-
-    int xtrans[6][6];
-    for (int r = 0; r < 6; r++)
-        for (int c = 0; c < 6; c++)
-            xtrans[r][c] = proc->imgdata.idata.xtrans[r][c];
-
     std::vector<std::vector<float>> rawBuf(height);
     std::vector<float*> rawRows(height), redRows(height), greenRows(height), blueRows(height);
     for (int row = 0; row < height; row++) {
@@ -168,12 +171,22 @@ int lr_demosaic(int h, int qual, float* outR, float* outG, float* outB)
         blueRows[row]  = outB + (size_t)row * width;
     }
 
-    if (qual == 0) {
-        xtrans_fast_demosaic_port(width, height, xtrans, rawRows.data(),
-                                   redRows.data(), greenRows.data(), blueRows.data());
+    if (filters == 9) {
+        int xtrans[6][6];
+        for (int r = 0; r < 6; r++)
+            for (int c = 0; c < 6; c++)
+                xtrans[r][c] = proc->imgdata.idata.xtrans[r][c];
+
+        if (qual == 0) {
+            xtrans_fast_demosaic_port(width, height, xtrans, rawRows.data(),
+                                       redRows.data(), greenRows.data(), blueRows.data());
+        } else {
+            xtrans_markesteijn1_demosaic_port(width, height, xtrans, rawRows.data(),
+                                               redRows.data(), greenRows.data(), blueRows.data());
+        }
     } else {
-        xtrans_markesteijn1_demosaic_port(width, height, xtrans, rawRows.data(),
-                                           redRows.data(), greenRows.data(), blueRows.data());
+        rcd_demosaic_port(width, height, filters, rawRows.data(),
+                           redRows.data(), greenRows.data(), blueRows.data());
     }
 
     const float black = (float)proc->imgdata.color.black;
