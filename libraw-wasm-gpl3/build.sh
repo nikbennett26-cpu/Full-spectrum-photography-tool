@@ -2,8 +2,14 @@
 # build.sh — libraw-wasm-gpl3
 #
 # Split into independent stages so X-Trans (no glibmm needed) can build
-# and be verified without waiting on the AMaZE/LMMSE/RCD/IGV/AHD block,
-# which needs a real GTK/glibmm vendor tree not yet assembled for wasm.
+# and be verified without waiting on the AMaZE/LMMSE/IGV/AHD block, which
+# needs a real GTK/glibmm vendor tree not yet assembled for wasm.
+#
+# RCD is no longer in that blocked group: src/amaze/rcd_demosaic_port.cc is
+# a *different*, independent port (from darktable, not RawTherapee) whose
+# core math never touches glibmm/rtengine.h, so it builds in Stage 1 below
+# alongside X-Trans. The RawTherapee rcd_port.cc referenced in Stage 2's
+# loop is a separate, still-unbuilt file -- don't conflate the two.
 set -euo pipefail
 
 SRC_DIR="src"
@@ -18,6 +24,14 @@ em++ -std=c++17 -O2 \
     -c "$SRC_DIR/amaze/xtrans_fast_port.cc" \
     -o "$OUT_DIR/xtrans_fast_port.o"
 echo "  -> $OUT_DIR/xtrans_fast_port.o"
+
+echo "== Stage 1b: RCD Bayer demosaic, darktable port (no glibmm) =="
+# No -I "$SHIM_DIR" needed here (unlike the X-Trans ports): this file has no
+# dependency on rtengine.h/rawimagesource.h/rt_math.h at all.
+em++ -std=c++17 -O2 \
+    -c "$SRC_DIR/amaze/rcd_demosaic_port.cc" \
+    -o "$OUT_DIR/rcd_demosaic_port.o"
+echo "  -> $OUT_DIR/rcd_demosaic_port.o"
 
 echo "== Stage 2: AMaZE / LMMSE / RCD / IGV / AHD (needs glibmm) =="
 if [ "${BUILD_GLIBMM_DEMOSAICS:-0}" = "1" ]; then
@@ -83,6 +97,7 @@ echo "== Stage 6: final link -> dist/libraw-gpl3-xtrans.js/.wasm =="
 em++ -std=c++17 -O2 \
     "$OUT_DIR"/libraw/*.o \
     "$OUT_DIR/xtrans_fast_port.o" \
+    "$OUT_DIR/rcd_demosaic_port.o" \
     "$OUT_DIR/amaze/xtrans_markesteijn1_port.o" \
     "$OUT_DIR/api/lr_c_api.o" \
     -o dist/libraw-gpl3-xtrans.js \
