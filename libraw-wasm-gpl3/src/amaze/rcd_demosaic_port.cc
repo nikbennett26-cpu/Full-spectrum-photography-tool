@@ -204,7 +204,7 @@ void rcd_demosaic_port(int width, int height, uint32_t filters,
     // comes from the RCD tile interior pass below or was already in the PPG fill
     // above. Set to 0 and rebuild once the bug is found; this line does not belong
     // in a real release.
-    #define RCD_DIAG_PPG_ONLY 1
+    #define RCD_DIAG_PPG_ONLY 0
     #if RCD_DIAG_PPG_ONLY
     return;
     #endif
