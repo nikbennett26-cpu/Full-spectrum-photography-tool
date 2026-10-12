@@ -201,9 +201,6 @@ int lr_demosaic(int h, int qual, float* outR, float* outG, float* outB)
         outR[i] *= scale;
         outG[i] *= scale;
         outB[i] *= scale;
-        if (outR[i] > 1.f) outR[i] = 1.f;
-        if (outG[i] > 1.f) outG[i] = 1.f;
-        if (outB[i] > 1.f) outB[i] = 1.f;
     }
 
     return 1;
