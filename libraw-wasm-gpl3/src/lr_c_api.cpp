@@ -59,17 +59,17 @@ int lr_open(const uint8_t* data, int len)
     }
     int unpackRet = proc->unpack();
     if (unpackRet != LIBRAW_SUCCESS) {
-        EM_ASM_({ console.log('[lr_open diag] unpack() failed, ret=' + $0); }, unpackRet);
+        EM_ASM_({ globalThis.__lrDiag = 'unpack() failed ret=' + $0; }, unpackRet);
         delete proc;
         return 0;
     }
     int r2iRet = proc->raw2image();
     EM_ASM_({
-        console.log('[lr_open diag] raw2image() ret=' + $0 +
+        globalThis.__lrDiag = 'raw2image ret=' + $0 +
                      ' make=' + UTF8ToString($1) + ' model=' + UTF8ToString($2) +
                      ' filters=' + $3 + ' is_foveon=' + $4 + ' colors=' + $5 +
                      ' raw_image_null=' + ($6 ? 'true' : 'false') +
-                     ' rawdata.sizes_raw_width=' + $7);
+                     ' raw_width=' + $7;
     }, r2iRet, proc->imgdata.idata.make, proc->imgdata.idata.model,
        proc->imgdata.idata.filters, proc->imgdata.idata.is_foveon, proc->imgdata.idata.colors,
        (proc->imgdata.rawdata.raw_image == nullptr), proc->imgdata.sizes.raw_width);
@@ -170,9 +170,9 @@ int lr_demosaic(int h, int qual, float* outR, float* outG, float* outB)
     int pitch  = proc->imgdata.sizes.raw_pitch / sizeof(unsigned short);
     const unsigned short* raw = proc->imgdata.rawdata.raw_image;
     EM_ASM_({
-        console.log('[lr_demosaic diag] filters=' + $0 + ' width=' + $1 + ' height=' + $2 +
+        globalThis.__lrDiag = 'lr_demosaic filters=' + $0 + ' width=' + $1 + ' height=' + $2 +
                      ' top=' + $3 + ' left=' + $4 + ' pitch=' + $5 +
-                     ' raw_is_null=' + ($6 ? 'true' : 'false'));
+                     ' raw_is_null=' + ($6 ? 'true' : 'false');
     }, filters, width, height, top, left, pitch, (raw == nullptr));
     if (!raw) return 0;
 

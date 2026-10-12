@@ -109,7 +109,7 @@ export async function decode(bytes) {
       const G = MX.HEAPF32.slice(pG >> 2, (pG >> 2) + n);
       const B = MX.HEAPF32.slice(pB >> 2, (pB >> 2) + n);
       MX._free(pR); MX._free(pG); MX._free(pB);
-      if (!ok) throw new Error('demosaic failed unexpectedly');
+      if (!ok) throw new Error('demosaic failed unexpectedly' + (globalThis.__lrDiag ? ('\n\nDIAG: ' + globalThis.__lrDiag) : ' (no diag captured)'));
       return { R, G, B, width, height };
     },
     free() { MX._lr_free(h); },
