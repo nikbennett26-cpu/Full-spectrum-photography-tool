@@ -169,18 +169,11 @@ int lr_demosaic(int h, int qual, float* outR, float* outG, float* outB)
     int left   = proc->imgdata.sizes.left_margin;
     int pitch  = proc->imgdata.sizes.raw_pitch / sizeof(unsigned short);
     const unsigned short* raw = proc->imgdata.rawdata.raw_image;
-    int rawHeight = proc->imgdata.sizes.raw_height;
-    int rawWidth2 = proc->imgdata.sizes.raw_width;
-    long maxOffset = (long)(height - 1 + top) * pitch + left + (width - 1);
-    long bufSize = (long)rawHeight * rawWidth2;
     EM_ASM_({
         globalThis.__lrDiag = 'lr_demosaic filters=' + $0 + ' width=' + $1 + ' height=' + $2 +
                      ' top=' + $3 + ' left=' + $4 + ' pitch=' + $5 +
-                     ' raw_is_null=' + ($6 ? 'true' : 'false') +
-                     ' raw_height=' + $7 + ' raw_width=' + $8 +
-                     ' maxOffset=' + $9 + ' bufSize=' + $10 +
-                     ' OVERFLOW=' + ($9 >= $10 ? 'YES' : 'no');
-    }, filters, width, height, top, left, pitch, (raw == nullptr), rawHeight, rawWidth2, maxOffset, bufSize);
+                     ' raw_is_null=' + ($6 ? 'true' : 'false');
+    }, filters, width, height, top, left, pitch, (raw == nullptr));
     if (!raw) return 0;
 
     std::vector<std::vector<float>> rawBuf(height);
