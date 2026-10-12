@@ -200,15 +200,6 @@ void rcd_demosaic_port(int width, int height, uint32_t filters,
             blue[row][col]  = ppgOut[p + 2];
         }
 
-    // DIAGNOSTIC ONLY -- temporary, to isolate whether the period-4 column artifact
-    // comes from the RCD tile interior pass below or was already in the PPG fill
-    // above. Set to 0 and rebuild once the bug is found; this line does not belong
-    // in a real release.
-    #define RCD_DIAG_PPG_ONLY 1
-    #if RCD_DIAG_PPG_ONLY
-    return;
-    #endif
-
     if (width < 2 * BORDER || height < 2 * BORDER) return;  // PPG result stands as-is
 
     const int num_vertical = 1 + (height - 2 * BORDER - 1) / TILEVALID;
