@@ -52,9 +52,9 @@ extern "C" {
 EMSCRIPTEN_KEEPALIVE
 int lr_open(const uint8_t* data, int len)
 {
-    EM_ASM_({ globalThis.__lrDiag = 'lr_open ENTERED, len=' + $0; }, len);
+    EM_ASM_({ console.log('[DIAG] lr_open ENTERED, len=' + $0); globalThis.__lrDiag = 'lr_open ENTERED, len=' + $0; }, len);
     LibRaw* proc = new LibRaw();
-    EM_ASM_({ globalThis.__lrDiag = 'lr_open: LibRaw object constructed'; });
+    EM_ASM_({ console.log('[DIAG] lr_open: LibRaw object constructed'); globalThis.__lrDiag = 'lr_open: LibRaw object constructed'; });
     if (proc->open_buffer(data, (size_t)len) != LIBRAW_SUCCESS) {
         delete proc;
         return 0;
