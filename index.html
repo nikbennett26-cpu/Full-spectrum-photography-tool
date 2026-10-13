@@ -25,7 +25,7 @@
 <meta name="twitter:image" content="https://irlab.uk/og-card.png">
 <link rel="canonical" href="https://irlab.uk/">
 <meta name="theme-color" content="#160f0a">
-<meta name="irlab-build" content="97">
+<meta name="irlab-build" content="98">
 <link rel="manifest" href="/manifest.json">
 <link rel="icon" href="/favicon-32.png" sizes="32x32">
 <link rel="apple-touch-icon" href="/apple-touch-icon.png">
@@ -1988,7 +1988,7 @@ html.studioOn body.has-image #toast,html.dockOn body.has-image #toast{background
        between the filter-curves link and that link's own explanation
        paragraph, which read as if it belonged to Discord or the install
        button rather than the filter tool. -->
-  <div style="font-size:10.5px;color:var(--muted);margin:10px 0 4px;text-align:center" id="buildStampHome">Version 2026-10-13 · build 97</div>
+  <div style="font-size:10.5px;color:var(--muted);margin:10px 0 4px;text-align:center" id="buildStampHome">Version 2026-10-13 · build 98</div>
 <a id="discordLink" href="https://discord.gg/baudebNTq" target="_blank" rel="noopener"
      style="display:flex;width:fit-content;align-items:center;gap:7px;margin:14px auto 0;font-family:var(--font-mono);
      font-size:12px;color:var(--safelight);border:1px solid var(--line2);border-radius:var(--radius-sm);
@@ -2840,7 +2840,7 @@ html.studioOn body.has-image #toast,html.dockOn body.has-image #toast{background
       <br><a href="#" id="consentReopen" style="color:var(--muted);text-decoration:underline">Cookie notice</a>
       <br><a href="LICENSE.md" target="_blank" rel="noopener" style="color:var(--muted);text-decoration:underline">Source: AGPL-3.0</a>
       <br><a href="THIRD_PARTY_NOTICES.md" target="_blank" rel="noopener" style="color:var(--muted);text-decoration:underline">Third-party notices (LibRaw, RawTherapee)</a>
-<br><span id="buildStamp" style="color:var(--muted)" title="Which version of the app this is. Tap the arrow to check for a newer one and update.">Version 2026-10-13 · build 97</span>
+<br><span id="buildStamp" style="color:var(--muted)" title="Which version of the app this is. Tap the arrow to check for a newer one and update.">Version 2026-10-13 · build 98</span>
       <br><button id="btnInstall" type="button">Install as an app</button>
       <span id="kbHint">Ctrl+Z undo &middot; Ctrl+Shift+Z redo &middot; [ ] cycle presets &middot; F full quality view &middot; Space hold to compare</span>
     </footer>
@@ -8320,6 +8320,7 @@ $('cw').addEventListener('wheel', ev => {
   // so a plain mouse wheel over the photo zooms it (in toward the cursor, back out to fit).
   const studio = document.documentElement.classList.contains('studioOn');
   if (!loadedImage || !(ev.ctrlKey || ev.metaKey || studio)) return;
+  if (!(ev.ctrlKey || ev.metaKey) && ev.target.closest && ev.target.closest('#cmpBar')) return;   // wheel over the compare bar is not a zoom
   ev.preventDefault();
   if (ev.ctrlKey || ev.metaKey) { zoomAt(Math.pow(0.988, ev.deltaY), ev.clientX, ev.clientY); return; }   // pinch / ctrl+wheel, as before
   const dy = ev.deltaMode === 1 ? ev.deltaY * 33 : ev.deltaMode === 2 ? ev.deltaY * 400 : ev.deltaY;   // lines/pages to px
@@ -8395,6 +8396,9 @@ $('cw').addEventListener('pointerdown', ev => {
   if (!loadedImage || ev.pointerType === 'mouse' && ev.button !== 0) return;
   if (pinch) return;
   if (ev.target.classList.contains('pickmarker')) return;   // marker drag owns this
+  // On desktop the before/after bar (and the readouts) sit inside #cw: a press on a control there is that control's,
+  // not a pan or a hold-to-compare -- dragging the compare slider while zoomed used to slide the photo along with it
+  if (ev.target.closest && ev.target.closest('#cmpBar, .ptStamps, button, input, select, a, label')) return;
   press = { x: ev.clientX, y: ev.clientY, px: panX, py: panY, id: ev.pointerId, moved: false, panning: false };
   if (!pickMode) {
     holdTimer = setTimeout(() => { holdTimer = null; if (press && !press.moved) beginHoldCompare(); }, 220);
