@@ -25,7 +25,7 @@
 <meta name="twitter:image" content="https://irlab.uk/og-card.png">
 <link rel="canonical" href="https://irlab.uk/">
 <meta name="theme-color" content="#160f0a">
-<meta name="irlab-build" content="96">
+<meta name="irlab-build" content="97">
 <link rel="manifest" href="/manifest.json">
 <link rel="icon" href="/favicon-32.png" sizes="32x32">
 <link rel="apple-touch-icon" href="/apple-touch-icon.png">
@@ -1507,7 +1507,8 @@ html.dockOn body.has-image,html.dockOn body.has-image #previewSticky,html.dockOn
   html.studioOn body.has-image #holdHint{bottom:66px}
   html.studioOn body.has-image #zoomBadge{left:auto;right:12px;bottom:66px}
   html.studioOn body.has-image #cw:not(.zoomed) #zoomBadge{display:none !important}
-  html.studioOn body.has-image #cw > .ptStamps{position:absolute;left:4px;bottom:66px;display:flex;flex-direction:column;gap:3px;padding:0;z-index:11;text-align:left}
+  /* decode / WB readouts: in the inspector's sticky scopes header, under the histogram, not over the photo */
+  html.studioOn body.has-image #scopeDetails > .ptStamps{display:flex;flex-direction:row;flex-wrap:wrap;gap:2px 14px;margin:8px 0 0;padding:0;text-align:left}
 
   /* ---- inspector ---- */
   html.studioOn body.has-image #reorderZone{grid-column:3;grid-row:2;display:flex;flex-direction:column;min-height:0;height:auto;max-height:100%;margin:0;padding:0 24px 56px;overflow-y:auto;overflow-x:hidden;overscroll-behavior:contain;
@@ -1987,7 +1988,7 @@ html.studioOn body.has-image #toast,html.dockOn body.has-image #toast{background
        between the filter-curves link and that link's own explanation
        paragraph, which read as if it belonged to Discord or the install
        button rather than the filter tool. -->
-  <div style="font-size:10.5px;color:var(--muted);margin:10px 0 4px;text-align:center" id="buildStampHome">Version 2026-10-12 · build 96</div>
+  <div style="font-size:10.5px;color:var(--muted);margin:10px 0 4px;text-align:center" id="buildStampHome">Version 2026-10-13 · build 97</div>
 <a id="discordLink" href="https://discord.gg/baudebNTq" target="_blank" rel="noopener"
      style="display:flex;width:fit-content;align-items:center;gap:7px;margin:14px auto 0;font-family:var(--font-mono);
      font-size:12px;color:var(--safelight);border:1px solid var(--line2);border-radius:var(--radius-sm);
@@ -2839,7 +2840,7 @@ html.studioOn body.has-image #toast,html.dockOn body.has-image #toast{background
       <br><a href="#" id="consentReopen" style="color:var(--muted);text-decoration:underline">Cookie notice</a>
       <br><a href="LICENSE.md" target="_blank" rel="noopener" style="color:var(--muted);text-decoration:underline">Source: AGPL-3.0</a>
       <br><a href="THIRD_PARTY_NOTICES.md" target="_blank" rel="noopener" style="color:var(--muted);text-decoration:underline">Third-party notices (LibRaw, RawTherapee)</a>
-<br><span id="buildStamp" style="color:var(--muted)" title="Which version of the app this is. Tap the arrow to check for a newer one and update.">Version 2026-10-12 · build 96</span>
+<br><span id="buildStamp" style="color:var(--muted)" title="Which version of the app this is. Tap the arrow to check for a newer one and update.">Version 2026-10-13 · build 97</span>
       <br><button id="btnInstall" type="button">Install as an app</button>
       <span id="kbHint">Ctrl+Z undo &middot; Ctrl+Shift+Z redo &middot; [ ] cycle presets &middot; F full quality view &middot; Space hold to compare</span>
     </footer>
@@ -8315,9 +8316,14 @@ $('cw').addEventListener('wheel', ev => {
   // and hijacking it would be worse than the feature is worth. Ctrl/Cmd+wheel
   // zooms, which is also exactly what a trackpad pinch reports, so pinch works
   // on a laptop with no extra handling.
-  if (!loadedImage || !(ev.ctrlKey || ev.metaKey)) return;
+  // The desktop studio layout is the exception: there the photo sits in a fixed pane and the page never scrolls,
+  // so a plain mouse wheel over the photo zooms it (in toward the cursor, back out to fit).
+  const studio = document.documentElement.classList.contains('studioOn');
+  if (!loadedImage || !(ev.ctrlKey || ev.metaKey || studio)) return;
   ev.preventDefault();
-  zoomAt(Math.pow(0.988, ev.deltaY), ev.clientX, ev.clientY);
+  if (ev.ctrlKey || ev.metaKey) { zoomAt(Math.pow(0.988, ev.deltaY), ev.clientX, ev.clientY); return; }   // pinch / ctrl+wheel, as before
+  const dy = ev.deltaMode === 1 ? ev.deltaY * 33 : ev.deltaMode === 2 ? ev.deltaY * 400 : ev.deltaY;   // lines/pages to px
+  zoomAt(Math.pow(0.9985, Math.max(-300, Math.min(300, dy))), ev.clientX, ev.clientY);   // ~15% per mouse-wheel notch
 }, { passive: false });
 
 /* Pinch zoom.
@@ -10599,6 +10605,8 @@ function probeRawPlane(buf) {
 /* Which demosaic the WASM decoder actually ran: lr_demosaic() sends X-Trans (CFA 9) to the Markesteijn
    1-pass port and every Bayer sensor to RCD. The 'amaze' qual string passed around internally is a
    historical name only -- there is no AMaZE in the build. */
+/* LibRaw's orientation flag as an EXIF orientation for drawOriented(): 3 = 180, 5 = 90 CCW (EXIF 8), 6 = 90 CW. */
+function rawFlipToExif(f) { return f === 3 ? 3 : f === 5 ? 8 : f === 6 ? 6 : 1; }
 function rawDemosaicName(res) { return res && res.cfa && res.cfa[0] === 9 ? 'Markesteijn' : 'RCD'; }
 function setDecoderBadge(text, isAmaze) {
   const b = $('decoderBadge');
@@ -13150,7 +13158,7 @@ async function loadFile(file) {
           toast('Full-resolution version failed to build (' + (e && e.message ? e.message : 'see console') + ') \u2014 export and Expand will use working size only for this photo');
         }
       })();
-      await finishLoad(cv, cv.width, cv.height, 1, null, savedName);
+      await finishLoad(cv, cv.width, cv.height, rawFlipToExif(res && res.flip), null, savedName);   // upright, as the camera recorded it
       return;
     } else {
       let found = null, prevErr = null;
@@ -13262,7 +13270,7 @@ async function loadFile(file) {
             toast('Full-resolution version failed to build (' + (e && e.message ? e.message : 'see console') + ') \u2014 export and Expand will use working size only for this photo');
           }
         })();
-        await finishLoad(cv, cv.width, cv.height, 1, null, savedName);
+        await finishLoad(cv, cv.width, cv.height, rawFlipToExif(res && res.flip), null, savedName);   // upright, as the camera recorded it
         return;
       } catch (e) {
         // Falls through to the embedded-preview path below, same as CR2's
@@ -18205,13 +18213,14 @@ const ST_GOLDEN = {"names":["defaults-scene","defaults-lamps","exposure+1","expo
     if (tb && tools && !movedS.tools) { movedS.tools = true; tb.insertBefore(tools, theme || null); }
     const cw = $('cw'), cmp = $('cmpBar'), st = document.querySelector('#previewTools .ptStamps');
     if (cw && cmp && !movedS.cmp) { movedS.cmp = true; cw.appendChild(cmp); }
-    if (cw && st && !movedS.stamps) { movedS.stamps = true; cw.appendChild(st); }
     const sc = $('scopeDetails');
     if (sc && !movedS.scopes) {
       movedS.scopes = true; studioScopesWere = sc.open;
       zone.insertBefore(sc, zone.firstChild); sc.setAttribute('data-dock', 'all');
       quiet(() => { sc.open = true; });
     }
+    // decode / WB readouts go under the histogram in the inspector's sticky header, not over the photo
+    if (sc && st && !movedS.stamps) { movedS.stamps = true; sc.appendChild(st); }
     setTimeout(studioHistSize, 80);
   }
   function fromStudio() {
@@ -18219,7 +18228,7 @@ const ST_GOLDEN = {"names":["defaults-scene","defaults-lamps","exposure+1","expo
     if (movedS.ur && undo && redo && zb) { zb.insertBefore(undo, zi || null); zb.insertBefore(redo, zi || null); movedS.ur = false; }
     const tools = document.querySelector('.toolbar .ptTools'), hold = $('previewTools');
     if (movedS.tools && tools && hold) { hold.appendChild(tools); movedS.tools = false; }
-    const st = document.querySelector('#cw > .ptStamps');
+    const st = document.querySelector('#scopeDetails > .ptStamps');
     if (movedS.stamps && st && hold) { hold.insertBefore(st, hold.firstChild); movedS.stamps = false; }
     const ps = $('previewSticky'), sc = $('scopeDetails'), cmp = $('cmpBar');
     if (movedS.scopes && sc && ps) {

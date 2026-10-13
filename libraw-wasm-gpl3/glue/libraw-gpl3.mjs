@@ -79,7 +79,8 @@ function readDecodeMetadata(mod, h, width, height) {
   mod._free(cfaP);
   const camMul = rd(mod._lr_cam_mul, 4, 'HEAPF32', 2);
   const rgbCam = rd(mod._lr_rgb_cam, 12, 'HEAPF32', 2);
-  return { cfa, camMul, rgbCam, black: mod._lr_black(h), white: mod._lr_white(h) };
+  const flip = typeof mod._lr_flip === 'function' ? mod._lr_flip(h) : 0;   // camera orientation (LibRaw sizes.flip)
+  return { cfa, camMul, rgbCam, black: mod._lr_black(h), white: mod._lr_white(h), flip };
 }
 
 export async function decode(bytes) {
@@ -98,7 +99,7 @@ export async function decode(bytes) {
 
   return {
     handle: h, width, height, cfa: meta.cfa,
-    black: meta.black, white: meta.white,
+    black: meta.black, white: meta.white, flip: meta.flip,
     camMul: meta.camMul, rgbCam: meta.rgbCam,
     isXTrans,
     demosaic(qual = 'amaze') {

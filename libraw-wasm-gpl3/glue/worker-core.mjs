@@ -26,6 +26,7 @@ export async function decodeAndDemosaic(bytes, qual = 'amaze') {
       cfa: Array.from(dec.cfa),
       black: dec.black,
       white: dec.white,
+      flip: dec.flip || 0,
       camMul: Array.from(dec.camMul),
       rgbCam: Array.from(dec.rgbCam),
       qual,

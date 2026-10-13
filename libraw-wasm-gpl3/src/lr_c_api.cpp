@@ -113,6 +113,17 @@ float lr_white(int h)
     return (float)it->second->imgdata.color.maximum;
 }
 
+// Camera orientation as LibRaw reports it (imgdata.sizes.flip): 0 = as shot, 3 = 180 degrees,
+// 5 = 90 degrees counter-clockwise, 6 = 90 degrees clockwise. LibRaw reads it from each maker's
+// own metadata, so it is right for CR2/CR3/NEF/ARW/RAF/ORF/RW2 alike, unlike a TIFF-only tag read.
+EMSCRIPTEN_KEEPALIVE
+int lr_flip(int h)
+{
+    auto it = g_handles.find(h);
+    if (it == g_handles.end()) return 0;
+    return it->second->imgdata.sizes.flip;
+}
+
 EMSCRIPTEN_KEEPALIVE
 void lr_cam_mul(int h, float* out4)
 {

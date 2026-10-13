@@ -104,6 +104,6 @@ em++ -std=c++17 -O2 \
     -sMODULARIZE=1 -sEXPORT_ES6=1 -sEXPORT_NAME=createLibRawGPL3 \
     -sALLOW_MEMORY_GROWTH=1 \
     -sSTACK_SIZE=1048576 \
-    -sEXPORTED_FUNCTIONS=_lr_open,_lr_width,_lr_height,_lr_cfa,_lr_black,_lr_white,_lr_cam_mul,_lr_rgb_cam,_lr_demosaic,_lr_free,_malloc,_free \
+    -sEXPORTED_FUNCTIONS=_lr_open,_lr_width,_lr_height,_lr_cfa,_lr_black,_lr_white,_lr_flip,_lr_cam_mul,_lr_rgb_cam,_lr_demosaic,_lr_free,_malloc,_free \
     -sEXPORTED_RUNTIME_METHODS=HEAPU8,HEAPU16,HEAPF32,HEAP32
 echo "  -> dist/libraw-gpl3-xtrans.js + .wasm"
