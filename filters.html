@@ -8,7 +8,7 @@
 <meta name="keywords" content="filter transmission curve, UV filter, IR filter, Schott glass, Wratten filter, filter stacking calculator, infrared photography filter">
 <meta name="robots" content="index, follow">
 <link rel="canonical" href="https://irlab.uk/filters.html">
-<meta name="theme-color" content="#160f0a">
+<meta name="theme-color" content="#0b0c0e">
 <link rel="icon" href="/favicon.ico" sizes="any">
 <link rel="icon" type="image/png" sizes="512x512" href="/favicon-512.png">
 <link rel="icon" type="image/png" sizes="192x192" href="/favicon-192.png">
@@ -83,12 +83,13 @@
 <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
 :root{
-  --bg:#160f0a;--surface:#20160f;--surface2:#2a1d13;--line:#40301f;--line2:#54402a;
-  --paper:#ede2ce;--paper-dim:#a89372;--muted:#7a6a52;
+  /* Same near-black palette as the home page and editor (index.html :root / landing background) */
+  --bg:#0b0c0e;--surface:#1b1d21;--surface2:#24272c;--line:#2a2d33;--line2:#3d4048;
+  --paper:#eceae4;--paper-dim:#a3a097;--muted:#6d6a63;
   --safelight:#c2431b;--safelight-dim:#8f3417;
   --phosphor:#6fab96;--phosphor-dim:#4d7d6e;
   --warn:#d8a13a;
-  --sunken:#120b07;--sticky-bg:rgba(18,11,7,.97);--chart-bg:#0a0603;
+  --sunken:#0f1012;--sticky-bg:rgba(11,12,14,.97);--chart-bg:#0b0c0e;
   --radius:4px;
   --font-display:'Barlow Condensed',system-ui,sans-serif;
   --font-mono:'JetBrains Mono',ui-monospace,'SF Mono',Consolas,monospace;
@@ -99,14 +100,14 @@
    The hues are kept and the lightness relationships rebuilt, so the accent
    still reads as the same colour family at a much lower saturation. */
 [data-theme="light"]{
-  --bg:#e7e1d6;--surface:#f1ece2;--surface2:#dbd3c4;--line:#c7bba6;--line2:#a2947c;
-  --paper:#241c14;--paper-dim:#56472f;--muted:#7f6f57;
+  --bg:#e7e3da;--surface:#f3f0e9;--surface2:#ded9cc;--line:rgba(35,27,19,.14);--line2:rgba(35,27,19,.26);
+  --paper:#231b13;--paper-dim:#6b604d;--muted:#8a7f6b;
   --safelight:#9c330d;--safelight-dim:#b85c38;
   --phosphor:#1a6350;--phosphor-dim:#37806b;
   --warn:#7d5509;
-  --sunken:#f1ece2;--sticky-bg:rgba(231,225,214,.97);--chart-bg:#ece5d9;
+  --sunken:#ebe7dd;--sticky-bg:rgba(231,227,218,.97);--chart-bg:#ece7dd;
 }
-[data-theme="light"] body{color:var(--paper)}
+[data-theme="light"] body{color:var(--paper);background:radial-gradient(1000px 520px at 50% -8%,rgba(106,63,208,.16),transparent 62%),radial-gradient(800px 460px at 88% 6%,rgba(236,122,44,.16),transparent 62%),radial-gradient(700px 420px at 8% 12%,rgba(43,181,138,.10),transparent 62%),var(--bg);background-attachment:fixed}
 /* The chart canvas paints itself, so its colours come from chartTheme() in
    the drawing code rather than from here. */
 /* Icon only, pinned to the top-right of the header. A labelled button changed
@@ -120,7 +121,7 @@
   color:var(--paper-dim);cursor:pointer;transition:border-color .15s,color .15s}
 #themeBtn:hover{color:var(--paper);border-color:var(--safelight)}
 *{box-sizing:border-box;margin:0;padding:0}
-body{background:radial-gradient(ellipse 900px 500px at 50% -8%,rgba(194,67,27,.10),transparent 60%),var(--bg);
+body{background:radial-gradient(1000px 520px at 50% -8%,rgba(106,63,208,.26),transparent 62%),radial-gradient(800px 460px at 88% 6%,rgba(236,122,44,.18),transparent 62%),radial-gradient(700px 420px at 8% 12%,rgba(43,181,138,.12),transparent 62%),var(--bg);background-attachment:fixed;
   color:var(--paper);font-family:var(--font-body);font-size:14px;line-height:1.45;padding:12px;max-width:920px;margin:0 auto}
 @media (min-width:900px){body{max-width:1400px;padding:24px 40px}}
 @media (min-width:1600px){body{max-width:92vw;padding:32px 4vw}}
@@ -3253,7 +3254,7 @@ function renderImportedList() {
       readoutCards.forEach((c, i) => {
         const col = i % roCols, row = Math.floor(i / roCols);
         const cx0 = pad + col * (cardW + gap), cy0 = y + row * (roCardH + gap);
-        ctx.fillStyle = '#120b07'; ctx.fillRect(cx0, cy0, cardW, roCardH);
+        ctx.fillStyle = '#0f1012'; ctx.fillRect(cx0, cy0, cardW, roCardH);
         ctx.strokeStyle = '#3a2c1e'; ctx.lineWidth = Math.max(1, Math.round(1.5 * U));
         ctx.strokeRect(cx0 + .5, cy0 + .5, cardW - 1, roCardH - 1);
         ctx.fillStyle = '#8a8578'; ctx.font = fs(16);
@@ -4375,10 +4376,10 @@ function chartTheme(){
     band:'rgba(26,99,80,.18)',
     stackFill:'rgba(156,51,13,.20)'
   }:{
-    bg:'#0a0603',
-    gridMajor:'rgba(84,64,42,.55)',
-    gridMinor:'rgba(84,64,42,.35)',
-    axisText:'rgba(168,147,114,.75)',
+    bg:'#0b0c0e',
+    gridMajor:'rgba(70,74,82,.60)',
+    gridMinor:'rgba(70,74,82,.36)',
+    axisText:'rgba(163,160,151,.78)',
     uvTint:'rgba(143,122,214,.06)',
     visTint:'rgba(237,226,206,.04)',
     nirTint:'rgba(194,67,27,.06)',

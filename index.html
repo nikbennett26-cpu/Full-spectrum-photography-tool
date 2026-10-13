@@ -25,7 +25,7 @@
 <meta name="twitter:image" content="https://irlab.uk/og-card.png">
 <link rel="canonical" href="https://irlab.uk/">
 <meta name="theme-color" content="#160f0a">
-<meta name="irlab-build" content="98">
+<meta name="irlab-build" content="100">
 <link rel="manifest" href="/manifest.json">
 <link rel="icon" href="/favicon-32.png" sizes="32x32">
 <link rel="apple-touch-icon" href="/apple-touch-icon.png">
@@ -51,7 +51,7 @@
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
 
 <style>
 :root{
@@ -1567,9 +1567,9 @@ html.dockOn body.has-image,html.dockOn body.has-image #previewSticky,html.dockOn
   body:not(.has-image) #emptyStateGroup header h1{white-space:nowrap}
   body:not(.has-image) #spectrumBar,body:not(.has-image) #spectrumTicks{max-width:720px !important;margin-left:auto;margin-right:auto}
   body:not(.has-image) #dropzone,body:not(.has-image) #landingLinks{max-width:720px !important;width:100%;margin-left:auto;margin-right:auto}
-  body:not(.has-image) #emptyStateGroup header h1{font:800 clamp(38px,4vw,56px)/1.04 ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;letter-spacing:-.028em;text-transform:none;margin:0 0 12px;
+  body:not(.has-image) #emptyStateGroup header h1{font:700 clamp(36px,3.8vw,52px)/1.08 var(--font-mono);letter-spacing:-.04em;text-transform:none;margin:0 0 12px;
     background:linear-gradient(180deg,#ffffff 20%,#bdb6a8);-webkit-background-clip:text;background-clip:text;color:transparent;text-shadow:none}
-  body:not(.has-image) #emptyStateGroup .tagline{display:block;font:400 18px/1.4 ui-sans-serif,system-ui,sans-serif;letter-spacing:0;color:#a8a49a;margin-bottom:28px}
+  body:not(.has-image) #emptyStateGroup .tagline{display:block;font:400 16px/1.45 var(--font-mono);letter-spacing:-.01em;color:#a8a49a;margin-bottom:28px}
   body:not(.has-image) #spectrumBar{height:7px;border-radius:7px;box-shadow:0 0 34px rgba(236,122,44,.40),0 0 70px rgba(106,63,208,.30)}
   body:not(.has-image) #spectrumTicks{font:500 10.5px/1 ui-sans-serif,system-ui,sans-serif;letter-spacing:.1em;color:#7e7a70;margin-bottom:8px}
   body:not(.has-image) #dropzone{background:rgba(255,255,255,.035);border:1px solid rgba(255,255,255,.13);border-radius:26px;padding:44px 40px 38px;margin-top:34px;
@@ -1956,13 +1956,22 @@ html.studioOn body.has-image #toast,html.dockOn body.has-image #toast{background
       <summary style="color:var(--phosphor-dim);font-weight:600;letter-spacing:.03em;cursor:pointer;
         list-style:revert;text-align:center;width:fit-content;margin:0 auto">RECENTLY ADDED</summary>
       <div style="margin-top:6px">
-        <p style="margin:0 0 3px"><b style="color:var(--phosphor-dim)">Sliders with weight.</b> Brightness,
-          Contrast, Highlights and Shadows now respond progressively: plenty of
-          travel near the middle for fine control, full strength at the ends.
-          Saved sessions and presets keep exactly the look they had.</p>
+        <p style="margin:0 0 3px"><b style="color:var(--phosphor-dim)">Real sensor decoding for RAW.</b> Canon and
+          most other RAW files are now decoded from the sensor with RCD demosaicing (Fuji X-Trans with Markesteijn),
+          instead of falling back to the camera&rsquo;s small preview. Fixes the failure on newer Canons (600D, 7D,
+          1200D and others) and the washed-out look from an uncorrected black level.</p>
 
-        <p style="margin:0 0 3px"><b style="color:var(--phosphor-dim)">Highlights and Shadows work together.</b> They
-          no longer switch each other off, and leave no step where they meet. Each now has a range control too.</p>
+        <p style="margin:0 0 3px"><b style="color:var(--phosphor-dim)">RAWs open the right way up.</b> Portrait
+          shots are turned upright on loading, from the orientation the camera recorded, on phone and desktop.</p>
+
+        <p style="margin:0 0 3px"><b style="color:var(--phosphor-dim)">Desktop: zoom with the mouse wheel.</b>
+          Scroll over the photo to zoom in where the pointer is, and back out. The decode and white balance
+          readout now sits under the histogram instead of over the photo, and dragging the before/after slider
+          no longer moves a zoomed-in photo.</p>
+
+        <p style="margin:0 0 3px"><b style="color:var(--phosphor-dim)">Noise reduction holds at full size.</b>
+          Luminance and Colour noise reduction in Detail now look the same in full-screen view and full-size
+          exports as they do in the preview.</p>
 
         <p style="margin:0 0 3px"><b style="color:var(--phosphor-dim)">Before shows your last change.</b> The
           before/after slider and hold-to-compare now show the photo as it was just before your last edit, and
@@ -1988,7 +1997,7 @@ html.studioOn body.has-image #toast,html.dockOn body.has-image #toast{background
        between the filter-curves link and that link's own explanation
        paragraph, which read as if it belonged to Discord or the install
        button rather than the filter tool. -->
-  <div style="font-size:10.5px;color:var(--muted);margin:10px 0 4px;text-align:center" id="buildStampHome">Version 2026-10-13 · build 98</div>
+  <div style="font-size:10.5px;color:var(--muted);margin:10px 0 4px;text-align:center" id="buildStampHome">Version 2026-10-13 · build 100</div>
 <a id="discordLink" href="https://discord.gg/baudebNTq" target="_blank" rel="noopener"
      style="display:flex;width:fit-content;align-items:center;gap:7px;margin:14px auto 0;font-family:var(--font-mono);
      font-size:12px;color:var(--safelight);border:1px solid var(--line2);border-radius:var(--radius-sm);
@@ -2840,7 +2849,7 @@ html.studioOn body.has-image #toast,html.dockOn body.has-image #toast{background
       <br><a href="#" id="consentReopen" style="color:var(--muted);text-decoration:underline">Cookie notice</a>
       <br><a href="LICENSE.md" target="_blank" rel="noopener" style="color:var(--muted);text-decoration:underline">Source: AGPL-3.0</a>
       <br><a href="THIRD_PARTY_NOTICES.md" target="_blank" rel="noopener" style="color:var(--muted);text-decoration:underline">Third-party notices (LibRaw, RawTherapee)</a>
-<br><span id="buildStamp" style="color:var(--muted)" title="Which version of the app this is. Tap the arrow to check for a newer one and update.">Version 2026-10-13 · build 98</span>
+<br><span id="buildStamp" style="color:var(--muted)" title="Which version of the app this is. Tap the arrow to check for a newer one and update.">Version 2026-10-13 · build 100</span>
       <br><button id="btnInstall" type="button">Install as an app</button>
       <span id="kbHint">Ctrl+Z undo &middot; Ctrl+Shift+Z redo &middot; [ ] cycle presets &middot; F full quality view &middot; Space hold to compare</span>
     </footer>
