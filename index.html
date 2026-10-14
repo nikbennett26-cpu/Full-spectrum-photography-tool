@@ -25,7 +25,7 @@
 <meta name="twitter:image" content="https://irlab.uk/og-card.png">
 <link rel="canonical" href="https://irlab.uk/">
 <meta name="theme-color" content="#160f0a">
-<meta name="irlab-build" content="106">
+<meta name="irlab-build" content="107">
 <link rel="manifest" href="/manifest.json">
 <link rel="icon" href="/favicon-32.png" sizes="32x32">
 <link rel="apple-touch-icon" href="/apple-touch-icon.png">
@@ -1932,8 +1932,13 @@ body.imgLoading #emptyStateGroup.lab label.labGo{transform:translateY(4px);box-s
   <footer class="labFoot">
     <div id="whatsNew">
       <details>
-        <summary><span data-i18n="whatsNewLabel">What’s new</span><span class="wnLatest">AMaZE is back</span></summary>
+        <summary><span data-i18n="whatsNewLabel">What’s new</span><span class="wnLatest">Cleaner Colour by band</span></summary>
       <div style="margin-top:6px">
+        <p style="margin:0 0 3px"><b style="color:var(--phosphor-dim)">Colour by band no longer speckles.</b> Darkening
+          a band (a sky, say) used to scatter dark dots through it on noisy photos, because each pixel picked its band
+          from its own noisy colour. Bands are now chosen from the colour around each pixel without crossing edges, and
+          Luminance darkens by a proportion, so shadows never get pushed to black.</p>
+
         <p style="margin:0 0 3px"><b style="color:var(--phosphor-dim)">AMaZE is back, next to RCD.</b> Canon and
           other Bayer RAWs now decode with AMaZE by default, and RCD is one tap away in Decode settings. Switching
           re-decodes the photo you have open and keeps your edits, so the two can be compared directly.</p>
@@ -1988,7 +1993,7 @@ body.imgLoading #emptyStateGroup.lab label.labGo{transform:translateY(4px);box-s
       <path d="M20.317 4.37a19.79 19.79 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028 14.09 14.09 0 0 0 1.226-1.994.076.076 0 0 0-.041-.106 13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128 10.2 10.2 0 0 0 .372-.292.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.956-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.955-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.946 2.418-2.157 2.418z"/>
     </svg> Discord</span><span class="dcGo">Join →</span>
     </a>
-    <div id="buildStampHome">Version 2026-10-14 · build 106</div>
+    <div id="buildStampHome">Version 2026-10-14 · build 107</div>
   </footer>
 </div>
 
@@ -2839,7 +2844,7 @@ body.imgLoading #emptyStateGroup.lab label.labGo{transform:translateY(4px);box-s
       <br><a href="#" id="consentReopen" style="color:var(--muted);text-decoration:underline">Cookie notice</a>
       <br><a href="LICENSE.md" target="_blank" rel="noopener" style="color:var(--muted);text-decoration:underline">Source: AGPL-3.0</a>
       <br><a href="THIRD_PARTY_NOTICES.md" target="_blank" rel="noopener" style="color:var(--muted);text-decoration:underline">Third-party notices (LibRaw, RawTherapee)</a>
-<br><span id="buildStamp" style="color:var(--muted)" title="Which version of the app this is. Tap the arrow to check for a newer one and update.">Version 2026-10-14 · build 106</span>
+<br><span id="buildStamp" style="color:var(--muted)" title="Which version of the app this is. Tap the arrow to check for a newer one and update.">Version 2026-10-14 · build 107</span>
       <br><button id="btnInstall" type="button">Install as an app</button>
       <span id="kbHint">Ctrl+Z undo &middot; Ctrl+Shift+Z redo &middot; [ ] cycle presets &middot; F full quality view &middot; Space hold to compare</span>
     </footer>
@@ -3835,12 +3840,8 @@ uniform float u_skyL;          // the typical lightness of the sky; anything cle
     if (i == 0) return a.x; if (i == 1) return a.y; if (i == 2) return a.z; if (i == 3) return a.w;
     if (i == 4) return b.x; if (i == 5) return b.y; if (i == 6) return b.z; return b.w;
   }
-  vec3 applyHslBands(vec3 lin) {
-    vec3 lab = linearToOklab(lin);
-    float C = length(lab.yz);
-    float gate = smoothstep(0.012, 0.06, C);   // greys and near-greys untouched
-    if (gate <= 0.0) return lin;
-    float hd = degrees(atan(lab.z, lab.y)); if (hd < 0.0) hd += 360.0;
+  /* The hue, saturation and lightness shift for one hue angle (degrees): the two neighbouring bands blended smoothly. */
+  vec3 bandShift(float hd) {
     int ia = 7; float ca = -32.0, cb = 29.0;
     if (hd >= 328.0)      { ia = 7; ca = 328.0; cb = 389.0; }
     else if (hd >= 293.0) { ia = 6; ca = 293.0; cb = 328.0; }
@@ -3852,15 +3853,55 @@ uniform float u_skyL;          // the typical lightness of the sky; anything cle
     else if (hd >= 29.0)  { ia = 0; ca = 29.0;  cb = 56.0; }
     int ib = (ia == 7) ? 0 : ia + 1;
     float t = clamp((hd - ca) / (cb - ca), 0.0, 1.0); t = t * t * (3.0 - 2.0 * t);
-    float dH = mix(hslPick(u_hslH0, u_hslH1, ia), hslPick(u_hslH0, u_hslH1, ib), t);
-    float dS = mix(hslPick(u_hslS0, u_hslS1, ia), hslPick(u_hslS0, u_hslS1, ib), t);
-    float dL = mix(hslPick(u_hslL0, u_hslL1, ia), hslPick(u_hslL0, u_hslL1, ib), t);
-    float ang = radians(dH * 30.0 * gate);
-    float fS = max(0.0, 1.0 + dS * gate);
+    return vec3(mix(hslPick(u_hslH0, u_hslH1, ia), hslPick(u_hslH0, u_hslH1, ib), t),
+                mix(hslPick(u_hslS0, u_hslS1, ia), hslPick(u_hslS0, u_hslS1, ib), t),
+                mix(hslPick(u_hslL0, u_hslL1, ia), hslPick(u_hslL0, u_hslL1, ib), t));
+  }
+  /* Build 107. Two causes of black speckle, both fixed here:
+     1. Which band a pixel belongs to was decided from that pixel's own colour. In a noisy sky (a converted camera's weak blue
+        channel, boosted, then rotated into another channel) single pixels' hues scatter tens of degrees either side of the
+        sky's real hue, so a band next to the sky's caught a sprinkling of lone pixels and only those were darkened -- dark
+        dots on a sky that otherwise did not change. The band and the grey gate now come from an edge-aware average of the
+        guide around the pixel (bandColour), so the whole sky is one band, while a twig against the sky averages only twig
+        and keeps its own band.
+     2. Luminance subtracted a fixed amount of lightness (0.15 at -100), which takes a dark pixel to pure black while a
+        mid-tone loses a quarter. It is now a proportion of the pixel's own lightness (30% at -100, the same as before for
+        a mid-tone around 0.5, which is where the Photoshop-fitted values were matched), and brightening is a proportion of
+        the headroom left, so nothing is pushed to black or clipped to white. Darkening takes chroma down by part of the
+        same ratio so the colour stays inside what the screen can show rather than going negative and being clipped. */
+  /* The colour a pixel's band is chosen from: an average of the guide around it, counting only the neighbours that are the
+     same colour as this pixel give or take noise (an edge-aware average). A sky pixel next to a tree averages only sky, so
+     the edit stops at the edge instead of leaving a lighter rim; a lone noisy pixel is outvoted by the sky around it. */
+  vec3 bandColour(vec3 labOwn) {
+    vec2 uv = prepUV(v_texCoord);
+    vec3 acc = labOwn; float wsum = 1.0;
+    for (int j = -2; j <= 2; j++) {
+      for (int i = -2; i <= 2; i++) {
+        vec3 t = linearToOklab(max(srgbToLinear(texture2D(u_bandGuide, uv + vec2(float(i), float(j)) * 1.5 * u_guideTexel).rgb), vec3(0.0)));
+        vec3 dv = t - labOwn;
+        float w = exp(-dot(dv, dv) / (0.06 * 0.06));
+        acc += t * w; wsum += w;
+      }
+    }
+    return acc / wsum;
+  }
+  vec3 applyHslBands(vec3 lin, float useGuide) {
+    vec3 lab = linearToOklab(lin);
+    float C = length(lab.yz);
+    vec3 labB = useGuide > 0.5 ? bandColour(lab) : lab;
+    float CB = length(labB.yz);
+    float hd = degrees(atan(labB.z, labB.y)); if (hd < 0.0) hd += 360.0;
+    float gate = smoothstep(0.012, 0.06, CB);   // greys and near-greys untouched
+    vec3 d = bandShift(hd);
+    if (gate <= 0.0) return lin;
+    float ang = radians(d.x * 30.0 * gate);
+    float fS = max(0.0, 1.0 + d.y * gate);
     float h2 = atan(lab.z, lab.y) + ang;
-    float C2 = C * fS;
-    float L2 = clamp(lab.x + dL * 0.15 * gate, 0.0, 1.0);
-    return oklabToLinear(vec3(L2, C2 * cos(h2), C2 * sin(h2)));
+    float dl = d.z * gate;
+    float L2 = dl < 0.0 ? lab.x * (1.0 + 0.30 * dl) : lab.x + (1.0 - lab.x) * 0.30 * dl;
+    float ratio = lab.x > 1e-4 ? L2 / lab.x : 1.0;
+    float C2 = C * fS * (ratio < 1.0 ? sqrt(ratio) : 1.0);
+    return oklabToLinear(vec3(clamp(L2, 0.0, 1.0), C2 * cos(h2), C2 * sin(h2)));
   }
   vec3 hueSat(vec3 lin, float hueFrac, float sat, float keepSat, float vibrance) {
     vec3 lab = linearToOklab(lin);
@@ -5555,8 +5596,10 @@ uniform float u_skyL;          // the typical lightness of the sky; anything cle
     }
 
     if (u_hslOn > 0.5) {
+      /* The guide pass stops here and writes the colour as it arrives, so the main pass can choose bands from it smoothed. */
+      if (u_bandProbe > 0.5) { gl_FragColor = vec4(clamp(srgb, 0.0, 1.0), 1.0); return; }
       float pullB;
-      srgb = linearToSrgb(gamutMapT(applyHslBands(srgbToLinear(srgb)), pullB));
+      srgb = linearToSrgb(gamutMapT(applyHslBands(srgbToLinear(srgb), u_bandGuideOn), pullB));
     }
 
     /* ---- Deep sky and Crimson foliage: the reference false-colour palette ----
@@ -6188,7 +6231,6 @@ class WebGLEngine {
   /* The guide for Colour by band: the picture as it reaches that step, rendered at half size into a small texture, so the
      main pass can decide each pixel's band from smoothed colour. Only runs when a band slider is in use. */
   _bandGuidePass(p) {
-    return false;
     const gl = this.gl, h = p && p.hsl;
     if (!this.isWebGL2 || !(h && h.on) || this._bgFail) return false;
     try {
@@ -6216,8 +6258,8 @@ class WebGLEngine {
 
   render(p) {
     const gl = this.gl;
-    const guided = this._bandGuidePass(p);
     if (this._prepPass(p)) p = Object.assign({}, p, { __prepped: true });
+    const guided = this._bandGuidePass(p);
     gl.bindFramebuffer(gl.FRAMEBUFFER, null);
     gl.viewport(0, 0, this.canvas.width, this.canvas.height);
     this.setUniforms(guided ? Object.assign({}, p, { __bandGuide: true }) : p);
@@ -6286,8 +6328,8 @@ class WebGLEngine {
         this._lo = { w: w, h: h, tex: tex, fb: fb };
       }
       // pass 1: the real pipeline at reduced size
-      const guided = this._bandGuidePass(p);
       if (this._prepPass(p)) p = Object.assign({}, p, { __prepped: true });
+      const guided = this._bandGuidePass(p);
       gl.bindFramebuffer(gl.FRAMEBUFFER, this._lo.fb);
       gl.viewport(0, 0, w, h);
       this.setUniforms(guided ? Object.assign({}, p, { __bandGuide: true }) : p);
@@ -6642,9 +6684,9 @@ class WebGLEngine {
     const gl = this.gl, w = this.canvas.width, h = this.canvas.height;
     let tex = null, fb = null;
     try {
+      if (this._prepPass(p)) p = Object.assign({}, p, { __prepped: true });
       const guided = this._bandGuidePass(p);
       if (guided) p = Object.assign({}, p, { __bandGuide: true });
-      if (this._prepPass(p)) p = Object.assign({}, p, { __prepped: true });
       tex = gl.createTexture();
       gl.activeTexture(gl.TEXTURE0);
       gl.bindTexture(gl.TEXTURE_2D, tex);
