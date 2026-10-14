@@ -44,6 +44,12 @@ void rcd_demosaic_port(int w, int h, uint32_t filters,
                         float* const* rawData,
                         float** red, float** green, float** blue);
 
+// From amaze_demosaic_port.cc -- AMaZE (Emil Martinec / RawTherapee), taken from darktable's
+// copy, which has no glibmm dependency. Bayer-only. Expects input normalised so white = 1.0.
+void amaze_demosaic_port(int w, int h, uint32_t filters,
+                         float* const* rawData,
+                         float** red, float** green, float** blue);
+
 static std::unordered_map<int, LibRaw*> g_handles;
 static int g_nextHandle = 1;
 
@@ -155,11 +161,10 @@ int lr_demosaic(int h, int qual, float* outR, float* outG, float* outB)
     // default, 'amaze'=1, sent for every ordinary RAW load) uses the newer,
     // higher-quality Markesteijn 1-pass port instead.
     //
-    // Bayer (filters!=9): routed to RCD (rcd_demosaic_port, ported from
-    // darktable) regardless of `qual` for now -- it's the only Bayer path
-    // wired up so far. The other RawTherapee Bayer quals (lmmse/igv/ahd) are
-    // still gated behind glibmm; AMaZE likewise. RCD was picked first because,
-    // unlike those, its core math has no glibmm/rtengine.h dependency at all.
+    // Bayer (filters!=9): qual==5 ('rcd') runs RCD (darktable port); every other
+    // qual, including the app's default 'amaze'=1, runs AMaZE (darktable's copy of
+    // RawTherapee's AMaZE, which needs no glibmm). Both are offered in the app so
+    // they can be compared on the same photo.
     auto it = g_handles.find(h);
     if (it == g_handles.end()) return 0;
     LibRaw* proc = it->second;
@@ -208,6 +213,7 @@ int lr_demosaic(int h, int qual, float* outR, float* outG, float* outB)
         blueRows[row]  = outB + (size_t)row * width;
     }
 
+    bool prenormalised = false;
     if (filters == 9) {
         int xtrans[6][6];
         for (int r = 0; r < 6; r++)
@@ -221,14 +227,24 @@ int lr_demosaic(int h, int qual, float* outR, float* outG, float* outB)
             xtrans_markesteijn1_demosaic_port(width, height, xtrans, rawRows.data(),
                                                redRows.data(), greenRows.data(), blueRows.data());
         }
-    } else {
+    } else if (qual == 5) {
         rcd_demosaic_port(width, height, filters, rawRows.data(),
                            redRows.data(), greenRows.data(), blueRows.data());
+    } else {
+        // AMaZE works on data normalised to white = 1.0 (its thresholds assume that range and it
+        // clamps its output there), so normalise first and skip the scale step below.
+        const float white0 = (float)proc->imgdata.color.maximum;
+        const float k = (white0 - blackAvg > 1.f) ? 1.f / (white0 - blackAvg) : 1.f;
+        for (int row = 0; row < height; row++)
+            for (int col = 0; col < width; col++) rawBuf[row][col] *= k;
+        amaze_demosaic_port(width, height, filters, rawRows.data(),
+                            redRows.data(), greenRows.data(), blueRows.data());
+        prenormalised = true;
     }
 
     // Black was already subtracted per site above; just normalise so sensor white -> 1.0.
     const float white = (float)proc->imgdata.color.maximum;
-    const float scale = (white - blackAvg > 1.f) ? 1.f / (white - blackAvg) : 1.f;
+    const float scale = prenormalised ? 1.f : ((white - blackAvg > 1.f) ? 1.f / (white - blackAvg) : 1.f);
     const size_t n = (size_t)width * height;
     for (size_t i = 0; i < n; i++) {
         outR[i] = (outR[i] > 0.f ? outR[i] : 0.f) * scale;

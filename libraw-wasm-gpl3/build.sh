@@ -33,6 +33,12 @@ em++ -std=c++17 -O2 \
     -o "$OUT_DIR/rcd_demosaic_port.o"
 echo "  -> $OUT_DIR/rcd_demosaic_port.o"
 
+echo "== Stage 1c: AMaZE Bayer demosaic, darktable's copy of RawTherapee's (no glibmm) =="
+em++ -std=c++17 -O2 \
+    -c "$SRC_DIR/amaze/amaze_demosaic_port.cc" \
+    -o "$OUT_DIR/amaze_demosaic_port.o"
+echo "  -> $OUT_DIR/amaze_demosaic_port.o"
+
 echo "== Stage 2: AMaZE / LMMSE / RCD / IGV / AHD (needs glibmm) =="
 if [ "${BUILD_GLIBMM_DEMOSAICS:-0}" = "1" ]; then
     echo "  BUILD_GLIBMM_DEMOSAICS=1 set, attempting..."
@@ -98,6 +104,7 @@ em++ -std=c++17 -O2 \
     "$OUT_DIR"/libraw/*.o \
     "$OUT_DIR/xtrans_fast_port.o" \
     "$OUT_DIR/rcd_demosaic_port.o" \
+    "$OUT_DIR/amaze_demosaic_port.o" \
     "$OUT_DIR/amaze/xtrans_markesteijn1_port.o" \
     "$OUT_DIR/api/lr_c_api.o" \
     -o dist/libraw-gpl3-xtrans.js \

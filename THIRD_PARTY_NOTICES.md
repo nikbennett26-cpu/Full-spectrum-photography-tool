@@ -43,6 +43,19 @@ minimal standalone equivalents.
 - Upstream: https://github.com/Beep6581/RawTherapee
 - Version: 5.11
 
+## darktable (AMaZE and RCD demosaic, as used by the current RAW decoder)
+
+The Bayer demosaics the WASM decoder runs today (`libraw-wasm-gpl3/src/amaze/amaze_demosaic_port.cc` and
+`rcd_demosaic_port.cc`) are taken from darktable's copies of these algorithms, which need no glib/glibmm, with
+only the surrounding glue changed for a standalone build.
+
+- AMaZE — (C) Emil J. Martinec, optimised by Ingo Weyrich (RawTherapee), as carried in darktable's
+  `src/iop/demosaicing/amaze.cc`.
+- RCD — (C) Luis Sanz Rodriguez, tiled by Ingo Weyrich, optimised by Hanno Schwalm, from darktable's
+  `src/iop/demosaicing/rcd.c`.
+- Licence: GPL-3.0-or-later.
+- Upstream: https://github.com/darktable-org/darktable
+
 ## Licence-compatibility summary
 
 | Component    | Licence          | Compatible with the AGPL-3.0 whole app |

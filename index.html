@@ -25,7 +25,7 @@
 <meta name="twitter:image" content="https://irlab.uk/og-card.png">
 <link rel="canonical" href="https://irlab.uk/">
 <meta name="theme-color" content="#160f0a">
-<meta name="irlab-build" content="105">
+<meta name="irlab-build" content="106">
 <link rel="manifest" href="/manifest.json">
 <link rel="icon" href="/favicon-32.png" sizes="32x32">
 <link rel="apple-touch-icon" href="/apple-touch-icon.png">
@@ -1738,6 +1738,7 @@ body:has(#consentBar.on):not(.has-image) #emptyStateGroup.lab{padding-bottom:96p
 #emptyStateGroup.lab .labRow{display:flex;justify-content:space-between;align-items:center;gap:16px;min-height:48px;margin:0;padding:4px 0;
   border-bottom:1px dashed #22252a;font:400 13px/1.4 var(--font-mono);color:#eceae4;cursor:pointer}
 #emptyStateGroup.lab .labRow input[type=checkbox]{width:20px;height:20px;margin:0;flex:none;accent-color:#6fab96}
+#emptyStateGroup.lab .labMini{height:36px;min-width:96px;background:#111316;color:#eceae4;border:1px solid #2a2d33;border-radius:6px;padding:0 8px;font:500 12px var(--font-mono);flex:none}
 #emptyStateGroup.lab .labNote{margin:0;font:400 11px/1.5 var(--font-mono);color:#8a867d}
 #emptyStateGroup.lab .labSelect{width:100%;height:40px;background:#111316;color:#eceae4;border:1px solid #2a2d33;border-radius:6px;padding:0 10px;font:400 13px var(--font-mono)}
 #emptyStateGroup.lab #landingLinks{margin:0;max-width:none;width:auto;display:flex;flex-direction:column;gap:10px}
@@ -1856,7 +1857,14 @@ body.imgLoading #emptyStateGroup.lab label.labGo{transform:translateY(4px);box-s
     </label>
     <p class="labNote" data-i18n="gamutSwapCaveat">Needs a RAW with the camera's colour data — no effect otherwise.</p>
     <select id="camSpaceSwapPreset" class="labSelect" style="display:none" aria-label="Swap preset"></select>
-    <p class="labNote">RAW is decoded from the sensor with LibRaw: RCD for most cameras, Markesteijn for Fuji X-Trans.</p>
+    <label class="labRow">
+      <span data-i18n="demosaicLabel">Demosaic</span>
+      <select id="demosaicSel" class="labMini" aria-label="Demosaic method">
+        <option value="amaze">AMaZE</option>
+        <option value="rcd">RCD</option>
+      </select>
+    </label>
+    <p class="labNote">AMaZE or RCD for most cameras, Markesteijn for Fuji X-Trans. Switching re-decodes a photo that is already open.</p>
   </section>
 
   <section class="labSec" id="dropzone">
@@ -1924,8 +1932,12 @@ body.imgLoading #emptyStateGroup.lab label.labGo{transform:translateY(4px);box-s
   <footer class="labFoot">
     <div id="whatsNew">
       <details>
-        <summary><span data-i18n="whatsNewLabel">What’s new</span><span class="wnLatest">Home page redesign</span></summary>
+        <summary><span data-i18n="whatsNewLabel">What’s new</span><span class="wnLatest">AMaZE is back</span></summary>
       <div style="margin-top:6px">
+        <p style="margin:0 0 3px"><b style="color:var(--phosphor-dim)">AMaZE is back, next to RCD.</b> Canon and
+          other Bayer RAWs now decode with AMaZE by default, and RCD is one tap away in Decode settings. Switching
+          re-decodes the photo you have open and keeps your edits, so the two can be compared directly.</p>
+
         <p style="margin:0 0 3px"><b style="color:var(--phosphor-dim)">Home page redesign.</b> A cleaner lab-style
           home page: numbered Decode, Load and Tools sections (decode options first, so they are set before a photo opens), a framed load panel whose file slot glows while a photo is read, the spectrum bar lighting up block by block, and a
           filter chart that draws itself in.</p>
@@ -1976,7 +1988,7 @@ body.imgLoading #emptyStateGroup.lab label.labGo{transform:translateY(4px);box-s
       <path d="M20.317 4.37a19.79 19.79 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028 14.09 14.09 0 0 0 1.226-1.994.076.076 0 0 0-.041-.106 13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128 10.2 10.2 0 0 0 .372-.292.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.956-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.955-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.946 2.418-2.157 2.418z"/>
     </svg> Discord</span><span class="dcGo">Join →</span>
     </a>
-    <div id="buildStampHome">Version 2026-10-14 · build 105</div>
+    <div id="buildStampHome">Version 2026-10-14 · build 106</div>
   </footer>
 </div>
 
@@ -2699,6 +2711,13 @@ body.imgLoading #emptyStateGroup.lab label.labGo{transform:translateY(4px);box-s
           <p class="note" style="margin:2px 0 0" data-i18n="gamutSwapCaveat">Needs a RAW with the camera's colour data — no effect otherwise.</p>
           <select id="camSpaceSwapPresetEditor" style="display:none;margin-top:6px;width:100%;background:var(--surface2);color:var(--paper);border:1px solid var(--line2);border-radius:var(--radius-sm);padding:6px 8px;font-family:var(--font-body);font-size:11.5px"></select>
           <p class="note" style="margin-top:4px">Both apply to the next file you open, not the one on screen.</p>
+          <label style="display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:10px;font-size:11.5px;color:var(--phosphor-dim)">
+            <span><span data-i18n="demosaicLabel">Demosaic</span> <span style="color:var(--muted)">(re-decodes the open RAW)</span></span>
+            <select id="demosaicSelEd" aria-label="Demosaic method" style="background:var(--surface2);color:var(--paper);border:1px solid var(--line2);border-radius:var(--radius-sm);padding:5px 8px;font-family:var(--font-body);font-size:12px">
+              <option value="amaze">AMaZE</option>
+              <option value="rcd">RCD</option>
+            </select>
+          </label>
           <div id="camMatchRow" style="display:none;margin-top:8px">
             <label style="display:flex;align-items:center;gap:6px;font-size:11.5px;color:var(--phosphor-dim);cursor:pointer">
               <input type="checkbox" id="camMatch" style="margin:0">
@@ -2820,7 +2839,7 @@ body.imgLoading #emptyStateGroup.lab label.labGo{transform:translateY(4px);box-s
       <br><a href="#" id="consentReopen" style="color:var(--muted);text-decoration:underline">Cookie notice</a>
       <br><a href="LICENSE.md" target="_blank" rel="noopener" style="color:var(--muted);text-decoration:underline">Source: AGPL-3.0</a>
       <br><a href="THIRD_PARTY_NOTICES.md" target="_blank" rel="noopener" style="color:var(--muted);text-decoration:underline">Third-party notices (LibRaw, RawTherapee)</a>
-<br><span id="buildStamp" style="color:var(--muted)" title="Which version of the app this is. Tap the arrow to check for a newer one and update.">Version 2026-10-14 · build 105</span>
+<br><span id="buildStamp" style="color:var(--muted)" title="Which version of the app this is. Tap the arrow to check for a newer one and update.">Version 2026-10-14 · build 106</span>
       <br><button id="btnInstall" type="button">Install as an app</button>
       <span id="kbHint">Ctrl+Z undo &middot; Ctrl+Shift+Z redo &middot; [ ] cycle presets &middot; F full quality view &middot; Space hold to compare</span>
     </footer>
@@ -6725,7 +6744,7 @@ const $ = id => document.getElementById(id);
 /* ?selftest runs the built-in colour check (see runSelfTest). It must never touch the saved session. */
 const SELFTEST = /[?&]selftest(&|=|$)/.test(location.search);
 const I18N = {
-  en: { slotIdle:'Insert file', slotBusy:'Reading', secLoad:'Load', secDecode:'Decode', secTools:'Tools', whatsNewLabel:'What\u2019s new', languageLabel:'Language', hotspotRemoval:'Hotspot removal', fringing:'Colour fringing', dockLooks:'Looks', dockLight:'Light', dockColour:'Colour', dockDetail:'Detail', dockExport:'Export', maskColour:'Colour', maskPick:'Pick colour', selfTest:'Self-test', localAdj:'Local adjustments', maskAdd:'Add', maskLinear:'Linear', maskRadial:'Radial', maskLum:'Luminosity', maskInvert:'Invert', maskShow:'Show mask', maskDelete:'Delete mask', cropFree:'Free', cropOriginal:'Original', cropReset:'Reset crop', toneCurve:'Tone curve', lensCorrection:'Lens correction', scopeHist:'Histogram', scopeParade:'Parade', fineTag:'fine', cropTitle:'Crop', introTitle:'Upload an IR/UV Photo', chooseImage:'Choose image',
+  en: { demosaicLabel:'Demosaic', slotIdle:'Insert file', slotBusy:'Reading', secLoad:'Load', secDecode:'Decode', secTools:'Tools', whatsNewLabel:'What\u2019s new', languageLabel:'Language', hotspotRemoval:'Hotspot removal', fringing:'Colour fringing', dockLooks:'Looks', dockLight:'Light', dockColour:'Colour', dockDetail:'Detail', dockExport:'Export', maskColour:'Colour', maskPick:'Pick colour', selfTest:'Self-test', localAdj:'Local adjustments', maskAdd:'Add', maskLinear:'Linear', maskRadial:'Radial', maskLum:'Luminosity', maskInvert:'Invert', maskShow:'Show mask', maskDelete:'Delete mask', cropFree:'Free', cropOriginal:'Original', cropReset:'Reset crop', toneCurve:'Tone curve', lensCorrection:'Lens correction', scopeHist:'Histogram', scopeParade:'Parade', fineTag:'fine', cropTitle:'Crop', introTitle:'Upload an IR/UV Photo', chooseImage:'Choose image',
     btnHome:'Home', btnResetAll:'Reset all', undo:'Undo', redo:'Redo',
     step01:'Targeted Colour', step02:'Channel Swap', step03:'White Balance', step04:'Light', step05:'Colour', step06:'Export',
     subhdrUV:'UV Presets', subhdrIR:'IR Presets', filmStocksRecipes:'Film stocks & recipes', myPresets:'My Presets',
@@ -6734,7 +6753,7 @@ const I18N = {
     quickPreviewOption:'Use quick preview instead of full sensor decode', wideGamutSwapOption:'Try: wider-gamut colour swap (often more accurate)',
     gamutSwapCaveat:'Needs a RAW with the camera\u2019s colour data \u2014 no effect otherwise.',
     tagline:'Darkroom for light you can\u2019t see' },
-  es: { slotIdle:'Insertar archivo', slotBusy:'Leyendo', secLoad:'Cargar', secDecode:'Decodificación', secTools:'Herramientas', whatsNewLabel:'Novedades', languageLabel:'Idioma', hotspotRemoval:'Eliminación de puntos calientes', fringing:'Bordes de color', dockLooks:'Estilos', dockLight:'Luz', dockColour:'Color', dockDetail:'Detalle', dockExport:'Exportar', maskColour:'Color', maskPick:'Elegir color', selfTest:'Autodiagnóstico', localAdj:'Ajustes locales', maskAdd:'Añadir', maskLinear:'Lineal', maskRadial:'Radial', maskLum:'Luminosidad', maskInvert:'Invertir', maskShow:'Mostrar máscara', maskDelete:'Eliminar máscara', cropFree:'Libre', cropOriginal:'Original', cropReset:'Restablecer recorte', toneCurve:'Curva de tonos', lensCorrection:'Corrección de lente', scopeHist:'Histograma', scopeParade:'Parade RGB', fineTag:'fino', cropTitle:'Recorte', introTitle:'Subir una foto IR/UV', chooseImage:'Elegir imagen',
+  es: { demosaicLabel:'Demosaico', slotIdle:'Insertar archivo', slotBusy:'Leyendo', secLoad:'Cargar', secDecode:'Decodificación', secTools:'Herramientas', whatsNewLabel:'Novedades', languageLabel:'Idioma', hotspotRemoval:'Eliminación de puntos calientes', fringing:'Bordes de color', dockLooks:'Estilos', dockLight:'Luz', dockColour:'Color', dockDetail:'Detalle', dockExport:'Exportar', maskColour:'Color', maskPick:'Elegir color', selfTest:'Autodiagnóstico', localAdj:'Ajustes locales', maskAdd:'Añadir', maskLinear:'Lineal', maskRadial:'Radial', maskLum:'Luminosidad', maskInvert:'Invertir', maskShow:'Mostrar máscara', maskDelete:'Eliminar máscara', cropFree:'Libre', cropOriginal:'Original', cropReset:'Restablecer recorte', toneCurve:'Curva de tonos', lensCorrection:'Corrección de lente', scopeHist:'Histograma', scopeParade:'Parade RGB', fineTag:'fino', cropTitle:'Recorte', introTitle:'Subir una foto IR/UV', chooseImage:'Elegir imagen',
     btnHome:'Inicio', btnResetAll:'Restablecer todo', undo:'Deshacer', redo:'Rehacer',
     step01:'Color dirigido', step02:'Intercambio de canales', step03:'Balance de blancos', step04:'Luz', step05:'Color', step06:'Exportar',
     subhdrUV:'Preajustes UV', subhdrIR:'Preajustes IR', filmStocksRecipes:'Emulsiones y recetas', myPresets:'Mis preajustes',
@@ -6743,7 +6762,7 @@ const I18N = {
     quickPreviewOption:'Usar la vista previa rápida en vez de la decodificación completa', wideGamutSwapOption:'Prueba: intercambio de color de gama más amplia (suele ser más preciso)',
     gamutSwapCaveat:'Requiere un RAW con los datos de color de la cámara; si no, no tiene efecto.',
     tagline:'Cuarto oscuro para la luz que no puedes ver' },
-  fr: { slotIdle:'Insérer un fichier', slotBusy:'Lecture', secLoad:'Charger', secDecode:'Décodage', secTools:'Outils', whatsNewLabel:'Nouveautés', languageLabel:'Langue', hotspotRemoval:'Suppression du point chaud', fringing:'Franges de couleur', dockLooks:'Styles', dockLight:'Lumière', dockColour:'Couleur', dockDetail:'Détail', dockExport:'Exporter', maskColour:'Couleur', maskPick:'Choisir la couleur', selfTest:'Autotest', localAdj:'Réglages locaux', maskAdd:'Ajouter', maskLinear:'Linéaire', maskRadial:'Radial', maskLum:'Luminosité', maskInvert:'Inverser', maskShow:'Afficher le masque', maskDelete:'Supprimer le masque', cropFree:'Libre', cropOriginal:'Original', cropReset:'Réinitialiser le recadrage', toneCurve:'Courbe des tons', lensCorrection:'Correction d\u2019objectif', scopeHist:'Histogramme', scopeParade:'Parade RVB', fineTag:'fin', cropTitle:'Recadrage', introTitle:'Importer une photo IR/UV', chooseImage:'Choisir une image',
+  fr: { demosaicLabel:'Dématriçage', slotIdle:'Insérer un fichier', slotBusy:'Lecture', secLoad:'Charger', secDecode:'Décodage', secTools:'Outils', whatsNewLabel:'Nouveautés', languageLabel:'Langue', hotspotRemoval:'Suppression du point chaud', fringing:'Franges de couleur', dockLooks:'Styles', dockLight:'Lumière', dockColour:'Couleur', dockDetail:'Détail', dockExport:'Exporter', maskColour:'Couleur', maskPick:'Choisir la couleur', selfTest:'Autotest', localAdj:'Réglages locaux', maskAdd:'Ajouter', maskLinear:'Linéaire', maskRadial:'Radial', maskLum:'Luminosité', maskInvert:'Inverser', maskShow:'Afficher le masque', maskDelete:'Supprimer le masque', cropFree:'Libre', cropOriginal:'Original', cropReset:'Réinitialiser le recadrage', toneCurve:'Courbe des tons', lensCorrection:'Correction d\u2019objectif', scopeHist:'Histogramme', scopeParade:'Parade RVB', fineTag:'fin', cropTitle:'Recadrage', introTitle:'Importer une photo IR/UV', chooseImage:'Choisir une image',
     btnHome:'Accueil', btnResetAll:'Tout réinitialiser', undo:'Annuler', redo:'Rétablir',
     step01:'Couleur ciblée', step02:'Permutation des canaux', step03:'Balance des blancs', step04:'Lumière', step05:'Couleur', step06:'Exporter',
     subhdrUV:'Préréglages UV', subhdrIR:'Préréglages IR', filmStocksRecipes:'Émulsions et recettes', myPresets:'Mes préréglages',
@@ -6752,7 +6771,7 @@ const I18N = {
     quickPreviewOption:'Utiliser l\u2019aperçu rapide au lieu du décodage complet', wideGamutSwapOption:'À essayer : permutation de couleur à gamme plus large (souvent plus précise)',
     gamutSwapCaveat:'Nécessite un RAW avec les données colorimétriques de l\u2019appareil, sinon aucun effet.',
     tagline:'Chambre noire pour la lumière invisible' },
-  de: { slotIdle:'Datei einlegen', slotBusy:'Wird gelesen', secLoad:'Laden', secDecode:'Dekodierung', secTools:'Werkzeuge', whatsNewLabel:'Neuigkeiten', languageLabel:'Sprache', hotspotRemoval:'Hotspot-Entfernung', fringing:'Farbsäume', dockLooks:'Looks', dockLight:'Licht', dockColour:'Farbe', dockDetail:'Detail', dockExport:'Export', maskColour:'Farbe', maskPick:'Farbe wählen', selfTest:'Selbsttest', localAdj:'Lokale Anpassungen', maskAdd:'Hinzufügen', maskLinear:'Linear', maskRadial:'Radial', maskLum:'Luminanz', maskInvert:'Umkehren', maskShow:'Maske anzeigen', maskDelete:'Maske löschen', cropFree:'Frei', cropOriginal:'Original', cropReset:'Zuschnitt zurücksetzen', toneCurve:'Tonwertkurve', lensCorrection:'Objektivkorrektur', scopeHist:'Histogramm', scopeParade:'RGB-Parade', fineTag:'fein', cropTitle:'Zuschnitt', introTitle:'IR-/UV-Foto hochladen', chooseImage:'Bild auswählen',
+  de: { demosaicLabel:'Demosaicing', slotIdle:'Datei einlegen', slotBusy:'Wird gelesen', secLoad:'Laden', secDecode:'Dekodierung', secTools:'Werkzeuge', whatsNewLabel:'Neuigkeiten', languageLabel:'Sprache', hotspotRemoval:'Hotspot-Entfernung', fringing:'Farbsäume', dockLooks:'Looks', dockLight:'Licht', dockColour:'Farbe', dockDetail:'Detail', dockExport:'Export', maskColour:'Farbe', maskPick:'Farbe wählen', selfTest:'Selbsttest', localAdj:'Lokale Anpassungen', maskAdd:'Hinzufügen', maskLinear:'Linear', maskRadial:'Radial', maskLum:'Luminanz', maskInvert:'Umkehren', maskShow:'Maske anzeigen', maskDelete:'Maske löschen', cropFree:'Frei', cropOriginal:'Original', cropReset:'Zuschnitt zurücksetzen', toneCurve:'Tonwertkurve', lensCorrection:'Objektivkorrektur', scopeHist:'Histogramm', scopeParade:'RGB-Parade', fineTag:'fein', cropTitle:'Zuschnitt', introTitle:'IR-/UV-Foto hochladen', chooseImage:'Bild auswählen',
     btnHome:'Start', btnResetAll:'Alles zurücksetzen', undo:'Rückgängig', redo:'Wiederholen',
     step01:'Gezielte Farbe', step02:'Kanaltausch', step03:'Weißabgleich', step04:'Licht', step05:'Farbe', step06:'Exportieren',
     subhdrUV:'UV-Voreinstellungen', subhdrIR:'IR-Voreinstellungen', filmStocksRecipes:'Filmtypen & Rezepte', myPresets:'Meine Voreinstellungen',
@@ -6761,7 +6780,7 @@ const I18N = {
     quickPreviewOption:'Schnellvorschau statt vollständiger Sensor-Dekodierung verwenden', wideGamutSwapOption:'Ausprobieren: Farbtausch mit größerem Farbraum (oft genauer)',
     gamutSwapCaveat:'Erfordert ein RAW mit den Farbdaten der Kamera \u2013 sonst ohne Wirkung.',
     tagline:'Dunkelkammer für Licht, das man nicht sehen kann' },
-  ja: { slotIdle:'ファイルを挿入', slotBusy:'読み込み中', secLoad:'読み込み', secDecode:'デコード', secTools:'ツール', whatsNewLabel:'新機能', languageLabel:'言語', hotspotRemoval:'ホットスポット除去', fringing:'色のにじみ', dockLooks:'ルック', dockLight:'光', dockColour:'色', dockDetail:'ディテール', dockExport:'書き出し', maskColour:'カラー', maskPick:'色を選択', selfTest:'セルフテスト', localAdj:'ローカル補正', maskAdd:'追加', maskLinear:'線形', maskRadial:'円形', maskLum:'輝度', maskInvert:'反転', maskShow:'マスクを表示', maskDelete:'マスクを削除', cropFree:'自由', cropOriginal:'元の比率', cropReset:'切り抜きをリセット', toneCurve:'トーンカーブ', lensCorrection:'レンズ補正', scopeHist:'ヒストグラム', scopeParade:'RGBパレード', fineTag:'微調整', cropTitle:'切り抜き', introTitle:'IR/UV写真をアップロード', chooseImage:'画像を選択',
+  ja: { demosaicLabel:'デモザイク', slotIdle:'ファイルを挿入', slotBusy:'読み込み中', secLoad:'読み込み', secDecode:'デコード', secTools:'ツール', whatsNewLabel:'新機能', languageLabel:'言語', hotspotRemoval:'ホットスポット除去', fringing:'色のにじみ', dockLooks:'ルック', dockLight:'光', dockColour:'色', dockDetail:'ディテール', dockExport:'書き出し', maskColour:'カラー', maskPick:'色を選択', selfTest:'セルフテスト', localAdj:'ローカル補正', maskAdd:'追加', maskLinear:'線形', maskRadial:'円形', maskLum:'輝度', maskInvert:'反転', maskShow:'マスクを表示', maskDelete:'マスクを削除', cropFree:'自由', cropOriginal:'元の比率', cropReset:'切り抜きをリセット', toneCurve:'トーンカーブ', lensCorrection:'レンズ補正', scopeHist:'ヒストグラム', scopeParade:'RGBパレード', fineTag:'微調整', cropTitle:'切り抜き', introTitle:'IR/UV写真をアップロード', chooseImage:'画像を選択',
     btnHome:'ホーム', btnResetAll:'すべてリセット', undo:'元に戻す', redo:'やり直す',
     step01:'対象カラー', step02:'チャンネル入れ替え', step03:'ホワイトバランス', step04:'ライト', step05:'カラー', step06:'書き出し',
     subhdrUV:'UVプリセット', subhdrIR:'IRプリセット', filmStocksRecipes:'フィルムストック・レシピ', myPresets:'マイプリセット',
@@ -6770,7 +6789,7 @@ const I18N = {
     quickPreviewOption:'フルセンサーデコードの代わりにクイックプレビューを使用', wideGamutSwapOption:'試してみる: 広色域カラースワップ(より正確なことが多い)',
     gamutSwapCaveat:'カメラのカラーデータを含むRAWが必要です。ない場合は効果がありません。',
     tagline:'見えない光のための暗室' },
-  zh: { slotIdle:'插入文件', slotBusy:'读取中', secLoad:'载入', secDecode:'解码', secTools:'工具', whatsNewLabel:'新功能', languageLabel:'语言', hotspotRemoval:'热斑消除', fringing:'色边校正', dockLooks:'风格', dockLight:'光线', dockColour:'色彩', dockDetail:'细节', dockExport:'导出', maskColour:'颜色', maskPick:'选取颜色', selfTest:'自检', localAdj:'局部调整', maskAdd:'添加', maskLinear:'线性', maskRadial:'径向', maskLum:'亮度', maskInvert:'反转', maskShow:'显示蒙版', maskDelete:'删除蒙版', cropFree:'自由', cropOriginal:'原始比例', cropReset:'重置裁剪', toneCurve:'色调曲线', lensCorrection:'镜头校正', scopeHist:'直方图', scopeParade:'RGB分量图', fineTag:'精细', cropTitle:'裁剪', introTitle:'上传红外/紫外照片', chooseImage:'选择图片',
+  zh: { demosaicLabel:'去马赛克', slotIdle:'插入文件', slotBusy:'读取中', secLoad:'载入', secDecode:'解码', secTools:'工具', whatsNewLabel:'新功能', languageLabel:'语言', hotspotRemoval:'热斑消除', fringing:'色边校正', dockLooks:'风格', dockLight:'光线', dockColour:'色彩', dockDetail:'细节', dockExport:'导出', maskColour:'颜色', maskPick:'选取颜色', selfTest:'自检', localAdj:'局部调整', maskAdd:'添加', maskLinear:'线性', maskRadial:'径向', maskLum:'亮度', maskInvert:'反转', maskShow:'显示蒙版', maskDelete:'删除蒙版', cropFree:'自由', cropOriginal:'原始比例', cropReset:'重置裁剪', toneCurve:'色调曲线', lensCorrection:'镜头校正', scopeHist:'直方图', scopeParade:'RGB分量图', fineTag:'精细', cropTitle:'裁剪', introTitle:'上传红外/紫外照片', chooseImage:'选择图片',
     btnHome:'主页', btnResetAll:'全部重置', undo:'撤销', redo:'重做',
     step01:'定向颜色', step02:'通道互换', step03:'白平衡', step04:'光照', step05:'颜色', step06:'导出',
     subhdrUV:'紫外预设', subhdrIR:'红外预设', filmStocksRecipes:'胶片与配方', myPresets:'我的预设',
@@ -10672,11 +10691,13 @@ function probeRawPlane(buf) {
    preview. Set once per load and left up for the rest of the session,
    since which decoder ran doesn't stop being relevant after a toast fades. */
 /* Which demosaic the WASM decoder actually ran: lr_demosaic() sends X-Trans (CFA 9) to the Markesteijn
-   1-pass port and every Bayer sensor to RCD. The 'amaze' qual string passed around internally is a
-   historical name only -- there is no AMaZE in the build. */
+   1-pass port; a Bayer sensor gets AMaZE (darktable's copy of RawTherapee's) or, when 'rcd' is asked for,
+   RCD (darktable). Which of the two is a setting (demosaicPref), so both can be compared on one photo. */
+function demosaicPref() { try { return localStorage.getItem('irlab.demosaic') === 'rcd' ? 'rcd' : 'amaze'; } catch (e) { return 'amaze'; } }
+function demosaicPrefName() { return demosaicPref() === 'rcd' ? 'RCD' : 'AMaZE'; }
 /* LibRaw's orientation flag as an EXIF orientation for drawOriented(): 3 = 180, 5 = 90 CCW (EXIF 8), 6 = 90 CW. */
 function rawFlipToExif(f) { return f === 3 ? 3 : f === 5 ? 8 : f === 6 ? 6 : 1; }
-function rawDemosaicName(res) { return res && res.cfa && res.cfa[0] === 9 ? 'Markesteijn' : 'RCD'; }
+function rawDemosaicName(res) { return res && res.cfa && res.cfa[0] === 9 ? 'Markesteijn' : (res && res.qual === 'rcd' ? 'RCD' : 'AMaZE'); }
 function setDecoderBadge(text, isAmaze) {
   const b = $('decoderBadge');
   if (!b) return;
@@ -12030,7 +12051,7 @@ async function runBatch(fileList) {
         const preferPreview = $('cr2PreferPreview') && $('cr2PreferPreview').checked;
         if ((CR2_EXT.includes(fext) || RAW_EXT.includes(fext)) && !preferPreview && rawEngine.supported()) {
           try {
-            const res = await rawEngine.demosaic('amaze', f);
+            const res = await rawEngine.demosaic(demosaicPref(), f);
             const cv2 = rawEngineResultToCanvas(res, false, null, null);
             if (!cv2.__hasCameraWB) autoWhiteBalanceRaw(cv2);
             src = await new Promise(r => cv2.toBlob(r, 'image/png'));
@@ -12268,6 +12289,36 @@ async function offerSessionRestore() {
    private mode swallowed it and reported "no saved session". The restore
    never ran, and nothing anywhere said so. */
 if (!SELFTEST) offerSessionRestore();
+
+/* ---------- Demosaic choice: AMaZE or RCD (Bayer RAWs) ----------
+   One setting behind two selects (home page and the editor's Decode settings). Changing it while a Bayer RAW is
+   open decodes that same photo again with the other method and puts every edit back, so the two can be compared
+   directly. X-Trans files always use Markesteijn, so nothing is re-decoded for them. */
+(function wireDemosaicChoice() {
+  const sels = [$('demosaicSel'), $('demosaicSelEd')].filter(Boolean);
+  const sync = () => sels.forEach(s => { s.value = demosaicPref(); });
+  sync();
+  let busy = false;
+  async function redecode() {
+    if (busy || !document.body.classList.contains('has-image') || !document.body.classList.contains('rawOpen')) return;
+    const f = rawEngine.source, last = rawEngine.lastResult;
+    if (!f) return;
+    if (last && last.cfa && last.cfa[0] === 9) { toast('Fuji X-Trans files always use Markesteijn'); return; }
+    busy = true;
+    const snap = captureState();
+    window.__keepEditsOnLoad = true;
+    try { await loadFile(f); } finally { window.__keepEditsOnLoad = false; busy = false; }
+    try { applyState(snap); } catch (e) { console.warn('could not restore edits after re-decode', e); }
+    toast('Re-decoded with ' + demosaicPrefName());
+  }
+  window.__redecodeForDemosaic = redecode;
+  sels.forEach(s => s.addEventListener('change', () => {
+    try { localStorage.setItem('irlab.demosaic', s.value === 'rcd' ? 'rcd' : 'amaze'); } catch (e) {}
+    sync();
+    redecode();
+  }));
+})();
+
 
 /* ---------- GPL-3 RAW sensor decoder (lazy) ----------
 
@@ -12994,7 +13045,7 @@ async function loadFileInner(file) {
      correct auto-WB moments after this runs regardless (finishLoad, a
      few lines down) -- there's no carried-over WB left for this to
      clobber the way there would be resetting it mid-session. */
-  if (!($('applyPreviousSettings') && $('applyPreviousSettings').checked)) {
+  if (!($('applyPreviousSettings') && $('applyPreviousSettings').checked) && !window.__keepEditsOnLoad) {
     resetAllControls();
   }
   let ext = (file.name.split('.').pop() || '').toUpperCase();
@@ -13088,7 +13139,7 @@ async function loadFileInner(file) {
                  ' rawEngine.supported()=' + rawEngine.supported() +
                  ' \u2192 will attempt AMaZE: ' + (!preferPreview && rawEngine.supported()));
     if (!preferPreview && rawEngine.supported()) {
-      toast('Decoding CR2 sensor data (RCD)\u2026 this can take a while');
+      toast('Decoding CR2 sensor data (' + demosaicPrefName() + ')\u2026 this can take a while');
       await new Promise(r => setTimeout(r, 30));
       try {
         // res was previously `const`, block-scoped to just this try —
@@ -13098,7 +13149,7 @@ async function loadFileInner(file) {
         // export and Expand silently fell back to working size. Assigning
         // the outer-scoped `res` declared above instead of shadowing it
         // here is the fix -- same value, now actually reachable later.
-        res = await rawEngine.demosaic('amaze', file);
+        res = await rawEngine.demosaic(demosaicPref(), file);
         if (stale()) {
           console.warn('AMaZE: load went stale after demosaic() resolved \u2014 a newer load started while this one was decoding, so this result was discarded.');
           return;
@@ -13143,8 +13194,8 @@ async function loadFileInner(file) {
          be strictly worse than the calibration alone, not a refinement of it. */
       if (!cv.__hasCameraWB) autoWhiteBalanceRaw(cv);
       toast('Loaded CR2 sensor data \u2014 ' + cv.width + '\u00d7' + cv.height +
-            (cv.__hasCameraWB ? ' (' + (cv.__demosaicName || 'RCD') + ', camera-matrix developed' + (cv.__camSpaceSwapApplied ? ', ' + cv.__camSpaceSwapName + ' in ProPhoto)' : ')') : ' (' + (cv.__demosaicName || 'RCD') + ', auto white balanced)'));
-      setDecoderBadge((cv.__demosaicName || 'RCD') + ' (WASM, GPL-3)', true);
+            (cv.__hasCameraWB ? ' (' + (cv.__demosaicName || demosaicPrefName()) + ', camera-matrix developed' + (cv.__camSpaceSwapApplied ? ', ' + cv.__camSpaceSwapName + ' in ProPhoto)' : ')') : ' (' + (cv.__demosaicName || demosaicPrefName()) + ', auto white balanced)'));
+      setDecoderBadge((cv.__demosaicName || demosaicPrefName()) + ' (WASM, GPL-3)', true);
       renderRawPlaneReport(cv.__rawReport);
       /* Both halves of the file are in hand right here — the sensor decode
          just produced, and the camera's own JPEG of the same frame — which
@@ -13298,7 +13349,7 @@ async function loadFileInner(file) {
       toast('Decoding ' + ext + ' sensor data\u2026 this can take a while on a large file');
       await new Promise(r => setTimeout(r, 30));   // let the toast paint first
       try {
-        const res = await rawEngine.demosaic('amaze', file);
+        const res = await rawEngine.demosaic(demosaicPref(), file);
         if (stale()) {
           console.warn(ext + ' AMaZE: load went stale after demosaic() resolved \u2014 a newer load started while this one was decoding, so this result was discarded.');
           return;
@@ -13313,8 +13364,8 @@ async function loadFileInner(file) {
         // would only make real calibration worse.
         if (!cv.__hasCameraWB) autoWhiteBalanceRaw(cv);
         toast('Loaded ' + ext + ' sensor data \u2014 ' + cv.width + '\u00d7' + cv.height +
-              (cv.__hasCameraWB ? ' (' + (cv.__demosaicName || 'RCD') + ', camera-matrix developed' + (cv.__camSpaceSwapApplied ? ', ' + cv.__camSpaceSwapName + ' in ProPhoto)' : ')') : ' (' + (cv.__demosaicName || 'RCD') + ', auto white balanced)'));
-        setDecoderBadge((cv.__demosaicName || 'RCD') + ' (WASM, GPL-3)', true);
+              (cv.__hasCameraWB ? ' (' + (cv.__demosaicName || demosaicPrefName()) + ', camera-matrix developed' + (cv.__camSpaceSwapApplied ? ', ' + cv.__camSpaceSwapName + ' in ProPhoto)' : ')') : ' (' + (cv.__demosaicName || demosaicPrefName()) + ', auto white balanced)'));
+        setDecoderBadge((cv.__demosaicName || demosaicPrefName()) + ' (WASM, GPL-3)', true);
         renderRawPlaneReport(cv.__rawReport);
         /* Fast path, same reasoning as the CR2 branch: cv already has real
            pixels in it, so finishLoad() can draw it directly \u2014 no PNG
@@ -13331,7 +13382,7 @@ async function loadFileInner(file) {
             // canvas instead of mislabelling the already-capped one.
             const fullCv = rawEngineResultToCanvas(res, $('camSpaceSwap') && $('camSpaceSwap').checked, getCamSpaceSwapMatrix(), getCamSpaceSwapName(), true);
           rawEngine.fullKey = camSwapKey(!!($('camSpaceSwap') && $('camSpaceSwap').checked), getCamSpaceSwapMatrix(), getCamSpaceSwapName());   // which swap the saved full-size copy has
-            const fullBlob = await canvasToBlobSafe(fullCv, ext + ' (' + (fullCv.__demosaicName || 'RCD') + ', full-res)', 45000, true);
+            const fullBlob = await canvasToBlobSafe(fullCv, ext + ' (' + (fullCv.__demosaicName || demosaicPrefName()) + ', full-res)', 45000, true);
             if (stale()) return;
             origFile = fullBlob; origW = fullCv.width; origH = fullCv.height;
             saveSessionImage(fullBlob, savedName);   // so a discarded tab can be recovered
