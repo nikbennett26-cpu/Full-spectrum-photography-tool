@@ -25,7 +25,7 @@
 <meta name="twitter:image" content="https://irlab.uk/og-card.png">
 <link rel="canonical" href="https://irlab.uk/">
 <meta name="theme-color" content="#160f0a">
-<meta name="irlab-build" content="107">
+<meta name="irlab-build" content="108">
 <link rel="manifest" href="/manifest.json">
 <link rel="icon" href="/favicon-32.png" sizes="32x32">
 <link rel="apple-touch-icon" href="/apple-touch-icon.png">
@@ -1932,8 +1932,14 @@ body.imgLoading #emptyStateGroup.lab label.labGo{transform:translateY(4px);box-s
   <footer class="labFoot">
     <div id="whatsNew">
       <details>
-        <summary><span data-i18n="whatsNewLabel">What’s new</span><span class="wnLatest">Cleaner Colour by band</span></summary>
+        <summary><span data-i18n="whatsNewLabel">What’s new</span><span class="wnLatest">Honest full-size view</span></summary>
       <div style="margin-top:6px">
+        <p style="margin:0 0 3px"><b style="color:var(--phosphor-dim)">Full-size view shows the real grain.</b> Fitted to
+          the screen, the full-size view now averages the picture down properly instead of letting the browser skip
+          pixels, which made skies look about twice as grainy as the file really is. Zoom in and it switches to the
+          full-size pixels. Colour and luminosity masks also choose their area from smoothed colour, so they no longer
+          flicker pixel to pixel on a noisy sky.</p>
+
         <p style="margin:0 0 3px"><b style="color:var(--phosphor-dim)">Colour by band no longer speckles.</b> Darkening
           a band (a sky, say) used to scatter dark dots through it on noisy photos, because each pixel picked its band
           from its own noisy colour. Bands are now chosen from the colour around each pixel without crossing edges, and
@@ -1993,7 +1999,7 @@ body.imgLoading #emptyStateGroup.lab label.labGo{transform:translateY(4px);box-s
       <path d="M20.317 4.37a19.79 19.79 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028 14.09 14.09 0 0 0 1.226-1.994.076.076 0 0 0-.041-.106 13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128 10.2 10.2 0 0 0 .372-.292.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.956-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.955-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.946 2.418-2.157 2.418z"/>
     </svg> Discord</span><span class="dcGo">Join →</span>
     </a>
-    <div id="buildStampHome">Version 2026-10-14 · build 107</div>
+    <div id="buildStampHome">Version 2026-10-15 · build 108</div>
   </footer>
 </div>
 
@@ -2844,7 +2850,7 @@ body.imgLoading #emptyStateGroup.lab label.labGo{transform:translateY(4px);box-s
       <br><a href="#" id="consentReopen" style="color:var(--muted);text-decoration:underline">Cookie notice</a>
       <br><a href="LICENSE.md" target="_blank" rel="noopener" style="color:var(--muted);text-decoration:underline">Source: AGPL-3.0</a>
       <br><a href="THIRD_PARTY_NOTICES.md" target="_blank" rel="noopener" style="color:var(--muted);text-decoration:underline">Third-party notices (LibRaw, RawTherapee)</a>
-<br><span id="buildStamp" style="color:var(--muted)" title="Which version of the app this is. Tap the arrow to check for a newer one and update.">Version 2026-10-14 · build 107</span>
+<br><span id="buildStamp" style="color:var(--muted)" title="Which version of the app this is. Tap the arrow to check for a newer one and update.">Version 2026-10-15 · build 108</span>
       <br><button id="btnInstall" type="button">Install as an app</button>
       <span id="kbHint">Ctrl+Z undo &middot; Ctrl+Shift+Z redo &middot; [ ] cycle presets &middot; F full quality view &middot; Space hold to compare</span>
     </footer>
@@ -3003,6 +3009,9 @@ uniform float u_debandRad;  // reach, in source texels, at full strength
   uniform float u_curveOn;
   uniform float u_curveLum;   // 1 = the RGB curve acts on luminance only (its table rides in the alpha channel)
   uniform float u_maskN;          // how many local masks are live (0..4)
+  uniform float u_maskProbe;      // 1 = write the colour as it reaches the local adjustments and stop (the mask guide pass)
+  uniform float u_maskGuideOn;    // 1 = colour and luminosity masks read smoothed colour from u_maskGuide
+  uniform sampler2D u_maskGuide; uniform vec2 u_mGuideTexel;
   uniform float u_maskView;       // -1 = off, else the index of the mask painted red
   uniform vec4 u_mGeom[4];        // linear: x0,y0,x1,y1 | radial: cx,cy,rx,ry | luminosity: lo,hi,0,0
   uniform vec4 u_mInfo[4];        // type (0 linear, 1 radial, 2 luminosity), feather 0..1, invert 0/1, 0
@@ -3869,15 +3878,17 @@ uniform float u_skyL;          // the typical lightness of the sky; anything cle
         a mid-tone around 0.5, which is where the Photoshop-fitted values were matched), and brightening is a proportion of
         the headroom left, so nothing is pushed to black or clipped to white. Darkening takes chroma down by part of the
         same ratio so the colour stays inside what the screen can show rather than going negative and being clipped. */
-  /* The colour a pixel's band is chosen from: an average of the guide around it, counting only the neighbours that are the
-     same colour as this pixel give or take noise (an edge-aware average). A sky pixel next to a tree averages only sky, so
-     the edit stops at the edge instead of leaving a lighter rim; a lone noisy pixel is outvoted by the sky around it. */
-  vec3 bandColour(vec3 labOwn) {
+  /* An edge-aware average of a guide (a small copy of the picture as it reaches some step) around this pixel, counting
+     only the neighbours that are the same colour as this pixel give or take noise. A sky pixel next to a tree averages
+     only sky; a lone noisy pixel is outvoted by the sky around it. Used to decide which colour band a pixel is in, and
+     how far it is inside a colour or luminosity mask, so neither flickers pixel to pixel on a noisy photo -- which it
+     did most at full size, where every pixel carries more noise than the preview's. */
+  vec3 guidedLab(sampler2D guide, vec2 texel, vec3 labOwn) {
     vec2 uv = prepUV(v_texCoord);
     vec3 acc = labOwn; float wsum = 1.0;
     for (int j = -2; j <= 2; j++) {
       for (int i = -2; i <= 2; i++) {
-        vec3 t = linearToOklab(max(srgbToLinear(texture2D(u_bandGuide, uv + vec2(float(i), float(j)) * 1.5 * u_guideTexel).rgb), vec3(0.0)));
+        vec3 t = linearToOklab(max(srgbToLinear(texture2D(guide, uv + vec2(float(i), float(j)) * 1.5 * texel).rgb), vec3(0.0)));
         vec3 dv = t - labOwn;
         float w = exp(-dot(dv, dv) / (0.06 * 0.06));
         acc += t * w; wsum += w;
@@ -3885,6 +3896,7 @@ uniform float u_skyL;          // the typical lightness of the sky; anything cle
     }
     return acc / wsum;
   }
+  vec3 bandColour(vec3 labOwn) { return guidedLab(u_bandGuide, u_guideTexel, labOwn); }
   vec3 applyHslBands(vec3 lin, float useGuide) {
     vec3 lab = linearToOklab(lin);
     float C = length(lab.yz);
@@ -4603,6 +4615,10 @@ uniform float u_skyL;          // the typical lightness of the sky; anything cle
     vec3 lin = srgbToLinear(srgbIn);
     float lumaBase = dot(srgbIn, LUMW);
     vec3 labBase = linearToOklab(lin);
+    if (u_maskGuideOn > 0.5) {   // the selection is decided from smoothed colour; the adjustment itself still lands per pixel
+      labBase = guidedLab(u_maskGuide, u_mGuideTexel, labBase);
+      lumaBase = dot(linearToSrgb(max(oklabToLinear(labBase), vec3(0.0))), LUMW);
+    }
     bool touched = false;
     for (int i = 0; i < 4; i++) {
       if (float(i) < u_maskN) {
@@ -5698,6 +5714,7 @@ uniform float u_skyL;          // the typical lightness of the sky; anything cle
     }
 
     if (u_maskN > 0.5) {
+      if (u_maskProbe > 0.5) { gl_FragColor = vec4(clamp(srgb, 0.0, 1.0), 1.0); return; }
       srgb = applyLocalAdjust(srgb);
       if (u_maskView > -0.5) srgb = mix(srgb, vec3(1.0, 0.12, 0.08), g_maskShown * 0.6);
     }
@@ -5991,6 +6008,8 @@ class WebGLEngine {
       epdS: gl.getUniformLocation(this.program, 'u_epdS'), epdNorm: gl.getUniformLocation(this.program, 'u_epdNorm'),
       epdBase: gl.getUniformLocation(this.program, 'u_epdBase'), epdRef: gl.getUniformLocation(this.program, 'u_epdRef'),
       maskN: gl.getUniformLocation(this.program, 'u_maskN'),
+      maskProbe: gl.getUniformLocation(this.program, 'u_maskProbe'), maskGuideOn: gl.getUniformLocation(this.program, 'u_maskGuideOn'),
+      maskGuide: gl.getUniformLocation(this.program, 'u_maskGuide'), mGuideTexel: gl.getUniformLocation(this.program, 'u_mGuideTexel'),
       maskView: gl.getUniformLocation(this.program, 'u_maskView'),
       mGeom: gl.getUniformLocation(this.program, 'u_mGeom[0]'),
       mInfo: gl.getUniformLocation(this.program, 'u_mInfo[0]'),
@@ -6256,13 +6275,47 @@ class WebGLEngine {
     } catch (err) { this._bgFail = true; gl.bindFramebuffer(gl.FRAMEBUFFER, null); console.warn('band guide disabled:', err && err.message); return false; }
   }
 
+  /* A half-size render target for a guide, made or resized as needed, on texture unit `unit`. */
+  _guideTarget(key, unit) {
+    const gl = this.gl, W = this.canvas.width, H = this.canvas.height, w = Math.max(16, Math.ceil(W / 2)), hh = Math.max(16, Math.ceil(H / 2));
+    let g = this[key];
+    if (g && g.w === w && g.h === hh) return g;
+    if (g) { gl.deleteFramebuffer(g.fb); gl.deleteTexture(g.tex); this[key] = null; }
+    const tex = gl.createTexture(); gl.activeTexture(gl.TEXTURE0 + unit); gl.bindTexture(gl.TEXTURE_2D, tex);
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, w, hh, 0, gl.RGBA, gl.UNSIGNED_BYTE, null);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR); gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE); gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+    const fb = gl.createFramebuffer(); gl.bindFramebuffer(gl.FRAMEBUFFER, fb); gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, tex, 0);
+    if (gl.checkFramebufferStatus(gl.FRAMEBUFFER) !== gl.FRAMEBUFFER_COMPLETE) { gl.bindFramebuffer(gl.FRAMEBUFFER, null); gl.deleteFramebuffer(fb); gl.deleteTexture(tex); gl.activeTexture(gl.TEXTURE0); throw new Error('guide framebuffer incomplete'); }
+    gl.bindFramebuffer(gl.FRAMEBUFFER, null); gl.activeTexture(gl.TEXTURE0);
+    return (this[key] = { w: w, h: hh, tex: tex, fb: fb });
+  }
+  /* The guide for colour and luminosity masks: the picture as it reaches the local adjustments, at half size. Only runs
+     when such a mask exists. `p` already carries __bandGuide when the band guide ran, so the colour here is the colour
+     the main pass will have at that point. */
+  _maskGuidePass(p) {
+    const gl = this.gl, mk = p && p.masks;
+    if (!this.isWebGL2 || !mk || !mk.n || this._mgFail) return false;
+    let need = false; for (let i = 0; i < mk.n; i++) if (mk.info[i * 4] > 1.5) need = true;
+    if (!need) return false;
+    try {
+      const g = this._guideTarget('_mg', 10);
+      gl.bindFramebuffer(gl.FRAMEBUFFER, g.fb); gl.viewport(0, 0, g.w, g.h);
+      this.setUniforms(Object.assign({}, p, { __maskProbe: true, __maskGuide: false, dither: false, maskView: -1 }));
+      gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+      gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+      return true;
+    } catch (err) { this._mgFail = true; gl.bindFramebuffer(gl.FRAMEBUFFER, null); console.warn('mask guide disabled:', err && err.message); return false; }
+  }
+
   render(p) {
     const gl = this.gl;
     if (this._prepPass(p)) p = Object.assign({}, p, { __prepped: true });
-    const guided = this._bandGuidePass(p);
+    if (this._bandGuidePass(p)) p = Object.assign({}, p, { __bandGuide: true });
+    if (this._maskGuidePass(p)) p = Object.assign({}, p, { __maskGuide: true });
     gl.bindFramebuffer(gl.FRAMEBUFFER, null);
     gl.viewport(0, 0, this.canvas.width, this.canvas.height);
-    this.setUniforms(guided ? Object.assign({}, p, { __bandGuide: true }) : p);
+    this.setUniforms(p);
     gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
   }
 
@@ -6329,10 +6382,11 @@ class WebGLEngine {
       }
       // pass 1: the real pipeline at reduced size
       if (this._prepPass(p)) p = Object.assign({}, p, { __prepped: true });
-      const guided = this._bandGuidePass(p);
+      if (this._bandGuidePass(p)) p = Object.assign({}, p, { __bandGuide: true });
+      if (this._maskGuidePass(p)) p = Object.assign({}, p, { __maskGuide: true });
       gl.bindFramebuffer(gl.FRAMEBUFFER, this._lo.fb);
       gl.viewport(0, 0, w, h);
-      this.setUniforms(guided ? Object.assign({}, p, { __bandGuide: true }) : p);
+      this.setUniforms(p);
       gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
       // pass 2: stretch it onto the full-size canvas
       gl.bindFramebuffer(gl.FRAMEBUFFER, null);
@@ -6587,6 +6641,12 @@ class WebGLEngine {
     {
       const mk = p.masks;
       gl.uniform1f(this.uLocs.maskN, mk ? mk.n : 0);
+      gl.uniform1f(this.uLocs.maskProbe, p.__maskProbe ? 1 : 0);
+      { const useM = !!(p.__maskGuide && this._mg);
+        gl.uniform1f(this.uLocs.maskGuideOn, useM ? 1 : 0);
+        gl.activeTexture(gl.TEXTURE10); gl.bindTexture(gl.TEXTURE_2D, useM ? this._mg.tex : null); gl.uniform1i(this.uLocs.maskGuide, 10);
+        if (useM) gl.uniform2f(this.uLocs.mGuideTexel, 1 / this._mg.w, 1 / this._mg.h);
+        gl.activeTexture(gl.TEXTURE0); }
       gl.uniform1f(this.uLocs.maskView, p.maskView === undefined ? -1 : p.maskView);
       if (mk && mk.n) {
         gl.uniform4fv(this.uLocs.mGeom, mk.geom); gl.uniform4fv(this.uLocs.mInfo, mk.info);
@@ -6685,8 +6745,8 @@ class WebGLEngine {
     let tex = null, fb = null;
     try {
       if (this._prepPass(p)) p = Object.assign({}, p, { __prepped: true });
-      const guided = this._bandGuidePass(p);
-      if (guided) p = Object.assign({}, p, { __bandGuide: true });
+      if (this._bandGuidePass(p)) p = Object.assign({}, p, { __bandGuide: true });
+      if (this._maskGuidePass(p)) p = Object.assign({}, p, { __maskGuide: true });
       tex = gl.createTexture();
       gl.activeTexture(gl.TEXTURE0);
       gl.bindTexture(gl.TEXTURE_2D, tex);
@@ -8801,6 +8861,7 @@ function fsStateKey() {
 function openPreviewFullscreen(){
   const src=$('preview'),full=$('previewFull');
   if(!src.width||!src.height)return; // nothing loaded yet
+  fsFullId = null; fsFitId = null; fsShown = '';   // the last full-size render belongs to old settings; the placeholder shows until the new one lands
   full.width=src.width;full.height=src.height;
   /* drawImage(src,...) reads whatever is currently on the WebGL canvas --
      relies on preserveDrawingBuffer, same as the histogram's own comment
@@ -8859,6 +8920,37 @@ async function renderFullscreenHQ() {
   paintFullscreenResult(out.px, out.w, out.h);
 }
 
+/* Build 108. Fitted to the screen, a full-size render used to be shrunk by the browser, which on phones samples a few
+   pixels out of every block instead of averaging them: a 5202-pixel-tall picture shown 900 pixels tall kept nearly the
+   full per-pixel noise, so a sky looked about twice as grainy as the same file does when properly reduced (as any
+   viewer, or an export opened later, shows it). Fitted, the view now shows an area-averaged copy at the screen's own
+   resolution; zoomed in, it switches to the full-size pixels. */
+let fsFullId = null, fsFitId = null, fsShown = '';
+function fsAreaDown(src, w, h, tw, th) {
+  const out = new ImageData(tw, th), d = out.data, acc = new Float64Array(tw * 3), cnt = new Uint32Array(tw);
+  const xs = new Uint32Array(w); for (let x = 0; x < w; x++) xs[x] = Math.min(tw - 1, Math.floor(x * tw / w));
+  let ty = 0, rows = 0;
+  for (let y = 0; y <= h; y++) {
+    const ny = y < h ? Math.min(th - 1, Math.floor(y * th / h)) : -1;
+    if (ny !== ty || y === h) {
+      for (let x = 0; x < tw; x++) { const n = cnt[x] || 1, o = (ty * tw + x) * 4; d[o] = acc[x * 3] / n; d[o + 1] = acc[x * 3 + 1] / n; d[o + 2] = acc[x * 3 + 2] / n; d[o + 3] = 255; }
+      acc.fill(0); cnt.fill(0); ty = ny; rows = 0;
+      if (y === h) break;
+    }
+    const r = y * w * 4;
+    for (let x = 0; x < w; x++) { const i = r + x * 4, j = xs[x] * 3; acc[j] += src[i]; acc[j + 1] += src[i + 1]; acc[j + 2] += src[i + 2]; cnt[xs[x]]++; }
+    rows++;
+  }
+  return out;
+}
+function fsShowFor(zoom) {
+  const full = $('previewFull'), want = (zoom > 1.001 || !fsFitId) ? 'full' : 'fit';
+  if (want === fsShown || !fsFullId) return;
+  const id = want === 'full' ? fsFullId : fsFitId;
+  if (full.width !== id.width || full.height !== id.height) { full.width = id.width; full.height = id.height; }
+  full.getContext('2d').putImageData(id, 0, 0);
+  fsShown = want;
+}
 function paintFullscreenResult(px, w, h) {
   const full = $('previewFull');
   full.width = w; full.height = h;
@@ -8867,6 +8959,11 @@ function paintFullscreenResult(px, w, h) {
   const id = ctx.createImageData(w, h);
   id.data.set(is16 ? quantize8(px, w, h) : px);      // same dither used for PNG/JPEG export, not a new path
   ctx.putImageData(id, 0, 0);
+  fsFullId = id; fsFitId = null; fsShown = 'full';
+  { const box = $('previewFullscreen'), dpr = window.devicePixelRatio || 1;
+    const k = Math.min((box.clientWidth || innerWidth) * dpr / w, (box.clientHeight || innerHeight) * dpr / h);
+    if (k < 0.75) { try { fsFitId = fsAreaDown(id.data, w, h, Math.max(1, Math.round(w * k)), Math.max(1, Math.round(h * k))); } catch (e) { fsFitId = null; } } }
+  fsShowFor(fsZoom);
   $('fsBadge').textContent = w + '\u00d7' + h + (is16 ? ' \u00b7 16-bit render' : ' \u00b7 8-bit render');
   // re-clamp against the new element size rather than reset it — zoom/pan
   // should survive the placeholder-to-HQ swap so a spot you zoomed in on
@@ -8896,6 +8993,7 @@ function applyFsZoom() {
   fsPanX = Math.max(-maxX, Math.min(maxX, fsPanX));
   fsPanY = Math.max(-maxY, Math.min(maxY, fsPanY));
   el.style.transform = fsZoom === 1 ? '' : `translate(${fsPanX}px,${fsPanY}px) scale(${fsZoom})`;
+  fsShowFor(fsZoom);
 }
 function fsZoomAt(factor, clientX, clientY) {
   const el = $('previewFull'), r = el.getBoundingClientRect();
