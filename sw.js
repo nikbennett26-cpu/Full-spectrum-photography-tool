@@ -17,7 +17,7 @@
    You do NOT need to bump it just to deploy a new index.html — network-first
    handles that on its own. */
 
-const CACHE_VERSION = 'irlab-v7';   // bumped so the new manifest is re-fetched rather than served stale
+const CACHE_VERSION = 'irlab-v8';   // v8: new logo, so the old icons are dropped   // bumped so the new manifest is re-fetched rather than served stale
 // transient hand-off storage for Web Share Target, deliberately not versioned
 const SHARE_CACHE = 'irlab-share';
 const SHARE_KEY = '/__shared-image';

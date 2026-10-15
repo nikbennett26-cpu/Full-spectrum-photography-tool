@@ -76,3 +76,9 @@ Corresponding source for the RAW decoder (LibRaw + RawTherapee ports, build
 scripts, and this tool's own adapter/glue code) is the `libraw-wasm-gpl3`
 repository, distributed alongside this tool's own source per GPL-3 §6 /
 AGPL-3.0 §13.
+
+
+## Barlow Condensed (logo lettering)
+
+The "IR" in the irlab logo and icons is drawn from the outlines of Barlow Condensed Bold by Jeremy Tribby,
+licensed under the SIL Open Font License 1.1 (https://openfontlicense.org). The font itself is not shipped.
