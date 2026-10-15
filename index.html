@@ -25,7 +25,7 @@
 <meta name="twitter:image" content="https://irlab.uk/og-card.png?v=112">
 <link rel="canonical" href="https://irlab.uk/">
 <meta name="theme-color" content="#160f0a">
-<meta name="irlab-build" content="112">
+<meta name="irlab-build" content="113">
 <link rel="manifest" href="/manifest.json">
 <link rel="icon" href="/favicon.ico" sizes="any">
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
@@ -1831,6 +1831,25 @@ details[data-step="detail"] .dGrp .dSub{font-size:10.5px;letter-spacing:.08em;te
 details[data-step="detail"] .dGrp .dBody > .dSub:first-child, details[data-step="detail"] .dGrp #rawNrBox .dSub{margin-top:2px}
 details[data-step="detail"] .dGrp .dHint{text-transform:none;letter-spacing:0;color:var(--muted)}
 details[data-step="detail"] .dGrp #rawNrBox{padding-bottom:6px;border-bottom:1px dashed var(--line2);margin-bottom:4px}
+
+/* ---- White balance cards (build 113) ---- */
+details[data-step="wb"] .wbCard{margin-top:12px;border:1px solid var(--line);border-radius:12px;padding:12px 14px;background:rgba(255,255,255,.02);display:flex;flex-direction:column;gap:6px}
+details[data-step="wb"] .wbCardHd{display:flex;align-items:center;gap:8px}
+details[data-step="wb"] .wbStep{font-family:var(--font-mono);font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--phosphor-dim)}
+details[data-step="wb"] .wbHint{margin:0;font-size:12.5px;line-height:1.4;color:var(--muted)}
+details[data-step="wb"] .wbStatus{font-family:var(--font-mono);font-size:11.5px;color:var(--phosphor-dim);opacity:.9}
+details[data-step="wb"] .wbBtns{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin-top:4px}
+details[data-step="wb"] .wbBtns button{min-height:44px;display:flex;align-items:center;justify-content:center;gap:8px;margin:0}
+details[data-step="wb"] .wbBtns .wbGhost{background:transparent;color:var(--muted)}
+details[data-step="wb"] .wbPip{flex:none}
+details[data-step="wb"] .wbGains{margin-top:12px;border:1px solid var(--line);border-radius:12px;background:rgba(255,255,255,.02)}
+details[data-step="wb"] .wbGains > summary{list-style:none;display:flex;align-items:center;gap:10px;min-height:44px;padding:0 14px;cursor:pointer;font-size:13px;color:var(--paper)}
+details[data-step="wb"] .wbGains > summary::-webkit-details-marker{display:none}
+details[data-step="wb"] .wbSw{display:inline-flex;gap:4px} details[data-step="wb"] .wbSw i{width:8px;height:8px;border-radius:2px;display:block}
+details[data-step="wb"] .wbGainsSum{margin-left:auto;font-family:var(--font-mono);font-size:12px;color:var(--muted)}
+details[data-step="wb"] .wbGainsBody{padding:0 14px 12px}
+details[data-step="wb"] .wbGainsBody .sl + .sl{margin-top:8px}
+#autoGainR{--safelight:#e0473f} #autoGainG{--safelight:#4fb556} #autoGainB{--safelight:#3e78e0}
 </style>
 </head>
 <body>
@@ -1952,8 +1971,12 @@ details[data-step="detail"] .dGrp #rawNrBox{padding-bottom:6px;border-bottom:1px
   <footer class="labFoot">
     <div id="whatsNew">
       <details>
-        <summary><span data-i18n="whatsNewLabel">What’s new</span><span class="wnLatest">New logo</span></summary>
+        <summary><span data-i18n="whatsNewLabel">What’s new</span><span class="wnLatest">Clearer white balance</span></summary>
       <div style="margin-top:6px">
+        <p style="margin:0 0 3px"><b style="color:var(--phosphor-dim)">Clearer white balance.</b> The two grey pickers are
+          now numbered cards, before the swap and after it, each with its own status. Auto tone's channel gains fold away
+          under one line that still shows their values.</p>
+
         <p style="margin:0 0 3px"><b style="color:var(--phosphor-dim)">New logo.</b> IR in an orange ring, on the tab icon,
           the home-screen icon and the home page.</p>
 
@@ -2031,7 +2054,7 @@ details[data-step="detail"] .dGrp #rawNrBox{padding-bottom:6px;border-bottom:1px
       <path d="M20.317 4.37a19.79 19.79 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028 14.09 14.09 0 0 0 1.226-1.994.076.076 0 0 0-.041-.106 13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128 10.2 10.2 0 0 0 .372-.292.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.956-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.955-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.946 2.418-2.157 2.418z"/>
     </svg> Discord</span><span class="dcGo">Join →</span>
     </a>
-    <div id="buildStampHome">Version 2026-10-15 · build 112</div>
+    <div id="buildStampHome">Version 2026-10-15 · build 113</div>
   </footer>
 </div>
 
@@ -2393,37 +2416,37 @@ details[data-step="detail"] .dGrp #rawNrBox{padding-bottom:6px;border-bottom:1px
              not wherever there happened to be room. -->
         <button id="btnAuto" class="btnGhostSmall" title="Set post-swap white balance and black point from the image's own histogram" data-i18n="autoTone">Auto tone</button>
       <span class="stepDot" aria-hidden="true"></span><span class="stepArrow" aria-hidden="true">▸</span></summary>
-      <div class="wbrow" style="margin-top:10px">
-        <button id="wbPre" data-i18n="preSwapNeutral">Pre-Swap Neutral</button>
-        <button id="wbPreReset" data-i18n="clearPre">Clear Pre</button>
-        <span class="note" id="wbPreStatus">Pre-WB: Not set</span>
+      <!-- Build 113: the two neutral pickers as numbered cards, in the order they act on the photo (before the channel
+           swap, then after it), each with its own status line; Auto tone's channel gains folded away under one line that
+           still shows their values. Every id is unchanged, so the code behind it is untouched. -->
+      <div class="wbCard">
+        <div class="wbCardHd"><span class="wbStep">1 · Before swap</span></div>
+        <p class="wbHint">Sets the sensor's neutral. Tap Pick grey, then something that should be grey in the photo.</p>
+        <span class="wbStatus" id="wbPreStatus">Pre-WB: Not set</span>
+        <div class="wbBtns">
+          <button type="button" id="wbPre"><svg class="wbPip" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m2 22 1-1h3l9-9"/><path d="M3 21v-3l9-9"/><path d="m15 6 3.4-3.4a2.1 2.1 0 1 1 3 3L18 9l.4.4a2.1 2.1 0 1 1-3 3l-3.8-3.8a2.1 2.1 0 1 1 3-3l.4.4Z"/></svg><span data-i18n="preSwapNeutral">Pick grey</span></button>
+          <button type="button" id="wbPreReset" class="wbGhost"><span data-i18n="clearPre">Clear</span></button>
+        </div>
       </div>
-      <div class="wbrow" style="margin-top:10px">
-        <button id="wbPost" data-i18n="postSwapNeutral">Post-Swap Neutral</button>
-        <button id="wbPostReset" data-i18n="clearPost">Clear Post</button>
-        <span class="note" id="wbPostStatus">Post-WB: Not set</span>
+      <div class="wbCard">
+        <div class="wbCardHd"><span class="wbStep">2 · After swap</span></div>
+        <p class="wbHint">Balances the colours after the swap. Auto tone sets this too.</p>
+        <span class="wbStatus" id="wbPostStatus">Post-WB: Not set</span>
+        <div class="wbBtns">
+          <button type="button" id="wbPost"><svg class="wbPip" viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m2 22 1-1h3l9-9"/><path d="M3 21v-3l9-9"/><path d="m15 6 3.4-3.4a2.1 2.1 0 1 1 3 3L18 9l.4.4a2.1 2.1 0 1 1-3 3l-3.8-3.8a2.1 2.1 0 1 1 3-3l.4.4Z"/></svg><span data-i18n="postSwapNeutral">Pick grey</span></button>
+          <button type="button" id="wbPostReset" class="wbGhost"><span data-i18n="clearPost">Clear</span></button>
+        </div>
       </div>
-      <!-- Auto tone's own R/G/B gain, made visible and adjustable rather
-           than only ever shown as a static "Auto ✓ R:1.20 G:1.00 B:1.15"
-           summary line. Phil: "it would be nice if [auto tone] were
-           affecting sliders somewhere that could then be backed off."
-           These ARE that: autoTone() writes its computed gains here
-           (see the function itself) instead of only reporting them, and
-           dragging any of the three sets postWBM directly from all three
-           current values, so nudging one down from what auto tone chose
-           is a slider drag, not a mystery.
-           Scope note: these track auto tone's own diagonal gain
-           specifically. Picking a neutral point with the Post-Swap
-           Neutral eyedropper above sets a full Bradford adaptation
-           matrix, not necessarily a pure diagonal one, so these reset to
-           1.00 (neutral) when that path is used instead of trying to
-           approximate it — showing an accurate "not what's driving this"
-           reset beats showing numbers that don't match what's active. -->
-      <div class="sl" style="margin-top:14px"><label>Auto tone: Red gain <b id="v_autoGainR">1.00</b></label><input type="range" id="autoGainR" aria-label="Auto tone red gain" min="0.2" max="4" step="0.01" value="1"></div>
-      <div class="sl" style="margin-top:8px"><label>Auto tone: Green gain <b id="v_autoGainG">1.00</b></label><input type="range" id="autoGainG" aria-label="Auto tone green gain" min="0.2" max="4" step="0.01" value="1"></div>
-      <div class="sl" style="margin-top:8px"><label>Auto tone: Blue gain <b id="v_autoGainB">1.00</b></label><input type="range" id="autoGainB" aria-label="Auto tone blue gain" min="0.2" max="4" step="0.01" value="1"></div>
-      <p class="note">Set by Auto tone, or drag directly. Independent of the Post-Swap Neutral picker above — using that, or Clear Post, resets these back to 1.00.</p>
-      <div class="sl wb" style="margin-top:14px"><label>Temperature <b id="v_temp">0</b></label><input type="range" id="temp" aria-label="Temperature" min="-600" max="600" value="0"></div>
+      <details class="wbGains">
+        <summary><span>Channel gains</span><span class="wbSw" aria-hidden="true"><i style="background:#e0473f"></i><i style="background:#4fb556"></i><i style="background:#3e78e0"></i></span><span id="wbGainsSum" class="wbGainsSum">1.00 · 1.00 · 1.00</span></summary>
+        <div class="wbGainsBody">
+      <div class="sl"><label>Red <b id="v_autoGainR">1.00</b></label><input type="range" id="autoGainR" aria-label="Auto tone red gain" min="0.2" max="4" step="0.01" value="1"></div>
+      <div class="sl" style="margin-top:8px"><label>Green <b id="v_autoGainG">1.00</b></label><input type="range" id="autoGainG" aria-label="Auto tone green gain" min="0.2" max="4" step="0.01" value="1"></div>
+      <div class="sl" style="margin-top:8px"><label>Blue <b id="v_autoGainB">1.00</b></label><input type="range" id="autoGainB" aria-label="Auto tone blue gain" min="0.2" max="4" step="0.01" value="1"></div>
+      <p class="note" style="margin:6px 0 0">Set by Auto tone, or drag to back a channel off. Picking an after-swap grey, or Clear, puts them back to 1.00.</p>
+        </div>
+      </details>
+      <div class="sl wb" style="margin-top:16px"><label>Temperature <b id="v_temp">0</b></label><input type="range" id="temp" aria-label="Temperature" min="-600" max="600" value="0"></div>
       <div class="sl wb" style="margin-top:8px"><label>Tint <b id="v_tint">0</b></label><input type="range" id="tint" aria-label="Tint" min="-600" max="600" value="0"></div>
       <p class="note" title="Temperature: cool ← → warm · Tint: green ← → magenta. Applied after the picker, so use these to push a deliberate cast on top of a neutral result. The range runs to ±600 — beyond ±100 is already further than most converters allow; the extra room past ±300 is for infrared files where even a picker plus that much push still isn&#x27;t enough to land on neutral.">Cool ← → warm · green ← → magenta. Applied after the picker, for pushing a deliberate cast on top of neutral.</p>
     </details>
@@ -2893,7 +2916,7 @@ details[data-step="detail"] .dGrp #rawNrBox{padding-bottom:6px;border-bottom:1px
       <br><a href="#" id="consentReopen" style="color:var(--muted);text-decoration:underline">Cookie notice</a>
       <br><a href="LICENSE.md" target="_blank" rel="noopener" style="color:var(--muted);text-decoration:underline">Source: AGPL-3.0</a>
       <br><a href="THIRD_PARTY_NOTICES.md" target="_blank" rel="noopener" style="color:var(--muted);text-decoration:underline">Third-party notices (LibRaw, RawTherapee)</a>
-<br><span id="buildStamp" style="color:var(--muted)" title="Which version of the app this is. Tap the arrow to check for a newer one and update.">Version 2026-10-15 · build 112</span>
+<br><span id="buildStamp" style="color:var(--muted)" title="Which version of the app this is. Tap the arrow to check for a newer one and update.">Version 2026-10-15 · build 113</span>
       <br><button id="btnInstall" type="button">Install as an app</button>
       <span id="kbHint">Ctrl+Z undo &middot; Ctrl+Shift+Z redo &middot; [ ] cycle presets &middot; F full quality view &middot; Space hold to compare</span>
     </footer>
@@ -6918,7 +6941,7 @@ const I18N = {
     step01:'Targeted Colour', step02:'Channel Swap', step03:'White Balance', step04:'Light', step05:'Colour', step06:'Export',
     subhdrUV:'UV Presets', subhdrIR:'IR Presets', filmStocksRecipes:'Film stocks & recipes', myPresets:'My Presets',
     saveCurrentLook:'Save current look as preset', clearFilter:'Clear filter', autoTone:'Auto tone',
-    preSwapNeutral:'Pre-Swap Neutral', clearPre:'Clear Pre', postSwapNeutral:'Post-Swap Neutral', clearPost:'Clear Post',
+    preSwapNeutral:'Pick grey', clearPre:'Clear', postSwapNeutral:'Pick grey', clearPost:'Clear',
     quickPreviewOption:'Use quick preview instead of full sensor decode', wideGamutSwapOption:'Try: wider-gamut colour swap (often more accurate)',
     gamutSwapCaveat:'Needs a RAW with the camera\u2019s colour data \u2014 no effect otherwise.',
     tagline:'Darkroom for light you can\u2019t see' },
@@ -6927,7 +6950,7 @@ const I18N = {
     step01:'Color dirigido', step02:'Intercambio de canales', step03:'Balance de blancos', step04:'Luz', step05:'Color', step06:'Exportar',
     subhdrUV:'Preajustes UV', subhdrIR:'Preajustes IR', filmStocksRecipes:'Emulsiones y recetas', myPresets:'Mis preajustes',
     saveCurrentLook:'Guardar look actual como preajuste', clearFilter:'Quitar filtro', autoTone:'Tono automático',
-    preSwapNeutral:'Neutro previo al intercambio', clearPre:'Borrar previo', postSwapNeutral:'Neutro tras el intercambio', clearPost:'Borrar posterior',
+    preSwapNeutral:'Elegir gris', clearPre:'Borrar', postSwapNeutral:'Elegir gris', clearPost:'Borrar',
     quickPreviewOption:'Usar la vista previa rápida en vez de la decodificación completa', wideGamutSwapOption:'Prueba: intercambio de color de gama más amplia (suele ser más preciso)',
     gamutSwapCaveat:'Requiere un RAW con los datos de color de la cámara; si no, no tiene efecto.',
     tagline:'Cuarto oscuro para la luz que no puedes ver' },
@@ -6936,7 +6959,7 @@ const I18N = {
     step01:'Couleur ciblée', step02:'Permutation des canaux', step03:'Balance des blancs', step04:'Lumière', step05:'Couleur', step06:'Exporter',
     subhdrUV:'Préréglages UV', subhdrIR:'Préréglages IR', filmStocksRecipes:'Émulsions et recettes', myPresets:'Mes préréglages',
     saveCurrentLook:'Enregistrer ce rendu comme préréglage', clearFilter:'Retirer le filtre', autoTone:'Ton automatique',
-    preSwapNeutral:'Neutre avant permutation', clearPre:'Effacer (avant)', postSwapNeutral:'Neutre après permutation', clearPost:'Effacer (après)',
+    preSwapNeutral:'Choisir un gris', clearPre:'Effacer', postSwapNeutral:'Choisir un gris', clearPost:'Effacer',
     quickPreviewOption:'Utiliser l\u2019aperçu rapide au lieu du décodage complet', wideGamutSwapOption:'À essayer : permutation de couleur à gamme plus large (souvent plus précise)',
     gamutSwapCaveat:'Nécessite un RAW avec les données colorimétriques de l\u2019appareil, sinon aucun effet.',
     tagline:'Chambre noire pour la lumière invisible' },
@@ -6945,7 +6968,7 @@ const I18N = {
     step01:'Gezielte Farbe', step02:'Kanaltausch', step03:'Weißabgleich', step04:'Licht', step05:'Farbe', step06:'Exportieren',
     subhdrUV:'UV-Voreinstellungen', subhdrIR:'IR-Voreinstellungen', filmStocksRecipes:'Filmtypen & Rezepte', myPresets:'Meine Voreinstellungen',
     saveCurrentLook:'Aktuellen Look als Voreinstellung speichern', clearFilter:'Filter entfernen', autoTone:'Auto-Ton',
-    preSwapNeutral:'Neutralpunkt vor Tausch', clearPre:'Vor-Wert löschen', postSwapNeutral:'Neutralpunkt nach Tausch', clearPost:'Nach-Wert löschen',
+    preSwapNeutral:'Grau wählen', clearPre:'Löschen', postSwapNeutral:'Grau wählen', clearPost:'Löschen',
     quickPreviewOption:'Schnellvorschau statt vollständiger Sensor-Dekodierung verwenden', wideGamutSwapOption:'Ausprobieren: Farbtausch mit größerem Farbraum (oft genauer)',
     gamutSwapCaveat:'Erfordert ein RAW mit den Farbdaten der Kamera \u2013 sonst ohne Wirkung.',
     tagline:'Dunkelkammer für Licht, das man nicht sehen kann' },
@@ -6954,7 +6977,7 @@ const I18N = {
     step01:'対象カラー', step02:'チャンネル入れ替え', step03:'ホワイトバランス', step04:'ライト', step05:'カラー', step06:'書き出し',
     subhdrUV:'UVプリセット', subhdrIR:'IRプリセット', filmStocksRecipes:'フィルムストック・レシピ', myPresets:'マイプリセット',
     saveCurrentLook:'現在の見た目をプリセットとして保存', clearFilter:'フィルターを解除', autoTone:'オートトーン',
-    preSwapNeutral:'入れ替え前のニュートラル', clearPre:'前をクリア', postSwapNeutral:'入れ替え後のニュートラル', clearPost:'後をクリア',
+    preSwapNeutral:'グレーを選択', clearPre:'クリア', postSwapNeutral:'グレーを選択', clearPost:'クリア',
     quickPreviewOption:'フルセンサーデコードの代わりにクイックプレビューを使用', wideGamutSwapOption:'試してみる: 広色域カラースワップ(より正確なことが多い)',
     gamutSwapCaveat:'カメラのカラーデータを含むRAWが必要です。ない場合は効果がありません。',
     tagline:'見えない光のための暗室' },
@@ -6963,7 +6986,7 @@ const I18N = {
     step01:'定向颜色', step02:'通道互换', step03:'白平衡', step04:'光照', step05:'颜色', step06:'导出',
     subhdrUV:'紫外预设', subhdrIR:'红外预设', filmStocksRecipes:'胶片与配方', myPresets:'我的预设',
     saveCurrentLook:'将当前效果保存为预设', clearFilter:'清除滤镜', autoTone:'自动色调',
-    preSwapNeutral:'互换前中性点', clearPre:'清除(前)', postSwapNeutral:'互换后中性点', clearPost:'清除(后)',
+    preSwapNeutral:'选取灰色', clearPre:'清除', postSwapNeutral:'选取灰色', clearPost:'清除',
     quickPreviewOption:'使用快速预览,而非完整传感器解码', wideGamutSwapOption:'试试看:更广色域的颜色互换(通常更准确)',
     gamutSwapCaveat:'需要包含相机色彩数据的RAW文件,否则不会有效果。',
     tagline:'为看不见的光而生的暗房' },
@@ -12496,6 +12519,18 @@ async function offerSessionRestore() {
    private mode swallowed it and reported "no saved session". The restore
    never ran, and nothing anywhere said so. */
 if (!SELFTEST) offerSessionRestore();
+
+/* Build 113: keep the folded Channel gains line showing the three values, whichever way they change (a drag, Auto tone,
+   undo, a reset), by watching the readouts the sliders already keep up to date. */
+(function wbGainsSummary() {
+  const out = $('wbGainsSum'), ids = ['v_autoGainR', 'v_autoGainG', 'v_autoGainB'];
+  if (!out || ids.some(id => !$(id))) return;
+  const upd = () => { out.textContent = ids.map(id => $(id).textContent).join(' · '); };
+  const mo = new MutationObserver(upd);
+  ids.forEach(id => mo.observe($(id), { childList: true, characterData: true, subtree: true }));
+  upd();
+})();
+
 
 /* ---------- Demosaic choice: AMaZE or RCD (Bayer RAWs) ----------
    One setting behind two selects (home page and the editor's Decode settings). Changing it while a Bayer RAW is
