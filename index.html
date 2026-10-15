@@ -25,7 +25,7 @@
 <meta name="twitter:image" content="https://irlab.uk/og-card.png?v=112">
 <link rel="canonical" href="https://irlab.uk/">
 <meta name="theme-color" content="#160f0a">
-<meta name="irlab-build" content="114">
+<meta name="irlab-build" content="115">
 <link rel="manifest" href="/manifest.json">
 <link rel="icon" href="/favicon.ico" sizes="any">
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
@@ -707,6 +707,38 @@ details[open] summary{margin-bottom:4px}
 .matrix input.mdiag{border-color:#2f5346}
 .matrix input:focus{outline:2px solid var(--safelight);outline-offset:-2px;background:var(--surface2)}
 .rl-r{color:var(--red)}.rl-g{color:var(--green)}.rl-b{color:var(--blue)}
+
+/* ---- Compact channel mix (build 115) ---- */
+.mxGrid{grid-template-columns:auto repeat(3,1fr) 34px;gap:5px}
+.mxGrid .hdr{padding:0 2px 4px;font-size:10px}
+.mxGrid .hdr-tot::before{display:none}
+.mxGrid .rowlbl{font-size:11px;padding:0 6px 0 0}
+.matrix input{padding:0 4px;height:40px;font-size:13.5px}
+/* weight bars run left to right now: easier to compare across a row */
+.matrix input,.matrix input.neg{background:
+    linear-gradient(90deg, var(--tint, transparent), var(--tint, transparent)) left/calc(var(--w, 0) * 100%) 100% no-repeat,
+    var(--sunken)}
+.matrix input.neg{background:
+    linear-gradient(90deg, var(--tint, transparent), var(--tint, transparent)) right/calc(var(--w, 0) * 100%) 100% no-repeat,
+    var(--sunken)}
+.matrix input.zero{color:var(--muted)}
+.matrix input.sel{border-color:var(--safelight);box-shadow:0 0 0 1px var(--safelight) inset}
+.mxGrid .mtot{font-size:11.5px;border:0}
+.mxFine{display:flex;align-items:center;gap:8px;margin-top:8px;padding:6px 8px;border-radius:9px;
+  background:var(--sunken);border:1px solid var(--line)}
+.mxFineLbl{font-family:var(--font-mono);font-size:12px;color:var(--muted);white-space:nowrap;min-width:44px}
+.mxFineLbl b{font-weight:600}
+.mxStep{min-height:0;width:36px;height:32px;padding:0;font-size:16px;line-height:1;flex:none}
+#mxFineR{flex:1;min-width:0}
+.mxHint{margin:6px 0 8px}
+.mxPrevLbl{font-family:var(--font-mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-top:4px}
+.mxOff{margin-top:10px;border-top:1px dashed var(--line);padding-top:4px}
+.mxOff>summary{display:flex;align-items:center;min-height:36px;cursor:pointer;font-size:12.5px;color:var(--paper-dim);list-style:none}
+.mxOff>summary::-webkit-details-marker{display:none}
+.mxOffSum{margin-left:auto;font-family:var(--font-mono);font-size:11.5px;color:var(--muted)}
+.mxOffSum.on{color:var(--safelight)}
+.mxOffGrid{grid-template-columns:repeat(3,auto 1fr);gap:5px;margin-top:4px}
+.mxOffGrid .rowlbl{padding:0 4px 0 0}
 
 button{background:var(--surface2);border:1px solid var(--line2);border-radius:var(--radius-sm);color:var(--paper);padding:9px 14px;font-size:12.5px;font-weight:500;cursor:pointer;font-family:inherit;min-height:38px;transition:border-color .15s,background .15s,transform .1s}
 button:active{transform:translateY(1px)}
@@ -1976,8 +2008,11 @@ details[data-step="wb"] .wbGainsBody .sl + .sl{margin-top:8px}
   <footer class="labFoot">
     <div id="whatsNew">
       <details>
-        <summary><span data-i18n="whatsNewLabel">What’s new</span><span class="wnLatest">Tidier Colour tab</span></summary>
+        <summary><span data-i18n="whatsNewLabel">What’s new</span><span class="wnLatest">Compact channel mix</span></summary>
       <div style="margin-top:6px">
+        <p style="margin:0 0 3px"><b style="color:var(--phosphor-dim)">Compact channel mix.</b> The swap grid is about half the
+          height. Tap a cell to fine-tune it on one bar (tap again to type), the shading shows how strong each route is, and
+          offsets fold away until you need them.</p>
         <p style="margin:0 0 3px"><b style="color:var(--phosphor-dim)">Tidier Colour tab.</b> Colour is now cards, like
           Detail: Overall (hue, saturation, vibrance) open at the top, then Colour by band, Calibration, Swap working space and
           LUT, with a dot on the ones in use. The White Balance header says what is set even when it is closed.</p>
@@ -2063,7 +2098,7 @@ details[data-step="wb"] .wbGainsBody .sl + .sl{margin-top:8px}
       <path d="M20.317 4.37a19.79 19.79 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028 14.09 14.09 0 0 0 1.226-1.994.076.076 0 0 0-.041-.106 13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128 10.2 10.2 0 0 0 .372-.292.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.956-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.955-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.946 2.418-2.157 2.418z"/>
     </svg> Discord</span><span class="dcGo">Join →</span>
     </a>
-    <div id="buildStampHome">Version 2026-10-15 · build 114</div>
+    <div id="buildStampHome">Version 2026-10-15 · build 115</div>
   </footer>
 </div>
 
@@ -2244,20 +2279,38 @@ details[data-step="wb"] .wbGainsBody .sl + .sl{margin-top:8px}
              excluding the offset. It answers one question at a glance: a row
              summing to 100 changes that channel's colour without changing
              its exposure, and anything else is doing both at once. -->
-        <div class="matrix matrix4" id="mx">
-          <div></div><div class="hdr rl-r">from R</div><div class="hdr rl-g">from G</div><div class="hdr rl-b">from B</div><div class="hdr hdr-off">offset</div><div class="hdr hdr-tot">total</div>
+        <!-- Build 115: the compact grid. The offset column moved into its own
+             fold below (it is set far less often than the gains, and it is a
+             different kind of number), so the nine gains get the full width.
+             Tapping a cell selects it for the fine-tune bar underneath; a
+             second tap types into it, and a sideways drag still scrubs. -->
+        <div class="matrix mxGrid" id="mx">
+          <div></div><div class="hdr rl-r">R in</div><div class="hdr rl-g">G in</div><div class="hdr rl-b">B in</div><div class="hdr hdr-tot" title="Row total of the three gains">&Sigma;</div>
           <div class="rowlbl rl-r">R out</div>
-          <input type="number" id="m00" class="mdiag" aria-label="Output R from R" value="100" step="5"><input type="number" id="m01" aria-label="Output R from G" value="0" step="5"><input type="number" id="m02" aria-label="Output R from B" value="0" step="5"><input type="number" id="m03" class="moff" aria-label="Output R constant offset" value="0" step="5"><div class="mtot" id="mt0">100</div>
+          <input type="number" id="m00" class="mdiag" aria-label="Output R from R" value="100" step="5"><input type="number" id="m01" aria-label="Output R from G" value="0" step="5"><input type="number" id="m02" aria-label="Output R from B" value="0" step="5"><div class="mtot" id="mt0">100</div>
           <div class="rowlbl rl-g">G out</div>
-          <input type="number" id="m10" aria-label="Output G from R" value="0" step="5"><input type="number" id="m11" class="mdiag" aria-label="Output G from G" value="100" step="5"><input type="number" id="m12" aria-label="Output G from B" value="0" step="5"><input type="number" id="m13" class="moff" aria-label="Output G constant offset" value="0" step="5"><div class="mtot" id="mt1">100</div>
+          <input type="number" id="m10" aria-label="Output G from R" value="0" step="5"><input type="number" id="m11" class="mdiag" aria-label="Output G from G" value="100" step="5"><input type="number" id="m12" aria-label="Output G from B" value="0" step="5"><div class="mtot" id="mt1">100</div>
           <div class="rowlbl rl-b">B out</div>
-          <input type="number" id="m20" aria-label="Output B from R" value="0" step="5"><input type="number" id="m21" aria-label="Output B from G" value="0" step="5"><input type="number" id="m22" class="mdiag" aria-label="Output B from B" value="100" step="5"><input type="number" id="m23" class="moff" aria-label="Output B constant offset" value="0" step="5"><div class="mtot" id="mt2">100</div>
+          <input type="number" id="m20" aria-label="Output B from R" value="0" step="5"><input type="number" id="m21" aria-label="Output B from G" value="0" step="5"><input type="number" id="m22" class="mdiag" aria-label="Output B from B" value="100" step="5"><div class="mtot" id="mt2">100</div>
         </div>
-        <!-- Reference colours through the current matrix. The matrix was the
-             one control with no readout of its own: you could only tell what
-             it did by watching the photo, which hides what happens to colours
-             the photo does not contain. -->
+        <div class="mxFine" id="mxFine">
+          <span class="mxFineLbl" id="mxFineLbl"><b class="rl-r">R</b> &larr; <b class="rl-r">R</b></span>
+          <button type="button" class="mxStep" id="mxFineDn" aria-label="Less">&minus;</button>
+          <input type="range" id="mxFineR" min="-200" max="200" step="5" value="100" aria-label="Selected cell">
+          <button type="button" class="mxStep" id="mxFineUp" aria-label="More">+</button>
+        </div>
+        <p class="note mxHint">Tap a cell to tune it on the bar, tap again to type. Drag a cell sideways to scrub it.</p>
+        <div class="mxPrevLbl">Colours before / after</div>
         <div class="mxPreview" id="mxPreview"></div>
+        <details class="mxOff" id="mxOff">
+          <summary><span>Offsets</span><span class="mxOffSum" id="mxOffSum">0 &middot; 0 &middot; 0</span></summary>
+          <div class="matrix mxOffGrid">
+            <div class="rowlbl rl-r">R out</div><input type="number" id="m03" class="moff" aria-label="Output R constant offset" value="0" step="5">
+            <div class="rowlbl rl-g">G out</div><input type="number" id="m13" class="moff" aria-label="Output G constant offset" value="0" step="5">
+            <div class="rowlbl rl-b">B out</div><input type="number" id="m23" class="moff" aria-label="Output B constant offset" value="0" step="5">
+          </div>
+          <p class="note" style="margin:6px 0 0">Added to the channel whatever the input, so it can tint deep shadows a mix alone can&rsquo;t reach.</p>
+        </details>
         <!-- Rec.709 weights are unequal (R 0.2126, B 0.0722), so a swap moves
              brightness as well as hue. Restoring the original luminance keeps
              the swap a colour operation only, so a set of frames lands at a
@@ -2283,7 +2336,6 @@ details[data-step="wb"] .wbGainsBody .sl + .sl{margin-top:8px}
           <div id="idxSamples" style="font-family:var(--font-mono);font-size:11px;margin-top:6px"></div>
           <p class="note" style="margin-top:6px" title="Tap two materials that should differ — bare wood and live foliage, say. If the numbers sit together, the index cannot separate them on this camera; if they differ but look alike, the colour range is compressing them.">Tap two materials that should read differently, to sanity-check that this camera can actually separate them.</p>
         </div>
-        <p class="note" style="margin-top:6px">Drag a cell sideways to scrub it, or type an exact value.</p>
       </details>
       <!-- Presets are shortcuts onto the matrix above, not a separate
            mechanism — collapsible on the same basis as the film group below,
@@ -2937,7 +2989,7 @@ details[data-step="wb"] .wbGainsBody .sl + .sl{margin-top:8px}
       <br><a href="#" id="consentReopen" style="color:var(--muted);text-decoration:underline">Cookie notice</a>
       <br><a href="LICENSE.md" target="_blank" rel="noopener" style="color:var(--muted);text-decoration:underline">Source: AGPL-3.0</a>
       <br><a href="THIRD_PARTY_NOTICES.md" target="_blank" rel="noopener" style="color:var(--muted);text-decoration:underline">Third-party notices (LibRaw, RawTherapee)</a>
-<br><span id="buildStamp" style="color:var(--muted)" title="Which version of the app this is. Tap the arrow to check for a newer one and update.">Version 2026-10-15 · build 114</span>
+<br><span id="buildStamp" style="color:var(--muted)" title="Which version of the app this is. Tap the arrow to check for a newer one and update.">Version 2026-10-15 · build 115</span>
       <br><button id="btnInstall" type="button">Install as an app</button>
       <span id="kbHint">Ctrl+Z undo &middot; Ctrl+Shift+Z redo &middot; [ ] cycle presets &middot; F full quality view &middot; Space hold to compare</span>
     </footer>
@@ -10253,6 +10305,48 @@ $('btnLumaReset')?.addEventListener('click', () => {
 wireMatrixDrag(MCELLS, 200, 2);      // full -200..200 across roughly a phone width
 wireMatrixDrag(MOFFCELLS, 100, 0.6); // gentler: the whole 0..100 needs more travel to reach
 
+/* ---- Compact mix: select a cell, fine-tune it on one bar (build 115) ----
+   On touch the first tap only selects (the cell is made read-only for that
+   tap so the keyboard stays down); tapping the selected cell again types
+   into it. Mouse and keyboard users can still click and type straight away. */
+let mxSel = 'm00';
+function mxFineSync() {
+  const el = $(mxSel), r = $('mxFineR'); if (!el || !r) return;
+  MCELLS.forEach(id => $(id)?.classList.toggle('sel', id === mxSel));
+  const i = MCELLS.indexOf(mxSel), C = ['R','G','B'], K = ['rl-r','rl-g','rl-b'];
+  const ro = (i / 3) | 0, co = i % 3;
+  const lb = $('mxFineLbl');
+  if (lb) lb.innerHTML = '<b class="' + K[ro] + '">' + C[ro] + '</b> &larr; <b class="' + K[co] + '">' + C[co] + '</b>';
+  if (document.activeElement !== r) r.value = +el.value || 0;
+  r.setAttribute('aria-label', C[ro] + ' out from ' + C[co] + ' in');
+  const os = $('mxOffSum');
+  if (os) { const o = MOFFCELLS.map(id => Math.round(+$(id).value || 0)); os.textContent = o.join(' \u00b7 '); os.classList.toggle('on', o.some(v => v !== 0)); }
+}
+function mxSelect(id) { mxSel = id; mxFineSync(); }
+function mxSetSel(v) {
+  const el = $(mxSel); if (!el) return;
+  v = Math.max(-200, Math.min(200, Math.round(v / 5) * 5));
+  if (v === +el.value) return;
+  el.value = v; render(); mxSync(); haptic('tick');
+}
+MCELLS.forEach(id => {
+  const el = $(id); if (!el) return;
+  el.addEventListener('pointerdown', e => {
+    if (e.pointerType === 'touch' || e.pointerType === 'pen') {
+      if (mxSel !== id) { el.readOnly = true; mxSelect(id); }
+      else if (el.readOnly) { el.readOnly = false; }
+    } else mxSelect(id);
+  });
+  el.addEventListener('focus', () => { if (mxSel !== id) mxSelect(id); });
+  el.addEventListener('blur', () => { el.readOnly = false; });
+  el.addEventListener('dblclick', () => { el.readOnly = false; el.focus(); el.select?.(); });
+});
+$('mxFineR')?.addEventListener('input', e => mxSetSel(+e.target.value));
+$('mxFineR')?.addEventListener('change', () => { armUndoCapture(); commitUndoCapture(); });
+[['mxFineDn', -5], ['mxFineUp', 5]].forEach(([b, d]) => $(b)?.addEventListener('click', () => {
+  mxSetSel((+$(mxSel).value || 0) + d); armUndoCapture(); commitUndoCapture();
+}));
+
 /* Reference colours run through the current matrix, shown source over result.
    Deliberately includes a neutral grey and a foliage green: those are the two
    the photo often cannot tell you about, and they are exactly where a matrix
@@ -10263,6 +10357,7 @@ const MX_REF = [
 ];
 function mxSync() {
   const wrap = $('mxPreview'); if (!wrap) return;
+  mxFineSync();
   const m = MCELLS.map(id => (+$(id).value || 0) / 100);
   /* Cell weighting. Tint comes from the SOURCE channel (the column), because
      the question a cell answers is "how much of THIS input goes here". Scaled
@@ -10281,7 +10376,7 @@ function mxSync() {
       ? 'Row sums to 100: changes this channel\u2019s colour without changing its exposure.'
       : 'Row sums to ' + t + ': this row changes exposure as well as colour. 100 would be colour only.';
   }
-  const TINT = ['rgba(224,72,52,.55)', 'rgba(63,178,74,.55)', 'rgba(58,124,232,.55)'];
+  const TINT = ['rgba(224,72,52,.38)', 'rgba(63,178,74,.38)', 'rgba(58,124,232,.40)'];
   const peak = Math.max(1, ...m.map(Math.abs));
   MCELLS.forEach((id, i) => {
     const el = $(id); if (!el) return;
@@ -10289,6 +10384,7 @@ function mxSync() {
     el.style.setProperty('--w', Math.min(1, Math.abs(v) / peak).toFixed(3));
     el.style.setProperty('--tint', TINT[i % 3]);
     el.classList.toggle('neg', v < 0);
+    el.classList.toggle('zero', v === 0);
   });
   if (!wrap.children.length) {
     MX_REF.forEach(() => {
