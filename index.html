@@ -25,7 +25,7 @@
 <meta name="twitter:image" content="https://irlab.uk/og-card.png?v=112">
 <link rel="canonical" href="https://irlab.uk/">
 <meta name="theme-color" content="#160f0a">
-<meta name="irlab-build" content="113">
+<meta name="irlab-build" content="114">
 <link rel="manifest" href="/manifest.json">
 <link rel="icon" href="/favicon.ico" sizes="any">
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
@@ -1816,22 +1816,27 @@ body.imgLoading #emptyStateGroup.lab label.labGo{transform:translateY(4px);box-s
 }
 
 /* ---- Detail cards (build 110) ---- */
-details[data-step="detail"] .dGrp{margin-top:10px;border:1px solid var(--line2);border-radius:10px;background:rgba(255,255,255,.015)}
-details[data-step="detail"] .dGrp > summary{list-style:none;display:flex;align-items:baseline;gap:10px;padding:12px 14px;cursor:pointer;min-height:44px;box-sizing:border-box}
-details[data-step="detail"] .dGrp > summary::-webkit-details-marker{display:none}
-details[data-step="detail"] .dGrp > summary::after{content:'\25B8';margin-left:8px;color:var(--muted);font-size:11px;transition:transform .15s}
-details[data-step="detail"] .dGrp[open] > summary::after{transform:rotate(90deg)}
-details[data-step="detail"] .dGrp .dT{font-weight:600;color:var(--paper);font-size:13.5px;white-space:nowrap}
-details[data-step="detail"] .dGrp .dS{color:var(--muted);font-size:11.5px;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-details[data-step="detail"] .dGrp .dDot{width:6px;height:6px;border-radius:50%;background:var(--safelight);opacity:0;flex:0 0 auto;align-self:center;transition:opacity .2s}
-details[data-step="detail"] .dGrp.mod .dDot{opacity:1}
-details[data-step="detail"] .dGrp .dBody{padding:0 14px 12px}
-details[data-step="detail"] .dGrp .dBody > .sl + .sl, details[data-step="detail"] .dGrp .dBody #rawNrBox .sl + .sl{margin-top:6px}
-details[data-step="detail"] .dGrp .dSub{font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--phosphor-dim);margin:12px 0 4px}
-details[data-step="detail"] .dGrp .dBody > .dSub:first-child, details[data-step="detail"] .dGrp #rawNrBox .dSub{margin-top:2px}
-details[data-step="detail"] .dGrp .dHint{text-transform:none;letter-spacing:0;color:var(--muted)}
-details[data-step="detail"] .dGrp #rawNrBox{padding-bottom:6px;border-bottom:1px dashed var(--line2);margin-bottom:4px}
+:is(details[data-step="detail"],details[data-step="colour"]) .dGrp{margin-top:10px;border:1px solid var(--line2);border-radius:10px;background:rgba(255,255,255,.015)}
+:is(details[data-step="detail"],details[data-step="colour"]) .dGrp > summary{list-style:none;display:flex;align-items:baseline;gap:10px;padding:12px 14px;cursor:pointer;min-height:44px;box-sizing:border-box}
+:is(details[data-step="detail"],details[data-step="colour"]) .dGrp > summary::-webkit-details-marker{display:none}
+:is(details[data-step="detail"],details[data-step="colour"]) .dGrp > summary::after{content:'\25B8';margin-left:8px;color:var(--muted);font-size:11px;transition:transform .15s}
+:is(details[data-step="detail"],details[data-step="colour"]) .dGrp[open] > summary::after{transform:rotate(90deg)}
+:is(details[data-step="detail"],details[data-step="colour"]) .dGrp .dT{font-weight:600;color:var(--paper);font-size:13.5px;white-space:nowrap}
+:is(details[data-step="detail"],details[data-step="colour"]) .dGrp .dS{color:var(--muted);font-size:11.5px;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+:is(details[data-step="detail"],details[data-step="colour"]) .dGrp .dDot{width:6px;height:6px;border-radius:50%;background:var(--safelight);opacity:0;flex:0 0 auto;align-self:center;transition:opacity .2s}
+:is(details[data-step="detail"],details[data-step="colour"]) .dGrp.mod .dDot{opacity:1}
+:is(details[data-step="detail"],details[data-step="colour"]) .dGrp .dBody{padding:0 14px 12px}
+:is(details[data-step="detail"],details[data-step="colour"]) .dGrp .dBody > .sl + .sl, :is(details[data-step="detail"],details[data-step="colour"]) .dGrp .dBody #rawNrBox .sl + .sl{margin-top:6px}
+:is(details[data-step="detail"],details[data-step="colour"]) .dGrp .dSub{font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--phosphor-dim);margin:12px 0 4px}
+:is(details[data-step="detail"],details[data-step="colour"]) .dGrp .dBody > .dSub:first-child, :is(details[data-step="detail"],details[data-step="colour"]) .dGrp #rawNrBox .dSub{margin-top:2px}
+:is(details[data-step="detail"],details[data-step="colour"]) .dGrp .dHint{text-transform:none;letter-spacing:0;color:var(--muted)}
+:is(details[data-step="detail"],details[data-step="colour"]) .dGrp #rawNrBox{padding-bottom:6px;border-bottom:1px dashed var(--line2);margin-bottom:4px}
 
+/* ---- Colour cards (build 114) ---- */
+details[data-step="colour"] .dGrp .cBands{display:inline-flex;gap:3px;vertical-align:middle}
+details[data-step="colour"] .dGrp .cBands i{width:9px;height:9px;border-radius:50%;display:block}
+details[data-step="colour"] .dGrp .dBody > .sl:first-child,details[data-step="colour"] .dGrp .dBody > .note:first-child{margin-top:0}
+details[data-step="wb"] > summary .wbSum{font-family:var(--font-mono);font-size:11.5px;color:var(--muted);text-transform:none;letter-spacing:0;font-weight:400;margin-left:8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
 /* ---- White balance cards (build 113) ---- */
 details[data-step="wb"] .wbCard{margin-top:12px;border:1px solid var(--line);border-radius:12px;padding:12px 14px;background:rgba(255,255,255,.02);display:flex;flex-direction:column;gap:6px}
 details[data-step="wb"] .wbCardHd{display:flex;align-items:center;gap:8px}
@@ -1971,8 +1976,12 @@ details[data-step="wb"] .wbGainsBody .sl + .sl{margin-top:8px}
   <footer class="labFoot">
     <div id="whatsNew">
       <details>
-        <summary><span data-i18n="whatsNewLabel">What’s new</span><span class="wnLatest">Clearer white balance</span></summary>
+        <summary><span data-i18n="whatsNewLabel">What’s new</span><span class="wnLatest">Tidier Colour tab</span></summary>
       <div style="margin-top:6px">
+        <p style="margin:0 0 3px"><b style="color:var(--phosphor-dim)">Tidier Colour tab.</b> Colour is now cards, like
+          Detail: Overall (hue, saturation, vibrance) open at the top, then Colour by band, Calibration, Swap working space and
+          LUT, with a dot on the ones in use. The White Balance header says what is set even when it is closed.</p>
+
         <p style="margin:0 0 3px"><b style="color:var(--phosphor-dim)">Clearer white balance.</b> The two grey pickers are
           now numbered cards, before the swap and after it, each with its own status. Auto tone's channel gains fold away
           under one line that still shows their values.</p>
@@ -2054,7 +2063,7 @@ details[data-step="wb"] .wbGainsBody .sl + .sl{margin-top:8px}
       <path d="M20.317 4.37a19.79 19.79 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028 14.09 14.09 0 0 0 1.226-1.994.076.076 0 0 0-.041-.106 13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128 10.2 10.2 0 0 0 .372-.292.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.956-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.955-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.946 2.418-2.157 2.418z"/>
     </svg> Discord</span><span class="dcGo">Join →</span>
     </a>
-    <div id="buildStampHome">Version 2026-10-15 · build 113</div>
+    <div id="buildStampHome">Version 2026-10-15 · build 114</div>
   </footer>
 </div>
 
@@ -2409,7 +2418,7 @@ details[data-step="wb"] .wbGainsBody .sl + .sl{margin-top:8px}
 
 <details class="panel tier-work stepPanel" open data-step="wb">
       <summary class="pt stepHdr" style="justify-content:space-between">
-        <span><span class="stepChip">03</span> <span data-i18n="step03">White Balance</span></span>
+        <span style="display:flex;align-items:center;min-width:0"><span class="stepChip">03</span>&nbsp;<span data-i18n="step03">White Balance</span><span class="wbSum" id="wbSum"></span></span>
         <!-- Was living in the filter-preset panel above, sharing none of its
              content — it sets exactly the two things this panel controls,
              post-swap WB and black point, so it belongs where its effect is,
@@ -2542,6 +2551,10 @@ details[data-step="wb"] .wbGainsBody .sl + .sl{margin-top:8px}
 
     <details class="panel tier-work stepPanel" open data-step="colour">
       <summary class="pt stepHdr"><span class="stepChip">05</span> <span data-i18n="step05">Colour</span><span class="stepDot" aria-hidden="true"></span><span class="stepArrow" aria-hidden="true">▸</span></summary>
+      <!-- Build 114: the Colour tab as cards, like Detail (Colour A). Overall is open; the rest open when tapped, and a dot marks the ones in use. -->
+      <details class="dGrp" id="colOverall" open>
+        <summary><span class="dT">Overall</span><span class="dS">hue, saturation, vibrance</span><span class="dDot" aria-hidden="true"></span></summary>
+        <div class="dBody">
       <div class="sl"><label>Hue shift <b id="v_hue">0</b>°</label><input type="range" id="hue" aria-label="Hue shift" min="-180" max="180" step="0.5" value="0"></div>
       <!-- Hue rotation and channel swapping are two different operations that
            had been merged into one slider. Perceptual keeps the OKLab
@@ -2567,28 +2580,14 @@ details[data-step="wb"] .wbGainsBody .sl + .sl{margin-top:8px}
 
       <!-- CORRECTIVE: last, because how much fringing is visible depends on
            the contrast and saturation set above -->
-      
-      <details style="margin-top:14px">
-        <summary class="pt" style="cursor:pointer;display:inline-block">Colour Calibration</summary>
-        <p class="note">Rotates the hue of each primary and adjusts its saturation independently &mdash; closer to how a camera profile works than hue-band targeting. Useful for correcting a sensor&rsquo;s spectral response or fine-tuning an IR channel swap.</p>
-        <div class="grpHdr" style="margin-top:8px">Primary hue</div>
-        <div class="sl"><label>Red <b id="v_calRH">0</b></label><input type="range" id="calRH" aria-label="Red primary hue" min="-100" max="100" value="0"></div>
-        <div class="sl"><label>Green <b id="v_calGH">0</b></label><input type="range" id="calGH" aria-label="Green primary hue" min="-100" max="100" value="0"></div>
-        <div class="sl"><label>Blue <b id="v_calBH">0</b></label><input type="range" id="calBH" aria-label="Blue primary hue" min="-100" max="100" value="0"></div>
-        <div class="grpHdr" style="margin-top:10px">Primary saturation</div>
-        <div class="sl"><label>Red <b id="v_calRS">0</b></label><input type="range" id="calRS" aria-label="Red primary saturation" min="-100" max="100" value="0"></div>
-        <div class="sl"><label>Green <b id="v_calGS">0</b></label><input type="range" id="calGS" aria-label="Green primary saturation" min="-100" max="100" value="0"></div>
-        <div class="sl"><label>Blue <b id="v_calBS">0</b></label><input type="range" id="calBS" aria-label="Blue primary saturation" min="-100" max="100" value="0"></div>
-        <div class="grpHdr" style="margin-top:10px">Shadow tint</div>
-        <div class="sl"><label>Tint <b id="v_calST">0</b></label><input type="range" id="calST" aria-label="Shadow tint" min="-100" max="100" value="0"></div>
-        <p class="note">Adds a warm (right) or cool (left) cast to the darkest tones only.</p>
+        </div>
       </details>
-
       <div class="sl" id="skyDeepRow" hidden style="display:none;margin-top:14px"><label>Deep sky <b id="v_skyDeep">0</b></label><input type="range" id="skyDeep" aria-label="Deep sky" min="0" max="100" value="0" title="Takes blue to violet sky, from azure at the horizon to deep blue overhead, down toward navy and black, a pale sky further than a dark one. It also takes the noise with it: noise in a dark sky has nothing to show against. Colours that are not sky are not touched."></div>
       <div class="sl" id="crimsonRow" hidden style="display:none;margin-top:6px"><label>Crimson foliage <b id="v_crimsonFol">0</b></label><input type="range" id="crimsonFol" aria-label="Crimson foliage" min="0" max="100" value="0" title="Pulls pink, magenta and red foliage toward the crimson of the reference pictures: hue toward red, chroma up, a little darker. Pale pink walls and grey stone are left alone."></div>
       <label class="ctl" id="skyShowRow" hidden style="display:none;align-items:center;gap:8px;margin:6px 0 4px" title="Tints the part of the picture the sky tools treat as sky, so you can check it found the right area."><input type="checkbox" id="chkSkyShow" style="margin:0"><span>Show the sky selection</span></label>
-      <details id="hslDetails" style="margin-top:14px">
-        <summary class="pt" style="cursor:pointer;display:inline-block">Colour by band</summary>
+      <details class="dGrp" id="hslDetails">
+        <summary><span class="dT">Colour by band</span><span class="dS"><span class="cBands" aria-hidden="true"><i style="background:#e0473f"></i><i style="background:#ef8a2f"></i><i style="background:#e6cf3a"></i><i style="background:#4fb556"></i><i style="background:#36c3c0"></i><i style="background:#3e78e0"></i><i style="background:#8f57d6"></i><i style="background:#d34fb4"></i></span></span><span class="dDot" aria-hidden="true"></span></summary>
+        <div class="dBody">
         <p class="note" style="margin-top:6px" title="Eight bands around the colour wheel, each with its own hue, saturation and luminance. Each band blends smoothly into its neighbours, and greys and near-greys are left alone, so a push on Blue cannot tint the clouds. Applied after Hue, Saturation and Vibrance. Not included in a .cube LUT export.">Hue, saturation and brightness for each of eight colours. Greys are left alone.</p>
         <div class="wbrow" id="hslTabs" style="margin-top:8px">
           <button type="button" data-g="H" class="btnGhostSmall on">Hue</button>
@@ -2622,6 +2621,24 @@ details[data-step="wb"] .wbGainsBody .sl + .sl{margin-top:8px}
           <div class="sl hslRow" data-g="L"><label><span><span class="hslDot" style="background:#8f57d6"></span>Purple</span> <b id="v_hslL6">0</b></label><input type="range" id="hslL6" aria-label="Purple luminance" min="-100" max="100" value="0"></div>
           <div class="sl hslRow" data-g="L"><label><span><span class="hslDot" style="background:#d34fb4"></span>Magenta</span> <b id="v_hslL7">0</b></label><input type="range" id="hslL7" aria-label="Magenta luminance" min="-100" max="100" value="0"></div>
         </div>
+        </div>
+      </details>
+      <details class="dGrp" id="colCal">
+        <summary><span class="dT">Calibration</span><span class="dS">primaries and shadow tint</span><span class="dDot" aria-hidden="true"></span></summary>
+        <div class="dBody">
+        <p class="note">Rotates the hue of each primary and adjusts its saturation independently &mdash; closer to how a camera profile works than hue-band targeting. Useful for correcting a sensor&rsquo;s spectral response or fine-tuning an IR channel swap.</p>
+        <div class="grpHdr" style="margin-top:8px">Primary hue</div>
+        <div class="sl"><label>Red <b id="v_calRH">0</b></label><input type="range" id="calRH" aria-label="Red primary hue" min="-100" max="100" value="0"></div>
+        <div class="sl"><label>Green <b id="v_calGH">0</b></label><input type="range" id="calGH" aria-label="Green primary hue" min="-100" max="100" value="0"></div>
+        <div class="sl"><label>Blue <b id="v_calBH">0</b></label><input type="range" id="calBH" aria-label="Blue primary hue" min="-100" max="100" value="0"></div>
+        <div class="grpHdr" style="margin-top:10px">Primary saturation</div>
+        <div class="sl"><label>Red <b id="v_calRS">0</b></label><input type="range" id="calRS" aria-label="Red primary saturation" min="-100" max="100" value="0"></div>
+        <div class="sl"><label>Green <b id="v_calGS">0</b></label><input type="range" id="calGS" aria-label="Green primary saturation" min="-100" max="100" value="0"></div>
+        <div class="sl"><label>Blue <b id="v_calBS">0</b></label><input type="range" id="calBS" aria-label="Blue primary saturation" min="-100" max="100" value="0"></div>
+        <div class="grpHdr" style="margin-top:10px">Shadow tint</div>
+        <div class="sl"><label>Tint <b id="v_calST">0</b></label><input type="range" id="calST" aria-label="Shadow tint" min="-100" max="100" value="0"></div>
+        <p class="note">Adds a warm (right) or cool (left) cast to the darkest tones only.</p>
+        </div>
       </details>
 
       <!-- Collapsed to match Tri-tone merge and Split toning: a corrective
@@ -2636,8 +2653,9 @@ details[data-step="wb"] .wbGainsBody .sl + .sl{margin-top:8px}
 
       
 
-      <details style="margin-top:14px">
-        <summary class="pt" style="cursor:pointer;display:inline-block">Swap Working Space</summary>
+      <details class="dGrp" id="colSpace">
+        <summary><span class="dT">Swap working space</span><span class="dS">how wide the swap works</span><span class="dDot" aria-hidden="true"></span></summary>
+        <div class="dBody">
         <p class="note">The channel swap above runs in a colour space wider than what you see on screen, then converts back — a wider space holds more of a saturated colour's true position before the swap moves it, so more survives the trip back down. ProPhoto is the strongest version of this and the default; Rec2020 gives a milder lift for anyone who finds ProPhoto too much; sRGB disables the effect entirely, so the swap matches exactly what its numbers say with nothing else happening to the colour. Names in brackets are the darktable profiles with the same primaries and white point: sRGB and Rec.709 share both, so choosing sRGB here is the same as working in darktable&rsquo;s linear Rec709 RGB.</p>
         <div class="sl" style="margin-top:8px">
           <label for="swapSpace">Space</label>
@@ -2651,10 +2669,12 @@ details[data-step="wb"] .wbGainsBody .sl + .sl{margin-top:8px}
         </div>
         <div class="sl" style="margin-top:8px"><label>Widening <b id="v_swapWiden">100</b>%</label><input type="range" id="swapWiden" aria-label="Channel swap widening" min="0" max="125" value="100"></div>
         <p class="note" title="The channel swap is a 3x3 mix done in a colour space wider than the screen's. This slider blends that space between sRGB (0%) and ProPhoto (100%), so you can sit anywhere between the three named choices; about 78% behaves like Rec2020 (within 0.006 OKLab difference on test images). Past 100% the lift is stronger than any named space and more colours leave sRGB before being pulled back, which is why it stops at 125%. Moving it sets the Space above to Custom; choosing a named space puts the slider where that space sits.">0% sRGB &middot; 78% &asymp; Rec2020 &middot; 100% ProPhoto &middot; up to 125%</p>
+        </div>
       </details>
 
-      <details id="lutDetails" style="margin-top:14px">
-        <summary class="pt" style="cursor:pointer;display:inline-block">LUT (.cube) — optional colour grade (live)</summary>
+      <details class="dGrp" id="lutDetails">
+        <summary><span class="dT">LUT (.cube)</span><span class="dS">optional colour grade</span><span class="dDot" aria-hidden="true"></span></summary>
+        <div class="dBody">
         <div class="wbrow" style="margin-top:8px">
           <label class="filelabel" style="margin-top:0">Load .cube LUT<input type="file" id="fiLut" accept=".cube" style="display:none"></label>
           <button id="lutClear" style="display:none">Clear LUT</button>
@@ -2663,6 +2683,7 @@ details[data-step="wb"] .wbGainsBody .sl + .sl{margin-top:8px}
         </div>
         <div id="lutControls" style="display:none;margin-top:10px">
           <div class="sl"><label>LUT intensity <b id="v_lutMix">100</b>%</label><input type="range" id="lutMix" aria-label="LUT intensity" min="0" max="100" value="100"></div>
+        </div>
         </div>
       </details>
 
@@ -2916,7 +2937,7 @@ details[data-step="wb"] .wbGainsBody .sl + .sl{margin-top:8px}
       <br><a href="#" id="consentReopen" style="color:var(--muted);text-decoration:underline">Cookie notice</a>
       <br><a href="LICENSE.md" target="_blank" rel="noopener" style="color:var(--muted);text-decoration:underline">Source: AGPL-3.0</a>
       <br><a href="THIRD_PARTY_NOTICES.md" target="_blank" rel="noopener" style="color:var(--muted);text-decoration:underline">Third-party notices (LibRaw, RawTherapee)</a>
-<br><span id="buildStamp" style="color:var(--muted)" title="Which version of the app this is. Tap the arrow to check for a newer one and update.">Version 2026-10-15 · build 113</span>
+<br><span id="buildStamp" style="color:var(--muted)" title="Which version of the app this is. Tap the arrow to check for a newer one and update.">Version 2026-10-15 · build 114</span>
       <br><button id="btnInstall" type="button">Install as an app</button>
       <span id="kbHint">Ctrl+Z undo &middot; Ctrl+Shift+Z redo &middot; [ ] cycle presets &middot; F full quality view &middot; Space hold to compare</span>
     </footer>
@@ -12519,6 +12540,26 @@ async function offerSessionRestore() {
    private mode swallowed it and reported "no saved session". The restore
    never ran, and nothing anywhere said so. */
 if (!SELFTEST) offerSessionRestore();
+
+/* Build 114: the White Balance header shows what is set (auto, picked, or Auto tone's gains) so the card can stay closed. */
+(function wbHeaderSummary() {
+  const out = $('wbSum'), pre = $('wbPreStatus'), post = $('wbPostStatus'); if (!out || !pre || !post) return;
+  const short = t => {
+    t = (t || '').trim();
+    if (!t || /not set/i.test(t)) return '';
+    if (/eigenvector|auto/i.test(t) && !/R:/.test(t)) return 'auto';
+    const m = t.match(/R:\s*([\d.]+)\s*G:\s*([\d.]+)\s*B:\s*([\d.]+)/);
+    if (m) return 'R ' + m[1] + ' G ' + m[2] + ' B ' + m[3];
+    if (/set|bradford|manual/i.test(t)) return 'picked';
+    return '';
+  };
+  const upd = () => { const a = short(pre.textContent), b = short(post.textContent);
+    out.textContent = [a && ('before: ' + a), b && ('after: ' + b)].filter(Boolean).join(' · '); };
+  const mo = new MutationObserver(upd);
+  [pre, post].forEach(e => mo.observe(e, { childList: true, characterData: true, subtree: true }));
+  upd();
+})();
+
 
 /* Build 113: keep the folded Channel gains line showing the three values, whichever way they change (a drag, Auto tone,
    undo, a reset), by watching the readouts the sliders already keep up to date. */
