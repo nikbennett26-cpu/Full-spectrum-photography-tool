@@ -5846,7 +5846,12 @@ uniform float u_skyL;          // the typical lightness of the sky; anything cle
          gamut work Phil's fixes depend on all still happen in OKLab exactly
          as before. Only the hue step moves; nothing else is given up. */
       if (u_hueSpace == 1) {
-        lin = hsvRotate(lin, u_hue);
+        /* Build 117: hold each pixel's brightness through the channel-space turn. HSV keeps the brightest channel, not
+           luminance, so on a noisy low-saturation sky the pixel-to-pixel hue jitter came out as green-weighted brightness
+           speckle (measured 1.7x the sky's luminance noise at -66.5 deg). Holding it leaves the hue move exactly as before
+           (120 deg is still the cyclic swap, at held brightness) and the noise as quiet as the perceptual mode's. */
+        float yHue = dot(max(lin, vec3(0.0)), u_lumaW);
+        lin = preserveLuma(hsvRotate(lin, u_hue), yHue);
         lin = hueSat(lin, 0.0, u_sat, u_satPreserve, u_vibrance);
       } else {
         lin = hueSat(lin, u_hue, u_sat, u_satPreserve, u_vibrance);
