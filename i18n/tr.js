@@ -183,8 +183,8 @@
   }
   window.irlabTr = {
     add(l, t) { tables[l] = Object.assign(tables[l] || {}, t); if (l === lang) dict = tables[l]; },
-    /* set the language: loads its table if needed, then translates the page */
-    set(l) { load(l, () => apply(l)); },
+    /* set the language: loads its table if needed, translates the page, then calls done (if given) */
+    set(l, done) { load(l, () => { apply(l); if (done) done(); }); },
     lookup: en => lookup(en),
     get lang() { return lang; },
   };

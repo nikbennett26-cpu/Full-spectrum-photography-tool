@@ -277,6 +277,7 @@ irlabTr.add('fr', {
 "Keep saturation over brightness": "Privilégier la saturation sur la luminosité",
 "Key": "Légende",
 "LUT intensity": "Intensité du LUT",
+"Language": "Langue",
 "Lateral chromatic aberration is a slight difference in magnification between colours, so edges away from the centre grow a coloured fringe. Each slider rescales red or blue about the image centre relative to green; the full range is about half a percent.": "L’aberration chromatique latérale est une légère différence de grandissement entre les couleurs : les contours loin du centre prennent une frange colorée. Chaque curseur redimensionne le rouge ou le bleu autour du centre par rapport au vert ; la plage complète est d’environ un demi-pourcent.",
 "Leaf 1": "Feuille 1",
 "Leaf 2": "Feuille 2",

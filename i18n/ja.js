@@ -277,6 +277,7 @@ irlabTr.add('ja', {
 "Keep saturation over brightness": "明るさより彩度を優先",
 "Key": "凡例",
 "LUT intensity": "LUTの強さ",
+"Language": "言語",
 "Lateral chromatic aberration is a slight difference in magnification between colours, so edges away from the centre grow a coloured fringe. Each slider rescales red or blue about the image centre relative to green; the full range is about half a percent.": "倍率色収差は色ごとのわずかな倍率の違いで、中心から離れたエッジに色にじみが出ます。各スライダーは画像中心を基準に緑に対して赤または青の倍率を調整します。全範囲は約0.5%です。",
 "Leaf 1": "葉1",
 "Leaf 2": "葉2",

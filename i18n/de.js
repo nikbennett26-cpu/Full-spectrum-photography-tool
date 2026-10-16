@@ -277,6 +277,7 @@ irlabTr.add('de', {
 "Keep saturation over brightness": "Sättigung vor Helligkeit",
 "Key": "Legende",
 "LUT intensity": "LUT-Stärke",
+"Language": "Sprache",
 "Lateral chromatic aberration is a slight difference in magnification between colours, so edges away from the centre grow a coloured fringe. Each slider rescales red or blue about the image centre relative to green; the full range is about half a percent.": "Laterale chromatische Aberration ist ein leichter Vergrößerungsunterschied zwischen Farben, sodass Kanten abseits der Mitte einen Farbsaum bekommen. Jeder Regler skaliert Rot oder Blau um die Bildmitte relativ zu Grün; der volle Bereich ist etwa ein halbes Prozent.",
 "Leaf 1": "Blatt 1",
 "Leaf 2": "Blatt 2",

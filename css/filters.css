@@ -296,3 +296,7 @@ footer{border-top:0;margin-top:6px;padding:4px 2px 0}
 }
 .enOnly{display:none}
 html:not([lang="en"]) .enOnly{display:block;font-style:italic}
+/* Build 136: language row at the top of the Data tab */
+#fLangPanel{padding:12px 14px}
+.fLangRow{display:flex;align-items:center;justify-content:space-between;gap:12px;font:600 14px/1.2 var(--font-body);color:var(--paper)}
+#fLang{min-height:40px;padding:0 10px;border:1px solid var(--line2);border-radius:6px;background:var(--sunken);color:var(--paper);font:500 13px/1 var(--font-mono)}

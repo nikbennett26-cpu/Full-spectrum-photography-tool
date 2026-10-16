@@ -277,6 +277,7 @@ irlabTr.add('zh', {
 "Keep saturation over brightness": "饱和度优先于亮度",
 "Key": "图例",
 "LUT intensity": "LUT 强度",
+"Language": "语言",
 "Lateral chromatic aberration is a slight difference in magnification between colours, so edges away from the centre grow a coloured fringe. Each slider rescales red or blue about the image centre relative to green; the full range is about half a percent.": "横向色差是不同颜色之间放大倍率的微小差异，因此远离中心的边缘会出现彩色边。每个滑块以图像中心为基准相对绿色缩放红或蓝；完整范围约为百分之零点五。",
 "Leaf 1": "叶片 1",
 "Leaf 2": "叶片 2",

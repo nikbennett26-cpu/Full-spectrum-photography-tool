@@ -34,6 +34,7 @@
   const cCard = document.createElement('div'); cCard.className = 'panel';
   const cT = document.createElement('div'); cT.className = 'pt'; cT.textContent = 'Chart and camera'; cCard.appendChild(cT);
   cCard.appendChild(ctlBar); cam.appendChild(cCard); if (pCrgb) cam.appendChild(pCrgb);
+  const langPanel = $('fLangPanel'); if (langPanel) data.appendChild(langPanel);   // build 136: language first in Data
   if (zoneDiv) zoneDiv.remove(); if (zoneRef) data.appendChild(zoneRef); if (foot) data.appendChild(foot);
   chart.appendChild($('clearBtn'));   // hidden; the rail's Clear presses it
   [...pStack.children].forEach(c => { if (c.querySelector && (c.id || c.querySelector('[id]'))) sCard.appendChild(c); });
@@ -65,6 +66,19 @@
   rl.addEventListener('click', () => { log.checked = !log.checked; log.dispatchEvent(new Event('change', { bubbles: true })); log.dispatchEvent(new Event('input', { bubbles: true })); syncLog(); });
   log.addEventListener('change', syncLog); syncLog();
   window.irlabShowPane = show;
+})();
+
+/* Build 136: the language menu. Saves the same setting as the editor's menu (uiLang), translates the page through
+   i18n/tr.js, and redraws the chart, whose labels are drawn into the canvas. */
+(function fLanguage() {
+  const sel = document.getElementById('fLang');
+  if (!sel || !window.irlabTr) return;
+  sel.value = irlabTr.lang;
+  sel.addEventListener('change', () => {
+    try { localStorage.setItem('uiLang', sel.value); } catch (e) {}
+    // once the language's table has loaded and the page is translated, redraw the chart for its canvas labels
+    irlabTr.set(sel.value, () => { try { if (typeof draw === 'function') draw(); if (typeof drawStrip === 'function') drawStrip(); } catch (e) {} });
+  });
 })();
 
 /* ==================== src-filters/model.js ==================== */
