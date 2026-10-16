@@ -25,7 +25,7 @@
 <meta name="twitter:image" content="https://irlab.uk/og-card.png?v=112">
 <link rel="canonical" href="https://irlab.uk/">
 <meta name="theme-color" content="#160f0a">
-<meta name="irlab-build" content="118">
+<meta name="irlab-build" content="119">
 <link rel="manifest" href="/manifest.json">
 <link rel="icon" href="/favicon.ico" sizes="any">
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
@@ -1905,7 +1905,18 @@ body.imgLoading #emptyStateGroup.lab label.labGo.keyBtn::before{animation:keyPul
 @keyframes keyPulse{50%{opacity:.5}}
 #bDl.keyBtn{display:flex!important;height:56px;font-size:15px!important;letter-spacing:.08em;text-transform:uppercase;--chip:44px}
 .keyBtn.keySm{display:inline-flex!important;--chip:28px;gap:9px!important;padding:3px 12px 3px 3px!important;font-size:12.5px!important;letter-spacing:0!important;min-height:36px!important;height:auto!important}
-html.dockOn body.has-image .toolbar .keyBtn.keySm{min-height:40px!important;--chip:32px}
+html.dockOn body.has-image .toolbar .keyBtn.keySm{min-height:40px!important;--chip:30px;gap:7px!important;padding:3px 10px 3px 3px!important;font-size:12px!important}
+/* Build 119: on a phone the top bar has to fit on one line, so New image shortens to "New", and on a narrow phone
+   to the + chip alone (its name stays in aria-label and the tooltip). */
+html.dockOn body.has-image .toolbar .keyBtn.keySm .kMore{display:none}
+@media (max-width:389px){
+  html.dockOn body.has-image .toolbar .keyBtn.keySm{padding:3px!important;gap:0!important}
+  html.dockOn body.has-image .toolbar .keyBtn.keySm .kTxt{display:none}
+}
+@media (max-width:359px){
+  html.dockOn body.has-image .toolbar{gap:2px!important}
+  html.dockOn body.has-image .toolbar #bHome,html.dockOn body.has-image .toolbar #bReset{padding-left:6px!important;padding-right:6px!important}
+}
 @media (prefers-reduced-motion:reduce){body.imgLoading #emptyStateGroup.lab label.labGo.keyBtn::before{animation:none}}
 /* ---- Cards everywhere (build 116) ---- */
 .dCard{margin-top:10px;border:1px solid var(--line2);border-radius:10px;background:rgba(255,255,255,.015);padding:12px 14px}
@@ -2056,7 +2067,7 @@ details[data-step="wb"] .wbGainsIn .wbGainsBody{padding:0 2px 12px}
         <summary><span data-i18n="whatsNewLabel">What’s new</span><span class="wnLatest">New button style</span></summary>
       <div style="margin-top:6px">
         <p style="margin:0 0 3px"><b style="color:var(--phosphor-dim)">New button style.</b> Choose image, New image and Export are now
-          dark keys with an orange chip, like the numbered steps, instead of the glowing orange buttons.</p>
+          dark keys with an orange chip, like the numbered steps, instead of the glowing orange buttons. On a phone New image shortens to fit the top bar on one line.</p>
         <p style="margin:0 0 3px"><b style="color:var(--phosphor-dim)">Cleaner Channel hue.</b> Hue shift in Channel mode now keeps each
           pixel&rsquo;s brightness, so big turns on a noisy sky no longer come out speckled. 120&deg; still matches Cyclic rotation, as
           it looks with Hold brightness ticked.</p>
@@ -2151,7 +2162,7 @@ details[data-step="wb"] .wbGainsIn .wbGainsBody{padding:0 2px 12px}
       <path d="M20.317 4.37a19.79 19.79 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028 14.09 14.09 0 0 0 1.226-1.994.076.076 0 0 0-.041-.106 13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128 10.2 10.2 0 0 0 .372-.292.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.956-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.955-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.946 2.418-2.157 2.418z"/>
     </svg> Discord</span><span class="dcGo">Join →</span>
     </a>
-    <div id="buildStampHome">Version 2026-10-16 · build 118</div>
+    <div id="buildStampHome">Version 2026-10-16 · build 119</div>
   </footer>
 </div>
 
@@ -2164,7 +2175,7 @@ details[data-step="wb"] .wbGainsIn .wbGainsBody{padding:0 2px 12px}
          divider costs nothing and reads instantly as "this one is different
          from the three after it," which used to take a beat of scanning. -->
     <div class="toolbar">
-      <label class="filelabel keyBtn keyPlus keySm">New image<input type="file" id="fi2" accept="image/jpeg,image/png,image/webp,image/avif,.jpg,.jpeg,.png,.webp,.avif,.cr2,.cr3,.nef,.arw,.sr2,.dng,.orf,.ori,.rw2,.pef,.raf,.srw,.nrw,.3fr,.iiq,.mrw,.kdc,.dcr,.x3f,.tif,.tiff" style="display:none"></label>
+      <label class="filelabel keyBtn keyPlus keySm" title="New image" aria-label="New image"><span class="kTxt">New</span><span class="kMore">&nbsp;image</span><input type="file" id="fi2" accept="image/jpeg,image/png,image/webp,image/avif,.jpg,.jpeg,.png,.webp,.avif,.cr2,.cr3,.nef,.arw,.sr2,.dng,.orf,.ori,.rw2,.pef,.raf,.srw,.nrw,.3fr,.iiq,.mrw,.kdc,.dcr,.x3f,.tif,.tiff" style="display:none"></label>
       <!-- Permanent, not just the prompt that follows an export. That prompt
            is a nine-second toast: miss it, or look away, and the opening
            screen is unreachable again — and with it the CR2 decode choice
@@ -3093,7 +3104,7 @@ details[data-step="wb"] .wbGainsIn .wbGainsBody{padding:0 2px 12px}
       <br><a href="#" id="consentReopen" style="color:var(--muted);text-decoration:underline">Cookie notice</a>
       <br><a href="LICENSE.md" target="_blank" rel="noopener" style="color:var(--muted);text-decoration:underline">Source: AGPL-3.0</a>
       <br><a href="THIRD_PARTY_NOTICES.md" target="_blank" rel="noopener" style="color:var(--muted);text-decoration:underline">Third-party notices (LibRaw, RawTherapee)</a>
-<br><span id="buildStamp" style="color:var(--muted)" title="Which version of the app this is. Tap the arrow to check for a newer one and update.">Version 2026-10-16 · build 118</span>
+<br><span id="buildStamp" style="color:var(--muted)" title="Which version of the app this is. Tap the arrow to check for a newer one and update.">Version 2026-10-16 · build 119</span>
       <br><button id="btnInstall" type="button">Install as an app</button>
       <span id="kbHint">Ctrl+Z undo &middot; Ctrl+Shift+Z redo &middot; [ ] cycle presets &middot; F full quality view &middot; Space hold to compare</span>
     </footer>
