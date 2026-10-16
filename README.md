@@ -105,7 +105,11 @@ and published as one file, `editor.js`:
 | `src/selftest.js` | the built-in self-test and its stored baseline |
 | `src/undo-buttons.js` | the undo and redo buttons |
 
-**Edit `src/`, never `editor.js`.** `tools/build.py` joins the sources, in the order listed in it, into `editor.js`.
+The filters page works the same way: `filters.html`, `css/filters.css`, and its code in `src-filters/` (layout, the
+filter model, the filter data, list and search, export, the recipe finder, the chart, the data self-test, zoom and
+stacking guidance, the spectral response), built into `filters.js`.
+
+**Edit `src/` and `src-filters/`, never `editor.js` or `filters.js`.** `tools/build.py` joins each page's sources, in the order listed in it, into its one script.
 They are one script split for reading, not modules: they share one global scope, and as one file they run in one go,
 so a function anywhere is available from the start. (Loaded as separate files, the browser could run a reopened
 session or a tap between two of them and reach code that had not arrived yet; that broke the app in builds 130-131.)
