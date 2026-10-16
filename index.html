@@ -25,7 +25,7 @@
 <meta name="twitter:image" content="https://irlab.uk/og-card.png?v=112">
 <link rel="canonical" href="https://irlab.uk/">
 <meta name="theme-color" content="#160f0a">
-<meta name="irlab-build" content="125">
+<meta name="irlab-build" content="126">
 <link rel="manifest" href="/manifest.json">
 <link rel="icon" href="/favicon.ico?v=2" sizes="any">
 <link rel="icon" href="/favicon.svg?v=2" type="image/svg+xml">
@@ -1974,6 +1974,28 @@ summary.stepHdr #btnAuto + .hdrActs{margin-left:6px}
 #scopeModeRow button.btnGhostSmall.on,#curveTabs button.btnGhostSmall.on,#cropRow button.btnGhostSmall.on,#maskChips button.btnGhostSmall.on,
 html body #hslTabs button.btnGhostSmall.on,html.studioOn body.has-image #hslTabs button.btnGhostSmall.on,html.dockOn body.has-image #hslTabs button.btnGhostSmall.on{
   background:rgba(238,106,44,.16)!important;border-color:var(--safelight)!important;color:var(--paper)!important}
+/* ---- Home load control as a command prompt (build 126) ---- */
+#emptyStateGroup.lab .labTerm{display:flex;flex-direction:column;gap:4px;padding:12px 14px;border-radius:8px;background:#050506;border:1px solid #1d1f23;transition:border-color .2s}
+#emptyStateGroup.lab #dropzone.dragover .labTerm{border-color:#ee6a2c}
+#emptyStateGroup.lab .ltStatus{font:400 11.5px/1.5 var(--font-mono);color:#6b6862}
+#emptyStateGroup.lab .ltStatus b{font-weight:400;color:#8a867d}
+#emptyStateGroup.lab .ltStatus .slBusy{display:none;color:#ee6a2c}
+body.imgLoading #emptyStateGroup.lab .ltStatus .slIdle{display:none}
+body.imgLoading #emptyStateGroup.lab .ltStatus .slBusy{display:inline}
+#emptyStateGroup.lab label.labGo.ltPrompt{display:flex!important;align-items:center!important;gap:10px!important;height:auto!important;min-height:44px!important;margin:0!important;padding:0!important;
+  border:0!important;border-radius:0!important;background:transparent!important;box-shadow:none!important;transform:none!important;cursor:pointer;
+  font:400 17px/1 var(--font-mono)!important;letter-spacing:0!important;text-transform:none!important;color:#eceae4!important;justify-content:flex-start!important}
+#emptyStateGroup.lab label.labGo.ltPrompt::before,#emptyStateGroup.lab label.labGo.ltPrompt::after{content:none!important;display:none!important}
+#emptyStateGroup.lab label.labGo.ltPrompt:hover .ltCmd{text-decoration:underline;text-decoration-color:#ee6a2c;text-underline-offset:4px}
+#emptyStateGroup.lab label.labGo.ltPrompt:focus-within{outline:2px solid #ee6a2c;outline-offset:4px;border-radius:2px!important}
+#emptyStateGroup.lab .ltCaret{color:#ee6a2c}
+#emptyStateGroup.lab .ltCursor{width:10px;height:20px;background:#ee6a2c;animation:ltBlink 1.05s steps(1) infinite}
+body.imgLoading #emptyStateGroup.lab .ltCursor{animation:none;opacity:.35}
+@keyframes ltBlink{50%{opacity:0}}
+#emptyStateGroup.lab .ltHint{font:400 11px/1.5 var(--font-mono);color:#6b6862}
+#emptyStateGroup.lab .labTerm input[type=file]{position:absolute;width:1px;height:1px;opacity:0;pointer-events:none}
+@media (prefers-reduced-motion:reduce){#emptyStateGroup.lab .ltCursor{animation:none}}
+html[data-theme="light"] #emptyStateGroup.lab .labTerm{background:#1b1915;border-color:#1b1915}
 /* ---- Cards everywhere (build 116) ---- */
 .dCard{margin-top:10px;border:1px solid var(--line2);border-radius:10px;background:rgba(255,255,255,.015);padding:12px 14px}
 .dCard > .note:first-child{margin-top:0}
@@ -2061,11 +2083,14 @@ details[data-step="wb"] .wbGainsIn .wbGainsBody{padding:0 2px 12px}
       <!-- The slot lights up and a glow runs along it, left to right, for as long as a photo is being read and decoded
            (body.imgLoading, set by loadFile). It shows that work is happening, not a percentage: the decoder does not
            report how far through it is. -->
-      <div class="labSlotRow">
-        <span class="labSlotLbl" aria-live="polite"><span class="slIdle" data-i18n="slotIdle">Insert file</span><span class="slBusy" data-i18n="slotBusy">Reading</span></span>
-        <span class="labSlot" aria-hidden="true"></span>
+      <!-- Build 126: the load control is a small command prompt rather than a big button. Its first line says what the
+           decoder is set to (and changes to "reading" while a photo loads); tapping the prompt line opens the file
+           picker, and dropping a file anywhere on this section still works. -->
+      <div class="labTerm">
+        <span class="ltStatus" aria-live="polite"><span class="slIdle">irlab ready &middot; RAW decoder: <b id="ltDecoder">AMaZE</b></span><span class="slBusy">reading photo&hellip;</span></span>
+        <label class="labGo ltPrompt" aria-label="Open a photo"><span class="ltCaret" aria-hidden="true">&rsaquo;</span><span class="ltCmd">open photo</span><span class="ltCursor" aria-hidden="true"></span><input type="file" id="fi" accept="image/jpeg,image/png,image/webp,image/avif,.jpg,.jpeg,.png,.webp,.avif,.cr2,.cr3,.nef,.arw,.sr2,.dng,.orf,.ori,.rw2,.pef,.raf,.srw,.nrw,.3fr,.iiq,.mrw,.kdc,.dcr,.x3f,.tif,.tiff" style="display:none"></label>
+        <span class="ltHint">tap, or drop a file</span>
       </div>
-    <label class="filelabel labGo keyBtn keyUp"><span data-i18n="chooseImage">Choose image</span><input type="file" id="fi" accept="image/jpeg,image/png,image/webp,image/avif,.jpg,.jpeg,.png,.webp,.avif,.cr2,.cr3,.nef,.arw,.sr2,.dng,.orf,.ori,.rw2,.pef,.raf,.srw,.nrw,.3fr,.iiq,.mrw,.kdc,.dcr,.x3f,.tif,.tiff" style="display:none"></label>
       <div class="labLoadRow">
         <div id="restoreSlot"></div>
         <div class="labFmtChip" title="JPEG, PNG, WebP and RAW (CR2, CR3, NEF, ARW, RAF, DNG and others)">JPEG · PNG · WebP · RAW</div>
@@ -2120,8 +2145,11 @@ details[data-step="wb"] .wbGainsIn .wbGainsBody{padding:0 2px 12px}
   <footer class="labFoot">
     <div id="whatsNew">
       <details>
-        <summary><span data-i18n="whatsNewLabel">What’s new</span><span class="wnLatest">Calmer phone layout</span></summary>
+        <summary><span data-i18n="whatsNewLabel">What’s new</span><span class="wnLatest">Open a photo from the prompt</span></summary>
       <div style="margin-top:6px">
+        <p style="margin:0 0 3px"><b style="color:var(--phosphor-dim)">Open a photo from the prompt.</b> The home page&rsquo;s big button
+          is now a small command prompt: tap &ldquo;&rsaquo; open photo&rdquo;, or drop a file. It shows which RAW decoder is set, and says when
+          it is reading.</p>
         <p style="margin:0 0 3px"><b style="color:var(--phosphor-dim)">Calmer phone layout.</b> Section headers lose their number chips
           and capitals; Reset (and Light&rsquo;s Auto) sit in the header as small buttons instead of a row of their own; the decode
           details moved off the photo into Export &rsaquo; Decode settings; selected toggles are a tint instead of a solid orange pill.</p>
@@ -2223,7 +2251,7 @@ details[data-step="wb"] .wbGainsIn .wbGainsBody{padding:0 2px 12px}
       <path d="M20.317 4.37a19.79 19.79 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028 14.09 14.09 0 0 0 1.226-1.994.076.076 0 0 0-.041-.106 13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128 10.2 10.2 0 0 0 .372-.292.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.956-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.955-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.946 2.418-2.157 2.418z"/>
     </svg> Discord</span><span class="dcGo">Join →</span>
     </a>
-    <div id="buildStampHome">Version 2026-10-16 · build 125</div>
+    <div id="buildStampHome">Version 2026-10-16 · build 126</div>
   </footer>
 </div>
 
@@ -3166,7 +3194,7 @@ details[data-step="wb"] .wbGainsIn .wbGainsBody{padding:0 2px 12px}
       <br><a href="#" id="consentReopen" style="color:var(--muted);text-decoration:underline">Cookie notice</a>
       <br><a href="LICENSE.md" target="_blank" rel="noopener" style="color:var(--muted);text-decoration:underline">Source: AGPL-3.0</a>
       <br><a href="THIRD_PARTY_NOTICES.md" target="_blank" rel="noopener" style="color:var(--muted);text-decoration:underline">Third-party notices (LibRaw, RawTherapee)</a>
-<br><span id="buildStamp" style="color:var(--muted)" title="Which version of the app this is. Tap the arrow to check for a newer one and update.">Version 2026-10-16 · build 125</span>
+<br><span id="buildStamp" style="color:var(--muted)" title="Which version of the app this is. Tap the arrow to check for a newer one and update.">Version 2026-10-16 · build 126</span>
       <br><button id="btnInstall" type="button">Install as an app</button>
       <span id="kbHint">Ctrl+Z undo &middot; Ctrl+Shift+Z redo &middot; [ ] cycle presets &middot; F full quality view &middot; Space hold to compare</span>
     </footer>
@@ -10151,6 +10179,13 @@ function resetPanel(step) {
   });
 })();
 
+/* Build 126: the home prompt's status line names the RAW decoder currently chosen. */
+(function ltDecoderName() {
+  const out = $('ltDecoder'), sel = $('demosaicSel'); if (!out) return;
+  const upd = () => { const v = sel ? sel.value : (typeof demosaicPref === 'function' ? demosaicPref() : 'amaze'); out.textContent = v === 'rcd' ? 'RCD' : 'AMaZE'; };
+  if (sel) sel.addEventListener('change', upd);
+  upd();
+})();
 /* Build 121: each section's Reset panel (and Light's Auto levels) moves into its header as small buttons, so it no longer
    takes a row of its own. The handlers stay on the same buttons. */
 (function panelToolsIntoHeader() {
