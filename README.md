@@ -78,7 +78,9 @@ The interface comes in English, Spanish, French, German, Japanese and Chinese, c
 
 Text with no entry simply stays in English, so editing an English string means updating its entries too.
 `python3 tools/i18n_check.py index.html de` lists what is still English in a language (it needs the local server on
-port 8820 and Playwright). The What's new change log is deliberately English only.
+port 8820 and Playwright). The What's new change log, and the filters page's long research notes (marked `.noTr`), are
+deliberately English only. Text drawn into a canvas is outside the page, so it goes through `irlabTr.lookup()` directly
+(`trT()` on the filters page). The filter descriptions are " · " lists; the engine translates them piece by piece.
 
 ## Code layout
 

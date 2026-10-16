@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
+<meta name="irlab-build" content="134">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Filter Database — UV/IR Filter Stacking Calculator</title>
 <meta name="description" content="Free transmission curve visualiser and stacking calculator for UV, IR and colour glass filters. 150+ filters — Schott, B+W, Hoya, Wratten, Kodak — fitted to real manufacturer and spectrometer data, with auto-generated stacking guidance.">
@@ -9,6 +10,7 @@
 <meta name="robots" content="index, follow">
 <link rel="canonical" href="https://irlab.uk/filters.html">
 <meta name="theme-color" content="#0b0c0e">
+<script src="i18n/tr.js?b=134"></script>
 <link rel="icon" href="/favicon.ico?v=2" sizes="any">
 <link rel="icon" href="/favicon.svg?v=2" type="image/svg+xml">
 <link rel="icon" type="image/png" sizes="512x512" href="/favicon-512.png?v=2">
@@ -378,6 +380,8 @@ footer{border-top:0;margin-top:6px;padding:4px 2px 0}
   #fTabs{position:sticky;top:0;height:54px;border:1px solid var(--line);border-radius:10px;margin-top:4px;padding:0}
   #fRight{min-width:0}
 }
+.enOnly{display:none}
+html:not([lang="en"]) .enOnly{display:block;font-style:italic}
 </style>
 <script>
 /* Set the theme before anything renders, so a light-mode user never sees a
@@ -400,6 +404,9 @@ footer{border-top:0;margin-top:6px;padding:4px 2px 0}
   <button id="cookieAck" style="background:var(--safelight);border-color:var(--safelight);color:#fff;flex-shrink:0">OK, got it</button>
 </div>
 <script>
+/* Text drawn into canvases is not in the page, so i18n/tr.js cannot reach it: these calls translate it directly. */
+const trT = s => (window.irlabTr && irlabTr.lookup(s)) || s;
+
 (function(){
   /* Same key as index.html. localStorage is scoped per ORIGIN, not per page,
      so once both pages agree on the key a visitor is asked once for the whole
@@ -553,7 +560,8 @@ footer{border-top:0;margin-top:6px;padding:4px 2px 0}
 
       <details style="margin-top:10px">
         <summary class="grph3sum" style="cursor:pointer;color:var(--warn)">What "sensor" means here &mdash; worth reading before trusting a result</summary>
-        <p class="note" style="margin-top:6px">The real, measured curves above are a generic default CMOS
+        <p class="note enOnly">These notes are in English only.</p>
+        <p class="note noTr" lang="en" style="margin-top:6px">The real, measured curves above are a generic default CMOS
         approximation, the human eye's own photopic response, and one real scientific sensor &mdash; a Kodak
         KAF-8300, a monochrome astronomy CCD, not a DSLR or mirrorless body. None of these are "what your
         Canon/Nikon/Sony/Fuji actually sees" &mdash; treat results as illustrating the maths, not as a
@@ -628,7 +636,7 @@ footer{border-top:0;margin-top:6px;padding:4px 2px 0}
   <details>
     <summary class="pt" style="margin-bottom:0;cursor:pointer" style="cursor:pointer;display:inline-block">Describe the look you want &mdash; suggest a filter recipe</summary>
     <div style="margin-top:8px">
-      <div class="note" style="margin-bottom:6px">Type a subject + colour — e.g. "blue foliage", "black foliage", "white trees". Rather than guessing from which colour band a filter passes, this <b>predicts what foliage actually renders as</b>: it integrates each stack's transmission against a published vegetation reflectance curve (corrected from single-leaf to canopy, since you photograph a tree rather than one leaf) and a Bayer sensor response, white-balances against a grey card, then reads off the resulting hue and brightness — as shot and with red/blue swapped, relative to how the same foliage would look through a normal camera. Searches every filter, every pair, and a beam search over three-filter stacks. Validated on the two cases with known ground truth: a normal camera's IR-cut glass predicts green foliage, and an 850nm filter predicts the white Wood effect — both falling out of the same equations. Predicted hues are directional, not colorimetric — a flat illuminant is assumed and the exact hue shifts with your white-balance reference.</div>
+      <div class="note" data-tr-block style="margin-bottom:6px">Type a subject + colour — e.g. "blue foliage", "black foliage", "white trees". Rather than guessing from which colour band a filter passes, this <b>predicts what foliage actually renders as</b>: it integrates each stack's transmission against a published vegetation reflectance curve (corrected from single-leaf to canopy, since you photograph a tree rather than one leaf) and a Bayer sensor response, white-balances against a grey card, then reads off the resulting hue and brightness — as shot and with red/blue swapped, relative to how the same foliage would look through a normal camera. Searches every filter, every pair, and a beam search over three-filter stacks. Validated on the two cases with known ground truth: a normal camera's IR-cut glass predicts green foliage, and an 850nm filter predicts the white Wood effect — both falling out of the same equations. Predicted hues are directional, not colorimetric — a flat illuminant is assumed and the exact hue shifts with your white-balance reference.</div>
       <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
         <input type="text" id="lookQuery" placeholder="e.g. blue foliage" style="background:var(--sunken);border:1px solid var(--line2);color:var(--phosphor);font-family:var(--font-mono);font-size:13px;padding:8px 10px;border-radius:3px;flex:1;min-width:160px">
         <button id="lookSuggest">Suggest a recipe</button>
@@ -650,7 +658,8 @@ footer{border-top:0;margin-top:6px;padding:4px 2px 0}
       <span class="note" style="margin-left:8px">Checks every stored curve against its own notes and for structural faults</span>
       <div id="selfTestOut" style="display:none;margin-top:10px"></div>
     </div>
-    <div class="note" style="margin-top:10px">
+    <p class="note enOnly">These notes are in English only.</p>
+    <div class="note noTr" lang="en" style="margin-top:10px">
       <p><b>Most of this is now fit to real published or measured data — the "model" part is the smooth curve
       connecting real numbers, not a guess at the numbers themselves.</b> That's a genuine shift from where this
       started: the Wratten series is fit to Kodak's own handbook, the Schott series to Schott's own datasheets,
@@ -863,7 +872,8 @@ footer{border-top:0;margin-top:6px;padding:4px 2px 0}
 <div class="panel">
   <details>
     <summary class="pt" style="margin-bottom:0">Recently added</summary>
-    <div class="note" style="margin-top:10px">
+    <p class="note enOnly">These notes are in English only.</p>
+    <div class="note noTr" lang="en" style="margin-top:10px">
       <p style="margin:0 0 6px"><b style="color:var(--paper-dim)">150 filters now use exact real curves, up from
       90</b> (234 total). The live breakdown is in the bar at the top of this panel &mdash; it is computed from
       the data rather than written here, so it cannot go stale the way this sentence did when a duplicate
@@ -910,9 +920,9 @@ footer{border-top:0;margin-top:6px;padding:4px 2px 0}
   <details>
     <summary class="pt" style="margin-bottom:0">Import your own filter data</summary>
     <div style="margin-top:10px">
-      <p class="note">Add a filter this database doesn't have. Accepts a two-column TSV/CSV
+      <p class="note" data-tr-block>Add a filter this database doesn't have. Accepts a two-column TSV/CSV
       (wavelength, transmission) or a wide ECOSIS-style CSV (one row per sample, wavelength columns
-      as headers). Ported from FS FilterLab's import dialog \u2014 stored in this browser only
+      as headers). Ported from FS FilterLab's import dialog &mdash; stored in this browser only
       (<code>localStorage</code>), not sent anywhere, and not shared with anyone else who opens this page.</p>
       <input type="file" id="impFile" accept=".tsv,.csv,.txt" style="width:100%;margin-top:8px">
       <div id="impMeta" style="display:none;margin-top:10px">
@@ -3377,7 +3387,7 @@ function renderImportedList() {
     ctx.fillText('irlab.uk \u2014 Filter Report', pad, y);
     y += Math.round(34 * U);
     ctx.font = fs(21); ctx.fillStyle = '#c9c4b8';
-    ctx.fillText(stackTitle || 'nothing selected', pad, y);
+    ctx.fillText(stackTitle || trT('nothing selected'), pad, y);
     y += Math.round(26 * U);
     ctx.font = fs(16); ctx.fillStyle = '#8a8578';
     ctx.fillText(new Date().toLocaleString(), pad, y);
@@ -3389,7 +3399,7 @@ function renderImportedList() {
 
     if (legendItems.length) {
       ctx.font = 'bold ' + fs(22); ctx.fillStyle = '#f2c98a';
-      ctx.fillText('Key', pad, y + Math.round(24 * U));
+      ctx.fillText(trT('Key'), pad, y + Math.round(24 * U));
       y += Math.round(40 * U);
       ctx.font = fs(20);
       legendItems.forEach(item => {
@@ -3412,7 +3422,7 @@ function renderImportedList() {
     // readout as real cards, two across — far more legible than a text list
     if (readoutCards.length) {
       ctx.font = 'bold ' + fs(22); ctx.fillStyle = '#f2c98a';
-      ctx.fillText('Measurements', pad, y + Math.round(24 * U));
+      ctx.fillText(trT('Measurements'), pad, y + Math.round(24 * U));
       y += Math.round(40 * U);
       const gap = Math.round(8 * U), cardW = Math.floor((innerW - gap * (roCols - 1)) / roCols);
       readoutCards.forEach((c, i) => {
@@ -3431,7 +3441,7 @@ function renderImportedList() {
 
     if (crgbExport) {
       ctx.font = 'bold ' + fs(22); ctx.fillStyle = '#f2c98a';
-      ctx.fillText('Sensor-Weighted Response (White-Balanced)', pad, y + Math.round(24 * U));
+      ctx.fillText(trT('Sensor-Weighted Response (White-Balanced)'), pad, y + Math.round(24 * U));
       y += Math.round(44 * U);
       ctx.font = fs(19); ctx.fillStyle = '#c9c4b8';
       ctx.fillText('R gain ' + crgbExport.gains.R.toFixed(3) +
@@ -4321,18 +4331,18 @@ function _drawChartInner(dprOverride){
   // axis titles
   cx.font=(10*dpr)+'px "Barlow Condensed",sans-serif';cx.fillStyle='#a89372';
   cx.textAlign='center';cx.textBaseline='alphabetic';
-  cx.fillText('WAVELENGTH (nm)',pad.l+(W-pad.l-pad.r)/2,H-4*dpr);
+  cx.fillText(trT('WAVELENGTH (nm)'),pad.l+(W-pad.l-pad.r)/2,H-4*dpr);
   cx.save();
   cx.translate(11*dpr,pad.t+(H-pad.t-pad.b)/2);
   cx.rotate(-Math.PI/2);
   cx.textAlign='center';cx.textBaseline='alphabetic';
-  cx.fillText(isLog()?'TRANSMISSION (log %)':'TRANSMISSION (%)',0,0);
+  cx.fillText(trT(isLog()?'TRANSMISSION (log %)':'TRANSMISSION (%)'),0,0);
   cx.restore();
 
   // region labels
   cx.textBaseline='top';cx.textAlign='center';cx.fillStyle=chartTheme().axisText;
   cx.fillText('UV',(uvX0+uvX1)/2,pad.t+3*dpr);
-  cx.fillText('VISIBLE',(uvX1+visX1)/2,pad.t+3*dpr);
+  cx.fillText(trT('VISIBLE'),(uvX1+visX1)/2,pad.t+3*dpr);
   cx.fillText('NIR',(visX1+nirX1)/2,pad.t+3*dpr);
 
   const fs=selected.map(id=>FILTERS.find(f=>f.id===id)).filter(Boolean);
@@ -4406,7 +4416,7 @@ function _drawChartInner(dprOverride){
   }else{
     cx.fillStyle='#7a6a52';cx.textAlign='center';cx.textBaseline='middle';
     cx.font=(12*dpr)+'px system-ui,sans-serif';
-    cx.fillText('Select one or more filters below',W/2,H/2);
+    cx.fillText(trT('Select one or more filters below'),W/2,H/2);
   }
 
   drawStrip();

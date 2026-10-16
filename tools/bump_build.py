@@ -18,6 +18,13 @@ s, b = re.subn(r'Version \d{4}-\d{2}-\d{2} · build \d+', f'Version {today} · b
 s, c = re.subn(r'((?:css/)?[\w.-]+\.(?:css|js))\?b=\d+', rf'\g<1>?b={n}', s)
 assert a == 1 and b == 2 and c > 0, (a, b, c)
 open(p, 'w', encoding='utf-8').write(s)
+# the filters page carries the same build number (it loads the shared translation files with it)
+fp = os.path.join(os.path.dirname(p), 'filters.html')
+f = open(fp, encoding='utf-8').read()
+f, fa = re.subn(r'<meta name="irlab-build" content="\d+">', f'<meta name="irlab-build" content="{n}">', f)
+f, fc = re.subn(r'(i18n/tr\.js)\?b=\d+', rf'\g<1>?b={n}', f)
+assert fa == 1 and fc == 1, (fa, fc)
+open(fp, 'w', encoding='utf-8').write(f)
 print(f'build {n}: meta 1, stamps {b}, file URLs {c}')
 import subprocess, sys as _s
 subprocess.run([_s.executable, os.path.join(os.path.dirname(os.path.abspath(__file__)), 'build.py')], check=True)

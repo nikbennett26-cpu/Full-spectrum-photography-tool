@@ -37,6 +37,23 @@
     [/^before: (.+) · after: (.+)$/, 'tWbBoth'],
     [/^before: (.+)$/, 'tWbBefore'],
     [/^after: (.+)$/, 'tWbAfter'],
+    // filters page: pieces of the filter descriptions, and the data-confidence badges
+    [/^(\d+)nm cut-on$/, 'tCutOn'],
+    [/^ND(\d+) \((\d+) stops\)$/, 'tNdStops'],
+    [/^sold as equal to Schott (\S+) \(seller’s own datasheet\)$/, 'tSoldAs'],
+    [/^no stated equivalent, inferred close to (\S+) from the seller’s own chart — not confirmed$/, 'tInferred'],
+    [/^B\+W (\d+) is cut from this glass$/, 'tCutFrom'],
+    [/^the Hoya (\S+) sits alongside this$/, 'tSitsBeside'],
+    [/^(\d+)% UV peak$/, 'tPeak'],
+    [/^50% at ~(\d+)nm$/, 'tHalfAt'],
+    [/^also Lee (\S+)$/, 'tAlsoLee'],
+    [/^Data confidence: FIT ([\d.]+)pp\. Fitted to real source data with a documented error figure \([\d.]+pp against real data points\) — often more trustworthy than a curve read by eye off a chart image$/, 'tConfFitPP'],
+    [/^Fitted to real source data with a documented error figure \(([\d.]+)pp against real data points\) — often more trustworthy than a curve read by eye off a chart image$/, 'tFitPP'],
+    [/^Data confidence: REAL\. (.+)$/, 'tConfReal'],
+    [/^Data confidence: FIT\. (.+)$/, 'tConfFit'],
+    [/^Data confidence: EST\. (.+)$/, 'tConfEst'],
+    [/^(REAL — digitised curve|FIT — fitted, error quantified|FIT — fitted, error not quantified|EST — no measurement): (\d+)$/, 'tTierCount'],
+    [/^(\d+) filters total\. (\d+) \((\d+)%\) are backed by a digitised curve or a fit with a documented error figure\. Quantified fits span ([\d.]+)pp to ([\d.]+)pp RMS — the badge shows each one, so a rough fit never reads the same as a tight one\. Note a digitised curve read by eye off a low-resolution chart is not automatically better than a least-squares fit against a published table; the tier describes how the data is stored as much as how good it is\.$/, 'tHealth'],
     // the Swap tab's channel verdict (src/view.js), which carries a live number
     [/^Channel means differ by (-?[\d.]+) levels, so there is real separation to work with\.$/, 'tChSpread'],
     [/^The three channels are near-identical \(means within (-?[\d.]+) levels\)\. That is normal above roughly 700nm, where every sensor channel sees much the same infrared — a swap will do very little\. Below that, expect them to differ\.$/, 'tChSame'],
@@ -53,10 +70,26 @@
     const k = norm(en);
     if (!k || !/[A-Za-z]/.test(k)) return null;
     if (Object.prototype.hasOwnProperty.call(dict, k)) return dict[k];
+    const t = template(k);
+    if (t != null) return t;
+    /* A list of short notes joined by " · " (the filter descriptions, mostly): translate each piece that has an
+       entry and keep the rest, which are names, numbers and model codes. Only used if at least one piece changed. */
+    if (k.indexOf(' · ') > 0) {
+      let changed = false;
+      const parts = k.split(' · ').map(seg => {
+        const v = Object.prototype.hasOwnProperty.call(dict, seg) ? dict[seg] : template(seg);
+        if (v != null) { changed = true; return v; }
+        return seg;
+      });
+      if (changed) return parts.join(' · ');
+    }
+    return null;
+  }
+  function template(k) {
     for (const [re, name] of TEMPLATES) {
       const m = k.match(re);
       if (m && dict[name]) {
-        const args = m.slice(1).map(g => (Object.prototype.hasOwnProperty.call(dict, g) ? dict[g] : g));
+        const args = m.slice(1).map(g => (g != null && Object.prototype.hasOwnProperty.call(dict, g) ? dict[g] : (g || '')));
         return dict[name].replace(/\{(\d)\}/g, (_, i) => args[+i]);
       }
     }
