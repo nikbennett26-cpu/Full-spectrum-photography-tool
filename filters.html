@@ -85,7 +85,7 @@
 :root{
   /* Same near-black palette as the home page and editor (index.html :root / landing background) */
   --bg:#0b0c0e;--surface:#1b1d21;--surface2:#24272c;--line:#2a2d33;--line2:#3d4048;
-  --paper:#eceae4;--paper-dim:#a3a097;--muted:#6d6a63;
+  --paper:#eceae4;--paper-dim:#a3a097;--muted:#918d84;
   --safelight:#c2431b;--safelight-dim:#8f3417;
   --phosphor:#6fab96;--phosphor-dim:#4d7d6e;
   --warn:#d8a13a;
@@ -101,7 +101,7 @@
    still reads as the same colour family at a much lower saturation. */
 [data-theme="light"]{
   --bg:#e7e3da;--surface:#f3f0e9;--surface2:#ded9cc;--line:rgba(35,27,19,.14);--line2:rgba(35,27,19,.26);
-  --paper:#231b13;--paper-dim:#6b604d;--muted:#8a7f6b;
+  --paper:#231b13;--paper-dim:#5e5442;--muted:#6f6552;
   --safelight:#9c330d;--safelight-dim:#b85c38;
   --phosphor:#1a6350;--phosphor-dim:#37806b;
   --warn:#7d5509;
@@ -299,7 +299,7 @@ body{padding:0!important;max-width:none!important;margin:0!important}
 #fHead{margin:0}
 #fRail{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:2px;padding:4px 0}
 .rk{position:relative;display:block;height:54px;margin:0;padding:0;border:0;border-radius:6px;background:transparent;color:var(--paper);text-decoration:none;cursor:pointer;font:inherit}
-.rk::after{content:attr(data-lbl);position:absolute;left:0;right:0;bottom:3px;font:500 9.5px/1 var(--font-mono);color:var(--paper-dim);text-align:center;white-space:nowrap;pointer-events:none}
+.rk::after{content:attr(data-lbl);position:absolute;left:0;right:0;bottom:2px;font:500 10.5px/1 var(--font-mono);color:var(--paper-dim);text-align:center;white-space:nowrap;pointer-events:none}
 .rkI{position:absolute;left:50%;top:2px;width:30px;height:30px;margin-left:-15px;box-sizing:border-box;border:1px solid var(--line2);border-radius:4px;
   display:flex;align-items:center;justify-content:center;font:15px/1 var(--font-body);color:var(--paper)}
 .rkI svg{width:15px;height:15px;fill:none;stroke:currentColor;stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round}
