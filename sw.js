@@ -17,7 +17,7 @@
    You do NOT need to bump it just to deploy a new index.html — network-first
    handles that on its own. */
 
-const CACHE_VERSION = 'irlab-v9';   // v9: icons renamed (-v2) so installed apps notice the new logo and rebuild their launch screen
+const CACHE_VERSION = 'irlab-v10';   // v10: favicons requested with ?v=2 on both pages, so cached copies of the old logo are dropped
 // transient hand-off storage for Web Share Target, deliberately not versioned
 const SHARE_CACHE = 'irlab-share';
 const SHARE_KEY = '/__shared-image';

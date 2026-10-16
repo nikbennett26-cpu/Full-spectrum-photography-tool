@@ -56,25 +56,12 @@ only the surrounding glue changed for a standalone build.
 - Licence: GPL-3.0-or-later.
 - Upstream: https://github.com/darktable-org/darktable
 
-## RapidRAW (colour calibration, highlights, shadows, noise reduction, sharpening)
-
-Several adjustments in the editor's WebGL shader (`index.html`) are ported, WGSL to GLSL, from RapidRAW's
-`shader.wgsl`: colour calibration (`apply_color_calibration`), highlights (`apply_highlights_adjustment`),
-shadows and blacks (`apply_shadows_blacks`), noise reduction (`apply_noise_reduction`) and its two-scale
-sharpening. The maths is RapidRAW's; the porting, single-pass approximations and glue are this tool's own,
-and are noted in comments beside each port.
-
-- Copyright: (C) CyberTimon and the RapidRAW contributors.
-- Licence: AGPL-3.0.
-- Upstream: https://github.com/CyberTimon/RapidRAW
-
 ## Licence-compatibility summary
 
 | Component    | Licence          | Compatible with the AGPL-3.0 whole app |
 |--------------|------------------|-----------------------------------------|
 | This repo    | AGPL-3.0-or-later| yes (defines it)                        |
 | RawTherapee  | GPL-3.0-or-later | yes                                     |
-| RapidRAW     | AGPL-3.0         | yes (same licence)                      |
 | LibRaw       | LGPL-2.1 / CDDL  | yes (LGPL-2.1 -> AGPL-3.0)              |
 | DCB (LibRaw) | BSD              | yes                                     |
 | DHT (LibRaw) | LGPL             | yes                                     |
