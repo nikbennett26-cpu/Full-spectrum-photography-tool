@@ -25,7 +25,7 @@
 <meta name="twitter:image" content="https://irlab.uk/og-card.png?v=112">
 <link rel="canonical" href="https://irlab.uk/">
 <meta name="theme-color" content="#160f0a">
-<meta name="irlab-build" content="120">
+<meta name="irlab-build" content="121">
 <link rel="manifest" href="/manifest.json">
 <link rel="icon" href="/favicon.ico" sizes="any">
 <link rel="icon" href="/favicon.svg" type="image/svg+xml">
@@ -1942,6 +1942,36 @@ html.dockOn body.has-image .toolbar > .keyBtn.keySm > :is(.kTxt,.kMore){display:
 html.dockOn body.has-image .toolbar > .keyBtn.keySm::after{color:var(--paper)!important;font-weight:700}
 html.dockOn body.has-image .toolbar > :is(#bHome,#bReset,#themeBtn), html.dockOn body.has-image .toolbar .ptTools > button{box-sizing:border-box!important;padding:0 0 21px!important}
 html.dockOn body.has-image .toolbar > :is(.filelabel,#bHome,#bReset,#themeBtn,#filterDbBtn):active::before,html.dockOn body.has-image .toolbar .ptTools > button:active::before{border-color:var(--safelight)}
+/* ---- Phone polish (build 121) ---- */
+/* 1. The decode / white-balance stamp is developer detail: off the photo on a phone, shown in Export > Decode settings. */
+html.dockOn body.has-image #previewSticky > .ptStamps{display:none!important}
+#decodeInfo{margin:10px 0 0;font:400 11px/1.5 var(--font-mono);color:var(--muted)}
+#decodeInfo:empty{display:none}
+/* 2. Section headers inside a tab: no number chip, normal case, quieter than the cards. Light and Detail get theirs back
+   as a slim row because it now carries the panel's actions. */
+html.dockOn body.has-image #reorderZone .stepChip{display:none!important}
+html.dockOn body.has-image #reorderZone .stepPanel > summary.stepHdr{display:flex!important;align-items:center;gap:8px;min-height:44px;padding:4px 2px!important;margin:0 0 4px!important;
+  border-bottom:0!important;font:600 15px/1.2 var(--font-body)!important;letter-spacing:0!important;text-transform:none!important;color:var(--paper)!important}
+html.dockOn body.has-image #reorderZone .stepPanel > summary.stepHdr > span{text-transform:none;letter-spacing:0}
+html.dockOn body.has-image #reorderZone .stepPanel[data-step="targeted"] > summary.stepHdr > span[style]{display:none}
+html.dockOn body.has-image #reorderZone .stepPanel > summary.stepHdr .wbSum{display:none!important}
+html.dockOn body.has-image #reorderZone .stepPanel > summary.stepHdr .stepArrow,html.dockOn body.has-image #reorderZone [data-solo] > summary.stepHdr .stepDot{display:none}
+html.dockOn body.has-image #reorderZone > [data-solo] > summary{display:flex!important;cursor:default}
+/* 3. Reset panel (and Light's Auto levels) live in the section header as small buttons instead of a row of their own. */
+summary.stepHdr .hdrActs{margin-left:auto;display:inline-flex;align-items:center;gap:6px}
+summary.stepHdr .hdrActs + .stepDot{margin-left:8px!important}
+summary.stepHdr .hdrActs button{display:inline-flex;align-items:center;justify-content:center;gap:5px;min-height:34px;min-width:34px;padding:0 10px;margin:0;border-radius:6px;
+  border:1px solid var(--line2);background:transparent;color:var(--paper-dim);font:500 12px/1 var(--font-body);letter-spacing:0;text-transform:none;cursor:pointer}
+summary.stepHdr .hdrActs button.ptResetBtn{padding:0;width:34px}
+summary.stepHdr .hdrActs button svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+summary.stepHdr .hdrActs button:hover{border-color:var(--safelight);color:var(--paper)}
+.panelTools:empty{display:none}
+summary.stepHdr #btnAuto{display:inline-flex;align-items:center;min-height:34px;padding:0 10px;margin:0 0 0 auto;border-radius:6px;border:1px solid var(--line2);background:transparent;color:var(--paper-dim);font:500 12px/1 var(--font-body);letter-spacing:0;text-transform:none}
+summary.stepHdr #btnAuto + .hdrActs{margin-left:6px}
+/* 4. Selected toggles (Histogram/Parade, curve channel, crop ratio, HSL group) as a tint with an orange edge, not a solid orange pill. */
+#scopeModeRow button.btnGhostSmall.on,#curveTabs button.btnGhostSmall.on,#cropRow button.btnGhostSmall.on,#maskChips button.btnGhostSmall.on,
+html body #hslTabs button.btnGhostSmall.on,html.studioOn body.has-image #hslTabs button.btnGhostSmall.on,html.dockOn body.has-image #hslTabs button.btnGhostSmall.on{
+  background:rgba(238,106,44,.16)!important;border-color:var(--safelight)!important;color:var(--paper)!important}
 /* ---- Cards everywhere (build 116) ---- */
 .dCard{margin-top:10px;border:1px solid var(--line2);border-radius:10px;background:rgba(255,255,255,.015);padding:12px 14px}
 .dCard > .note:first-child{margin-top:0}
@@ -2088,8 +2118,11 @@ details[data-step="wb"] .wbGainsIn .wbGainsBody{padding:0 2px 12px}
   <footer class="labFoot">
     <div id="whatsNew">
       <details>
-        <summary><span data-i18n="whatsNewLabel">What’s new</span><span class="wnLatest">New phone top bar</span></summary>
+        <summary><span data-i18n="whatsNewLabel">What’s new</span><span class="wnLatest">Calmer phone layout</span></summary>
       <div style="margin-top:6px">
+        <p style="margin:0 0 3px"><b style="color:var(--phosphor-dim)">Calmer phone layout.</b> Section headers lose their number chips
+          and capitals; Reset (and Light&rsquo;s Auto) sit in the header as small buttons instead of a row of their own; the decode
+          details moved off the photo into Export &rsaquo; Decode settings; selected toggles are a tint instead of a solid orange pill.</p>
         <p style="margin:0 0 3px"><b style="color:var(--phosphor-dim)">New phone top bar.</b> On a phone the controls above the photo
           are one row of eight labelled icons (New, Home, Reset, Left, Right, Full, Theme, Filters), so they all fit on any screen.</p>
         <p style="margin:0 0 3px"><b style="color:var(--phosphor-dim)">New button style.</b> Choose image, New image and Export are now
@@ -2188,7 +2221,7 @@ details[data-step="wb"] .wbGainsIn .wbGainsBody{padding:0 2px 12px}
       <path d="M20.317 4.37a19.79 19.79 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028 14.09 14.09 0 0 0 1.226-1.994.076.076 0 0 0-.041-.106 13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128 10.2 10.2 0 0 0 .372-.292.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.956-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.955-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.946 2.418-2.157 2.418z"/>
     </svg> Discord</span><span class="dcGo">Join →</span>
     </a>
-    <div id="buildStampHome">Version 2026-10-16 · build 120</div>
+    <div id="buildStampHome">Version 2026-10-16 · build 121</div>
   </footer>
 </div>
 
@@ -2322,7 +2355,7 @@ details[data-step="wb"] .wbGainsIn .wbGainsBody{padding:0 2px 12px}
            that fill in these same nine numbers; showing the numbers first
            makes that relationship visible instead of implied. -->
       <details class="dGrp" id="matrixDetails" open>
-        <summary><span class="dT">Channel swap</span><span class="dS">swap buttons and the mix grid</span><span class="dDot" aria-hidden="true"></span></summary>
+        <summary><span class="dT">Swap &amp; mix</span><span class="dS">swap buttons and the mix grid</span><span class="dDot" aria-hidden="true"></span></summary>
         <div class="dBody">
         <!-- The permutations this panel exists to reach. Every one of them was
              six numbers typed into nine boxes without a slip; they are one tap
@@ -2981,6 +3014,7 @@ details[data-step="wb"] .wbGainsIn .wbGainsBody{padding:0 2px 12px}
       <details class="dGrp" id="decodeGrp">
         <summary><span class="dT">Decode settings</span><span class="dS">for the next photo you open</span><span class="dDot" aria-hidden="true"></span></summary>
         <div class="dBody">
+          <p id="decodeInfo" aria-live="polite"></p>
         <div style="margin-top:8px">
           <label style="display:flex;align-items:center;gap:6px;font-size:11.5px;color:var(--phosphor-dim);cursor:pointer">
             <input type="checkbox" id="cr2PreferPreviewEditor" style="margin:0">
@@ -3130,7 +3164,7 @@ details[data-step="wb"] .wbGainsIn .wbGainsBody{padding:0 2px 12px}
       <br><a href="#" id="consentReopen" style="color:var(--muted);text-decoration:underline">Cookie notice</a>
       <br><a href="LICENSE.md" target="_blank" rel="noopener" style="color:var(--muted);text-decoration:underline">Source: AGPL-3.0</a>
       <br><a href="THIRD_PARTY_NOTICES.md" target="_blank" rel="noopener" style="color:var(--muted);text-decoration:underline">Third-party notices (LibRaw, RawTherapee)</a>
-<br><span id="buildStamp" style="color:var(--muted)" title="Which version of the app this is. Tap the arrow to check for a newer one and update.">Version 2026-10-16 · build 120</span>
+<br><span id="buildStamp" style="color:var(--muted)" title="Which version of the app this is. Tap the arrow to check for a newer one and update.">Version 2026-10-16 · build 121</span>
       <br><button id="btnInstall" type="button">Install as an app</button>
       <span id="kbHint">Ctrl+Z undo &middot; Ctrl+Shift+Z redo &middot; [ ] cycle presets &middot; F full quality view &middot; Space hold to compare</span>
     </footer>
@@ -10115,6 +10149,35 @@ function resetPanel(step) {
   });
 })();
 
+/* Build 121: each section's Reset panel (and Light's Auto levels) moves into its header as small buttons, so it no longer
+   takes a row of its own. The handlers stay on the same buttons. */
+(function panelToolsIntoHeader() {
+  const icon = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 12a9 9 0 1 0 3-6.7"/><path d="M3 4v5h5"/></svg>';
+  PANEL_STEPS.forEach(step => {
+    const P = panelEl(step); if (!P) return;
+    const sum = P.querySelector(':scope > summary'), bar = P.querySelector(':scope > .panelTools'); if (!sum || !bar) return;
+    const acts = document.createElement('span'); acts.className = 'hdrActs';
+    const ab = bar.querySelector('.ptAutoBtn'); if (ab) { ab.textContent = '\u2726 Auto'; acts.appendChild(ab); }
+    const rb = bar.querySelector('.ptResetBtn');
+    if (rb) { rb.innerHTML = icon; rb.setAttribute('aria-label', 'Reset ' + PANEL_NAMES[step].toLowerCase()); rb.title = 'Reset ' + PANEL_NAMES[step].toLowerCase() + ' (one undo step)'; acts.appendChild(rb); }
+    const dot = sum.querySelector('.stepDot');
+    sum.insertBefore(acts, dot || null);
+    bar.remove();
+  });
+  /* On a phone, Light and Detail are the only section in their tab: their header is a label, not a fold. */
+  document.addEventListener('click', e => {
+    const s = e.target.closest && e.target.closest('#reorderZone > [data-solo] > summary');
+    if (s && document.documentElement.classList.contains('dockOn') && !e.target.closest('button')) e.preventDefault();
+  }, true);
+})();
+/* Build 121: the decode / white-balance stamp, shown in Export > Decode settings instead of over the photo on a phone. */
+(function decodeInfoMirror() {
+  const out = $('decodeInfo'), a = $('decoderBadge'), b = $('implicitStamp'); if (!out || !a || !b) return;
+  const upd = () => { out.textContent = [a.textContent.trim(), b.textContent.trim()].filter(Boolean).join('  \u00b7  '); };
+  const mo = new MutationObserver(upd);
+  [a, b].forEach(e => mo.observe(e, { childList: true, characterData: true, subtree: true }));
+  upd();
+})();
 if (typeof WebGLEngine !== 'undefined') {
   const _epdSetImage = WebGLEngine.prototype.setImage;
   WebGLEngine.prototype.setImage = function (img) { if (typeof engine !== 'undefined' && this === engine) epdImageGen++; return _epdSetImage.call(this, img); };
