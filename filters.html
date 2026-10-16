@@ -306,11 +306,15 @@ body{padding:0!important;max-width:none!important;margin:0!important}
 .rkTxt{font:700 10px/1 var(--font-mono)}
 .rkKey .rkI{background:#ee6a2c;border-color:#ee6a2c;color:#0b0c0e}
 .rkKey::after{color:var(--paper);font-weight:700}
+/* Build 129: icons only, like the editor's top bar. */
+.rk{height:34px}
+.rk::after{content:none;display:none}
 .rk[aria-pressed="true"] .rkI{border-color:#ee6a2c;background:rgba(238,106,44,.16)}
 .rk:active .rkI{border-color:#ee6a2c}
 .rkTheme #themeBtn{position:absolute!important;inset:0;width:auto!important;height:auto!important;border:0!important;background:transparent!important;padding:0 0 21px!important;
   font-size:15px!important;line-height:30px!important;color:var(--paper)!important;box-sizing:border-box}
 .rkTheme::before{content:'';position:absolute;left:50%;top:2px;width:30px;height:30px;margin-left:-15px;box-sizing:border-box;border:1px solid var(--line2);border-radius:4px;pointer-events:none}
+.rkTheme #themeBtn{padding:0!important;line-height:34px!important}   /* build 129: no label row to leave room for */
 #fChart{border:1px solid var(--line);border-radius:10px;background:var(--sunken);padding:10px 10px 8px}
 #fChartHdr{display:flex;align-items:center;gap:8px;min-height:24px;margin:0 0 6px}
 #stackName{margin:0!important;text-align:left!important;font-size:11.5px!important;color:var(--paper-dim)!important}
