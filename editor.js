@@ -4091,6 +4091,8 @@ function applyUILang() {
   ['wbPreShort', 'wbPostShort'].forEach(id => { const e = $(id); if (e && !e.closest('.wbRow.on')) e.textContent = dict.notSet || 'not set'; });
   const sel = $('uiLang');
   if (sel) sel.value = uiLang;
+  // everything without a data-i18n key: matched by its English text (i18n/tr.js, build 133)
+  if (window.irlabTr) irlabTr.set(uiLang);
 }
 document.addEventListener('DOMContentLoaded', () => {
   applyUILang();

@@ -65,6 +65,21 @@ worst-pixel ΔE (about 0.02 is a just-noticeable difference), so you can tell a 
 Add a case by adding a line to `cases.mjs`; controls are set by element id, and ones a build does not have are
 skipped, so the same suite runs against older builds.
 
+## Languages
+
+The interface comes in English, Spanish, French, German, Japanese and Chinese, chosen from the menu on the home page
+(the filters page follows the same choice). Two mechanisms work together:
+
+- `I18N` in `src/i18n.js`: short labels with a `data-i18n` key on the element.
+- `i18n/tr.js` with `i18n/<lang>.js`: everything else, matched by its English text (spaces collapsed), including
+  tooltips, placeholders and text the app writes while running. Templates in `tr.js` cover repeated patterns such as
+  "decrease Exposure". A sentence broken up by bold or italic words is marked `data-tr-block` and translated whole.
+  Only the chosen language's file is loaded.
+
+Text with no entry simply stays in English, so editing an English string means updating its entries too.
+`python3 tools/i18n_check.py index.html de` lists what is still English in a language (it needs the local server on
+port 8820 and Playwright). The What's new change log is deliberately English only.
+
 ## Code layout
 
 The editor is `index.html` (the page itself), three stylesheets in `css/`, and its code, which is written in `src/`
