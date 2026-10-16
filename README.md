@@ -71,9 +71,9 @@ Tool by [@irlab.uk](https://www.instagram.com/irlab.uk) and [Phil Warren](https:
 Colour science and RAW decoding by Phil Warren. Tested and contributed by
 [@fedialebarboc](https://www.instagram.com/fedialebarboc).
 
-RAW decoding uses LibRaw, and parts of the processing are ported from RawTherapee and darktable. See
+RAW decoding uses LibRaw, and parts of the processing are ported from RawTherapee, darktable and RapidRAW. See
 [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md) for their licences.
 
 ## Licence
 
-AGPL-3.0, as stated in the editor footer.
+AGPL-3.0-or-later: see [LICENSE.md](LICENSE.md).
