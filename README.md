@@ -65,6 +65,38 @@ worst-pixel ΔE (about 0.02 is a just-noticeable difference), so you can tell a 
 Add a case by adding a line to `cases.mjs`; controls are set by element id, and ones a build does not have are
 skipped, so the same suite runs against older builds.
 
+## Code layout
+
+The editor is `index.html` (the page itself), three stylesheets in `css/` and its code in `js/`, split by area:
+
+| File | What is in it |
+|---|---|
+| `js/shaders.js` | the WebGL shaders: the whole colour pipeline that runs on the GPU |
+| `js/engine.js` | the WebGL engine that runs them, and the JS sRGB transfer functions |
+| `js/i18n.js` | the six languages and app-wide state |
+| `js/view.js` | histogram, analytics, source inspector, loupe, zoom, pan, update check |
+| `js/controls.js` | sliders, tone mapping, sky selection, per-panel reset, draft rendering, the mixer, presets |
+| `js/raw-preview.js` | embedded previews, the RAW probe, camera colour, chroma reconstruction, the CR2 decoder |
+| `js/session.js` | ZIP writer, batch, saving and restoring the session |
+| `js/raw-process.js` | demosaic choice, the RAW decoder, RAW noise reduction and highlight reconstruction, TIFF reader |
+| `js/ui.js` | drag and drop, loading, undo, the panels and tabs |
+| `js/wb-lut.js` | white balance picking, LUTs |
+| `js/colour-mirror.js` | a JS copy of the shader's colour maths, for the readouts |
+| `js/export.js` | EXIF and ICC profiles, full-size render, TIFF, saving the file |
+| `js/dock.js` | the phone dock and sheet, channel-swap space, in-page dialogs |
+| `js/selftest.js` | the built-in self-test and its stored baseline |
+
+They are plain scripts, not modules: they share one global scope and run in the order `index.html` lists them, as
+the single script they used to be did. One difference to keep in mind: a function is only available to code that
+runs while the page loads once its own file has loaded, so code that runs at load time can only call functions from
+its own file or an earlier one. Code inside event handlers can call anything.
+
+Each file's URL carries `?b=<build>`. After a change, set the new build number everywhere with
+
+    python3 tools/bump_build.py <build>
+
+which updates the version stamps, the build number the in-app update check reads, and those URLs.
+
 ## Credits
 
 Tool by [@irlab.uk](https://www.instagram.com/irlab.uk) and [Phil Warren](https://philwarrenphotography.com).

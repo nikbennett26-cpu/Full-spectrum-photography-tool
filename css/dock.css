@@ -1,0 +1,739 @@
+/* ---- phone layout: photo on top, tools in a dock, controls in a sheet ----
+   Only below 720px wide and at least 480px tall (a phone held upright), and
+   only once an image is open. Everything else, tablets and desktop included,
+   keeps the layout it had. The panels themselves are untouched: the dock just
+   decides which of them the sheet shows. */
+#dock,#sheetGrip{display:none}
+@media (max-width:1099px) and (orientation:portrait) and (min-height:480px){
+  html.dockOn body.has-image{padding-bottom:calc(var(--dockH,64px) + 10px)}
+  html.dockOn body.has-image #dock{display:flex;position:fixed;left:0;right:0;bottom:0;z-index:80;background:var(--bg);
+    border-top:1px solid var(--line2);padding:5px 2px calc(5px + env(safe-area-inset-bottom));justify-content:space-around}
+  #dock button{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;background:none;border:none;
+    color:var(--phosphor-dim);font:500 10.5px/1.1 var(--font-mono);letter-spacing:.02em;padding:5px 0;min-height:50px;cursor:pointer;
+    -webkit-tap-highlight-color:transparent;transition:color .15s}
+  #dock button svg{width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;transition:transform .2s}
+  #dock button.on{color:var(--safelight)}
+  #dock button.on svg{transform:translateY(-1px) scale(1.06)}
+  html.dockOn body.has-image #sheetGrip{display:flex;position:fixed;left:0;right:0;z-index:75;justify-content:center;align-items:flex-start;
+    height:48px;padding-top:15px;touch-action:none;cursor:grab;bottom:calc(var(--dockH,64px) + var(--sheetH,0px) - 34px);
+    transition:bottom .28s cubic-bezier(.2,.8,.2,1)}
+  #sheetGrip span{width:42px;height:4px;border-radius:2px;background:var(--line2)}
+  html.dockOn.sheetClosed body.has-image #sheetGrip{bottom:calc(var(--dockH,64px) - 4px);height:28px;padding-top:8px}
+  html.dockOn.sheetClosed body.has-image #sheetGrip span{background:var(--safelight);opacity:.85}
+  html.dockOn.sheetDrag body.has-image #sheetGrip,html.dockOn.sheetDrag body.has-image #reorderZone{transition:none}
+
+  html.dockOn body.has-image #reorderZone{position:fixed;left:0;right:0;bottom:var(--dockH,64px);height:var(--sheetH,0px);z-index:70;
+    display:flex;flex-direction:column;background:var(--bg);border-radius:18px 18px 0 0;border-top:1px solid var(--line2);
+    box-shadow:0 -14px 34px -10px rgba(0,0,0,.6);overflow-y:auto;overflow-x:hidden;overscroll-behavior:contain;
+    padding:24px 14px 28px;margin:0;border-left:none;-webkit-overflow-scrolling:touch;
+    transition:height .28s cubic-bezier(.2,.8,.2,1)}
+  html.dockOn.sheetClosed body.has-image #reorderZone{padding:0;border-top:none;box-shadow:none;overflow:hidden}
+  html.dockOn body.has-image #reorderZone > *{display:none !important}
+  html.dockOn[data-tab="looks"] body.has-image #reorderZone > [data-dock="looks"]:not([style*="display: none"]),
+  html.dockOn[data-tab="light"] body.has-image #reorderZone > [data-dock="light"]:not([style*="display: none"]),
+  html.dockOn[data-tab="colour"] body.has-image #reorderZone > [data-dock="colour"]:not([style*="display: none"]),
+  html.dockOn[data-tab="detail"] body.has-image #reorderZone > [data-dock="detail"]:not([style*="display: none"]),
+  html.dockOn[data-tab="export"] body.has-image #reorderZone > [data-dock="export"]:not([style*="display: none"]){display:block !important}
+  html.dockOn body.has-image #reorderZone > .panel,html.dockOn body.has-image #reorderZone > details.panel{margin:0 0 12px;flex:none}
+  html.dockOn body.has-image #reorderZone > [data-solo] > summary{display:none}
+
+  html.dockOn body.has-image #preview{max-height:var(--photoMax,34vh)}
+  html.dockOn body.has-image #consentBar{bottom:var(--dockH,64px)}
+  html.dockOn body.has-image #toast{bottom:calc(var(--dockH,64px) + 14px)}
+  html.dockOn body:has(#consentBar.on){padding-bottom:calc(var(--dockH,64px) + 10px)}
+
+  html.dockOn body.has-image .toolbar{flex-wrap:nowrap;overflow-x:auto;gap:6px;padding:2px 0 6px 0;margin:0;scrollbar-width:none;align-items:center}
+  html.dockOn body.has-image #themeBtn{position:static;flex:none;width:34px;height:34px;min-height:0}
+  html.dockOn body.has-image .toolbar::-webkit-scrollbar{display:none}
+  html.dockOn body.has-image .toolbar .filelabel,html.dockOn body.has-image .toolbar button.btnGhost{padding:6px 11px;font-size:12px;white-space:nowrap;min-height:34px;flex:none}
+  html.dockOn body.has-image #lnkFilters{white-space:nowrap;font-size:11.5px;flex:none}
+  html.dockOn body.has-image #previewTools{padding:0;margin:0 0 4px;min-height:0;background:transparent;border:none}
+}
+
+@media (max-width:1099px) and (orientation:portrait) and (min-height:480px){
+  html.dockOn body.has-image #lnkFilters{display:none}
+  html.dockOn body.has-image #lnkFilters2{display:inline-block;margin:6px 0 2px}
+  html.dockOn body.has-image .toolbar{gap:4px}
+  html.dockOn body.has-image .toolbar .filelabel,html.dockOn body.has-image .toolbar button.btnGhost{padding:6px 8px;font-size:11px}
+  html.dockOn body.has-image #themeBtn{width:30px}
+  html.dockOn body.has-image .toolbar .ptTools{display:flex;gap:4px;flex:none}
+  html.dockOn body.has-image .toolbar .ptIconBtn{width:28px;height:34px;font-size:15px}
+  html.dockOn body.has-image #previewTools{display:none}
+  /* before/after sits directly under the photo as one slim row: "Before", the slider, "After" */
+  html.dockOn body.has-image #previewSticky > #cmpBar{display:grid !important;grid-template-columns:auto minmax(0,1fr) auto auto;align-items:center;column-gap:10px;
+    margin:5px 0 0;padding:2px 12px;background:var(--surface2);border:1px solid var(--line2);border-radius:9px;min-height:30px}
+  html.dockOn body.has-image #cmpBar .cmpBarLabels{display:contents}
+  html.dockOn body.has-image #cmpBar .cmpBarLabels span{font-family:var(--font-mono);font-size:10px;color:var(--paper-dim);white-space:nowrap}
+  html.dockOn body.has-image #cmpBar .cmpBarLabels span:first-child{grid-column:1;grid-row:1}
+  html.dockOn body.has-image #cmpBar .cmpBarLabels span:last-child{grid-column:3;grid-row:1}
+  html.dockOn body.has-image #cmpBar #cmpRange{grid-column:2;grid-row:1;margin:0}
+  /* scopes sit under the compare bar: a slim histogram while the sheet is up, and the
+     whole scope panel (bigger histogram, parade, clipping warnings) when the sheet is
+     closed and there is room. Tap the histogram to switch between histogram and parade. */
+  html.dockOn body.has-image #previewSticky > #scopeDetails{margin-top:6px}
+  html.dockOn body.has-image #scopeDetails > summary{display:none}
+  html.dockOn body.has-image #previewSticky > .ptStamps{display:flex;flex-direction:row;flex-wrap:wrap;gap:1px 14px;padding:5px 4px 0}
+  html.dockOn body.has-image #scopeBar{display:block}
+  html.dockOn body.has-image #histogram{display:block;width:100%;height:var(--histH,46px);border-radius:8px;cursor:pointer}
+  html.dockOn body.has-image #scopeMeta{display:none}
+  html.dockOn.sheetClosed body.has-image #histogram{height:106px}
+  html.dockOn.sheetClosed body.has-image #scopeMeta{display:block;margin-top:8px}
+  html.dockOn.sheetClosed body.has-image #scopeMeta #clipKey{display:none}
+  html.dockOn.sheetClosed body.has-image #scopeMeta:has(#chkClip:checked) #clipKey,
+  html.dockOn.sheetClosed body.has-image #scopeMeta:has(#chkCmyk:checked) #clipKey{display:flex}
+  html.dockOn body.has-image #reorderZone > #scopeDetails{margin:0 0 12px}
+  html.dockOn body.has-image #zoomBadge .previewPill{padding:4px 7px;font-size:10px}
+}
+#histChip{display:none}
+#hslRows .hslRow{display:none}
+.updBtn{margin-left:8px;padding:2px 9px;border-radius:999px;border:1px solid var(--line2,rgba(255,255,255,.2));background:transparent;color:var(--muted);font:600 11px/1.4 ui-sans-serif,system-ui,sans-serif;cursor:pointer;vertical-align:baseline}
+.updBtn:hover{color:var(--paper,#eee);border-color:var(--paper-dim,#aaa)}
+.updBtn.has{background:var(--safelight,#e8742c);border-color:var(--safelight,#e8742c);color:#fff}
+#updateBar{position:fixed;left:50%;top:calc(12px + env(safe-area-inset-top,0px));transform:translate(-50%,-160%);z-index:9997;display:flex;align-items:center;gap:10px;
+  max-width:min(520px,calc(100vw - 24px));padding:9px 9px 9px 16px;border-radius:14px;background:var(--gl-strong,var(--surface2,#24272c));-webkit-backdrop-filter:blur(20px) saturate(1.4);backdrop-filter:blur(20px) saturate(1.4);
+  border:1px solid var(--gl-edge,var(--line2,rgba(255,255,255,.2)));color:var(--paper,#eceae4);box-shadow:0 18px 50px -14px rgba(0,0,0,.65);font:500 13px/1.3 ui-sans-serif,system-ui,sans-serif;opacity:0;pointer-events:none;transition:transform .25s,opacity .25s}
+#updateBar.on{transform:translate(-50%,0);opacity:1;pointer-events:auto}
+#updateBar{width:max-content}
+#updateBar span{flex:none;white-space:nowrap}
+#updateBar .ubGo{flex:none;padding:9px 18px;border:0;border-radius:999px;background:var(--safelight,#e8742c);color:#fff;font:600 13px/1 ui-sans-serif,system-ui,sans-serif;cursor:pointer}
+#updateBar .ubClose{flex:none;width:32px;height:32px;border:0;border-radius:50%;background:transparent;color:var(--paper-dim,#aaa);font-size:19px;cursor:pointer}
+#rawNrBox,#rawHlBox{display:none}
+/* Deep sky, Crimson foliage and the sky-selection view are no longer shown; the EIR base preset still sets them (scaled by Preset strength) */
+#skyDeepRow,#crimsonRow,#skyShowRow{display:none !important}
+#epdBox .sl input[type=range]{width:100%}
+body.rawOpen #rawNrBox,body.rawOpen #rawHlBox{display:block}
+#rawNrBox.busy input[type=range]{opacity:.5;pointer-events:none}
+#saveReady{position:fixed;left:50%;bottom:calc(16px + env(safe-area-inset-bottom,0px) + var(--dockH,0px));transform:translate(-50%,140%);z-index:9998;display:flex;align-items:center;gap:10px;
+  max-width:min(560px,calc(100vw - 24px));padding:10px 10px 10px 16px;border-radius:14px;background:var(--surface2,#24272c);border:1px solid var(--line2);color:var(--paper);
+  box-shadow:0 14px 40px -12px rgba(0,0,0,.7);font:500 13px/1.3 ui-sans-serif,system-ui,sans-serif;opacity:0;pointer-events:none;transition:transform .25s,opacity .25s}
+#saveReady.on{transform:translate(-50%,0);opacity:1;pointer-events:auto}
+#saveReady .srText{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#saveReady .srSave{flex:none;padding:10px 20px;border:0;border-radius:999px;background:var(--safelight);color:#fff;font:600 14px/1 ui-sans-serif,system-ui,sans-serif;cursor:pointer}
+#saveReady .srClose{flex:none;width:34px;height:34px;border:0;border-radius:50%;background:transparent;color:var(--paper-dim);font-size:20px;cursor:pointer}
+details[data-step="light"]:not(.showRanges) .rangeSl{display:none !important}
+.rangeToggle{display:inline-flex;align-items:center;gap:6px;margin:6px 0 2px;padding:5px 12px;min-height:30px;border-radius:999px;border:1px solid var(--line2);background:transparent;color:var(--paper-dim);font:500 11.5px/1 ui-sans-serif,system-ui,sans-serif;cursor:pointer}
+#curvePresets button.btnGhostSmall,#hslTabs button.btnGhostSmall{display:inline-flex;align-items:center;justify-content:center;min-height:34px;padding:6px 13px;border-radius:999px;border:1px solid var(--line2);background:transparent;color:var(--paper-dim);font-family:var(--font-mono);font-size:11.5px;font-weight:500;text-decoration:none;cursor:pointer}
+#hslTabs button.btnGhostSmall.on{background:var(--safelight);border-color:var(--safelight);color:#fff}
+#hslTabs{gap:6px;flex-wrap:wrap}
+#btnHslReset{margin-left:auto}
+#curvePointRow input[type=number]{background:var(--surface);border:1px solid var(--line2);color:var(--paper);border-radius:8px;padding:5px 8px;font-family:var(--font-mono)}
+#curvePointRow input[type=number]:disabled{opacity:.45}
+.panelTools{display:flex;justify-content:flex-end;gap:8px;margin:4px 0 8px}
+.panelTools button{display:inline-flex;align-items:center;gap:6px;min-height:30px;padding:4px 12px;border-radius:999px;border:1px solid var(--line2);background:transparent;color:var(--paper-dim);font:500 11.5px/1 ui-sans-serif,system-ui,sans-serif;cursor:pointer}
+.panelTools button svg{width:15px;height:15px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+#hslRows[data-g="H"] .hslRow[data-g="H"],#hslRows[data-g="S"] .hslRow[data-g="S"],#hslRows[data-g="L"] .hslRow[data-g="L"]{display:block}
+.hslDot{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:7px;vertical-align:middle;box-shadow:0 0 0 1px rgba(0,0,0,.35)}
+.rangeSl label{opacity:.85}
+/* the Space dropdown has long option names; without this it widens past a phone screen */
+#swapSpace{max-width:calc(100% - 64px);box-sizing:border-box;text-overflow:ellipsis}
+/* Pull-to-refresh: on a touch screen, dragging down from the top of the page reloads it in
+   Chrome, which is what happens when you try to push the controls down or hide something.
+   The editor never needs that gesture, so it is switched off whenever an image is open. */
+@media (pointer:coarse){
+  html,body.has-image{overscroll-behavior-y:none}
+}
+#btnScopesToggle{display:none}
+@media (max-width:1099px) and (orientation:portrait) and (min-height:480px){
+  html.dockOn body.has-image #btnScopesToggle{display:flex;grid-column:4;grid-row:1;align-items:center;justify-content:center;width:30px;height:26px;padding:0;
+    background:transparent;border:1px solid var(--line2);border-radius:8px;color:var(--phosphor-dim);cursor:pointer}
+  html.dockOn body.has-image #btnScopesToggle svg{width:17px;height:17px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round}
+  html.dockOn body.has-image #btnScopesToggle[aria-pressed="true"]{color:var(--safelight);border-color:var(--safelight)}
+  html.dockOn.scopesOff body.has-image #scopeDetails{display:none}
+}
+@media (max-width:1099px) and (orientation:portrait) and (min-height:480px){
+  html[data-theme="light"].dockOn body.has-image #cw{background:var(--surface2)}
+}
+#filterDbBtn{display:none}
+@media (max-width:1099px) and (orientation:portrait) and (min-height:480px){
+  html.dockOn body.has-image #filterDbBtn{display:flex;flex:none;align-items:center;justify-content:center;width:34px;height:34px;box-sizing:border-box;
+    background:var(--surface2);border:1px solid var(--line2);border-radius:var(--radius-sm);color:var(--safelight);text-decoration:none}
+  html.dockOn body.has-image #filterDbBtn svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+  html.dockOn body.has-image #filterDbBtn:active{background:var(--safelight);color:#fff}
+}
+
+/* One neutral palette for every layout: the desktop studio, the phone dock and the portrait-tablet dock share these
+   tokens, so dark mode is the same near-black on all of them. */
+html.studioOn body.has-image,html.dockOn body.has-image{
+    --st-bg:#0c0d0f;--st-stage:#131417;--st-panel:#141518;--st-raise:#1b1d21;--st-raise2:#24272c;
+    --st-hair:rgba(255,255,255,.07);--st-hair2:rgba(255,255,255,.14);--st-text:#eceae4;--st-dim:#a3a097;--st-faint:#918d84;
+    --st-glass:rgba(18,19,22,.72);--accent-glow:rgba(238,106,44,.38);
+    --bg:var(--st-panel);--surface:var(--st-raise);--surface2:var(--st-raise2);--line:var(--st-hair);--line2:var(--st-hair2);
+    --paper:var(--st-text);--paper-dim:var(--st-dim);--phosphor-dim:var(--st-dim);--preview-mat:var(--st-bg);
+}
+html[data-theme="light"].studioOn body.has-image,html[data-theme="light"].dockOn body.has-image{
+    --st-bg:#e7e3da;--st-stage:#d3cec2;--st-panel:#f3f0e9;--st-raise:#ebe7dd;--st-raise2:#ded9cc;
+    --st-hair:rgba(35,27,19,.10);--st-hair2:rgba(35,27,19,.20);--st-text:#231b13;--st-dim:#5e5442;--st-faint:#6f6552;
+    --st-glass:rgba(243,240,233,.78);--accent-glow:rgba(190,70,20,.28)}
+
+/* the phone and portrait-tablet page uses the same outer near-black as the desktop rail and top bar,
+   with the controls sheet one step lighter, exactly as the desktop inspector is */
+html.dockOn body.has-image,html.dockOn body.has-image #previewSticky,html.dockOn body.has-image #dock{background:var(--st-bg)}
+
+/* ================= Desktop studio layout (1100px and wider) =================
+   A tool rail on the left, the photo on a quiet stage in the middle, the controls for one
+   tab at a time on the right, and the histogram pinned at the top of those controls. It is
+   the same five tabs as the phone layout, on purpose: one mental model on both. Narrower
+   windows keep the layout they had. All of it is switched by html.studioOn, which the dock
+   controller sets, and only while an image is open. */
+#studioBrand,#btnStudioExport{display:none}
+@media (min-width:1000px) and (orientation:landscape), (min-width:1100px){
+  html.studioOn body.has-image{
+    --preview-mat:var(--st-stage);
+    display:grid;grid-template-columns:80px minmax(0,1fr) 410px;grid-template-rows:64px minmax(0,1fr);
+    height:100vh;max-height:100vh;height:100dvh;max-height:100dvh;overflow:hidden;margin:0;padding:0;background:var(--st-bg);color:var(--st-text);
+    font-family:ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,"Helvetica Neue",sans-serif}
+  html.studioOn body.has-image #main,html.studioOn body.has-image #editorLeft{display:contents !important}
+
+  /* ---- top bar ---- */
+  html.studioOn body.has-image .toolbar{grid-column:1/-1;grid-row:1;display:flex;flex-wrap:nowrap;align-items:center;gap:8px;margin:0;padding:0 18px 0 16px;
+    height:64px;background:var(--st-bg);border-bottom:1px solid var(--st-hair);position:relative;z-index:30}
+  html.studioOn body.has-image .toolbar::after{content:'';position:absolute;left:0;right:0;bottom:-1px;height:2px;opacity:.9;
+    background:linear-gradient(90deg,#6a3fd0 0%,#2f7de0 20%,#2bb58a 40%,#e3c53a 60%,#ec7a2c 80%,#b8322a 100%)}
+  html.studioOn body.has-image #studioBrand{display:flex;align-items:center;margin-right:24px;order:0;font-size:19px;font-weight:700;letter-spacing:.01em;color:var(--st-text);white-space:nowrap}
+  html.studioOn body.has-image #studioBrand b{font-weight:300;opacity:.8;margin-left:3px}
+  html.studioOn body.has-image .toolbar .filelabel,html.studioOn body.has-image .toolbar button.btnGhost,
+  html.studioOn body.has-image .toolbar #btnUndo,html.studioOn body.has-image .toolbar #btnRedo{
+    display:inline-flex;align-items:center;justify-content:center;height:36px;padding:0 15px;border-radius:999px;border:1px solid var(--st-hair2);
+    background:transparent;color:var(--st-text);font:500 13px/1 ui-sans-serif,system-ui,sans-serif;letter-spacing:0;text-decoration:none;cursor:pointer;white-space:nowrap;
+    transition:background .15s,border-color .15s,transform .1s}
+  html.studioOn body.has-image .toolbar .filelabel:hover,html.studioOn body.has-image .toolbar button.btnGhost:hover,
+  html.studioOn body.has-image .toolbar #btnUndo:hover,html.studioOn body.has-image .toolbar #btnRedo:hover{background:var(--st-raise);border-color:var(--st-faint)}
+  html.studioOn body.has-image .toolbar .filelabel:active,html.studioOn body.has-image .toolbar button.btnGhost:active{transform:scale(.97)}
+  html.studioOn body.has-image .toolbar .filelabel{order:1}
+  html.studioOn body.has-image .toolbar #bHome{order:2}
+  html.studioOn body.has-image .toolbar #bReset{order:3}
+  html.studioOn body.has-image .toolbar .toolbarDiv,html.studioOn body.has-image .toolbar #lnkFilters{display:none}
+  html.studioOn body.has-image .toolbar #btnUndo{order:10;margin-left:auto}
+  html.studioOn body.has-image .toolbar #btnRedo{order:11}
+  html.studioOn body.has-image .toolbar #btnUndo[disabled],html.studioOn body.has-image .toolbar #btnRedo[disabled]{opacity:.38;cursor:default}
+  html.studioOn body.has-image .toolbar .ptTools{order:12;display:flex;gap:6px;margin-left:8px}
+  html.studioOn body.has-image .toolbar .ptIconBtn{width:36px;height:36px;padding:0;border-radius:10px;border:1px solid var(--st-hair2);background:transparent;color:var(--st-text);font-size:16px;cursor:pointer}
+  html.studioOn body.has-image .toolbar .ptIconBtn:hover{background:var(--st-raise)}
+  html.studioOn body.has-image .toolbar #themeBtn{order:13;position:static;display:flex;align-items:center;justify-content:center;width:36px;height:36px;margin-left:6px;
+    border-radius:50%;border:1px solid var(--st-hair2);background:transparent;color:var(--st-dim);cursor:pointer}
+  html.studioOn body.has-image .toolbar #filterDbBtn{order:14;display:flex;align-items:center;justify-content:center;width:36px;height:36px;box-sizing:border-box;border-radius:10px;
+    border:1px solid var(--st-hair2);background:transparent;color:var(--safelight);text-decoration:none}
+  html.studioOn body.has-image .toolbar #filterDbBtn svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+  html.studioOn body.has-image .toolbar #filterDbBtn:hover{background:var(--st-raise)}
+  html.studioOn body.has-image #btnStudioExport{order:15;display:inline-flex;align-items:center;gap:8px;height:38px;margin-left:10px;padding:0 22px;border:none;border-radius:999px;cursor:pointer;
+    font:600 14px/1 ui-sans-serif,system-ui,sans-serif;color:#fff;background:linear-gradient(180deg,#f0702f,#c9461a);
+    box-shadow:0 8px 22px -8px var(--accent-glow),inset 0 1px 0 rgba(255,255,255,.28);transition:transform .12s,box-shadow .2s}
+  html.studioOn body.has-image #btnStudioExport:hover{transform:translateY(-1px);box-shadow:0 12px 28px -8px var(--accent-glow),inset 0 1px 0 rgba(255,255,255,.28)}
+  html.studioOn body.has-image #btnStudioExport:active{transform:scale(.97)}
+  html.studioOn body.has-image #previewTools{display:none !important}
+
+  /* ---- tool rail ---- */
+  html.studioOn body.has-image #dock{display:flex;flex-direction:column;align-items:center;gap:8px;grid-column:1;grid-row:2;position:static;padding:16px 0;
+    background:var(--st-bg);border:none;border-right:1px solid var(--st-hair);z-index:20}
+  html.studioOn body.has-image #dock button{position:relative;flex:none;width:64px;height:68px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;
+    border:none;border-radius:16px;background:transparent;color:var(--st-dim);cursor:pointer;font:500 11px/1 ui-sans-serif,system-ui,sans-serif;letter-spacing:.02em;
+    transition:background .18s,color .18s,transform .12s}
+  html.studioOn body.has-image #dock button svg{width:26px;height:26px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round;transition:transform .2s}
+  html.studioOn body.has-image #dock button:hover{background:var(--st-raise);color:var(--st-text)}
+  html.studioOn body.has-image #dock button:hover svg{transform:scale(1.08)}
+  html.studioOn body.has-image #dock button.on{background:var(--st-raise);color:var(--safelight);box-shadow:0 0 28px -8px var(--accent-glow)}
+  html.studioOn body.has-image #dock button.on::before{content:'';position:absolute;left:-8px;top:18px;bottom:18px;width:3px;border-radius:0 3px 3px 0;background:var(--safelight)}
+  html.studioOn body.has-image #sheetGrip{display:none !important}
+
+  /* ---- stage ---- */
+  html.studioOn body.has-image #previewSticky{grid-column:2;grid-row:2;position:relative;margin:0;padding:26px 32px 30px;display:flex;flex-direction:column;min-height:0;min-width:0;z-index:1;
+    background:radial-gradient(110% 85% at 50% 38%,var(--st-stage) 0%,var(--st-bg) 100%);box-shadow:none}
+  html.studioOn body.has-image #cw{flex:1;min-height:0;border:none;border-radius:0;background:transparent;display:flex;align-items:center;justify-content:center;position:relative;overflow:hidden}
+  html.studioOn body.has-image #previewWrap{height:auto;max-height:100%;width:auto;display:inline-block;border-radius:12px;box-shadow:0 34px 80px -24px rgba(0,0,0,.7),0 0 0 1px var(--st-hair2)}
+  html.studioOn body.has-image #preview{max-height:calc(100vh - 64px - 62px - 64px) !important;max-height:calc(100dvh - 64px - 62px - 64px) !important;max-width:100% !important;border-radius:12px}
+  html.studioOn body.has-image #previewOrig{border-radius:12px}
+  html.studioOn body.has-image #cw > #cmpBar{position:absolute;left:50%;bottom:6px;transform:translateX(-50%);width:min(560px,74%);margin:0;padding:7px 20px;z-index:12;
+    display:grid !important;grid-template-columns:auto minmax(0,1fr) auto;align-items:center;column-gap:14px;
+    background:var(--st-glass);-webkit-backdrop-filter:blur(18px) saturate(1.3);backdrop-filter:blur(18px) saturate(1.3);border:1px solid var(--st-hair2);border-radius:999px;
+    box-shadow:0 14px 36px -14px rgba(0,0,0,.6)}
+  html.studioOn body.has-image #cmpBar .cmpBarLabels{display:contents}
+  html.studioOn body.has-image #cmpBar .cmpBarLabels span{font:500 11px/1 ui-sans-serif,system-ui,sans-serif;letter-spacing:.06em;text-transform:uppercase;color:var(--st-dim);white-space:nowrap}
+  html.studioOn body.has-image #cmpBar .cmpBarLabels span:first-child{grid-column:1;grid-row:1}
+  html.studioOn body.has-image #cmpBar .cmpBarLabels span:last-child{grid-column:3;grid-row:1}
+  html.studioOn body.has-image #cmpBar #cmpRange{grid-column:2;grid-row:1;margin:0}
+  html.studioOn body.has-image #holdHint{bottom:66px}
+  html.studioOn body.has-image #zoomBadge{left:auto;right:12px;bottom:66px}
+  html.studioOn body.has-image #cw:not(.zoomed) #zoomBadge{display:none !important}
+  /* decode / WB readouts: in the inspector's sticky scopes header, under the histogram, not over the photo */
+  html.studioOn body.has-image #scopeDetails > .ptStamps{display:flex;flex-direction:row;flex-wrap:wrap;gap:2px 14px;margin:8px 0 0;padding:0;text-align:left}
+
+  /* ---- inspector ---- */
+  html.studioOn body.has-image #reorderZone{grid-column:3;grid-row:2;display:flex;flex-direction:column;min-height:0;height:auto;max-height:100%;margin:0;padding:0 24px 56px;overflow-y:auto;overflow-x:hidden;overscroll-behavior:contain;
+    background:var(--st-panel);border-left:1px solid var(--st-hair);scrollbar-width:thin;scrollbar-color:var(--st-hair2) transparent}
+  html.studioOn body.has-image #reorderZone > *{display:none !important}
+  html.studioOn[data-tab="looks"] body.has-image #reorderZone > [data-dock="looks"]:not([style*="display: none"]),
+  html.studioOn[data-tab="light"] body.has-image #reorderZone > [data-dock="light"]:not([style*="display: none"]),
+  html.studioOn[data-tab="colour"] body.has-image #reorderZone > [data-dock="colour"]:not([style*="display: none"]),
+  html.studioOn[data-tab="detail"] body.has-image #reorderZone > [data-dock="detail"]:not([style*="display: none"]),
+  html.studioOn[data-tab="export"] body.has-image #reorderZone > [data-dock="export"]:not([style*="display: none"]),
+  html.studioOn body.has-image #reorderZone > [data-dock="all"]{display:block !important;flex:none;animation:stIn .24s cubic-bezier(.2,.8,.2,1)}
+  @keyframes stIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+  html.studioOn body.has-image #reorderZone > .panel,html.studioOn body.has-image #reorderZone > details.panel{background:transparent;border:none;box-shadow:none;border-radius:0;margin:0;padding:0}
+  html.studioOn body.has-image #reorderZone > [data-solo] > summary{display:none}
+  html.studioOn body.has-image #reorderZone summary.stepHdr{display:flex;align-items:center;gap:8px;padding:18px 0 12px;font:600 11px/1 ui-sans-serif,system-ui,sans-serif;letter-spacing:.14em;text-transform:uppercase;color:var(--st-dim)}
+  html.studioOn body.has-image #reorderZone .stepChip{display:none}
+  html.studioOn body.has-image #reorderZone > .panel:not(.tier-work):not(.tier-inst) summary,html.studioOn body.has-image #reorderZone > .panel:not(.tier-work):not(.tier-inst){font:500 12.5px/1.45 ui-sans-serif,system-ui,sans-serif;color:var(--st-dim)}
+  html.studioOn body.has-image #reorderZone > .panel:not(.tier-work):not(.tier-inst){padding:14px 0 4px}
+  html.studioOn body.has-image #reorderZone .instTag{font:600 9.5px/1 ui-sans-serif,system-ui,sans-serif;letter-spacing:.14em;padding:3px 6px;border-radius:5px;margin-right:8px}
+  html.studioOn body.has-image #reorderZone summary.stepHdr .stepArrow{margin-left:auto}
+
+  /* histogram pinned at the top of the inspector, whichever tab is open */
+  html.studioOn body.has-image #reorderZone > #scopeDetails{position:sticky;top:0;z-index:6;background:var(--st-panel);margin:0 -24px 6px;padding:18px 24px 12px;border-bottom:1px solid var(--st-hair)}
+  html.studioOn body.has-image #scopeDetails > summary{display:none}
+  html.studioOn body.has-image #scopeBar{display:block}
+  html.studioOn body.has-image #histogram{display:block;width:100%;height:92px;border-radius:10px;border:1px solid var(--st-hair2);background:#0a0b0d;cursor:pointer}
+  html.studioOn body.has-image .sl:not(.wb) input[type=range]::-webkit-slider-thumb{width:16px;height:16px;margin-top:-6.5px;border-radius:50%;border:none;
+    background:#f6f3ed;box-shadow:0 0 0 2px var(--safelight),0 3px 10px rgba(0,0,0,.45);transition:box-shadow .15s,transform .12s}
+  html.studioOn body.has-image .sl:not(.wb) input[type=range]::-moz-range-thumb{width:16px;height:16px;border-radius:50%;border:none;background:#f6f3ed;box-shadow:0 0 0 2px var(--safelight),0 3px 10px rgba(0,0,0,.45)}
+  html.studioOn body.has-image .sl:not(.wb) input[type=range]:hover::-webkit-slider-thumb{box-shadow:0 0 0 2px var(--safelight),0 0 0 7px var(--accent-glow),0 3px 10px rgba(0,0,0,.45)}
+  html.studioOn body.has-image .sl:not(.wb) input[type=range]:active::-webkit-slider-thumb{transform:scale(1.15);filter:none}
+  html.studioOn body.has-image .sl label{display:flex;align-items:baseline;justify-content:space-between;font:500 12.5px/1.2 ui-sans-serif,system-ui,sans-serif;color:var(--st-dim);margin-bottom:6px}
+  html.studioOn body.has-image .sl label b{font-family:var(--font-mono);font-weight:500;color:var(--st-text)}
+  html.studioOn body.has-image .slStep{gap:10px}
+  html.studioOn body.has-image .stepBtn{width:26px;height:26px;border-radius:50%;background:transparent;border:1px solid var(--st-hair2);font-size:15px;line-height:1;color:var(--st-dim);opacity:.0;transition:opacity .15s,background .15s}
+  html.studioOn body.has-image .sl:hover .stepBtn,html.studioOn body.has-image .sl:focus-within .stepBtn{opacity:1}
+  html.studioOn body.has-image .stepBtn:hover{background:var(--st-raise2);color:var(--st-text);border-color:var(--st-faint)}
+  html.studioOn body.has-image #scopeMeta{display:flex;flex-wrap:wrap;align-items:center;gap:6px 14px;margin-top:10px;font-size:12px;color:var(--st-dim)}
+  html.studioOn body.has-image #scopeMeta #clipKey{display:none}
+  html.studioOn body.has-image #scopeMeta:has(#chkClip:checked) #clipKey,html.studioOn body.has-image #scopeMeta:has(#chkCmyk:checked) #clipKey{display:flex}
+  html.studioOn body.has-image #scopeMeta label,html.studioOn body.has-image #scopeMeta .ctl{display:inline-flex;align-items:center;gap:6px;margin:0;font:500 12px/1.2 ui-sans-serif,system-ui,sans-serif;color:var(--st-dim);cursor:pointer}
+  html.studioOn body.has-image #scopeMeta input[type=checkbox]{margin:0}
+  html.studioOn body.has-image #scopeModeRow{margin:0 6px 0 0;gap:6px;display:flex}
+  html.studioOn body.has-image #scopeModeRow button.btnGhostSmall{min-height:28px;padding:4px 12px;font-size:11.5px}
+}
+
+/* ---- touch screens on the desktop layout (iPad landscape and the like) ----
+   Nothing may depend on hover, and every target is finger-sized. */
+@media (pointer:coarse){
+  html.studioOn body.has-image .toolbar{height:72px;gap:10px}
+  html.studioOn body.has-image{grid-template-rows:72px minmax(0,1fr)}
+  html.studioOn body.has-image .toolbar .filelabel,html.studioOn body.has-image .toolbar button.btnGhost,
+  html.studioOn body.has-image .toolbar #btnUndo,html.studioOn body.has-image .toolbar #btnRedo{height:46px;padding:0 20px;font-size:14px}
+  html.studioOn body.has-image .toolbar .ptIconBtn,html.studioOn body.has-image .toolbar #themeBtn,html.studioOn body.has-image .toolbar #filterDbBtn{width:46px;height:46px}
+  html.studioOn body.has-image #btnStudioExport{height:48px;padding:0 26px}
+  html.studioOn body.has-image #dock button{width:70px;height:76px}
+  html.studioOn body.has-image .sl input[type=range]{height:38px}
+  html.studioOn body.has-image .sl:not(.wb) input[type=range]::-webkit-slider-thumb{width:26px;height:26px;margin-top:-11.5px}
+  html.studioOn body.has-image .stepBtn{opacity:1;width:38px;height:38px}
+  html.studioOn body.has-image #scopeModeRow button.btnGhostSmall{min-height:38px;padding:6px 16px}
+  html.studioOn body.has-image #preview{max-height:calc(100vh - 72px - 62px - 64px) !important;max-height:calc(100dvh - 72px - 62px - 64px) !important}
+}
+@media (hover:none){ html.studioOn body.has-image .stepBtn{opacity:1} }
+/* ---- tablets held upright: the phone layout, with the controls kept to a comfortable width ---- */
+@media (min-width:721px) and (max-width:1099px) and (orientation:portrait) and (min-height:480px){
+  html.dockOn body.has-image #reorderZone > *{max-width:720px;width:100%;align-self:center}
+  html.dockOn body.has-image #dock{justify-content:center;gap:12px}
+  html.dockOn body.has-image #dock button{max-width:150px}
+  html.dockOn body.has-image .toolbar .filelabel,html.dockOn body.has-image .toolbar button.btnGhost{font-size:13px;padding:8px 14px;min-height:40px}
+  html.dockOn body.has-image #cw > #cmpBar,html.dockOn body.has-image #previewSticky > #cmpBar{max-width:720px;margin-left:auto;margin-right:auto}
+}
+
+/* ---- a phone that has been given a wide page ----
+   Some browsers lay a phone's page out about 1080px wide (Desktop site mode, some home-screen app shells), and
+   then shrink it to fit, so every control is a third of its proper size. The page cannot change that, but it can
+   scale its own controls back up: html.uiZoom is set by the dock controller when a touch screen taller than about
+   9:5 is being given a page 800px or more wide, and --uiz is how much to scale (the width divided by 390).
+   Only the controls that are text and buttons are scaled; the photo, the sheet and the dock keep the geometry
+   the controller computes, so everything still lines up. */
+html.uiZoom #dock,html.uiZoom #cmpBar,html.uiZoom #scopeMeta,html.uiZoom #previewSticky > .ptStamps,
+html.uiZoom #reorderZone > *{zoom:var(--uiz,1)}
+html.uiZoom .toolbar{zoom:calc(var(--uiz,1)*.78)}   /* a little smaller so the whole row of buttons fits */
+html.uiZoom #sheetGrip{height:calc(48px*var(--uiz,1));padding-top:calc(15px*var(--uiz,1));bottom:calc(var(--dockH,64px) + var(--sheetH,0px) - 34px*var(--uiz,1))}
+html.uiZoom #sheetGrip span{width:calc(42px*var(--uiz,1));height:calc(4px*var(--uiz,1));border-radius:calc(2px*var(--uiz,1))}
+html.uiZoom.sheetClosed #sheetGrip{bottom:calc(var(--dockH,64px) - 4px*var(--uiz,1));height:calc(28px*var(--uiz,1));padding-top:calc(8px*var(--uiz,1))}
+html.uiZoom #valBubble{font-size:calc(15px*var(--uiz,1));padding:calc(4px*var(--uiz,1)) calc(11px*var(--uiz,1))}
+html.uiZoom #toast{font-size:calc(12px*var(--uiz,1));padding:calc(10px*var(--uiz,1)) calc(14px*var(--uiz,1))}
+html.uiZoom [role="dialog"] > div{zoom:var(--uiz,1)}
+html.uiZoom #zoomBadge,html.uiZoom #holdHint{zoom:var(--uiz,1)}
+/* ---- no page zoom: only the photo zooms ----
+   Pinching or double-tapping anywhere but the photo does nothing. The photo handles its own pinch, pan and
+   double-tap in script, so it is unaffected. :where() keeps this at zero specificity, so every control that
+   sets its own touch-action (sliders, curve editors, the photo box) keeps it. */
+:where(html,body,body *){touch-action:pan-x pan-y}
+
+/* ================= Glass, in the editor ================= 
+   The same translucent, blurred look the home page has, on the surfaces of the tool: the top bar, the tool rail, the
+   controls panel, the phone sheet and dock, and the small floating pieces. A soft glow of the spectrum sits behind
+   them so there is something for the glass to refract. Nothing glass ever sits over the photo itself except the
+   compare bar and the undo chip (which already were), so the picture is never blurred or slowed. Where a browser
+   cannot blur what is behind (or the person asks for less transparency) the panels fall back to solid colour. */
+html.studioOn body.has-image,html.dockOn body.has-image{
+  --gl-fill:rgba(24,26,31,.50);--gl-strong:rgba(18,20,24,.80);--gl-chip:rgba(255,255,255,.055);--gl-chip-hover:rgba(255,255,255,.10);
+  --gl-edge:rgba(255,255,255,.12);--gl-hi:rgba(255,255,255,.09);--gl-blur:blur(22px) saturate(1.5);--gl-scroll:rgba(255,255,255,.26);
+  --gl-glow-a:rgba(106,63,208,.34);--gl-glow-b:rgba(236,122,44,.26);--gl-glow-c:rgba(43,181,138,.16)}
+html[data-theme="light"].studioOn body.has-image,html[data-theme="light"].dockOn body.has-image{
+  --gl-fill:rgba(255,255,255,.50);--gl-strong:rgba(255,255,255,.80);--gl-chip:rgba(255,255,255,.55);--gl-chip-hover:rgba(255,255,255,.85);
+  --gl-edge:rgba(255,255,255,.75);--gl-hi:rgba(255,255,255,.95);--gl-scroll:rgba(60,45,25,.30);
+  --gl-glow-a:rgba(106,63,208,.20);--gl-glow-b:rgba(236,122,44,.22);--gl-glow-c:rgba(43,181,138,.14)}
+html.studioOn body.has-image,html.dockOn body.has-image{
+  background:radial-gradient(62vmax 46vmax at 6% -8%,var(--gl-glow-a),transparent 62%),
+             radial-gradient(56vmax 42vmax at 100% 108%,var(--gl-glow-b),transparent 60%),
+             radial-gradient(46vmax 36vmax at 58% 120%,var(--gl-glow-c),transparent 62%),var(--st-bg);
+  background-attachment:fixed}
+html.dockOn body.has-image #previewSticky{background:transparent}
+.glassSurf{background:var(--gl-fill);-webkit-backdrop-filter:var(--gl-blur);backdrop-filter:var(--gl-blur)}
+@media (min-width:1000px) and (orientation:landscape), (min-width:1100px){
+  html.studioOn body.has-image .toolbar{background:var(--gl-fill);-webkit-backdrop-filter:var(--gl-blur);backdrop-filter:var(--gl-blur);border-bottom-color:var(--gl-edge);box-shadow:inset 0 -1px 0 var(--gl-hi)}
+  html.studioOn body.has-image #dock{background:var(--gl-fill);-webkit-backdrop-filter:var(--gl-blur);backdrop-filter:var(--gl-blur);border-right-color:var(--gl-edge);box-shadow:inset -1px 0 0 var(--gl-hi)}
+  html.studioOn body.has-image #reorderZone{background:var(--gl-fill);-webkit-backdrop-filter:var(--gl-blur);backdrop-filter:var(--gl-blur);border-left-color:var(--gl-edge);box-shadow:inset 1px 0 0 var(--gl-hi);scrollbar-color:var(--gl-scroll) transparent}
+  html.studioOn body.has-image #reorderZone::-webkit-scrollbar{width:10px}
+  html.studioOn body.has-image #reorderZone::-webkit-scrollbar-thumb{background:var(--gl-scroll);border-radius:10px;border:2px solid transparent;background-clip:content-box}
+  html.studioOn body.has-image #reorderZone::-webkit-scrollbar-track{background:transparent}
+  html.studioOn body.has-image #reorderZone > #scopeDetails{background:var(--gl-strong);-webkit-backdrop-filter:var(--gl-blur);backdrop-filter:var(--gl-blur);border-bottom-color:var(--gl-edge)}
+  html.studioOn body.has-image #previewSticky{background:radial-gradient(90% 80% at 50% 42%,rgba(0,0,0,0) 0%,rgba(0,0,0,.22) 100%)}
+  html.studioOn body.has-image #dock button:hover,html.studioOn body.has-image #dock button.on{background:var(--gl-chip-hover)}
+  html.studioOn body.has-image .toolbar .filelabel,html.studioOn body.has-image .toolbar button.btnGhost,html.studioOn body.has-image .toolbar #btnUndo,html.studioOn body.has-image .toolbar #btnRedo,
+  html.studioOn body.has-image .toolbar .ptIconBtn,html.studioOn body.has-image .toolbar #themeBtn,html.studioOn body.has-image .toolbar #filterDbBtn{background:var(--gl-chip);border-color:var(--gl-edge);box-shadow:inset 0 1px 0 var(--gl-hi)}
+  html.studioOn body.has-image .toolbar .filelabel:hover,html.studioOn body.has-image .toolbar button.btnGhost:hover,html.studioOn body.has-image .toolbar #btnUndo:hover,html.studioOn body.has-image .toolbar #btnRedo:hover,
+  html.studioOn body.has-image .toolbar .ptIconBtn:hover,html.studioOn body.has-image .toolbar #filterDbBtn:hover{background:var(--gl-chip-hover)}
+}
+/* phone and portrait-tablet: the sheet and the dock */
+html.dockOn body.has-image .toolbar{background:transparent}
+html.dockOn body.has-image #dock{background:var(--gl-fill);-webkit-backdrop-filter:var(--gl-blur);backdrop-filter:var(--gl-blur);border-top:1px solid var(--gl-edge);box-shadow:inset 0 1px 0 var(--gl-hi)}
+html.dockOn body.has-image #reorderZone{background:var(--gl-fill);-webkit-backdrop-filter:var(--gl-blur);backdrop-filter:var(--gl-blur);border-top:1px solid var(--gl-edge);box-shadow:0 -22px 50px -24px rgba(0,0,0,.55),inset 0 1px 0 var(--gl-hi)}
+html.dockOn.sheetClosed body.has-image #reorderZone{-webkit-backdrop-filter:none;backdrop-filter:none;box-shadow:none;border-top:none}
+html.dockOn body.has-image .toolbar button.btnGhost,html.dockOn body.has-image .toolbar #btnUndo,html.dockOn body.has-image .toolbar #btnRedo,
+html.dockOn body.has-image .toolbar .ptIconBtn,html.dockOn body.has-image .toolbar #themeBtn,html.dockOn body.has-image .toolbar #filterDbBtn{background:var(--gl-chip);border-color:var(--gl-edge)}   /* not New image: that one stays the orange primary here */
+/* small controls inside the panels, on both layouts */
+html.studioOn body.has-image .panelTools button,html.dockOn body.has-image .panelTools button,
+html.studioOn body.has-image #curvePresets button.btnGhostSmall,html.dockOn body.has-image #curvePresets button.btnGhostSmall,
+html.studioOn body.has-image #hslTabs button.btnGhostSmall,html.dockOn body.has-image #hslTabs button.btnGhostSmall,
+html.studioOn body.has-image .rangeToggle,html.dockOn body.has-image .rangeToggle{background:var(--gl-chip);border-color:var(--gl-edge);box-shadow:inset 0 1px 0 var(--gl-hi)}
+html.studioOn body.has-image #hslTabs button.btnGhostSmall.on,html.dockOn body.has-image #hslTabs button.btnGhostSmall.on{background:var(--safelight);border-color:var(--safelight)}
+html.studioOn body.has-image .pb,html.dockOn body.has-image .pb{background:var(--gl-chip);border-color:var(--gl-edge);box-shadow:inset 0 1px 0 var(--gl-hi)}
+html.studioOn body.has-image .pb:hover,html.dockOn body.has-image .pb:hover{background:var(--gl-chip-hover)}
+/* floating pieces */
+#saveReady{background:var(--gl-strong,var(--surface2));-webkit-backdrop-filter:blur(20px) saturate(1.4);backdrop-filter:blur(20px) saturate(1.4);border-color:var(--gl-edge,var(--line2));box-shadow:0 18px 50px -14px rgba(0,0,0,.65),inset 0 1px 0 var(--gl-hi,transparent)}
+html.studioOn body.has-image #toast,html.dockOn body.has-image #toast{background:var(--gl-strong);-webkit-backdrop-filter:blur(16px) saturate(1.4);backdrop-filter:blur(16px) saturate(1.4);border:1px solid var(--gl-edge)}
+/* fall back to solid where blur is missing or transparency is switched off */
+@supports not ((backdrop-filter:blur(1px)) or (-webkit-backdrop-filter:blur(1px))){
+  html.studioOn body.has-image,html.dockOn body.has-image{--gl-fill:var(--st-panel);--gl-strong:var(--st-panel);--gl-chip:var(--st-raise);--gl-chip-hover:var(--st-raise2)}}
+@media (prefers-reduced-transparency:reduce){
+  html.studioOn body.has-image,html.dockOn body.has-image{--gl-fill:var(--st-panel);--gl-strong:var(--st-panel);--gl-chip:var(--st-raise);--gl-chip-hover:var(--st-raise2);--gl-blur:none}}
+
+/* ---- Readability (build 101) ----
+   About half the editor's labels were 10-11px and the help text sat at 3:1 contrast or less, which is hard work on a
+   phone. Help text and the small mono labels each go up a step, the faint colour clears 4.5:1 on every panel shade
+   (tokens above), checkboxes are a size a thumb can hit, and the undo pill over the photo hides until there is
+   something to undo. */
+.note{font-size:12px;line-height:1.45}
+.grpHdr,.matrix .hdr,#decoderBadge,#implicitStamp,#clipKey,.frtable .fmeta,#kbHint{font-size:11px}
+.subhdr,.cmpBarLabels,.pb .psub,.frtable th,#channelStrip figcaption span{font-size:11px}
+.instTag{font-size:10px}
+body.has-image #cw:not(.zoomed) #zoomBadge.urIdle{display:none}
+html.dockOn body.has-image #zoomBadge .previewPill[disabled]{display:none}
+@media (pointer:coarse){
+  input[type=checkbox]{width:20px;height:20px;flex:none}
+  label:has(> input[type=checkbox]){min-height:32px;align-items:center}
+}
+
+/* ================= Home page: lab layout (build 102) =================
+   Always dark, in either theme, as before. One column of numbered sections in the mono face, hairline rules between
+   them, and the orange button as the one strong colour. Specific enough (an id and a class) to win over the older
+   generic #dropzone / #landingLinks / header rules without !important. */
+body:not(.has-image){padding:0 !important;
+  background:radial-gradient(900px 520px at 50% -10%,rgba(106,63,208,.20),transparent 62%),radial-gradient(700px 420px at 95% 4%,rgba(236,122,44,.12),transparent 62%),#0b0c0e}
+#emptyStateGroup.lab{box-sizing:border-box;width:100%;max-width:560px;margin:0 auto !important;padding:18px 20px 28px;
+  display:flex;flex-direction:column;align-items:stretch;gap:28px;color:#eceae4;font-family:var(--font-mono);text-align:left}
+body:has(#consentBar.on):not(.has-image) #emptyStateGroup.lab{padding-bottom:96px}
+#emptyStateGroup.lab .labTop{display:flex;justify-content:space-between;align-items:center;min-height:44px;font-size:12px;color:#8a867d}
+#emptyStateGroup.lab .labMark b{color:#eceae4;font-weight:700}
+#emptyStateGroup.lab .labMark{color:#eceae4;display:inline-flex;align-items:center;gap:8px}
+#emptyStateGroup.lab .labBadge{flex:none;display:block}
+#emptyStateGroup.lab .labPath{color:#8a867d}
+#emptyStateGroup.lab .labVh{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+#emptyStateGroup.lab .labLang select{height:40px;min-width:44px;background:transparent;color:#a3a097;border:1px solid #2a2d33;border-radius:6px;
+  font-family:var(--font-mono);font-size:12px;padding:0 8px}
+#emptyStateGroup.lab .labHero{margin:0;max-width:none;width:auto;text-align:left;display:flex;flex-direction:column;gap:14px;padding:18px 0 20px;
+  border-top:1px solid #22252a;border-bottom:1px solid #22252a}
+#emptyStateGroup.lab .labHero h1{margin:0;font:700 clamp(34px,9.4vw,46px)/1.04 var(--font-mono);letter-spacing:-.05em;text-transform:none;color:#eceae4;
+  background:none;-webkit-background-clip:border-box;background-clip:border-box;white-space:normal}
+#emptyStateGroup.lab .tagline{display:block;margin:0;font:400 15px/1.5 var(--font-body,ui-sans-serif,system-ui,sans-serif);letter-spacing:0;color:#a3a097}
+#emptyStateGroup.lab #spectrumBar{display:flex;gap:2px;height:10px;margin:6px 0 0;border-radius:0;overflow:hidden;position:relative;background:none;box-shadow:none;
+  opacity:1;transform:none;animation:none;max-width:none}
+#emptyStateGroup.lab #spectrumBar > span{flex:1;opacity:0;transform:scaleY(.2);animation:labSeg .5s cubic-bezier(.2,.8,.3,1) forwards}
+#emptyStateGroup.lab #spectrumBar > span:nth-child(1){animation-delay:.20s}
+#emptyStateGroup.lab #spectrumBar > span:nth-child(2){animation-delay:.27s}
+#emptyStateGroup.lab #spectrumBar > span:nth-child(3){animation-delay:.34s}
+#emptyStateGroup.lab #spectrumBar > span:nth-child(4){animation-delay:.41s}
+#emptyStateGroup.lab #spectrumBar > span:nth-child(5){animation-delay:.48s}
+#emptyStateGroup.lab #spectrumBar > span:nth-child(6){animation-delay:.55s}
+#emptyStateGroup.lab #spectrumBar > span:nth-child(7){animation-delay:.62s}
+#emptyStateGroup.lab #spectrumBar > span:nth-child(8){animation-delay:.69s}
+#emptyStateGroup.lab #spectrumBar > span:nth-child(9){animation-delay:.76s}
+#emptyStateGroup.lab #spectrumBar > span:nth-child(10){animation-delay:.83s}
+#emptyStateGroup.lab #spectrumBar::after{content:'';position:absolute;inset:0;background:linear-gradient(90deg,transparent,rgba(255,255,255,.55),transparent);
+  transform:translateX(-100%);animation:barShimmer 1.2s ease-out 1.45s forwards}
+@keyframes labSeg{to{opacity:1;transform:none}}
+#emptyStateGroup.lab #spectrumTicks{display:flex;justify-content:space-between;margin:0;max-width:none;font:400 10.5px/1 var(--font-mono);letter-spacing:0;color:#8a867d}
+#emptyStateGroup.lab #spectrumTicks span{margin:0;color:#8a867d}
+#emptyStateGroup.lab .labSec{display:flex;flex-direction:column;gap:12px;margin:0;padding:0;max-width:none;width:auto;border:0;border-radius:0;background:none;
+  box-shadow:none;text-align:left;align-items:stretch;justify-content:flex-start;transform:none;-webkit-backdrop-filter:none;backdrop-filter:none}
+#emptyStateGroup.lab .labHd{margin:0;display:flex;gap:10px;align-items:baseline;font:500 11px/1 var(--font-mono);letter-spacing:.1em;text-transform:uppercase;color:#6fab96}
+#emptyStateGroup.lab .labNo{color:#ee6a2c}
+#emptyStateGroup.lab #restoreSlot:empty{display:none}
+#emptyStateGroup.lab #btnRestore{width:100%;height:46px;display:flex;align-items:center;justify-content:space-between;padding:0 16px;margin:0;background:transparent;
+  border:1px solid #2a2d33;border-radius:6px;color:#eceae4;font:400 13px/1 var(--font-mono);cursor:pointer}
+#emptyStateGroup.lab #btnRestore:hover{border-color:#ee6a2c}
+#emptyStateGroup.lab #btnRestore .rsWhen{color:#8a867d}
+#emptyStateGroup.lab .labFmt{margin:0;font-size:10.5px;line-height:1.6;color:#8a867d}
+#emptyStateGroup.lab .labRow{display:flex;justify-content:space-between;align-items:center;gap:16px;min-height:48px;margin:0;padding:4px 0;
+  border-bottom:1px dashed #22252a;font:400 13px/1.4 var(--font-mono);color:#eceae4;cursor:pointer}
+#emptyStateGroup.lab .labRow input[type=checkbox]{width:20px;height:20px;margin:0;flex:none;accent-color:#6fab96}
+#emptyStateGroup.lab .labMini{height:36px;min-width:96px;background:#111316;color:#eceae4;border:1px solid #2a2d33;border-radius:6px;padding:0 8px;font:500 12px var(--font-mono);flex:none}
+#emptyStateGroup.lab .labNote{margin:0;font:400 11px/1.5 var(--font-mono);color:#8a867d}
+#emptyStateGroup.lab .labSelect{width:100%;height:40px;background:#111316;color:#eceae4;border:1px solid #2a2d33;border-radius:6px;padding:0 10px;font:400 13px var(--font-mono)}
+#emptyStateGroup.lab #landingLinks{margin:0;max-width:none;width:auto;display:flex;flex-direction:column;gap:10px}
+#emptyStateGroup.lab a.labTool{display:flex;flex-direction:column;gap:8px;padding:14px;border:1px solid #2a2d33;border-radius:6px;background:transparent;box-shadow:none;
+  color:#eceae4;text-decoration:none;transition:border-color .2s;transform:none}
+#emptyStateGroup.lab a.labTool:hover{border-color:#ee6a2c;background:transparent;box-shadow:none;transform:none}
+#emptyStateGroup.lab .labChart{position:relative;display:block}
+#emptyStateGroup.lab .labBand{position:absolute;top:3px;font:500 8.5px/1 var(--font-mono);letter-spacing:.08em;opacity:.7;pointer-events:none}
+#emptyStateGroup.lab .flTitle{display:flex;justify-content:space-between;font:500 13px/1.3 var(--font-mono);color:#eceae4;margin:0}
+#emptyStateGroup.lab .flArrow{color:#ee6a2c}
+#emptyStateGroup.lab .flSub{font:400 11px/1.5 var(--font-mono);color:#8a867d;margin:0}
+#emptyStateGroup.lab #btnInstallTop{margin:0;align-self:flex-start;min-height:40px}
+#emptyStateGroup.lab .labFoot{margin-top:auto;display:flex;flex-direction:column;border-top:1px solid #22252a;font-size:12px}
+#emptyStateGroup.lab #whatsNew{max-width:none;width:auto;margin:0;padding:0;font-size:12px;color:#a3a097;line-height:1.55}
+#emptyStateGroup.lab #whatsNew summary{list-style:none;display:flex;justify-content:space-between;align-items:center;gap:12px;min-height:46px;cursor:pointer;
+  border-bottom:1px solid #1a1c20;color:#eceae4;font:400 12px/1.3 var(--font-mono);letter-spacing:0;text-transform:none;width:auto;margin:0;text-align:left}
+#emptyStateGroup.lab #whatsNew summary::-webkit-details-marker{display:none}
+#emptyStateGroup.lab #whatsNew summary::after{content:none;display:none}
+#emptyStateGroup.lab #whatsNew .wnLatest{color:#8a867d;text-align:right}
+#emptyStateGroup.lab #whatsNew .wnLatest::after{content:' +';color:#6fab96}
+#emptyStateGroup.lab #whatsNew details[open] .wnLatest::after{content:' \2212'}
+#emptyStateGroup.lab #whatsNew details > div{margin:0 !important;padding:12px 0 6px;border-bottom:1px solid #1a1c20;font-family:var(--font-body,ui-sans-serif,system-ui,sans-serif);font-size:13px}
+#emptyStateGroup.lab #whatsNew details > div p{margin:0 0 8px !important}
+#emptyStateGroup.lab #whatsNew details > div b{color:#eceae4 !important}
+#emptyStateGroup.lab #discordLink{display:flex;justify-content:space-between;align-items:center;width:auto;min-height:46px;margin:0;padding:0;border:0;
+  border-bottom:1px solid #1a1c20;border-radius:0;background:none;color:#eceae4;font:400 12px/1 var(--font-mono);text-decoration:none}
+#emptyStateGroup.lab #discordLink:hover .dcGo{color:#ee6a2c}
+#emptyStateGroup.lab #discordLink .dcName{display:flex;align-items:center;gap:8px}
+#emptyStateGroup.lab #discordLink svg{width:16px;height:16px;color:#8a867d}
+#emptyStateGroup.lab #discordLink .dcGo{color:#8a867d;transition:color .2s}
+#emptyStateGroup.lab #buildStampHome{display:flex;justify-content:space-between;align-items:center;min-height:44px;margin:0;font:400 11px/1 var(--font-mono);color:#8a867d;text-align:left}
+#emptyStateGroup.lab #buildStampHome .updBtn{min-width:36px;min-height:36px}
+@media (min-width:900px){
+  #emptyStateGroup.lab{max-width:980px;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));column-gap:56px;row-gap:30px;padding:28px 40px 36px;margin:auto !important}
+  #emptyStateGroup.lab .labTop,#emptyStateGroup.lab .labHero,#emptyStateGroup.lab .labFoot{grid-column:1 / -1}
+  #emptyStateGroup.lab .labSec:last-of-type{grid-column:1 / -1}
+  #emptyStateGroup.lab .labHero h1{font-size:56px}
+}
+@media (prefers-reduced-motion:reduce){
+  #emptyStateGroup.lab #spectrumBar > span{opacity:1;transform:none;animation:none}
+  #emptyStateGroup.lab #spectrumBar::after{animation:none;display:none}
+}
+
+/* ---- Load panel with a file slot (build 105) ---- */
+#emptyStateGroup.lab .labPanel{display:flex;flex-direction:column;gap:12px;padding:12px 10px 10px;border:1px solid #2a2d33;border-radius:12px;
+  background:linear-gradient(180deg,#16181b,#0f1012);box-shadow:inset 0 1px 0 rgba(255,255,255,.05)}
+
+#emptyStateGroup.lab .labLoadRow{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+#emptyStateGroup.lab .labLoadRow #restoreSlot:empty{display:none}
+#emptyStateGroup.lab .labLoadRow:has(#restoreSlot:empty) .labFmtChip{grid-column:1 / -1}
+#emptyStateGroup.lab .labFmtChip{min-height:44px;display:flex;align-items:center;justify-content:center;border:1px dashed #2a2d33;border-radius:8px;
+  font:400 11px/1.3 var(--font-mono);color:#8a867d;text-align:center;padding:0 8px}
+#emptyStateGroup.lab #restoreSlot #btnRestore{height:44px;border-radius:8px;background:#0b0c0e;font-size:12px;padding:0 12px}
+
+
+/* ---- Detail cards (build 110) ---- */
+.dGrp{margin-top:10px;border:1px solid var(--line2);border-radius:10px;background:rgba(255,255,255,.015)}
+.dGrp > summary{list-style:none;display:flex;align-items:baseline;gap:10px;padding:12px 14px;cursor:pointer;min-height:44px;box-sizing:border-box}
+.dGrp > summary::-webkit-details-marker{display:none}
+.dGrp > summary::after{content:'\25B8';margin-left:8px;color:var(--muted);font-size:11px;transition:transform .15s}
+.dGrp[open] > summary::after{transform:rotate(90deg)}
+.dGrp .dT{font-weight:600;color:var(--paper);font-size:13.5px;white-space:nowrap}
+.dGrp .dS{color:var(--muted);font-size:11.5px;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.dGrp .dDot{width:6px;height:6px;border-radius:50%;background:var(--safelight);opacity:0;flex:0 0 auto;align-self:center;transition:opacity .2s}
+.dGrp.mod .dDot{opacity:1}
+.dGrp .dBody{padding:0 14px 12px}
+.dGrp .dBody > .sl + .sl, .dGrp .dBody #rawNrBox .sl + .sl{margin-top:6px}
+.dGrp .dSub{font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;color:var(--phosphor-dim);margin:12px 0 4px}
+.dGrp .dBody > .dSub:first-child, .dGrp #rawNrBox .dSub{margin-top:2px}
+.dGrp .dHint{text-transform:none;letter-spacing:0;color:var(--muted)}
+.dGrp #rawNrBox{padding-bottom:6px;border-bottom:1px dashed var(--line2);margin-bottom:4px}
+
+/* ---- Colour cards (build 114) ---- */
+details[data-step="colour"] .dGrp .cBands{display:inline-flex;gap:3px;vertical-align:middle}
+details[data-step="colour"] .dGrp .cBands i{width:9px;height:9px;border-radius:50%;display:block}
+details[data-step="colour"] .dGrp .dBody > .sl:first-child,details[data-step="colour"] .dGrp .dBody > .note:first-child{margin-top:0}
+details[data-step="wb"] > summary .wbSum{font-family:var(--font-mono);font-size:11.5px;color:var(--muted);text-transform:none;letter-spacing:0;font-weight:400;margin-left:8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
+details[data-step="wb"] .wbStatus{font-family:var(--font-mono);font-size:11.5px;color:var(--phosphor-dim);opacity:.9}
+details[data-step="wb"] .wbPip{flex:none}
+details[data-step="wb"] .wbGains{margin-top:12px;border:1px solid var(--line);border-radius:12px;background:rgba(255,255,255,.02)}
+details[data-step="wb"] .wbGains > summary{list-style:none;display:flex;align-items:center;gap:10px;min-height:44px;padding:0 14px;cursor:pointer;font-size:13px;color:var(--paper)}
+details[data-step="wb"] .wbGains > summary::-webkit-details-marker{display:none}
+details[data-step="wb"] .wbSw{display:inline-flex;gap:4px} details[data-step="wb"] .wbSw i{width:8px;height:8px;border-radius:2px;display:block}
+details[data-step="wb"] .wbGainsSum{margin-left:auto;font-family:var(--font-mono);font-size:12px;color:var(--muted)}
+details[data-step="wb"] .wbGainsBody{padding:0 14px 12px}
+details[data-step="wb"] .wbGainsBody .sl + .sl{margin-top:8px}
+#autoGainR{--safelight:#e0473f} #autoGainG{--safelight:#4fb556} #autoGainB{--safelight:#3e78e0}
+
+/* ---- Primary buttons: dark key with an orange chip (build 118) ----
+   Replaces the glowing orange gradient. The chip echoes the orange 01-07 step chips; the icon is drawn by ::before so
+   code that rewrites a button's text (Exporting..., Rendering original...) keeps the chip. */
+.keyBtn{background:#1c1e22!important;border:1px solid #3a3d44!important;color:#eceae4!important;box-shadow:none!important;
+  border-radius:6px!important;font-family:var(--font-mono)!important;font-weight:700!important;align-items:center!important;
+  justify-content:flex-start!important;gap:14px!important;padding:5px 16px 5px 5px!important;text-decoration:none;transition:background .15s,border-color .15s}
+.keyBtn::before{content:'';flex:none;width:var(--chip,44px);height:var(--chip,44px);border-radius:4px;background:#ee6a2c center/46% no-repeat}
+ .keyDown::before{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%230b0c0e' stroke-width='2.6' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 5v14M5 12l7 7 7-7'/%3E%3C/svg%3E")} .keyPlus::before{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%230b0c0e' stroke-width='2.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 5v14M5 12h14'/%3E%3C/svg%3E")}
+.keyBtn:hover{background:#22252a!important;border-color:#55524c!important;transform:none!important}
+.keyBtn:active{transform:translateY(1px)!important}
+.keyBtn:disabled,.keyBtn.busy{color:#a3a097!important} .keyBtn:disabled::before,.keyBtn.busy::before{opacity:.55}
+
+#bDl.keyBtn{display:flex!important;height:56px;font-size:15px!important;letter-spacing:.08em;text-transform:uppercase;--chip:44px}
+.keyBtn.keySm{display:inline-flex!important;--chip:28px;gap:9px!important;padding:3px 12px 3px 3px!important;font-size:12.5px!important;letter-spacing:0!important;min-height:36px!important;height:auto!important}
+html.dockOn body.has-image .toolbar .keyBtn.keySm{min-height:40px!important;--chip:30px;gap:7px!important;padding:3px 10px 3px 3px!important;font-size:12px!important}
+/* Build 119: on a phone the top bar has to fit on one line, so New image shortens to "New", and on a narrow phone
+   to the + chip alone (its name stays in aria-label and the tooltip). */
+html.dockOn body.has-image .toolbar .keyBtn.keySm .kMore{display:none}
+@media (max-width:389px){
+  html.dockOn body.has-image .toolbar .keyBtn.keySm{padding:3px!important;gap:0!important}
+  html.dockOn body.has-image .toolbar .keyBtn.keySm .kTxt{display:none}
+}
+@media (max-width:359px){
+  html.dockOn body.has-image .toolbar{gap:2px!important}
+  html.dockOn body.has-image .toolbar #bHome,html.dockOn body.has-image .toolbar #bReset{padding-left:6px!important;padding-right:6px!important}
+}
+
+/* ---- Phone top bar as a labelled icon rail (build 120) ----
+   Eight equal cells, each an icon in a small box with a word under it, so every control fits on one line at any
+   phone width and New image keeps its orange chip. The rotate and full-size buttons sit in the rail directly
+   (their wrapper is display:contents). Labels come from data-lbl; the buttons' own names stay for screen readers. */
+html.dockOn body.has-image .toolbar{display:grid!important;grid-template-columns:repeat(8,minmax(0,1fr))!important;gap:2px!important;align-items:stretch!important;overflow:visible!important;padding:2px 0 4px!important}
+html.dockOn body.has-image .toolbar .ptTools{display:contents!important}
+html.dockOn body.has-image .toolbar > .toolbarDiv,html.dockOn body.has-image .toolbar > #lnkFilters{display:none!important}
+html.dockOn body.has-image .toolbar > :is(.filelabel,#bHome,#bReset,#themeBtn,#filterDbBtn), html.dockOn body.has-image .toolbar .ptTools > button{position:relative!important;display:block!important;flex:none!important;width:auto!important;height:54px!important;min-height:0!important;min-width:0!important;margin:0!important;
+  padding:0!important;border:0!important;border-radius:6px!important;background:transparent!important;box-shadow:none!important;color:var(--paper)!important;
+  font:15px/30px var(--font-body)!important;letter-spacing:0!important;text-align:center!important;text-decoration:none!important;transform:none!important;overflow:visible!important}
+html.dockOn body.has-image .toolbar > :is(#bHome,#bReset,#themeBtn,#filterDbBtn)::before, html.dockOn body.has-image .toolbar .ptTools > button::before{content:'';position:absolute;left:50%;top:2px;width:30px;height:30px;margin-left:-15px;box-sizing:border-box;border:1px solid var(--line2);border-radius:4px;
+  display:flex;align-items:center;justify-content:center;font:15px/1 var(--font-body);color:var(--paper);pointer-events:none}
+html.dockOn body.has-image .toolbar > #bHome::before{content:'\2302'}
+html.dockOn body.has-image .toolbar > #bReset::before{content:'\27F2'}
+html.dockOn body.has-image .toolbar > :is(#bHome,#bReset) > span{display:none!important}
+html.dockOn body.has-image .toolbar > #filterDbBtn svg{display:block;width:18px;height:18px;margin:8px auto 0}
+html.dockOn body.has-image .toolbar > :is(.filelabel,#bHome,#bReset,#themeBtn,#filterDbBtn)::after, html.dockOn body.has-image .toolbar .ptTools > button::after{content:attr(data-lbl);position:absolute;left:0;right:0;bottom:2px;font:500 10.5px/1 var(--font-mono);letter-spacing:-.01em;color:var(--paper-dim);
+  text-align:center;white-space:nowrap;pointer-events:none}
+html.dockOn body.has-image .toolbar > .keyBtn.keySm::before{position:absolute;left:50%;top:2px;margin-left:-15px;width:30px!important;height:30px!important}
+html.dockOn body.has-image .toolbar > .keyBtn.keySm{font-size:0!important}
+html.dockOn body.has-image .toolbar > .keyBtn.keySm > :is(.kTxt,.kMore){display:none!important}
+html.dockOn body.has-image .toolbar > .keyBtn.keySm::after{color:var(--paper)!important;font-weight:700}
+html.dockOn body.has-image .toolbar > :is(#bHome,#bReset,#themeBtn), html.dockOn body.has-image .toolbar .ptTools > button{box-sizing:border-box!important;padding:0 0 21px!important}
+html.dockOn body.has-image .toolbar > :is(.filelabel,#bHome,#bReset,#themeBtn,#filterDbBtn):active::before,html.dockOn body.has-image .toolbar .ptTools > button:active::before{border-color:var(--safelight)}
+/* ---- Build 129: icons only, no words under them; the rail shrinks to the icon height. The words stay as each control's
+   accessible name and tooltip. ---- */
+html.dockOn body.has-image .toolbar > :is(.filelabel,#bHome,#bReset,#themeBtn,#filterDbBtn)::after, html.dockOn body.has-image .toolbar .ptTools > button::after{content:none!important;display:none!important}
+html.dockOn body.has-image .toolbar > :is(.filelabel,#bHome,#bReset,#themeBtn,#filterDbBtn), html.dockOn body.has-image .toolbar .ptTools > button{height:34px!important}
+html.dockOn body.has-image .toolbar > :is(#bHome,#bReset,#themeBtn), html.dockOn body.has-image .toolbar .ptTools > button{padding:0!important;line-height:34px!important}
+/* ---- Build 130: Reset all is an eraser, so it no longer looks like the rotate arrows beside it. The svg is hidden
+   everywhere except the phone rail. ---- */
+#bReset .rIco{display:none}
+html.dockOn body.has-image .toolbar > #bReset::before{content:''}
+html.dockOn body.has-image .toolbar > #bReset .rIco{display:block;position:absolute;left:50%;top:9px;width:16px;height:16px;margin-left:-8px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;pointer-events:none}
+/* ---- Phone polish (build 121) ---- */
+/* 1. The decode / white-balance stamp is developer detail: off the photo on a phone, shown in Export > Decode settings. */
+html.dockOn body.has-image #previewSticky > .ptStamps{display:none!important}
+#decodeInfo{margin:10px 0 0;font:400 11px/1.5 var(--font-mono);color:var(--muted)}
+#decodeInfo:empty{display:none}
+/* 2. Section headers inside a tab: no number chip, normal case, quieter than the cards. Light and Detail get theirs back
+   as a slim row because it now carries the panel's actions. */
+html.dockOn body.has-image #reorderZone .stepChip{display:none!important}
+html.dockOn body.has-image #reorderZone .stepPanel > summary.stepHdr{display:flex!important;align-items:center;gap:8px;min-height:44px;padding:4px 2px!important;margin:0 0 4px!important;
+  border-bottom:0!important;font:600 15px/1.2 var(--font-body)!important;letter-spacing:0!important;text-transform:none!important;color:var(--paper)!important}
+html.dockOn body.has-image #reorderZone .stepPanel > summary.stepHdr > span{text-transform:none;letter-spacing:0}
+html.dockOn body.has-image #reorderZone .stepPanel[data-step="targeted"] > summary.stepHdr > span[style]{display:none}
+html.dockOn body.has-image #reorderZone .stepPanel > summary.stepHdr .wbSum{display:none!important}
+html.dockOn body.has-image #reorderZone .stepPanel > summary.stepHdr .stepArrow,html.dockOn body.has-image #reorderZone [data-solo] > summary.stepHdr .stepDot{display:none}
+html.dockOn body.has-image #reorderZone > [data-solo] > summary{display:flex!important;cursor:default}
+/* 3. Reset panel (and Light's Auto levels) live in the section header as small buttons instead of a row of their own. */
+summary.stepHdr .hdrActs{margin-left:auto;display:inline-flex;align-items:center;gap:6px}
+summary.stepHdr .hdrActs + .stepDot{margin-left:8px!important}
+summary.stepHdr .hdrActs button{display:inline-flex;align-items:center;justify-content:center;gap:5px;min-height:34px;min-width:34px;padding:0 10px;margin:0;border-radius:6px;
+  border:1px solid var(--line2);background:transparent;color:var(--paper-dim);font:500 12px/1 var(--font-body);letter-spacing:0;text-transform:none;cursor:pointer}
+summary.stepHdr .hdrActs button.ptResetBtn{padding:0;width:34px}
+summary.stepHdr .hdrActs button svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+summary.stepHdr .hdrActs button:hover{border-color:var(--safelight);color:var(--paper)}
+.panelTools:empty{display:none}
+summary.stepHdr #btnAuto{display:inline-flex;align-items:center;min-height:34px;padding:0 10px;margin:0 0 0 auto;border-radius:6px;border:1px solid var(--line2);background:transparent;color:var(--paper-dim);font:500 12px/1 var(--font-body);letter-spacing:0;text-transform:none}
+summary.stepHdr #btnAuto + .hdrActs{margin-left:6px}
+/* 4. Selected toggles (Histogram/Parade, curve channel, crop ratio, HSL group) as a tint with an orange edge, not a solid orange pill. */
+#scopeModeRow button.btnGhostSmall.on,#curveTabs button.btnGhostSmall.on,#cropRow button.btnGhostSmall.on,#maskChips button.btnGhostSmall.on,
+html body #hslTabs button.btnGhostSmall.on,html.studioOn body.has-image #hslTabs button.btnGhostSmall.on,html.dockOn body.has-image #hslTabs button.btnGhostSmall.on{
+  background:rgba(238,106,44,.16)!important;border-color:var(--safelight)!important;color:var(--paper)!important}
+/* ---- Desktop matches the phone (build 127) ---- */
+html.studioOn body.has-image #scopeModeRow button.btnGhostSmall{border-radius:6px!important}
+html.studioOn body.has-image #studioBrand{gap:10px;font:400 14px/1 var(--font-mono)!important;letter-spacing:0!important}
+html.studioOn body.has-image #studioBrand .labBadge{width:26px;height:26px;flex:none}
+html.studioOn body.has-image #studioBrand .sbWord b{font-weight:700;opacity:1;margin:0}
+html.studioOn body.has-image #studioBrand .sbPath{color:var(--st-dim,#8a867d)}
+html.studioOn body.has-image .toolbar .filelabel,html.studioOn body.has-image .toolbar button.btnGhost,
+html.studioOn body.has-image .toolbar #btnUndo,html.studioOn body.has-image .toolbar #btnRedo,
+html.studioOn body.has-image .toolbar .ptIconBtn,html.studioOn body.has-image .toolbar #themeBtn,html.studioOn body.has-image .toolbar #filterDbBtn{border-radius:6px!important}
+html.studioOn body.has-image .toolbar button.btnGhost,html.studioOn body.has-image .toolbar #btnUndo,html.studioOn body.has-image .toolbar #btnRedo{font:500 12.5px/1 var(--font-mono)!important}
+.keyBtn.keySm .kMore{margin-left:-9px}
+html.studioOn body.has-image #reorderZone summary.stepHdr{font:600 15px/1.2 var(--font-body)!important;letter-spacing:0!important;text-transform:none!important;color:var(--st-text,#eceae4)!important;padding:16px 0 10px!important}
+html.studioOn body.has-image #reorderZone summary.stepHdr > span{text-transform:none;letter-spacing:0}
+html.studioOn body.has-image #reorderZone .stepPanel[data-step="targeted"] > summary.stepHdr > span[style]{display:none}
+html.studioOn body.has-image #reorderZone summary.stepHdr .wbSum{display:none}
+html.studioOn body.has-image #reorderZone > [data-solo] > summary{display:flex!important}
+html.dockOn body.has-image #exportSection > summary.secHead,html.studioOn body.has-image #exportSection > summary.secHead{display:flex!important;align-items:center;gap:8px;min-height:44px;
+  font:600 15px/1.2 var(--font-body)!important;letter-spacing:0!important;text-transform:none!important;color:var(--paper)!important;border-bottom:0!important}
+html.dockOn body.has-image #exportSection > summary.secHead > span,html.studioOn body.has-image #exportSection > summary.secHead > span{text-transform:none;letter-spacing:0}
+html.dockOn body.has-image #exportSection > summary.secHead .stepChip,html.studioOn body.has-image #exportSection > summary.secHead .stepChip{display:none!important}
+/* ---- Home: Decode first (folded), then Load (builds 127-128) ---- */
+#emptyStateGroup.lab .labDec > summary{list-style:none;cursor:pointer}
+#emptyStateGroup.lab .labDec > summary::-webkit-details-marker{display:none}
+#emptyStateGroup.lab .labDec > summary::after,#emptyStateGroup.lab .labDec > summary::before{content:none!important;display:none!important}
+#emptyStateGroup.lab .labDecSum{font:400 13px/1.3 var(--font-mono);color:#c9c5bc}
+#emptyStateGroup.lab .labDecArrow{color:#8a867d;font-size:12px;transition:transform .15s}
+#emptyStateGroup.lab .labDec[open] .labDecArrow{transform:rotate(90deg)}
+#emptyStateGroup.lab .labDec[open] > summary{color:#8a867d}
+#emptyStateGroup.lab .labDec > :not(summary){margin-top:2px}
+#emptyStateGroup.lab .labDec{display:flex;flex-direction:column;gap:12px}
+/* ---- Home load control as a command prompt (build 126) ---- */
+#emptyStateGroup.lab .labTerm{display:flex;flex-direction:column;gap:4px;padding:12px 14px;border-radius:8px;background:#050506;border:1px solid #1d1f23;transition:border-color .2s}
+#emptyStateGroup.lab #dropzone.dragover .labTerm{border-color:#ee6a2c}
+#emptyStateGroup.lab .ltStatus{font:400 11.5px/1.5 var(--font-mono);color:#8a867d}
+#emptyStateGroup.lab .ltStatus b{font-weight:400;color:#c9c5bc}
+#emptyStateGroup.lab .ltStatus .slBusy{display:none;color:#ee6a2c}
+body.imgLoading #emptyStateGroup.lab .ltStatus .slIdle{display:none}
+body.imgLoading #emptyStateGroup.lab .ltStatus .slBusy{display:inline}
+#emptyStateGroup.lab label.labGo.ltPrompt{display:flex!important;align-items:center!important;gap:10px!important;height:auto!important;min-height:44px!important;margin:0!important;padding:0!important;
+  border:0!important;border-radius:0!important;background:transparent!important;box-shadow:none!important;transform:none!important;cursor:pointer;
+  font:400 17px/1 var(--font-mono)!important;letter-spacing:0!important;text-transform:none!important;color:#eceae4!important;justify-content:flex-start!important}
+#emptyStateGroup.lab label.labGo.ltPrompt::before,#emptyStateGroup.lab label.labGo.ltPrompt::after{content:none!important;display:none!important}
+#emptyStateGroup.lab label.labGo.ltPrompt:hover .ltCmd{text-decoration:underline;text-decoration-color:#ee6a2c;text-underline-offset:4px}
+#emptyStateGroup.lab label.labGo.ltPrompt:focus-within{outline:2px solid #ee6a2c;outline-offset:4px;border-radius:2px!important}
+#emptyStateGroup.lab .ltCaret{color:#ee6a2c}
+#emptyStateGroup.lab .ltCursor{width:10px;height:20px;background:#ee6a2c;animation:ltBlink 1.05s steps(1) infinite}
+body.imgLoading #emptyStateGroup.lab .ltCursor{animation:none;opacity:.35}
+@keyframes ltBlink{50%{opacity:0}}
+#emptyStateGroup.lab .ltHint{font:400 11.5px/1.5 var(--font-mono);color:#8a867d}
+#emptyStateGroup.lab .labTerm input[type=file]{position:absolute;width:1px;height:1px;opacity:0;pointer-events:none}
+@media (prefers-reduced-motion:reduce){#emptyStateGroup.lab .ltCursor{animation:none}}
+html[data-theme="light"] #emptyStateGroup.lab .labTerm{background:#1b1915;border-color:#1b1915}
+/* ---- Cards everywhere (build 116) ---- */
+.dCard{margin-top:10px;border:1px solid var(--line2);border-radius:10px;background:rgba(255,255,255,.015);padding:12px 14px}
+.dCard > .note:first-child{margin-top:0}
+.dGrp .dBody > :first-child{margin-top:0}
+.dGrp .dBody > details:not(.dGrp) > summary{font-size:12px}
+#exportSection > .dGrp:first-of-type{margin-top:12px}
+/* ---- Slim white balance (build 116) ---- */
+.vh{position:absolute!important;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+details[data-step="wb"] .wbSlim{margin-top:10px;border:1px solid var(--line2);border-radius:10px;background:rgba(255,255,255,.015);padding:0 12px}
+details[data-step="wb"] .wbSlimHd{display:flex;align-items:baseline;gap:10px;padding:11px 2px 4px}
+details[data-step="wb"] .wbSlimT{font-weight:600;font-size:13.5px;color:var(--paper);white-space:nowrap}
+details[data-step="wb"] .wbSlimS{font-size:11.5px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;min-width:0}
+details[data-step="wb"] .wbRow{display:flex;align-items:center;gap:10px;min-height:52px;border-bottom:1px solid var(--line)}
+details[data-step="wb"] .wbNum{width:22px;height:22px;flex:none;border-radius:50%;border:1px solid var(--line2);color:var(--muted);font-family:var(--font-mono);font-size:11px;display:flex;align-items:center;justify-content:center}
+details[data-step="wb"] .wbRow.on .wbNum{border-color:var(--safelight);color:var(--safelight)}
+details[data-step="wb"] .wbRowTx{flex:1;min-width:0;display:flex;flex-direction:column;gap:1px}
+details[data-step="wb"] .wbRowTx b{font-weight:600;font-size:13px;color:var(--paper)}
+details[data-step="wb"] .wbRowSt{font-family:var(--font-mono);font-size:11px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+details[data-step="wb"] .wbRow.on .wbRowSt{color:var(--phosphor-dim)}
+details[data-step="wb"] .wbIco{width:44px;height:40px;min-height:0;padding:0;margin:0;flex:none;display:flex;align-items:center;justify-content:center}
+details[data-step="wb"] .wbIco.wbGhost{background:transparent;color:var(--muted)}
+details[data-step="wb"] .wbIco.armed{border-color:var(--safelight);background:rgba(194,67,27,.18);color:var(--paper)}
+details[data-step="wb"] .wbGainsIn{margin:0;border:0;border-radius:0;background:transparent}
+details[data-step="wb"] .wbGainsIn > summary{padding:0 2px;min-height:44px}
+details[data-step="wb"] .wbGainsIn .wbGainsBody{padding:0 2px 12px}

@@ -1,0 +1,38 @@
+/* ---- controls that are choices or actions get a real control shape ----
+   button.btnGhostSmall is a borderless underlined link style, right for a
+   quiet "reset" beside a slider but it made every tab row and chip group in
+   the newer panels read as loose text. These are pills: outlined at rest,
+   filled when on or armed, and tall enough for a thumb. */
+#scopeModeRow button.btnGhostSmall,#curveTabs button.btnGhostSmall,#cropRow button.btnGhostSmall,
+#maskChips button.btnGhostSmall,#btnMaskLinear,#btnMaskRadial,#btnMaskLum,#btnMaskColour,#btnMaskPick,#btnMaskDelete{
+  background:transparent;border:1px solid var(--line2);border-radius:999px;padding:6px 13px;min-height:32px;
+  font-family:var(--font-mono);font-size:11.5px;font-weight:500;line-height:1.2;color:var(--phosphor-dim);
+  text-decoration:none;cursor:pointer;transition:background .15s,color .15s,border-color .15s}
+#scopeModeRow button.btnGhostSmall:hover,#curveTabs button.btnGhostSmall:hover,#cropRow button.btnGhostSmall:hover,
+#maskChips button.btnGhostSmall:hover,#btnMaskLinear:hover,#btnMaskRadial:hover,#btnMaskLum:hover,#btnMaskColour:hover,#btnMaskPick:hover,#btnMaskDelete:hover{
+  border-color:var(--phosphor-dim);text-decoration:none}
+#scopeModeRow button.btnGhostSmall.on,#curveTabs button.btnGhostSmall.on,#cropRow button.btnGhostSmall.on,
+#maskChips button.btnGhostSmall.on,.btnGhostSmall.armed{background:var(--safelight);border-color:var(--safelight);color:#fff}
+#btnMaskLinear[disabled],#btnMaskRadial[disabled],#btnMaskLum[disabled],#btnMaskColour[disabled]{opacity:.4;cursor:default}
+#scopeModeRow{gap:8px;margin-bottom:8px}
+@media (pointer:coarse){
+  #scopeModeRow button.btnGhostSmall,#curveTabs button.btnGhostSmall,#cropRow button.btnGhostSmall,
+  #maskChips button.btnGhostSmall,#btnMaskLinear,#btnMaskRadial,#btnMaskLum,#btnMaskColour,#btnMaskPick,#btnMaskDelete{min-height:40px;padding:8px 15px}
+}
+/* ---- phones: the photo is the hero, everything else gets out of its way ----
+   The pinned block used to hold the photo, the compare bar and the open
+   scopes, about two thirds of the screen, leaving the sliders a strip at
+   the bottom. The scopes now start closed on a phone (one tap opens them),
+   the compare bar is slimmed, and the photo itself gets a little more room. */
+@media (max-width:1099px){
+  #preview{max-height:38vh}
+  #previewSticky{padding:4px 12px 6px}
+  #cmpBar{margin-top:4px;padding:3px 10px 5px}
+  .cmpBarLabels{margin-bottom:0}
+  #scopeDetails{margin-top:4px}
+  #scopeSummary{padding:4px 0}
+  #consentBar{padding:6px 12px;font-size:11px;gap:6px 12px}
+  #consentBar p{flex:1 1 210px;line-height:1.3}
+  #consentBar button{padding:5px 14px}
+  body:has(#consentBar.on){padding-bottom:70px}
+}

@@ -1,0 +1,1172 @@
+:root{
+  --bg:#141518;--surface:#1b1d21;--surface2:#24272c;--line:#2a2d33;--line2:#3d4048;
+  --paper:#eceae4;--paper-dim:#a3a097;--muted:#918d84;
+  --safelight:#c2431b;--safelight-dim:#8f3417;
+  --phosphor:#6fab96;--phosphor-dim:#4d7d6e;
+  --red:#c2543a;--green:#6fab8a;--blue:#5f8fa8;
+  --radius:6px;--radius-sm:3px;--accent:var(--safelight);
+  --font-display:'Barlow Condensed',system-ui,sans-serif;
+  --font-mono:'JetBrains Mono',ui-monospace,Consolas,monospace;
+  --font-body:system-ui,-apple-system,sans-serif;
+
+  /* ---------- redesign pass: spacing + elevation tokens ----------
+     Panels were flat — a border and nothing else, on a near-black page, so
+     nothing ever sat visually "above" anything else. Two shadow depths: a
+     resting one for every panel, a lifted one for whatever the person is
+     actively working in (an open accordion, a focused matrix cell). Kept
+     dark and tight rather than a soft SaaS-card glow, since a hard edge under
+     low light is what an actual instrument panel looks like, not a diffuse
+     bloom. */
+  --sp-1:4px;--sp-2:8px;--sp-3:12px;--sp-4:16px;--sp-5:24px;--sp-6:32px;
+  --shadow-rest:0 1px 0 rgba(0,0,0,.5), 0 6px 16px -10px rgba(0,0,0,.65);
+  --shadow-lift:0 1px 0 rgba(0,0,0,.55), 0 10px 28px -12px rgba(0,0,0,.75);
+  --ember:var(--safelight);
+}
+
+/* ---------- light theme ----------
+   The dark palette is built on warm near-blacks with the safelight orange as
+   the only saturated colour. Inverting it directly turns the warm greys muddy
+   and leaves the orange vibrating against white, so the hues are kept and the
+   lightness relationships rebuilt.
+
+   Shadows change character rather than just value: on a dark page the resting
+   shadow is what lifts a panel off the background, but on paper the same
+   shadow reads as grime, so light mode leans on borders and a much softer,
+   cooler shadow. */
+/* Scoped to the editor. The landing page is designed dark — the spectrum
+   banner, the region tints and the whole first impression depend on it —
+   so the theme applies only once an image is loaded and body.has-image is
+   set. Declaring the variables on that element rather than on :root means
+   they cascade into the editor and nowhere else. */
+[data-theme="light"] body.has-image{
+  --bg:#f3f0e9;--surface:#ebe7dd;--surface2:#ded9cc;--line:rgba(35,27,19,.10);--line2:rgba(35,27,19,.20);
+  --paper:#231b13;--paper-dim:#5e5442;--muted:#6f6552;
+  --safelight:#9c330d;--safelight-dim:#b85c38;
+  --phosphor:#1a6350;--phosphor-dim:#37806b;
+  --red:#9c3520;--green:#2b6f50;--blue:#295b75;
+  --shadow-rest:0 1px 2px rgba(60,45,30,.12), 0 4px 12px -8px rgba(60,45,30,.20);
+  --shadow-lift:0 2px 6px rgba(60,45,30,.16), 0 12px 28px -14px rgba(60,45,30,.30);
+  --panel-bg:#f3f0e9;--sunken:#e7e3da;--chart-bg:#ece7dd;--preview-mat:#d3cec2;
+  --overlay-bg:rgba(243,240,233,.88);--overlay-border:rgba(80,60,35,.35);--overlay-text:#231b13;
+  color-scheme:light;
+}
+:root{--panel-bg:var(--surface);--sunken:#0f1012;--chart-bg:#0b0c0e;--preview-mat:#0d0e10;--overlay-bg:rgba(11,12,14,.82);--overlay-border:rgba(205,191,168,.45);--overlay-text:#f0e6d6;color-scheme:dark}
+/* Pinned to the toolbar's top-right corner rather than sitting in the flex
+   row. As a labelled button it changed width between "Dark" and "Light",
+   which reflowed the whole toolbar and bounced it onto a second line every
+   time you pressed it — the control moved as a result of using it. Taking it
+   out of the flow fixes the layout, and a single glyph needs no width at all.
+   The glyph shows the theme you will GET, not the one you are in, which is
+   the convention people already read on other apps. */
+#themeBtn{display:none;position:absolute;top:0;right:0;z-index:5;
+  width:34px;height:34px;padding:0;line-height:1;
+  align-items:center;justify-content:center;font-size:15px;
+  border:1px solid var(--line2);border-radius:var(--radius-sm);background:var(--surface);
+  color:var(--paper-dim);cursor:pointer;transition:border-color .15s,color .15s}
+#themeBtn:hover{color:var(--paper);border-color:var(--safelight)}
+body.has-image #themeBtn{display:flex}
+/* The toolbar becomes the positioning context; padding keeps the wrapping
+   buttons clear of the corner the icon now occupies. */
+body.has-image .toolbar{position:relative;padding-right:42px}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:var(--bg);color:var(--paper);font-family:var(--font-body);font-size:14px;line-height:1.45;padding:12px;max-width:920px;margin:0 auto;min-height:100vh;display:flex;flex-direction:column}
+body.has-image{overflow-y:auto;height:auto}
+@media (min-width:900px){body{max-width:1400px;padding:24px 40px}}
+@media (min-width:1600px){body{max-width:92vw;padding:32px 4vw}}
+
+/* Desktop vs Mobile Layout */
+
+
+/* Sticky Preview & Compare Features */
+#previewSticky{position:relative;z-index:40;background:var(--bg);padding:8px 12px 10px;margin:0 -12px}
+#previewSticky.floating{box-shadow:0 8px 16px -8px rgba(0,0,0,.5)}
+#previewStickySpacer{display:none}
+
+/* Native sticky pinning on mobile.
+
+   #previewSticky is the LAST child of #editorLeft, so on its own it has zero
+   room to travel and position:sticky would never engage — which is why this
+   was originally done with a JS transform instead. But #editorLeft carries no
+   styling whatsoever below 1100px; it is pure structure there. Setting
+   display:contents removes its box on mobile only, which promotes
+   #previewSticky to a layout child of #main, whose block runs all the way down
+   through #reorderZone. That gives sticky the travel it needs.
+
+   This matters because a JS transform chasing a compositor-driven scroll is
+   async by construction: the compositor scrolls at display rate while the
+   main thread updates whenever it can, so the pinned element slides against
+   the page (shear), and holding it on a promoted layer to compensate costs
+   the raster memory that triggers low-resolution rendering (blur). Native
+   sticky is handled entirely by the compositor — no JavaScript runs during
+   scroll at all, so none of those failure modes exist. */
+/* Collapsible numbered steps, phones only.
+
+   The preview is pinned at the top and rightly takes about a third of the
+   screen, which leaves roughly 650px to scroll 3400px of controls — five
+   screenfuls of hunting for one slider. Desktop has two columns so the
+   pressure is lower, but the same want applies: a long column of open panels
+   is a long column whatever the screen, so this is no longer behind a media
+   query. Only the DEFAULT differs \u2014 see the accordion setup, which leaves
+   everything open on a wide screen and collapses all but one on a phone.
+
+   Collapsing is per-panel and sticky within the session: open what you are
+   working on, leave the rest shut. Everything stays in the DOM, so nothing
+   that reads a control's value cares whether its panel is open. */
+.panel.collapsible > .pt{cursor:pointer;user-select:none}
+.panel.collapsible > .pt::after{content:'\25BE';margin-left:auto;padding-left:10px;
+  font-size:11px;color:var(--muted);transition:transform .15s ease}
+.panel.collapsed > .pt::after{transform:rotate(-90deg)}
+.panel.collapsed > *:not(.pt){display:none !important}
+.panel.collapsed{padding-bottom:6px}
+@media (max-width:1099px){
+  #editorLeft{display:contents}
+  #previewSticky{position:sticky;top:0}
+  /* 1px sentinel: when it leaves the viewport the header is stuck. Lets the
+     shadow be driven by an IntersectionObserver rather than a scroll handler,
+     so it still costs nothing per frame. */
+  #previewStickySpacer{display:block;height:1px;margin:0 -12px}
+}
+
+/* object-fit:contain is what keeps the two canvases in register.
+
+   #preview is sized with max-width/max-height and keeps its aspect ratio, so
+   on a wide screen it letterboxes inside #previewWrap. #previewOrig was
+   stretched to 100%/100% of the same wrap instead, which meant the BEFORE
+   image was scaled differently from the AFTER image — the split showed two
+   versions of the picture at different sizes, and dragging the divider
+   appeared to slide one against the other. Both canvases share the same
+   intrinsic dimensions, so contain letterboxes them identically and the
+   halves line up exactly. */
+#previewOrig{position:absolute;top:0;left:0;width:100%;height:100%;object-fit:contain;object-position:center;display:none;clip-path:inset(0 50% 0 0);pointer-events:none}
+#cmpHandle{position:absolute;top:0;bottom:0;left:50%;width:0;display:none;pointer-events:none}
+#cmpHandle::before{content:'';position:absolute;top:0;bottom:0;left:-0.5px;width:1px;background:var(--safelight);box-shadow:0 0 6px rgba(194,67,27,.7)}
+/* Preview status/actions bar. Lives in normal page flow directly under the
+   Save/Filter-curves/theme row, NOT as an overlay on the photo -- same
+   surface, border and button styling as that row so the two read as one
+   continuous toolbar rather than two different UI languages stacked on
+   top of each other. Left: plain-text status readouts (decode method, WB
+   method), stacked, no border -- they're not actionable so they shouldn't
+   look like buttons. Right: the three preview actions as a compact button
+   group using the page's own button styling at a smaller scale. */
+#previewTools{display:none;align-items:center;justify-content:space-between;gap:10px;
+  margin:0 0 14px;padding:8px 10px;background:var(--surface);border:1px solid var(--line);
+  border-radius:var(--radius)}
+body.has-image #previewTools{display:flex}
+.ptStamps{display:flex;flex-direction:column;gap:2px;min-width:0}
+#decoderBadge,#implicitStamp{color:var(--muted);font-family:var(--font-mono);font-size:10.5px;
+  white-space:nowrap;align-self:flex-start}
+#decoderBadge::before,#implicitStamp::before{opacity:.7;letter-spacing:.04em}
+#decoderBadge.amaze{color:var(--safelight)}
+#decoderBadge:not([style*="block"]),#implicitStamp:not([style*="block"]){display:none}
+.ptTools{display:flex;gap:6px;flex:0 0 auto}
+#previewTools button{min-height:0;height:32px;padding:0 12px;font-size:12px;
+  background:var(--surface2);border:1px solid var(--line2);color:var(--paper-dim);
+  font-family:inherit;font-weight:500;white-space:nowrap}
+/* Icon-only: square instead of padded-out, so three of them take a fraction
+   of the width the labelled versions did -- this is what was crowding the
+   decode/WB text on narrower screens. title/aria-label carry the name. */
+.ptIconBtn{width:32px;padding:0;font-size:16px;line-height:1}
+#previewTools button:hover{border-color:var(--line2);color:var(--paper)}
+#previewTools button:active{opacity:.75}
+#previewFullscreen{display:none;position:fixed;inset:0;z-index:200;background:rgba(6,4,2,.96);
+  align-items:center;justify-content:center;touch-action:none}
+#previewFullscreen.on{display:flex}
+#fsBadge{position:absolute;top:14px;left:50%;transform:translateX(-50%);z-index:2;
+  font-family:var(--font-mono);font-size:10.5px;color:#cdbfa8;
+  background:rgba(11,12,14,.75);border:1px solid rgba(205,191,168,.45);border-radius:3px;padding:4px 10px}
+#fsBadge.busy{color:var(--safelight);border-color:var(--safelight)}
+/* Same visual language as #fsBadge, in the normal editing view rather than
+   the fullscreen one \u2014 top-right so it doesn't collide with the BEFORE/
+   AFTER labels already sitting top-left/top-right-ish. Persistent, not a
+   toast: a toast answers "what just happened", this answers "what am I
+   looking at right now", and the second question doesn't stop being
+   relevant after 1.8 seconds. */
+#decoderBadge{display:none;font-family:var(--font-mono);font-size:10px;color:var(--muted);
+  white-space:nowrap;pointer-events:none}
+#decoderBadge.amaze{color:var(--safelight)}
+#decoderBadge::before{content:'DECODE ';color:var(--muted);opacity:.6;letter-spacing:.04em}
+/* Phil's 1c: "There's no indication of what occurred on load. I would
+   recommend a vertical stamp that says IMPLICIT on the technique that
+   was used." Specifically about auto white balance -- it runs on every
+   RAW load with zero explicit click, unlike a preset (which already has
+   its own on-screen ✓/border) or a manual eyedropper pick (which already
+   reports "Set ✓" in the WB panel). Shown only while that automatic,
+   unconfirmed state is what's actually active; gone the moment the user
+   does anything deliberate about white balance -- picks a neutral,
+   drags the auto-gain sliders, or clears it. Not shown for the camera
+   colour matrix itself, since that's not a toggleable choice the way
+   auto-WB is -- there's no non-implicit alternative to contrast it with. */
+#implicitStamp{display:none;font-family:var(--font-mono);font-size:10px;letter-spacing:.02em;
+  color:var(--muted);pointer-events:none;white-space:nowrap}
+#implicitStamp::before{content:'WB ';color:var(--muted);opacity:.6;letter-spacing:.04em}
+#previewFull{max-width:100vw;max-height:100vh;width:auto;height:auto;display:block;
+  touch-action:none;transform-origin:center center}
+#previewFull.panning{cursor:grabbing}
+#btnCloseFullscreen{position:absolute;top:14px;right:14px;width:40px;height:40px;padding:0;border-radius:50%;
+  background:rgba(237,226,206,.12);border:1px solid rgba(237,226,206,.3);color:var(--paper);font-size:18px;
+  display:flex;align-items:center;justify-content:center;cursor:pointer}
+.pickmarker{position:absolute;width:28px;height:28px;transform:translate(-50%,-50%);
+  border-radius:50%;box-shadow:0 0 0 1px rgba(0,0,0,.6),0 0 8px rgba(0,0,0,.5);
+  display:none;z-index:6;cursor:grab;touch-action:none}
+.pickmarker::after{content:'';position:absolute;top:50%;left:50%;width:3px;height:3px;
+  background:#fff;border-radius:50%;transform:translate(-50%,-50%);box-shadow:0 0 0 1px rgba(0,0,0,.6)}
+.pickmarker.dragging{cursor:grabbing}
+#pickMarkerPre{border:2.5px solid var(--phosphor)}
+#pickMarkerPost{border:2.5px solid var(--safelight)}
+#cmpBar{display:none;margin-top:8px;padding:6px 10px;background:var(--surface);border:1px solid var(--line);border-radius:3px}
+.cmpBarLabels{display:flex;justify-content:space-between;font-family:var(--font-mono);font-size:9.5px;font-weight:500;color:var(--paper-dim);letter-spacing:.04em;margin-bottom:2px}
+/* 26px on every other slider is a touch-target buffer, earning its keep in
+   the long stacked list of controls where a finger aimed slightly off still
+   needs to land on the right one and not the next. This is the only slider
+   on the page standing alone in its own small box — nothing to mistake it
+   for — so it can sit closer to its own thumb without losing anything.
+   Not shrunk below 24px: the thumb itself is 22px tall, so anything
+   tighter risks clipping it rather than just trimming empty buffer. */
+#cmpRange{width:100%;accent-color:var(--safelight);height:24px}
+#cmpRefLabel{cursor:pointer;text-decoration:underline dotted;text-underline-offset:3px}
+
+/* The header used to have no width limit while everything below it was
+   capped at min(62vh,560px), so the spectrum bar ran the full width of the
+   viewport and its end labels ("400", "IR \u2192") were pushed against the
+   screen edges with the page content floating in the middle of it. Matching
+   the column width below puts the whole page on one axis, and gives the bar
+   the same left/right edge as the upload card and the filter card. */
+header{margin:0 auto clamp(10px,2.2vh,20px);max-width:min(62vh,560px);width:100%}
+header h1{font-family:var(--font-display);font-weight:700;font-size:clamp(20px,5vh,28px);letter-spacing:.01em;text-transform:uppercase;color:var(--paper);line-height:1}
+header .tagline{font-size:11.5px;color:var(--paper-dim);margin-top:4px;display:block}
+/* Taller and with real space above it: this bar is the one element that says
+   what the tool is for, and at 5px squeezed under the tagline it read as a
+   divider rule rather than a spectrum. */
+#spectrumBar{height:7px;border-radius:3px;margin:clamp(4px,1.2vh,10px) 0 4px;position:relative;overflow:hidden;
+  opacity:0;transform:scaleX(0);transform-origin:left center;
+  animation:barFadeIn 1.6s cubic-bezier(.16,.8,.3,1) .25s forwards;
+  background:linear-gradient(90deg,#6a3fb0 0%,#3f6fd6 14%,#3fa0c9 26%,#3fb583 40%,#7fc23f 52%,#d6c23f 63%,#d6903f 72%,#d6503f 82%,#a8321f 91%,#4a1108 100%);
+  box-shadow:0 0 14px rgba(194,67,27,.35)}
+#spectrumBar::after{content:'';position:absolute;inset:0;
+  background:linear-gradient(90deg,transparent,rgba(255,255,255,.65),transparent);
+  transform:translateX(-100%);animation:barShimmer 1.3s ease-out 1.9s forwards}
+@keyframes barFadeIn{from{opacity:0;transform:scaleX(0)}to{opacity:1;transform:scaleX(1)}}
+@keyframes barShimmer{to{transform:translateX(100%)}}
+#spectrumTicks{display:flex;justify-content:space-between;font-family:var(--font-mono);font-size:9px;
+  color:var(--muted);margin:clamp(10px,2vh,18px) 0 3px;letter-spacing:.04em}
+/* End labels pulled inside the bar's own edges rather than flush against
+   them, so they read as marks on a scale instead of stray text at the
+   margins of the page. */
+#spectrumTicks span:first-child{margin-left:1px}
+#spectrumTicks span:last-child{margin-right:1px;color:var(--safelight-dim)}
+
+
+/* ---------- structure, second pass ----------
+
+   The first redesign kept the thing that actually makes this look like
+   every other tool: a page built entirely out of the same bordered box,
+   repeated twelve times. Detailing those boxes better — shadows, chevrons,
+   a checkmark — never changes that a person scrolling this page sees one
+   shape, over and over, and reads it as "generic settings panel" no matter
+   how nice the shadow on it is.
+
+   So the box is gone as the default. A WORK section — something in the
+   actual left-to-right recipe — is now a typographic zone: a large ghost
+   numeral, a title sitting directly on the page background, a single
+   spectrum-toned rule underneath, then its content in open space. Nothing
+   encloses it, because nothing needs to; the numeral and the rule are doing
+   the job the box used to do, and doing it as something specific to a
+   darkroom's own visual language (a contact sheet frame number) rather than
+   a shape borrowed from every SaaS settings page.
+
+   An INSTRUMENT section keeps a much lighter version of the old box — the
+   hairline-and-fill still earns its keep here, because a histogram or a
+   filter-reference table is genuinely a distinct readout, a window onto
+   something, and a window benefits from a frame. The two now read as
+   opposites at a glance: open air for what you do, a quiet pane of glass
+   for what you check. */
+
+.panel{position:relative;margin-bottom:var(--sp-6);padding:0}
+
+.panel.tier-work{padding-top:2px}
+.panel.tier-work .pt{
+  font-family:var(--font-display);font-weight:600;text-transform:uppercase;
+  letter-spacing:.04em;color:var(--paper);display:flex;align-items:center;gap:12px;
+  font-size:16px;margin-bottom:var(--sp-3);padding-bottom:var(--sp-2);
+  border-bottom:1px solid var(--line);position:relative}
+.panel.tier-work .pt > span:first-child{display:flex;align-items:center;gap:12px}
+.panel.tier-work .pt::after{
+  content:'';position:absolute;left:0;bottom:-1px;height:1px;width:56px;
+  background:var(--safelight)}
+/* A faint outline numeral shares the exact colour and font as everything
+   around it, differing only in size and a low opacity — both of which
+   compress away under real-world viewing conditions (a phone snap of a
+   tablet, an angle, low light) far more than a colour or a shape does. A
+   solid filled badge survives all of that: it's a block of colour with a
+   different silhouette from every other piece of text on the page, so it
+   still reads as "a section starts here" even when nothing is legible. */
+.stepChip{
+  font-family:var(--font-mono);font-weight:700;font-size:14px;line-height:1;
+  color:#fff;background:var(--safelight);flex:none;letter-spacing:0;
+  display:inline-flex;align-items:center;justify-content:center;
+  width:30px;height:30px;border-radius:var(--radius-sm);
+  box-shadow:0 2px 6px -2px rgba(194,67,27,.6)}
+
+.panel.tier-inst{background:var(--bg);border:1px solid var(--line);border-radius:var(--radius);
+  padding:11px 14px;box-shadow:var(--shadow-rest);margin-bottom:var(--sp-3)}
+.panel.tier-inst .pt, .panel.tier-inst summary.pt{color:var(--phosphor-dim);font-size:12px;letter-spacing:.08em}
+
+/* A disclosure nested INSIDE a work section — "edit the matrix by hand"
+   living inside Channel Swap, for instance — shares the .pt class
+   with its parent's own numbered header, so
+   without this it inherits the same giant treatment and reads as an equal,
+   competing section rather than an optional extra tucked inside one. This
+   pulls it back down to a plain in-flow line: no rule, no size jump,
+   just the ordinary body colour with a little more weight than a note. */
+/* A summary that IS the section header, not a disclosure nested inside one.
+   Without this it inherits the subordinate treatment below and a numbered
+   step reads as a sub-heading of itself. */
+.panel.tier-work details > summary.pt.secHead{
+  font-family:var(--font-display);font-size:16px;font-weight:600;text-transform:uppercase;
+  letter-spacing:.04em;color:var(--paper);display:flex;align-items:center;gap:12px;
+  margin-bottom:var(--sp-3);padding-bottom:var(--sp-2);border-bottom:1px solid var(--line);
+  position:relative;cursor:pointer}
+.panel.tier-work details > summary.pt.secHead::after{
+  content:'\25B8';position:static;display:inline-block;width:auto;height:auto;background:none;
+  font-family:var(--font-mono);font-size:.7em;color:var(--safelight);margin-left:auto;
+  transition:transform .15s}
+.panel.tier-work details[open] > summary.pt.secHead::after{transform:rotate(90deg)}
+.panel.tier-work details summary.pt{
+  font-family:var(--font-display);font-size:13px;font-weight:600;text-transform:none;
+  letter-spacing:0;color:var(--paper-dim);border-bottom:none;padding-bottom:0;
+  margin-bottom:var(--sp-2);display:inline-flex;gap:0}
+/* The numbered-header decoration and the ordinary disclosure triangle both
+   want the same ::after slot on this element, and the class selector above
+   wins that fight by specificity regardless of which one is actually
+   wanted here — so the triangle needs re-declaring explicitly rather than
+   just switching the losing rule off, or nothing shows at all. */
+.panel.tier-work details summary.pt::after{
+  content:'▸';position:static;display:inline-block;width:auto;height:auto;background:none;
+  font-family:var(--font-mono);font-size:.85em;color:var(--safelight);margin-left:8px;
+  transition:transform .15s}
+.panel.tier-work details[open] summary.pt::after{transform:rotate(90deg)}
+.instTag{font-family:var(--font-mono);font-size:9.5px;letter-spacing:.14em;color:var(--phosphor-dim);
+  border:1px solid var(--phosphor-dim);border-radius:2px;padding:1px 5px;flex:none;opacity:.85}
+
+#dropzone{border:1.5px dashed rgba(205,45,25,.6);border-radius:var(--radius);text-align:center;max-width:min(62vh,560px);width:100%;margin:0 auto;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;padding:1.2rem;box-shadow:0 0 60px -20px rgba(205,45,25,.35);transition:border-color .2s,box-shadow .2s}
+#dropzone:hover{border-color:rgba(205,45,25,.9);box-shadow:0 0 0 1px rgba(205,45,25,.15),0 0 70px -15px rgba(205,45,25,.5)}
+#dropzone.dragover{border-color:var(--safelight);box-shadow:0 0 0 1px rgba(205,45,25,.25),0 0 80px -10px rgba(205,45,25,.65)}
+/* nowrap + a fixed clamp minimum meant this overflowed the viewport on any
+   phone narrower than the text needed — the square aspect-ratio box is
+   itself narrow at small widths, so there was never enough room. Wrapping is
+   fine: the two-line "INFRARED COLOUR SWAP" title above already sets the
+   precedent that this page's headlines wrap. */
+#dropzone .big{font-family:var(--font-display);font-weight:600;color:var(--paper);font-size:clamp(15px,5.2vw,26px);line-height:1.15;max-width:26ch}
+#consentBar{position:fixed;left:0;right:0;bottom:0;z-index:200;display:none;
+  align-items:center;justify-content:center;flex-wrap:wrap;gap:10px 18px;
+  padding:9px 14px;background:rgba(12,8,5,.97);border-top:1px solid var(--line2);
+  backdrop-filter:blur(6px);font-family:var(--font-mono);font-size:11.5px;color:var(--paper-dim)}
+#consentBar.on{display:flex}
+#consentBar p{margin:0;max-width:520px;line-height:1.4}
+#consentBar .cbtns{display:flex;gap:8px}
+#consentBar button{font-family:var(--font-mono);font-size:11.5px;padding:7px 14px;border-radius:3px;cursor:pointer}
+#consentNo{background:none;color:var(--paper-dim);border:1px solid var(--line2)}
+#consentYes{background:var(--safelight);color:#fff;border:1px solid var(--safelight);font-weight:600}
+#btnInstall,#btnInstallTop{display:none;margin-top:8px;font-family:var(--font-mono);font-size:11px;padding:6px 12px;
+  border-radius:3px;background:none;color:var(--safelight);border:1px solid var(--line2);cursor:pointer}
+#btnInstallTop{margin-top:12px}
+/* iOS has no install event and never will, so the button above can't appear
+   there. The only route is Share > Add to Home Screen, which essentially
+   nobody finds unaided — hence spelling it out, but ONLY on the platform
+   where it applies, so Android users aren't told to look for a menu their
+   browser doesn't have. */
+#iosInstall{display:none;margin-top:12px;font-size:11.5px;color:var(--paper-dim);line-height:1.5}
+#iosInstall b{color:var(--paper)}
+#iosInstall .shr{display:inline-block;font-size:13px;line-height:1;transform:translateY(1px);color:var(--safelight)}
+#btnInstall:hover,#btnInstallTop:hover{border-color:var(--safelight)}
+#batchPanel{margin-bottom:0}
+#batchBarOuter{height:5px;background:var(--surface2);border-radius:3px;overflow:hidden}
+#batchBarInner{height:100%;width:0;background:var(--safelight);transition:width .2s}
+.toolbar{display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap;align-items:center}
+.toolbarDiv{width:1px;align-self:stretch;background:var(--line2);margin:0 2px;min-height:20px}
+@media (max-width:480px){.toolbarDiv{display:none}}   /* a divider mid-wrap reads as a stray mark, not a grouping */
+#lnkFilters{font-family:var(--font-mono);font-size:11px;padding:8px 12px;border-radius:3px;
+  background:none;color:var(--safelight);border:1px solid var(--line2);text-decoration:none;
+  white-space:nowrap;line-height:1}
+#lnkFilters:hover{border-color:var(--safelight)}
+#btnRestore{display:block;margin:0 auto 14px;font-family:var(--font-mono);font-size:12px;
+  padding:9px 16px;border-radius:3px;background:none;color:var(--phosphor);
+  border:1px solid var(--phosphor);cursor:pointer}
+#btnRestore:hover{background:rgba(122,184,148,.08)}
+#dropOverlay{position:fixed;inset:0;z-index:450;display:none;align-items:center;justify-content:center;
+  background:rgba(11,12,14,.82);backdrop-filter:blur(2px);pointer-events:none}
+#dropOverlay.on{display:flex}
+#dropOverlay div{color:#f0e6d6;border:2px dashed var(--safelight);border-radius:8px;padding:26px 44px;
+  font-family:var(--font-mono);font-size:15px;color:var(--paper);background:rgba(11,12,14,.85)}
+.pb .psub{display:block;margin-top:3px;font-size:9.5px;line-height:1.35;color:var(--muted);
+  font-weight:400;letter-spacing:0;white-space:normal}
+.pb.on .psub{color:var(--paper-dim)}
+.sw{display:inline-block;width:11px;height:11px;border-radius:2px;vertical-align:-1px;
+  margin-left:5px;border:1px solid var(--line2)}
+
+#btnClearPreset{display:none;margin-top:10px;font-family:var(--font-mono);font-size:11px;
+  padding:6px 12px;border-radius:3px;background:none;color:var(--paper-dim);
+  border:1px solid var(--line2);cursor:pointer}
+#btnClearPreset:hover{border-color:var(--safelight);color:var(--paper)}
+/* One rhythm for the whole column. Previously each block set its own gap and
+   they grew as the content got less important (14px, then 22px, then 20px
+   before Discord), which inverted the hierarchy \u2014 the least important thing
+   on the page had the most space reserved around it. */
+#landingLinks{text-align:center;margin:14px auto 0;max-width:min(62vh,560px);width:100%}
+/* Rebuilt as a small, dark, rectangular card rather than a large loud
+   button with its description as a separate paragraph underneath --
+   title and description now live together in one compact block, closer
+   in scale and tone to an ordinary search-result card than a headline
+   call-to-action. Kept rectangular deliberately (not a pill/button
+   shape) so it doesn't distort the homepage's existing proportions. */
+/* Violet glow, picked from the UV end of the spectrum bar's own gradient
+   (#6a3fb0). It is the one hue already on this page that nothing else uses,
+   so it separates this card from the dropzone above -- which carries the
+   orange safelight glow -- without introducing a colour foreign to the
+   palette. Kept faint deliberately: a wide, mostly-negative-spread shadow
+   plus a barely-there inner bloom, so it reads as the card sitting in front
+   of something rather than as a coloured outline. The upload card stays the
+   brighter of the two, since that is still the primary action. */
+#landingLinks a{display:block;font-family:var(--font-mono);font-size:12px;font-weight:600;
+  color:var(--safelight);text-decoration:none;border:1px solid rgba(122,74,196,.32);
+  border-radius:var(--radius-sm);padding:9px 12px 10px;text-align:left;
+  background:linear-gradient(180deg,rgba(106,63,176,.05),rgba(106,63,176,.02));
+  box-shadow:0 0 34px -20px rgba(138,90,214,.75), inset 0 0 22px -16px rgba(138,90,214,.6);
+  transition:border-color .2s,background .2s,box-shadow .25s}
+#landingLinks a:hover{border-color:rgba(138,90,214,.6);
+  background:linear-gradient(180deg,rgba(106,63,176,.11),rgba(106,63,176,.05));
+  box-shadow:0 0 42px -14px rgba(138,90,214,.85), inset 0 0 26px -14px rgba(138,90,214,.7)}
+/* Title and a line of actual substance, rather than a title alone. A link
+   that says only what it is gives no reason to follow it. */
+/* The three curves draw on one after another rather than together.
+
+   A single reveal moved every line at once, which read as a wipe over a
+   finished picture. Staggering them reads as a plot being built: the
+   long-pass first, then the notch glass over it, then the combined result
+   the two of them produce -- which is the actual idea the card is selling,
+   and it only lands if you can see the third line arrive after the two it
+   comes from.
+
+   Driven by scaling a clip rect rather than by stroke-dashoffset: these
+   strokes carry vector-effect="non-scaling-stroke", which changes the
+   coordinate system dash lengths are measured in and makes a dash-based
+   draw-on unreliable. A clip wipe does not care how the strokes are drawn.
+
+   transform-box:fill-box makes transform-origin resolve against each rect's
+   own box; without it the origin is the SVG viewport and they scale from the
+   wrong place. */
+#landingLinks #bRevealRect,
+#landingLinks #bRevealRect2,
+#landingLinks #bRevealRect3{transform:scaleX(0);transform-origin:left center;transform-box:fill-box;
+  animation:bReveal 1.05s cubic-bezier(.22,.7,.3,1) forwards}
+#landingLinks #bRevealRect { animation-delay:.15s}
+#landingLinks #bRevealRect2{ animation-delay:.55s}
+#landingLinks #bRevealRect3{ animation-delay:.95s}
+#landingLinks .bStackArea{opacity:0;animation:bFade .9s ease-out 1.35s forwards}
+#landingLinks .bStrip{transform:scaleX(0);transform-origin:left center;transform-box:fill-box;
+  animation:bReveal 1.5s cubic-bezier(.16,.8,.3,1) .2s forwards}
+@keyframes bReveal{to{transform:scaleX(1)}}
+@keyframes bFade{to{opacity:1}}
+/* Replays on hover, so the sequence is not a one-shot most people miss. */
+#landingLinks a:hover #bRevealRect { animation:bReveal .8s cubic-bezier(.22,.7,.3,1) 0s forwards}
+#landingLinks a:hover #bRevealRect2{ animation:bReveal .8s cubic-bezier(.22,.7,.3,1) .28s forwards}
+#landingLinks a:hover #bRevealRect3{ animation:bReveal .8s cubic-bezier(.22,.7,.3,1) .56s forwards}
+@media(prefers-reduced-motion:reduce){
+  #landingLinks #bRevealRect,#landingLinks #bRevealRect2,#landingLinks #bRevealRect3,
+  #landingLinks .bStrip{transform:none;animation:none}
+  #landingLinks .bStackArea{opacity:1;animation:none}
+}
+#landingLinks .flTitle{display:block}
+#landingLinks .flArrow{transition:transform .2s;display:inline-block}
+#landingLinks a:hover .flArrow{transform:translateX(3px)}
+#landingLinks .flSub{display:block;margin-top:3px;font-weight:400;font-size:10.5px;
+  color:var(--muted);letter-spacing:.01em;line-height:1.45}
+#discordLink:hover{border-color:var(--safelight);background:rgba(194,67,27,.08)}
+#landingLinks p{font-size:11px;color:var(--muted);margin-top:0;line-height:1.4}
+/* Secondary actions share one rhythm instead of each having its own gap,
+   which had spacing growing as importance fell. */
+#landingLinks #btnInstallTop{margin-top:10px}
+
+
+/* Filter Reference Details Table Styling */
+details summary{list-style:none}
+details summary::-webkit-details-marker{display:none}
+/* A rotating triangle reads as one continuous gesture — closed pointing at
+   the content, open pointing down into it — where a +/- swap is two
+   unrelated glyphs that happen to alternate. Scopes had this treatment on
+   its own already; every other disclosure now matches it instead of using
+   the plainer text swap. */
+details summary::after{content:'▸';font-family:var(--font-mono);font-size:.85em;
+  color:var(--safelight);margin-left:8px;display:inline-block;transition:transform .15s}
+details[open] summary::after{transform:rotate(90deg)}
+details[open] summary{margin-bottom:4px}
+.panel:has(details[open]){box-shadow:var(--shadow-lift)}
+.frtable{width:100%;border-collapse:collapse;font-size:12px}
+.frtable th{text-align:left;font-family:var(--font-mono);font-size:9.5px;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);padding:6px 8px;border-bottom:1px solid var(--line)}
+.frtable td{padding:8px;border-bottom:1px solid var(--line);vertical-align:top}
+.frtable tr:last-child td{border-bottom:none}
+.frtable .fname{font-weight:600;color:var(--paper)}
+.frtable .fmeta{font-family:var(--font-mono);font-size:10px;color:var(--muted);display:block;margin-top:2px}
+
+.subhdr{font-family:var(--font-mono);font-size:10.5px;color:var(--paper-dim);font-weight:500;letter-spacing:.03em;margin:10px 0 6px;text-transform:uppercase}
+.pgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(155px,1fr));gap:6px}
+/* Kept as real cards rather than folded into the open layout — this is a
+   grid of physical slots to choose between, a film holder or a filter
+   drawer, and that genuinely wants a bounded shape. Quieter by default now
+   that they're not fighting boxed panels for attention, so the grid reads
+   as calm until you touch or select one. */
+.pb{background:transparent;border:1px solid var(--line);border-left:3px solid var(--line2);
+  border-radius:var(--radius-sm);padding:10px;font-size:12px;cursor:pointer;text-align:left;
+  color:var(--paper);font-family:inherit;position:relative;transition:box-shadow .15s,background .15s,border-color .15s}
+.pb:hover{background:var(--surface2);border-color:var(--line2)}
+.pb:disabled{opacity:.5;cursor:not-allowed}
+.pb:disabled:hover{background:transparent;border-color:var(--line)}
+/* A selected preset used to read only from its left-edge colour, easy to
+   miss glancing down a grid of otherwise-identical cards. The corner mark
+   is the same "this one is active" language the selected filter uses on the
+   reference page — one glance, not a scan for which border is which colour. */
+.pb.on{border-left-color:var(--safelight);background:rgba(194,67,27,.12);box-shadow:0 0 0 1px rgba(194,67,27,.35) inset}
+.pb.on::after{content:'✓';position:absolute;top:6px;right:7px;font-family:var(--font-mono);
+  font-size:10px;font-weight:600;color:var(--safelight)}
+.pgrid.uv .pb.on{border-left-color:var(--phosphor);background:rgba(111,171,150,.12);box-shadow:0 0 0 1px rgba(111,171,150,.35) inset}
+.pgrid.uv .pb.on::after{color:var(--phosphor)}
+.pb b{font-family:var(--font-mono);display:block;font-size:12px;font-weight:600;margin-bottom:2px}
+
+/* A patch bay, not a spreadsheet. This is nine numbers that route one
+   channel into another, and a grid of plain number inputs said nothing
+   about that — it looked like tax software. Recessed cells on a dark
+   plate, row/column labels as a routing key rather than a table header,
+   and the whole thing sitting on its own dark plate so it reads as one
+   physical unit rather than nine stray fields loose in the page. */
+/* Separated cells rather than a hairline grid. The 1px-gap version drew a
+   line between every cell, which is how a spreadsheet looks and made nine
+   equal boxes compete for attention; the cells already read as cells from
+   their own background, so the rules were doing no work. Spacing them and
+   rounding them lets the weight bars inside be the thing the eye lands on. */
+.matrix{display:grid;grid-template-columns:auto repeat(3,1fr);gap:5px;align-items:stretch;
+  background:transparent;border:0;padding:0}
+.matrix .hdr-tot{color:var(--muted)}
+.matrix .hdr-tot::before{display:none}
+/* The offset is a different KIND of number from the gains beside it — it is
+   added, not multiplied — so it is tinted differently rather than looking
+   like a fourth source channel. */
+.matrix input.moff{border-color:var(--line);background:var(--sunken)}
+.matrix input.moff:hover{border-color:var(--safelight)}
+.mtot{display:flex;align-items:center;justify-content:center;
+  font-family:var(--font-mono);font-size:11px;color:var(--muted);
+  border-radius:var(--radius-sm);border:1px solid transparent}
+/* 100 means the row changes colour only. Anything else is also changing
+   that channel's exposure, which is worth seeing without doing the sum. */
+.mtot.neutral{color:var(--phosphor-dim)}
+.mtot.hot{color:#e0a03a}
+.matrix > div{background:transparent}
+/* Column headers carry a dot in the channel's own colour. "from R" in grey
+   text needs reading; a red dot does not. */
+.matrix .hdr{text-align:center;font-family:var(--font-mono);font-weight:500;font-size:10px;
+  color:var(--muted);text-transform:uppercase;padding:2px 4px 6px;letter-spacing:.06em;
+  display:flex;align-items:center;justify-content:center;gap:5px}
+.matrix .hdr::before{content:'';width:7px;height:7px;border-radius:50%;
+  background:currentColor;opacity:.9;flex:none}
+.matrix .hdr.rl-r::before{background:var(--red)}
+.matrix .hdr.rl-g::before{background:var(--green)}
+.matrix .hdr.rl-b::before{background:var(--blue)}
+/* Row labels sit against the left edge and are the row's anchor, so they
+   are aligned with the text rather than floated in a centred cell. */
+.matrix .rowlbl{font-family:var(--font-mono);font-weight:600;font-size:11px;
+  display:flex;align-items:center;justify-content:flex-end;padding:0 10px 0 2px;
+  letter-spacing:.04em;white-space:nowrap}
+.swapRow{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px}
+.swapBtn{font-family:var(--font-mono);font-size:11px;padding:6px 10px;min-height:0;
+  background:var(--surface2);border:1px solid var(--line2);color:var(--paper-dim);border-radius:var(--radius-sm)}
+.swapBtn:hover{border-color:var(--safelight);color:var(--paper)}
+.swapBtn.on{border-color:var(--safelight);background:rgba(194,67,27,.16);color:var(--paper)}
+/* Provenance mark. Sits inline after the name at cap height so it reads as
+   part of the label, not as a separate control to press. Muted rather than
+   accented: it is a footnote about where the numbers came from, and should
+   not compete with the preset name itself. */
+/* 16px, not 12. At 12 the cassette silhouette collapsed into a coloured
+   dash — the tint still read, but the shape did not, which wasted the one
+   thing that says "film stock" rather than "swatch". */
+.srcmark{width:16px;height:16px;margin-left:7px;vertical-align:-3px;flex:none;opacity:.92}
+.srcmark .body{fill:#0d0906;stroke:var(--line2);stroke-width:.9}
+.srcmark .band{fill:var(--tone, var(--phosphor-dim));opacity:.92}
+.pb.on .srcmark{opacity:1}
+.pb.on .srcmark .body{stroke:var(--phosphor-dim)}
+.mxPreview{display:flex;gap:4px;margin-top:8px}
+.mxPreview div{flex:1;height:22px;border-radius:2px;position:relative;overflow:hidden}
+.mxPreview i{position:absolute;inset:0 0 50% 0;display:block}
+.mxPreview b{position:absolute;inset:50% 0 0 0;display:block}
+.matrix input{width:100%;background:var(--sunken);border:0;border-radius:0;color:var(--phosphor);
+  touch-action:pan-y;cursor:ew-resize;
+  /* Without this, a real finger dragging across a text input moves the text
+     CARET rather than our drag-scrub — that is native browser behaviour for
+     any <input>, separate from touch-action (which only governs scroll/zoom)
+     and invisible to synthetic PointerEvents, which is why testing with
+     dispatched events never caught it. user-select:none stops the browser
+     claiming the gesture for text selection, so the JS listener gets it
+     instead. Tapping still focuses and opens the keyboard as normal — this
+     only blocks the drag-to-select-text behaviour, not the tap. */
+  -webkit-user-select:none;user-select:none;
+  padding:12px 6px;font-family:var(--font-mono);font-size:14px;text-align:center;
+  transition:background .15s;-moz-appearance:textfield}
+.matrix input::-webkit-inner-spin-button,.matrix input::-webkit-outer-spin-button{-webkit-appearance:none}
+/* These three are the "no change" cells — R from R, G from G, B from B.
+   Marking them structurally, not by value, means the highlight stays put as
+   the identity axis of the grid regardless of what anyone types, giving a
+   fixed reference line for how far a matrix has drifted from a straight
+   pass-through. */
+/* Each cell carries a bar showing how much of that source channel it is
+   taking, tinted with the source's own colour. Reading nine numbers to work
+   out what a matrix does is slow; seeing where the weight sits is instant —
+   a swap reads as the bars moving off the diagonal, an IR subtract as the
+   short blue bars pointing the other way.
+
+   --w is magnitude 0..1 and --tint the source channel's colour, both set by
+   mxSync. Drawn as a background layer so the number stays legible on top and
+   nothing about typing or drag-scrubbing changes. */
+.matrix input{
+  border-radius:var(--radius-sm);
+  border:1px solid var(--line);
+  background:
+    linear-gradient(to top, var(--tint, transparent) 0%, transparent 100%) bottom/100% calc(var(--w, 0) * 62%) no-repeat,
+    var(--sunken);
+}
+.matrix input:hover{border-color:var(--line2)}
+.matrix input.neg{
+  /* negatives point down from the top, so subtraction looks like subtraction
+     rather than just a smaller amount of the same thing */
+  background:
+    linear-gradient(to bottom, var(--tint, transparent) 0%, transparent 100%) top/100% calc(var(--w, 0) * 62%) no-repeat,
+    var(--sunken);
+}
+/* The identity axis gets a ring rather than a fill: it marks WHERE the
+   pass-through cells are without competing with the weight bar drawn inside
+   them, which the old solid tint did. */
+.matrix input.mdiag{border-color:#2f5346}
+.matrix input:focus{outline:2px solid var(--safelight);outline-offset:-2px;background:var(--surface2)}
+.rl-r{color:var(--red)}.rl-g{color:var(--green)}.rl-b{color:var(--blue)}
+
+/* ---- Compact channel mix (build 115) ---- */
+.mxGrid{grid-template-columns:auto repeat(3,1fr) 34px;gap:5px}
+.mxGrid .hdr{padding:0 2px 4px;font-size:10px}
+.mxGrid .hdr-tot::before{display:none}
+.mxGrid .rowlbl{font-size:11px;padding:0 6px 0 0}
+.matrix input{padding:0 4px;height:40px;font-size:13.5px}
+/* weight bars run left to right now: easier to compare across a row */
+.matrix input,.matrix input.neg{background:
+    linear-gradient(90deg, var(--tint, transparent), var(--tint, transparent)) left/calc(var(--w, 0) * 100%) 100% no-repeat,
+    var(--sunken)}
+.matrix input.neg{background:
+    linear-gradient(90deg, var(--tint, transparent), var(--tint, transparent)) right/calc(var(--w, 0) * 100%) 100% no-repeat,
+    var(--sunken)}
+.matrix input.zero{color:var(--muted)}
+.matrix input.sel{border-color:var(--safelight);box-shadow:0 0 0 1px var(--safelight) inset}
+.mxGrid .mtot{font-size:11.5px;border:0}
+.mxFine{display:flex;align-items:center;gap:8px;margin-top:8px;padding:6px 8px;border-radius:9px;
+  background:var(--sunken);border:1px solid var(--line)}
+.mxFineLbl{font-family:var(--font-mono);font-size:12px;color:var(--muted);white-space:nowrap;min-width:44px}
+.mxFineLbl b{font-weight:600}
+.mxStep{min-height:0;width:36px;height:32px;padding:0;font-size:16px;line-height:1;flex:none}
+#mxFineR{flex:1;min-width:0}
+.mxHint{margin:6px 0 8px}
+.mxPrevLbl{font-family:var(--font-mono);font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);margin-top:4px}
+.mxOff{margin-top:10px;border-top:1px dashed var(--line);padding-top:4px}
+.mxOff>summary{display:flex;align-items:center;min-height:36px;cursor:pointer;font-size:12.5px;color:var(--paper-dim);list-style:none}
+.mxOff>summary::-webkit-details-marker{display:none}
+.mxOffSum{margin-left:auto;font-family:var(--font-mono);font-size:11.5px;color:var(--muted)}
+.mxOffSum.on{color:var(--safelight)}
+.mxOffGrid{grid-template-columns:repeat(3,auto 1fr);gap:5px;margin-top:4px}
+.mxOffGrid .rowlbl{padding:0 4px 0 0}
+
+button{background:var(--surface2);border:1px solid var(--line2);border-radius:var(--radius-sm);color:var(--paper);padding:9px 14px;font-size:12.5px;font-weight:500;cursor:pointer;font-family:inherit;min-height:38px;transition:border-color .15s,background .15s,transform .1s}
+button:active{transform:translateY(1px)}
+button:disabled{opacity:.45;cursor:default;transform:none}
+button.primary{background:var(--safelight);border-color:var(--safelight);color:#fff;font-weight:600}
+button.armed{background:var(--safelight);color:#fff}
+/* A third weight below the default outlined button, for actions that are
+   real but secondary to whatever the panel's main job is — "Clear filter"
+   next to a grid of preset cards, "Auto tone" sitting in a header next to
+   a section title it shouldn't visually compete with. */
+button.btnGhost{background:transparent;border-color:var(--line);color:var(--muted);font-weight:500}
+button.btnGhost:hover{border-color:var(--line2);color:var(--paper-dim)}
+button.btnGhostSmall{background:transparent;border:none;color:var(--phosphor-dim);
+  font-family:var(--font-mono);font-size:11px;font-weight:500;padding:3px 0;
+  text-decoration:underline;text-decoration-color:transparent;text-underline-offset:3px;
+  transition:text-decoration-color .15s}
+button.btnGhostSmall:hover{text-decoration-color:var(--phosphor-dim)}
+#toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:var(--surface2);border:1px solid var(--line2);border-left:3px solid var(--phosphor);color:var(--paper);font-family:var(--font-mono);font-size:12px;padding:10px 16px;border-radius:3px;opacity:0;transition:opacity .25s;pointer-events:none;z-index:50}
+/* keyboard shortcuts only exist on desktop, so the hint only shows there —
+   a mobile visitor has no keyboard to read this against */
+#kbHint{display:none}
+@media (min-width:1100px){
+  #kbHint{display:block;margin-top:8px;font-family:var(--font-mono);font-size:10px;color:var(--muted);opacity:.75}
+}
+/* Was hidden until Phil's RAW work continued — it has: cr2ToCanvas now
+   does a real sensor decode. Un-hidden so the report reflects that instead
+   of still claiming nothing here changes what you see or export. */
+/* #rawPlanePanel{display:none!important} */
+/* ---------- Targeted colour bands ---------- */
+.bandRow{border:1px solid var(--line);border-radius:var(--radius);padding:10px 12px;margin-bottom:8px;background:var(--surface2)}
+.bandHead{display:flex;align-items:center;gap:10px;margin-bottom:4px}
+/* Matches the rotating-triangle disclosure used everywhere else in the
+   file, rather than inventing a second collapse affordance — a plus/minus
+   or a differently-shaped arrow here would read as a different kind of
+   control when it does exactly the same job. */
+.bandChev{background:transparent;border:0;color:var(--safelight);font-family:var(--font-mono);
+  font-size:11px;padding:0 2px;min-height:auto;flex:none;transition:transform .15s}
+.bandChev.open{transform:rotate(90deg)}
+.bandSwatch{width:26px;height:26px;border-radius:50%;border:2px solid var(--line2);flex:none;box-shadow:0 0 0 2px var(--surface2)}
+.bandTitle{font-family:var(--font-mono);font-size:12px;color:var(--paper-dim);flex:1}
+.bandRemove{background:transparent;border:1px solid var(--line2);color:var(--muted);width:26px;height:26px;line-height:1;border-radius:50%;flex:none;font-size:15px;padding:0}
+.bandRemove:hover{border-color:var(--safelight);color:var(--safelight)}
+.bandRow .sl{padding:3px 0}
+.bandRow .sl label{font-size:12px}
+#btnAddBand[disabled]{opacity:.45}
+/* #undoRedoBar removed — undo/redo now in toolbar */
+/* Generic disabled styling. Previously ONLY #btnUndo had this — every other
+   disabled button in the app (Solve matrix among them) looked pixel-identical
+   to an enabled one. A native `disabled` attribute genuinely blocks the click
+   event with zero feedback, so an inert button that LOOKS pressable reads as
+   "I tapped it and nothing happened" — which is exactly what it was, silently,
+   with no error and no toast, because the click handler never ran at all. */
+button:disabled{opacity:.45;cursor:not-allowed;filter:grayscale(.4)}
+/* undoRedoBar disabled style removed */
+
+/* The preview mat is never white — a photograph is judged against its
+   surround, and a bright border shifts perceived exposure and colour. But
+   near-black against a light page is its own problem: on a portrait image the
+   pillarboxing is wide, and the jump from paper to near-black reads as a
+   harsh slab rather than a mat. Light mode uses a neutral mid grey, which is
+   what a print viewing booth uses and what darkroom easels approximate: dark
+   enough not to bias the image, close enough to the page not to jar. */
+#cw{background:var(--preview-mat);border:1px solid var(--line);border-radius:var(--radius);overflow:hidden;text-align:center;min-height:120px;display:flex;align-items:center;justify-content:center;position:relative}
+#previewWrap{position:relative;display:inline-block;line-height:0;transform-origin:50% 50%}
+/* will-change only while zoomed. Left on permanently it holds a second
+   composited layer alive INSIDE #previewSticky, which is already promoted —
+   two stacked layers around a full-size WebGL canvas is real per-frame raster
+   cost on a phone, and it showed up as the preview shearing during scroll. */
+#previewWrap.zoomed{will-change:transform}
+#previewWrap.panning{cursor:grabbing}
+
+/* Loupe — on a phone your fingertip covers the exact pixel being sampled,
+   which is the one pixel you need to see. Offset above the touch point. */
+#loupe{position:absolute;width:110px;height:110px;border-radius:50%;display:none;z-index:12;
+  border:2px solid var(--paper);box-shadow:0 0 0 1px rgba(0,0,0,.7),0 6px 20px rgba(0,0,0,.6);
+  pointer-events:none;image-rendering:pixelated;background:#0b0c0e}
+#loupe.on{display:block}
+
+#zoomBadge{position:absolute;left:8px;bottom:8px;z-index:11;display:none;align-items:center;gap:5px;
+  font-family:var(--font-mono);font-size:10.5px;color:var(--overlay-text);
+  background:var(--overlay-bg);border:1px solid var(--line2);border-radius:3px;padding:3px 6px}
+body.fs-open #zoomBadge{display:none !important}
+/* Hide all preview overlay controls while zoomed — they cover the image
+   and aren't reachable with a tap anyway when panning is active. The
+   zoomInfo span (zoom level + reset) stays visible via #cw.zoomed below. */
+/* Show zoom level readout while zoomed (overrides the zoomInfo hide) */
+body.has-image #zoomBadge{display:flex}
+#cw.zoomed #btnUndo,
+#cw.zoomed #btnRedo{display:none !important}
+#cw.zoomed #zoomBadge{display:flex}
+#cw.zoomed #zoomInfo{display:contents !important}
+#btnZoomReset{font-family:var(--font-mono);font-size:10px;color:var(--safelight);background:none;
+  border:1px solid var(--line2);border-radius:2px;padding:1px 5px;cursor:pointer}
+#zoomSep{color:var(--line2);margin:0 2px}
+/* Used to sit at right:8px/bottom:8px — exactly on top of the fullscreen
+   button, which sits at the same corner. The bottom-left corner is the one
+   spot over the preview nothing else claims: the compare labels use the top
+   corners, the rotate/fullscreen row owns the whole bottom-right. */
+#holdHint{position:absolute;left:50%;transform:translateX(-50%);bottom:8px;z-index:11;font-family:var(--font-mono);font-size:10px;
+  color:var(--muted);background:var(--overlay-bg);border-radius:3px;padding:2px 6px;
+  opacity:0;transition:opacity .25s;pointer-events:none}
+#holdHint.on{opacity:1}
+#previewWrap.comparing #previewOrig{clip-path:inset(0 0 0 0)!important}
+
+#scopeDetails{margin-top:8px;flex-shrink:0}
+#scopeSummary{cursor:pointer;font-family:var(--font-mono);font-size:11px;color:var(--muted);
+  letter-spacing:.04em;text-transform:uppercase;padding:3px 0;list-style:none;display:flex;align-items:center;gap:6px}
+#scopeSummary:hover{color:var(--paper-dim)}
+#scopeBar{margin-top:6px}
+/* Fixed CSS height, not height:auto. With a 512x110 backing store and
+   width:100%, height:auto scales the height in proportion to the width — so
+   on a wide desktop column the histogram rendered ~180px tall and ate the
+   preview's share of #editorLeft's fixed 68vh. The backing store is resized to
+   match the element in drawHistogram(), so nothing is stretched. */
+#histogram{width:100%;height:104px;display:block;background:var(--chart-bg);border:1px solid var(--line);border-radius:var(--radius)}
+#scopeMeta{display:flex;align-items:center;flex-wrap:wrap;gap:8px 14px;margin-top:7px}
+#clipToggle{display:inline-flex;align-items:center;gap:7px;cursor:pointer;
+  font-family:var(--font-mono);font-size:11.5px;color:var(--paper)}
+#clipKey{display:flex;flex-wrap:wrap;gap:10px;font-family:var(--font-mono);font-size:10px;color:var(--muted)}
+#clipKey span{display:inline-flex;align-items:center;gap:4px}
+#clipKey .ck{width:9px;height:9px;border-radius:2px;display:inline-block}
+
+/* Capped in BOTH axes. width:100% with height:auto sizes the thumbnail from
+   the panel width and lets the aspect ratio decide the height — so a portrait
+   frame in a wide desktop column rendered enormous. A fixed display height
+   with object-fit:contain gives the strip one predictable height whatever the
+   image's shape, letterboxed against the same dark background so the padding
+   is invisible. */
+#channelStrip{display:flex;gap:8px;margin-top:8px;max-width:420px}
+#channelStrip figure{margin:0;flex:1;min-width:0}
+#channelStrip canvas{width:100%;height:104px;object-fit:contain;display:block;background:var(--chart-bg);border:1px solid var(--line);border-radius:3px}
+@media (min-width:1100px){ #channelStrip canvas{height:84px} }
+#channelStrip figcaption{font-family:var(--font-mono);font-size:10.5px;color:var(--paper-dim);margin-top:4px;text-align:center}
+#channelStrip figcaption b{color:var(--paper)}
+#channelStrip figcaption span{color:var(--muted);font-size:9.5px}
+#chStretchWrap{display:inline-flex;align-items:center;gap:7px;margin-top:10px;cursor:pointer;
+  font-family:var(--font-mono);font-size:11px;color:var(--paper-dim)}
+#valBubble{position:fixed;z-index:99998;pointer-events:none;transform:translate(-50%,-100%);padding:4px 11px;border-radius:999px;
+  background:#17181b;border:1px solid var(--safelight);color:var(--paper);font:600 15px/1.2 var(--font-mono);box-shadow:0 2px 10px rgba(0,0,0,.6)}
+#curveTabs button.on,.btnGhostSmall.armed{border-color:var(--safelight);color:var(--paper)}
+#maskOverlay{position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;touch-action:none;z-index:6}
+#maskOverlay.editing{pointer-events:auto;cursor:crosshair}
+.maskChip.on{border-color:var(--safelight);color:var(--paper)}
+#cropOverlay{position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;touch-action:none;z-index:5}
+#cropOverlay.editing{pointer-events:auto;cursor:crosshair}
+#cropRow button.on{border-color:var(--safelight);color:var(--paper)}
+#curveCv{width:100%;max-width:320px;aspect-ratio:1/1;display:block;margin:8px 0 4px;border:1px solid var(--line2);
+  border-radius:var(--radius-sm);touch-action:none;cursor:crosshair;background:#0b0c0e}
+#curveTabs button.on,#scopeModeRow button.on{border-color:var(--safelight);color:var(--paper)}
+#scopeModeRow{display:flex;gap:6px;margin-bottom:6px}
+#preview{max-width:100%;max-height:34vh;width:auto;height:auto;display:block;margin:0 auto}
+@media (min-width:900px){#preview{max-height:62vh}}
+#preview.pick{cursor:crosshair}
+/* Zoom for the working preview, desktop only.
+
+   Checking sharpening or noise at anything other than 1:1 is guesswork, and
+   until now the only way to get close was the fullscreen view -- which means
+   leaving the controls behind, so you could not actually watch a slider while
+   judging what it did to the grain. This zooms the preview in place, with the
+   sliders still on screen beside it.
+
+   Implemented as a CSS transform on the wrapper rather than by re-rendering:
+   the canvas already holds the full working-resolution buffer and is only
+   being displayed shrunk, so scaling it up reveals pixels that are genuinely
+   there rather than interpolating new ones. It also costs nothing per frame,
+   which matters because this sits in front of a live GPU preview.
+
+   image-rendering:pixelated past 1.5x on purpose: beyond that you are looking
+   at individual pixels to judge sharpening, and smoothing them would defeat
+   the reason for looking. */
+#previewWrap{transform-origin:center center;transition:transform .12s ease-out}
+#previewWrap.zoomed{cursor:grab}
+#previewWrap.zoomed.dragging{cursor:grabbing;transition:none}
+#previewWrap.hard > canvas{image-rendering:pixelated}
+.previewPill{font-family:var(--font-mono);font-size:10.5px;
+  background:none;color:var(--safelight);border:none;
+  padding:0 2px;cursor:pointer;line-height:1.4;white-space:nowrap}
+.previewPill:disabled{color:var(--muted);opacity:.5;cursor:default}
+.previewPill:not(:disabled):hover{color:var(--paper)}
+#zoomHud{position:absolute;left:8px;top:8px;z-index:6;display:none;gap:4px;align-items:center;
+  font-family:var(--font-mono);font-size:10.5px;color:var(--paper-dim);
+  background:var(--overlay-bg);border:1px solid var(--line2);border-radius:var(--radius-sm);padding:3px 7px}
+#previewWrap.zoomed ~ #zoomHud, #cw.zoomed #zoomHud{display:flex}
+#zoomHud button{font-family:inherit;font-size:10.5px;background:none;border:0;color:var(--safelight);
+  cursor:pointer;padding:0 2px}
+
+@media(max-width:899px){ #zoomHud{display:none !important} }
+
+#main{display:none}
+#main.on{display:block}
+.sl label{font-size:12px;color:var(--paper-dim);display:flex;justify-content:space-between;margin-bottom:4px}
+.sl label b{font-family:var(--font-mono);color:var(--phosphor)}
+/* precision mode: shown while a slider is being dragged at reduced speed */
+.sl.fine label{position:relative}
+.sl.fine label::after{content:attr(data-ft) ' \00d7 ' attr(data-f);position:absolute;left:50%;transform:translateX(-50%);
+  font-family:var(--font-mono);font-size:10px;color:var(--safelight);pointer-events:none}
+/* touch-action:pan-y is the fix for sliders stealing scrolls.
+
+   By default a range input claims the whole gesture the moment a finger lands
+   on it, so any swipe that starts over a slider drags the thumb instead of
+   scrolling — and with this many controls in one column, most swipes start
+   over a slider. pan-y hands vertical movement back to the page and leaves
+   only horizontal movement to the slider, which is what people expect.
+
+   The taller touch target and the row padding matter too: the visual track is
+   thin, but the input's box now extends above and below it, so a finger
+   aimed at the slider hits it and a finger aimed past it scrolls. */
+input[type=range]{width:100%;accent-color:var(--safelight);touch-action:pan-y;
+  height:26px;margin:0;background:transparent}
+
+/* ---------- custom slider skin ----------
+
+   Giving up the native thumb/track means giving up the automatic colour
+   fill that came free with accent-color — the browser drew that fill by
+   knowing the current value; a hand-drawn track has no such knowledge and
+   has to be told. --val is a 0–100 custom property, read by the gradient
+   below to split the track into "already past" and "still ahead" at the
+   thumb, and it is kept current from one place — syncSliderFills(), called
+   from render() — rather than chased through the ~24 places in the file
+   that can set a slider's value, which is the set of places that used to
+   have to stay in sync with the fill by accident, one at a time, forever.
+
+   Fader-cap thumb rather than a round dot: a short vertical bar with a
+   centre groove, closer to the physical control this is standing in for
+   than a generic OS knob. */
+input[type=range]{-webkit-appearance:none;appearance:none;--val:50}
+input[type=range]::-webkit-slider-runnable-track{
+  height:3px;border-radius:2px;
+  background:linear-gradient(to right,
+    var(--safelight) 0%, var(--safelight) calc(var(--val) * 1%),
+    var(--line) calc(var(--val) * 1%), var(--line) 100%);
+}
+input[type=range]::-moz-range-track{
+  height:3px;border-radius:2px;background:var(--line);
+}
+input[type=range]::-moz-range-progress{
+  height:3px;border-radius:2px 0 0 2px;background:var(--safelight);
+}
+/* ---------- white balance tracks ----------
+   The stops are not picked by eye: each is the colour this slider position
+   turns a mid grey into, run through tempTintGains() itself. So the track
+   is a readout of the control rather than a decoration, and it stays honest
+   if the coefficients are ever retuned.
+
+   Because the gains are luminance-normalised, every stop sits at the same
+   brightness — only hue moves — which is why the strip reads as a clean
+   sweep rather than darkening toward the ends.
+
+   No fill here: a --val fill answers "how far along am I", which the thumb
+   already says on a bipolar control. The gradient answers the more useful
+   question, which is what each direction actually does. */
+.sl.wb input[type=range]::-webkit-slider-runnable-track{
+  height:6px;border-radius:3px;background:var(--wbGrad)}
+.sl.wb input[type=range]::-moz-range-track{
+  height:6px;border-radius:3px;background:var(--wbGrad)}
+.sl.wb input[type=range]::-moz-range-progress{background:none}
+#temp{--wbGrad:linear-gradient(to right,#5782be,#6482a8,#728294,#808080,#8e7d6e,#9d795d,#aa744e)}
+#tint{--wbGrad:linear-gradient(to right,#5e8b5e,#698869,#748474,#808080,#8c7b8c,#977597,#a36ea3)}
+/* Paper thumb, not safelight: the orange one vanished against the warm half
+   of the temperature strip. A neutral cap with a dark edge reads against
+   every part of both gradients. */
+/* Fixed colours, not theme variables. This thumb rides on the white-balance
+   spectrum track, which is the same in both themes because it is a readout of
+   the gains rather than chrome. The gradient was white-to-var(--paper): in
+   dark mode that is white-to-cream and reads as a metal bezel, but in light
+   mode --paper is near-black, so the thumb turned into a dark smear against
+   its own track. A control that sits on fixed-colour content needs
+   fixed-colour styling. */
+.sl.wb input[type=range]::-webkit-slider-thumb{
+  background:linear-gradient(#ffffff,#e4d9c6);border-color:#000;margin-top:-8px}
+.sl.wb input[type=range]::-moz-range-thumb{
+  background:linear-gradient(#ffffff,#e4d9c6);border-color:#000}
+@media (max-width:1100px){
+  .sl.wb input[type=range]::-webkit-slider-thumb{margin-top:-6px}
+}
+
+input[type=range]::-webkit-slider-thumb{
+  -webkit-appearance:none;width:11px;height:22px;margin-top:-9.5px;
+  border-radius:3px;background:linear-gradient(#e0653a,var(--safelight));
+  border:1px solid #7a2c11;box-shadow:0 1px 3px rgba(0,0,0,.5);
+  position:relative;cursor:grab;
+}
+input[type=range]::-moz-range-thumb{
+  width:11px;height:22px;border-radius:3px;
+  background:linear-gradient(#e0653a,var(--safelight));
+  border:1px solid #7a2c11;box-shadow:0 1px 3px rgba(0,0,0,.5);cursor:grab;
+}
+/* The groove across the cap face — one thin line, drawn with a gradient
+   rather than a real element, since a pseudo-element isn't addressable
+   inside ::-webkit-slider-thumb. */
+input[type=range]::-webkit-slider-thumb{
+  background:
+    linear-gradient(to bottom, transparent 10px, rgba(0,0,0,.35) 10px, rgba(0,0,0,.35) 11px, transparent 11px),
+    linear-gradient(#e0653a,var(--safelight));
+}
+input[type=range]:active::-webkit-slider-thumb, input[type=range]:active::-moz-range-thumb{cursor:grabbing;filter:brightness(1.08)}
+input[type=range]:focus-visible::-webkit-slider-thumb, input[type=range]:focus-visible::-moz-range-thumb{
+  outline:2px solid var(--safelight);outline-offset:2px;
+}
+/* The same 11×22px thumb sits on a much narrower track on a phone than on
+   a desktop window, so identical absolute dimensions read as chunky on one
+   and fine on the other — this isn't a case for one size, it's a case for
+   the same shape at a size that matches how much track it's actually
+   sitting on. Slimmed down under the width where the desktop layout itself
+   switches over, so the two breakpoints move together. */
+@media (max-width:1100px){
+  input[type=range]::-webkit-slider-thumb{
+    width:8px;height:18px;margin-top:-7.5px;
+    background:
+      linear-gradient(to bottom, transparent 8px, rgba(0,0,0,.35) 8px, rgba(0,0,0,.35) 9px, transparent 9px),
+      linear-gradient(#e0653a,var(--safelight));
+  }
+  input[type=range]::-moz-range-thumb{width:8px;height:18px}
+}
+/* Collapsible workflow steps.
+
+   Every step used to be an always-open div except Export, so a numbered
+   pipeline you are meant to work THROUGH had no way to put finished stages
+   away -- the control column stayed at full length however far along you
+   were. They are all <details> now, open by default so nothing is hidden
+   from someone who has never used the tool, and collapsible once you know
+   where things are. */
+.stepPanel > summary.stepHdr{cursor:pointer;list-style:none;display:flex;align-items:center;gap:8px;
+  margin:0;user-select:none}
+.stepPanel > summary.stepHdr::-webkit-details-marker{display:none}
+/* The disclosure arrow is a ::before on a trailing span rather than the
+   summary's own ::after: .panel.tier-work .pt::after already draws the short
+   underline beneath every step header and outranks anything written here on
+   specificity, so an ::after chevron simply never appeared. */
+/* Step headers, redesigned.
+
+   The old treatment drew a 56px orange accent under each title via
+   .panel.tier-work .pt::after. Two problems: absolutely positioned inside a
+   flex <summary> it escaped its box and ran down through the body text as a
+   stray vertical line, and even when it behaved it left a heavy rule
+   floating over an empty row whenever a panel was collapsed.
+
+   Replaced with something that cannot escape and reads quieter: the number
+   chip carries the colour, the title sits on a plain hairline rule, and a
+   collapsed panel drops the rule entirely so it occupies one line and
+   nothing more. Nothing here is absolutely positioned. */
+.stepPanel > summary.stepHdr::after{content:none !important}
+.stepPanel > summary.stepHdr{
+  border-bottom:1px solid var(--line);
+  padding:2px 0 9px;margin:0;
+  transition:border-color .15s,margin .15s}
+.stepPanel[open] > summary.stepHdr{margin-bottom:var(--sp-3)}
+/* Collapsed: no rule, no gap, no empty row under the title. */
+.stepPanel:not([open]) > summary.stepHdr{border-bottom-color:transparent;padding-bottom:2px}
+.stepPanel:not([open]){padding-bottom:2px;margin-bottom:6px}
+.stepPanel[open]{padding-bottom:4px}
+/* The chip is the one piece of colour, and it dims when the step is shut, so
+   an untouched collapsed pipeline reads as a quiet list rather than a column
+   of orange blocks all demanding attention at once. */
+.stepPanel > summary.stepHdr .stepChip{transition:opacity .15s,box-shadow .15s}
+.stepPanel:not([open]) > summary.stepHdr .stepChip{opacity:.5;box-shadow:none}
+.stepPanel > summary.stepHdr:hover .stepChip{opacity:1}
+.stepPanel > summary.stepHdr .stepDot{margin-left:auto}
+.stepPanel > summary.stepHdr .stepArrow{color:var(--muted);font-size:11px;transition:transform .15s;
+  display:inline-block;flex:0 0 auto}
+.stepPanel[open] > summary.stepHdr .stepArrow{transform:rotate(90deg)}
+.stepPanel > summary.stepHdr:hover{color:var(--paper)}
+.stepPanel:not([open]){padding-bottom:10px}
+/* Modified indicator. With 40+ sliders across six steps there was nothing
+   telling you which ones you had actually touched -- you had to open each and
+   compare from memory. Lit when any control in that step differs from its
+   default. */
+.stepDot{width:6px;height:6px;border-radius:50%;background:var(--safelight);
+  opacity:0;transition:opacity .2s;flex:0 0 auto}
+.stepPanel.modified .stepDot{opacity:1}
+/* Step strip: jump straight to a stage instead of scrolling for it. */
+/* One row that scrolls sideways, never two that wrap. On a phone six buttons
+   wrapped onto a second line and took a substantial bite out of the vertical
+   space above the image -- on the screen where vertical space is scarcest and
+   the preview matters most. A single scrolling row costs one line, always. */
+#stepStrip{position:sticky;top:0;z-index:40;display:flex;gap:4px;padding:7px 0 8px;margin-bottom:4px;
+  background:var(--bg);backdrop-filter:blur(4px);flex-wrap:nowrap;overflow-x:auto;
+  scrollbar-width:none;-webkit-overflow-scrolling:touch}
+#stepStrip::-webkit-scrollbar{display:none}
+#stepStrip button{flex:0 0 auto}
+@media(max-width:1099px){
+  /* Hidden entirely on a phone. The strip earns its place on a wide screen,
+     where the controls scroll in their own column and jumping between stages
+     saves a long drag. On a phone the preview is already pinned to the top of
+     the screen, so a second sticky bar lands directly over the image and
+     competes with the one thing the screen is for -- and the panels there are
+     collapsed by default anyway, which makes the column short enough to
+     scroll without help. */
+  #stepStrip{display:none}
+}
+#stepStrip button{font-family:var(--font-mono);font-size:10.5px;letter-spacing:.04em;padding:4px 8px;
+  border-radius:var(--radius-sm);border:1px solid var(--line2);background:var(--surface);
+  color:var(--paper-dim);cursor:pointer;position:relative;transition:border-color .15s,color .15s}
+#stepStrip button:hover{color:var(--paper);border-color:var(--safelight-dim)}
+#stepStrip button.cur{color:var(--paper);border-color:var(--safelight);background:rgba(194,67,27,.12)}
+#stepStrip button.mod::after{content:"";position:absolute;top:3px;right:3px;width:4px;height:4px;
+  border-radius:50%;background:var(--safelight)}
+.sl{padding:2px 0}
+/* Group heading for the detail panel. Sharpening and noise reduction are two
+   opposed operations that people set against each other, so they need to read
+   as two groups rather than a run of sliders in the tone list. */
+.grpHdr{font-family:var(--font-mono);font-size:10px;letter-spacing:.07em;text-transform:uppercase;
+  color:var(--phosphor-dim);margin:0 0 6px;padding-bottom:3px;border-bottom:1px solid var(--line)}
+/* The slider and its two step buttons share a row. Buttons are deliberately
+   larger than they look: 34px of touch target around a small glyph, so they
+   are usable on a phone without making the row tall. */
+.slStep{display:flex;align-items:center;gap:8px}
+.slStep > input[type=range]{flex:1;min-width:0}
+.stepBtn{flex:none;width:34px;height:34px;min-height:0;padding:0;
+  display:flex;align-items:center;justify-content:center;
+  font-family:var(--font-mono);font-size:15px;line-height:1;
+  background:var(--surface2);border:1px solid var(--line2);color:var(--paper-dim);
+  border-radius:var(--radius-sm);cursor:pointer;user-select:none;touch-action:none}
+.stepBtn:hover{border-color:var(--safelight);color:var(--paper)}
+.stepBtn:active{background:rgba(194,67,27,.2);transform:scale(.94)}
+/* the value readout doubles as a reset target - see the dblclick handler */
+.sl label b{cursor:pointer;padding:1px 5px;border-radius:3px}
+.sl label b:hover{background:rgba(194,67,27,.18)}
+.sl label input.vedit{font-family:var(--font-mono);font-size:12px;color:var(--phosphor);
+  background:rgba(194,67,27,.14);border:1px solid var(--ember);border-radius:3px;
+  padding:0 4px;width:5.5em;text-align:right;-moz-appearance:textfield}
+.sl label input.vedit::-webkit-outer-spin-button,
+.sl label input.vedit::-webkit-inner-spin-button{-webkit-appearance:none;margin:0}
+.note{font-size:11px;color:var(--muted);margin-top:6px;line-height:1.4}
+.filelabel{display:inline-flex;align-items:center;justify-content:center;background:var(--safelight);
+  color:#fff;font-weight:600;padding:9px 18px;border-radius:var(--radius-sm);cursor:pointer;
+  font-size:12.5px;box-shadow:0 2px 8px -2px rgba(194,67,27,.5);transition:box-shadow .15s,transform .1s}
+.filelabel:active{transform:translateY(1px);box-shadow:0 1px 3px -1px rgba(194,67,27,.5)}
+.wbrow{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-top:6px}
+
+/* ---- desktop / wide-screen layout ----
+   Deliberately LAST in the stylesheet. It was originally near the top, which
+   quietly made most of it inert: nearly every rule it overrides is declared
+   further down at equal specificity, and in CSS the later declaration wins.
+   #main.on{display:block} beat #main.on{display:flex}, so the two-column
+   layout never applied at all — the page just stacked two full-height panes
+   and trapped scrolling inside the lower one. Keep this block at the end. */
+@media (min-width:1100px){
+  /* The columns run edge to edge and provide their own padding, so the
+     centred page box is dropped once an image is loaded. Cancelling it here
+     rather than with a negative margin on #main keeps it correct at the
+     1600px breakpoint, where body padding switches from 40px to 4vw. */
+  /* overflow:auto, not hidden. With the shell sized to exactly 100vh nothing
+     should overflow — but if anything ever does (a long panel, a browser with
+     a different idea of viewport height, a zoomed-in page), hidden means the
+     content is simply unreachable with no scrollbar and no wheel response.
+     That is what happened on desktop with the older stacked layout: preview
+     68vh + tools 32vh + 48px of body padding came to more than the window,
+     and the bottom of the tools column could not be reached at all. */
+  body.has-image{overflow:auto;height:auto;min-height:100vh;max-width:none;padding:0}
+  /* ---- two-column layout ----
+     Preview on the left taking whatever width is going, controls in a fixed
+     column on the right that scrolls independently.
+
+     The previous desktop layout stacked them: preview in the top 68vh,
+     every control crammed into the bottom 32vh. On a landscape screen that
+     left the preview sitting in a mostly-empty black box while the controls
+     were squeezed into a third of the height and had to be scrolled
+     constantly. Splitting by width instead of height suits a wide screen and
+     lets the preview use the full height of the window.
+
+     Portrait tablets fall below this breakpoint and keep the stacked layout,
+     which is the right shape for them. */
+  #main.on{display:flex;align-items:stretch;gap:0;height:100vh;height:100dvh}
+  #editorLeft{flex:1 1 auto;min-width:0;height:100vh;height:100dvh;min-height:0;overflow:hidden;
+    display:flex;flex-direction:column;padding:20px 22px 20px 40px}
+  #previewSticky{position:static;margin:0;padding:4px 0;background:transparent;box-shadow:none;flex:1;min-height:0;display:flex;flex-direction:column}
+  #cw{flex:1;min-height:0}
+  #previewWrap{height:100%;max-width:100%;display:flex;align-items:center;justify-content:center}
+  #preview{max-height:100%!important;max-width:100%!important;height:auto;width:auto}
+  /* Cap the scopes width. #editorLeft spans the whole window on a wide
+     screen, so a full-width histogram becomes a ~1300x76 smear in which no
+     shape is readable — the very thing it exists to show. */
+  #histogram{height:88px}
+
+  /* A little more air between panels than mobile needs — vertical space is
+     cheap here, where on a phone every extra pixel of margin is scroll
+     distance earned back from something else. */
+  .panel{margin-bottom:14px;padding:16px}
+
+  /* The consent bar is position:fixed across the full width, and on the
+     desktop layout the page cannot scroll — so whatever it covers is simply
+     unreachable until dismissed. Here it covered the preset buttons. A
+     corner card leaves the controls usable. */
+  #consentBar{left:auto;right:12px;bottom:12px;max-width:420px;border-radius:6px;
+    border:1px solid var(--line2);flex-wrap:nowrap}
+  #consentBar p{max-width:none}
+  #reorderZone{flex:0 0 clamp(340px, 30vw, 460px);height:100vh;height:100dvh;min-height:0;overflow-y:auto;overflow-x:hidden;
+    border-top:none;border-left:1px solid var(--line);padding:20px 40px 40px 22px;
+    scrollbar-width:thin;scrollbar-color:var(--line2) rgba(255,255,255,.05);
+    overscroll-behavior:contain}
+
+}
