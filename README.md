@@ -67,35 +67,38 @@ skipped, so the same suite runs against older builds.
 
 ## Code layout
 
-The editor is `index.html` (the page itself), three stylesheets in `css/` and its code in `js/`, split by area:
+The editor is `index.html` (the page itself), three stylesheets in `css/`, and its code, which is written in `src/`
+and published as one file, `editor.js`:
 
-| File | What is in it |
+| Source file | What is in it |
 |---|---|
-| `js/shaders.js` | the WebGL shaders: the whole colour pipeline that runs on the GPU |
-| `js/engine.js` | the WebGL engine that runs them, and the JS sRGB transfer functions |
-| `js/i18n.js` | the six languages and app-wide state |
-| `js/view.js` | histogram, analytics, source inspector, loupe, zoom, pan, update check |
-| `js/controls.js` | sliders, tone mapping, sky selection, per-panel reset, draft rendering, the mixer, presets |
-| `js/raw-preview.js` | embedded previews, the RAW probe, camera colour, chroma reconstruction, the CR2 decoder |
-| `js/session.js` | ZIP writer, batch, saving and restoring the session |
-| `js/raw-process.js` | demosaic choice, the RAW decoder, RAW noise reduction and highlight reconstruction, TIFF reader |
-| `js/ui.js` | drag and drop, loading, undo, the panels and tabs |
-| `js/wb-lut.js` | white balance picking, LUTs |
-| `js/colour-mirror.js` | a JS copy of the shader's colour maths, for the readouts |
-| `js/export.js` | EXIF and ICC profiles, full-size render, TIFF, saving the file |
-| `js/dock.js` | the phone dock and sheet, channel-swap space, in-page dialogs |
-| `js/selftest.js` | the built-in self-test and its stored baseline |
+| `src/shaders.js` | the WebGL shaders: the whole colour pipeline that runs on the GPU |
+| `src/engine.js` | the WebGL engine that runs them, and the JS sRGB transfer functions |
+| `src/i18n.js` | the six languages and app-wide state |
+| `src/view.js` | histogram, analytics, source inspector, loupe, zoom, pan, update check |
+| `src/controls.js` | sliders, tone mapping, sky selection, per-panel reset, draft rendering, the mixer, presets |
+| `src/raw-preview.js` | embedded previews, the RAW probe, camera colour, chroma reconstruction, the CR2 decoder |
+| `src/session.js` | ZIP writer, batch, saving and restoring the session |
+| `src/raw-process.js` | demosaic choice, the RAW decoder, RAW noise reduction and highlight reconstruction, TIFF reader |
+| `src/ui.js` | drag and drop, loading, undo, the panels and tabs |
+| `src/wb-lut.js` | white balance picking, LUTs |
+| `src/colour-mirror.js` | a JS copy of the shader's colour maths, for the readouts |
+| `src/export.js` | EXIF and ICC profiles, full-size render, TIFF, saving the file |
+| `src/dock.js` | the phone dock and sheet, channel-swap space, in-page dialogs |
+| `src/selftest.js` | the built-in self-test and its stored baseline |
+| `src/undo-buttons.js` | the undo and redo buttons |
 
-They are plain scripts, not modules: they share one global scope and run in the order `index.html` lists them, as
-the single script they used to be did. One difference to keep in mind: a function is only available to code that
-runs while the page loads once its own file has loaded, so code that runs at load time can only call functions from
-its own file or an earlier one. Code inside event handlers can call anything.
+**Edit `src/`, never `editor.js`.** `tools/build.py` joins the sources, in the order listed in it, into `editor.js`.
+They are one script split for reading, not modules: they share one global scope, and as one file they run in one go,
+so a function anywhere is available from the start. (Loaded as separate files, the browser could run a reopened
+session or a tap between two of them and reach code that had not arrived yet; that broke the app in builds 130-131.)
 
-Each file's URL carries `?b=<build>`. After a change, set the new build number everywhere with
+After a change, set the new build number everywhere and rebuild in one step:
 
     python3 tools/bump_build.py <build>
 
-which updates the version stamps, the build number the in-app update check reads, and those URLs.
+It updates the version stamps, the build number the in-app update check reads, and the `?b=<build>` on each file's
+URL (so a cached old file never runs under a newer page), then runs `tools/build.py`.
 
 ## Credits
 

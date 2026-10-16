@@ -5,7 +5,7 @@
 
 Updates the irlab-build meta tag (read by the in-app update check), the two version stamps, and the ?b=<build>
 on every stylesheet and script URL in index.html (so the service worker never mixes cached old files with a new
-page). Run it from the repository root or anywhere: it finds index.html next to this folder.
+page), then rebuilds editor.js from src/ (tools/build.py). Run it from the repository root or anywhere: it finds index.html next to this folder.
 """
 import datetime, os, re, sys
 
@@ -15,7 +15,9 @@ s = open(p, encoding='utf-8').read()
 today = datetime.date.today().isoformat()
 s, a = re.subn(r'<meta name="irlab-build" content="\d+">', f'<meta name="irlab-build" content="{n}">', s)
 s, b = re.subn(r'Version \d{4}-\d{2}-\d{2} · build \d+', f'Version {today} · build {n}', s)
-s, c = re.subn(r'((?:css|js)/[\w.-]+\.(?:css|js))\?b=\d+', rf'\g<1>?b={n}', s)
+s, c = re.subn(r'((?:css/)?[\w.-]+\.(?:css|js))\?b=\d+', rf'\g<1>?b={n}', s)
 assert a == 1 and b == 2 and c > 0, (a, b, c)
 open(p, 'w', encoding='utf-8').write(s)
 print(f'build {n}: meta 1, stamps {b}, file URLs {c}')
+import subprocess, sys as _s
+subprocess.run([_s.executable, os.path.join(os.path.dirname(os.path.abspath(__file__)), 'build.py')], check=True)
