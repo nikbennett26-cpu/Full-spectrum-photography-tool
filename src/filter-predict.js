@@ -11,9 +11,10 @@
    blue, which is how colour infrared film maps bands to colours. Behind a 590 or 720nm filter that ordering comes out
    as the familiar red/blue swap; it is derived here, not assumed.
 
-   Honest limits, stated in the panel too: there is no measured sensor curve for real converted camera bodies in any
-   open dataset yet, so this uses a generic CMOS approximation (or one real astronomy sensor). Treat the numbers as
-   the shape of the answer, not your camera's exact response. */
+   Sensors (build 149): a real converted Sony A7III, measured 300-800nm by Crowther (J. Imaging 2022, 8:54) and
+   extended past 800nm under the assumptions stated in tools/editor_filters.mjs; a generic CMOS approximation; one
+   real astronomy sensor. Each sensor's note says which it is. Treat the numbers as the shape of the answer, not your
+   camera's exact response. */
 let fpData = null, fpLoading = null, fpStack = [];
 
 function fpLoad() {
@@ -75,9 +76,9 @@ function fpRender() {
     '<p class="note">' + verdict + '</p>' +
     '<p class="note">A grey card in daylight should need gains of about R ' + gn[0].toFixed(2) + ' · G 1.00 · B ' + gn[2].toFixed(2) +
     ' before the swap; the grey picker measures the real figure for your camera.</p>' +
-    '<p class="note">Filter curves from the database (badges show what each rests on). Sensor: ' + sensor +
-    ', daylight: ' + fpData.illuminant + '. No open dataset has a measured converted camera body yet, so read this as the ' +
-    'shape of the answer, not your exact camera.</p>';
+    '<p class="note">Filter curves from the database (badges show what each rests on). Sensor: ' + sensor + '. ' +
+    ((fpData.sensorNotes || {})[sensor] || '') + ' Daylight: ' + fpData.illuminant + '. Your own body will differ somewhat, ' +
+    'so read this as the shape of the answer and let the grey picker set the exact balance.</p>';
   apply.style.display = (r.spread >= 15 && r.perm !== '012') ? '' : 'none';
   apply.dataset.perm = r.perm;
 }

@@ -95,3 +95,11 @@ licensed under the SIL Open Font License 1.1 (https://openfontlicense.org). The 
 - **Thorlabs** and **Edmund Optics** — published product transmission data (see `tools/thorlabs/` and `tools/edmund/`).
 
 Other manufacturer and third-party sources are named on each filter's card and in the Sources list on the page.
+
+## Camera sensor response (editor, "Predict from your filters")
+
+- **Crowther, J. (2022).** Monochrome Camera Conversion: Effect on Sensitivity for Multispectral Imaging
+  (Ultraviolet, Visible, and Infrared). *J. Imaging* 8, 54. https://doi.org/10.3390/jimaging8030054 —
+  licensed CC BY 4.0. The Sony A7III multispectral channel responses (Figure 1f, 300-800nm) were traced from the
+  published figure into `tools/sensors/crowther2022_a7iii.json`; the extension past 800nm is irlab's own model
+  (see `tools/editor_filters.mjs`), not the author's data.
