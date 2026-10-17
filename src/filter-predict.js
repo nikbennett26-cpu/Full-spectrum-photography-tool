@@ -7,8 +7,8 @@
    The physics, per channel c:   signal_c(l) = filter(l) x sensor_c(l) x daylight(l)
    From that: how much of the channel's signal is UV (<400nm), visible or infrared (>700nm), the signal-weighted
    centre wavelength, the channel's relative strength, and the gains a grey card would need (what the grey picker
-   will find). It does not pick a swap (build 151): it lists what each swap would move, and marks the wavelength-
-   ordered one only as the colour infrared film convention.
+   will find). The suggested swap (build 152) is the wavelength-ordered one, the colour infrared film convention,
+   stated with where foliage and sky will tend to land; it is a starting point, not a verdict.
 
    Sensors (build 149): a real converted Sony A7III, measured 300-800nm by Crowther (J. Imaging 2022, 8:54) and
    extended past 800nm under the assumptions stated in tools/editor_filters.mjs; a generic CMOS approximation; one
@@ -63,31 +63,32 @@ function fpRender() {
   const rows = r.res.map(c => '<tr><td><b>' + c.ch + '</b></td><td>' + (c.rel > 0.02 ? Math.round(c.centre) + 'nm' : '—') + '</td><td>' +
     pct(c.uv) + '</td><td>' + pct(c.vis) + '</td><td>' + pct(c.ir) + '</td><td>' + pct(c.rel) + '</td></tr>').join('');
   const g = r.res.map(c => c.gain), gn = g.map(x => (x / g[1]));
-  /* Build 151: no recommendation. What looks right is the photographer's call; what the data can say is what each
-     swap MOVES. For every swap: which recorded band each output colour would show, and, where the channels differ
-     enough in IR content to matter, where foliage (bright in near-IR, dark in visible red and blue) and blue sky
-     (bright in blue and UV, dark in IR) would tend to land. The wavelength-ordered swap is only labelled as the colour
-     infrared film convention, not suggested. */
-  const PERMS = [['012', 'No swap'], ['210', 'R\u2194B'], ['021', 'G\u2194B'], ['102', 'R\u2194G'], ['120', 'Rotate \u21bb'], ['201', 'Rotate \u21ba']];
+  /* Build 152: one suggestion again, with its reasoning. The six swap buttons already live in the Swap & mix panel, so
+     listing them here as well only duplicated them. The suggestion is the wavelength-ordered swap (longest band in red,
+     shortest in blue: the colour infrared film convention), and it says where foliage (bright in near-IR, dark in
+     visible red and blue) and blue sky (bright in blue and UV, dark in IR) will tend to land, so it is clear what is
+     being suggested and why. It is a starting point; the look stays the photographer's. */
   const OUT = ['red', 'green', 'blue'];
   const band = c => c.ir >= 0.6 ? 'mostly IR' : c.uv >= 0.5 ? 'mostly UV' : c.vis >= 0.6 ? 'mostly visible' : 'mixed';
+  const LABEL = { '012': 'No swap', '210': 'R\u2194B', '021': 'G\u2194B', '102': 'R\u2194G', '120': 'Rotate \u21bb', '201': 'Rotate \u21ba' };
   const irs = r.res.map(c => c.ir), irSpread = Math.max(...irs) - Math.min(...irs);
   const mostIR = irs.indexOf(Math.max(...irs));
   const leastIR = r.res.map((c, i) => [c.ir + c.centre / 1e4, i]).sort((x, y) => x[0] - y[0])[0][1];
   let swaps;
   if (r.spread < 15) swaps = '<p class="note">All three channels record nearly the same band (centres within ' + Math.round(r.spread) +
-    'nm), so every swap only reshuffles small differences: expect a near-monochrome result whichever you choose.</p>';
-  else swaps = '<p class="note"><b>What each swap moves</b> (the look is yours to choose; this only says what goes where):</p><div class="fpSwaps">' +
-    PERMS.map(([perm, label]) => {
-      const shows = OUT.map((o, i) => { const c = r.res[+perm[i]]; return o + ' shows ' + c.ch + ' (' + band(c) + ', ' + Math.round(c.centre) + 'nm)'; }).join(' \u00b7 ');
-      let hint = '';
-      if (irSpread > 0.15) {
-        const fol = OUT[perm.indexOf(String(mostIR))], sky = OUT[perm.indexOf(String(leastIR))];
-        hint = ' Foliage tends toward ' + fol + (fol === sky ? '' : ', blue sky toward ' + sky) + '.';
-      }
-      const film = perm === r.perm ? ' <span class="fpTag">colour IR film order</span>' : '';
-      return '<div class="fpSwap"><button type="button" class="swapBtn fpPerm" data-perm="' + perm + '">' + label + '</button><span>' + shows + '.' + hint + film + '</span></div>';
-    }).join('') + '</div>';
+    'nm), so any swap only reshuffles small differences: expect a near-monochrome result whatever you choose.</p>';
+  else {
+    const perm = r.perm;
+    const shows = OUT.map((o, i) => { const c = r.res[+perm[i]]; return o + ' shows ' + c.ch + ' (' + band(c) + ')'; }).join(' \u00b7 ');
+    let hint = '';
+    if (irSpread > 0.15) {
+      const fol = OUT[perm.indexOf(String(mostIR))], sky = OUT[perm.indexOf(String(leastIR))];
+      hint = ' Foliage tends toward ' + fol + (fol === sky ? '' : ' and blue sky toward ' + sky) + '.';
+    }
+    swaps = '<p class="note">Suggested: <b>' + LABEL[perm] + '</b> \u2014 channels in wavelength order, longest in red and shortest in blue, ' +
+      'the colour infrared film convention. ' + shows + '.' + hint + ' A starting point; any other swap is one tap away in Swap &amp; mix.</p>';
+    if (perm !== '012') swaps += '<button type="button" class="swapBtn fpPerm" data-perm="' + perm + '">Apply ' + LABEL[perm] + '</button>';
+  }
   out.innerHTML = (fpStack.length ? '' : '<p class="note">No filter added: this is the bare full-spectrum sensor. Add the filter(s) on your lens.</p>') +
     '<table class="fpTbl"><thead><tr><th></th><th>centre</th><th>UV</th><th>visible</th><th>IR</th><th>strength</th></tr></thead><tbody>' + rows + '</tbody></table>' +
     swaps +

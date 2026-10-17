@@ -934,28 +934,6 @@ async function loadFileInner(file) {
          is the only moment they can be matched against each other. Fitted
          now and kept for the session; the toggle decides whether it is
          applied, so nothing changes for anyone who leaves it off. */
-      try {
-        const found = await extractPreview(file);
-        if (!found || !found.blob) {
-          camFail('Unavailable for this file \u2014 no embedded camera JPEG was found inside it to learn the colour from.');
-        } else {
-          toast('Matching camera colour\u2026');
-          await new Promise(r => setTimeout(r, 0));
-          const fit = await fitCameraColour(cv, found.blob);
-          if (stale()) return;
-          if (fit) {
-            camCoef = fit.coef;
-            if ($('camMatch')) $('camMatch').disabled = false;
-            if ($('camMatchNote')) $('camMatchNote').textContent =
-              'Fitted from this file \u2014 average error ' + fit.rmse.toFixed(1) + '/255 against the camera\u2019s own JPEG.';
-          } else {
-            camFail('Unavailable for this file \u2014 too few usable pixels in common between the sensor data and the camera\u2019s JPEG to fit a reliable mapping.');
-          }
-        }
-      } catch (e) {
-        console.warn('Camera-colour fit skipped:', e);
-        camFail('Unavailable for this file \u2014 the camera\u2019s JPEG could not be read (' + e.message + ').');
-      }
       /* Fast path from here: cv is already a fully-decoded, correctly-sized
          canvas (AMaZE or this tool's own native decoder \u2014 both qualify) with
          real pixels sitting in it right now. The old code encoded it to a
@@ -974,7 +952,31 @@ async function loadFileInner(file) {
          separate blob just for that. */
       const decoderLabel = cv.__demosaicName || 'native';
       const savedName = file.name.replace(/\.[^.]+$/, '') + '_preview.jpg';
-      (async () => {
+      const camFit = async () => {
+        try {
+          const found = await extractPreview(file);
+          if (!found || !found.blob) {
+            camFail('Unavailable for this file \u2014 no embedded camera JPEG was found inside it to learn the colour from.');
+          } else {
+            toast('Matching camera colour\u2026');
+            await new Promise(r => setTimeout(r, 0));
+            const fit = await fitCameraColour(cv, found.blob);
+            if (stale()) return;
+            if (fit) {
+              camCoef = fit.coef;
+              if ($('camMatch')) $('camMatch').disabled = false;
+              if ($('camMatchNote')) $('camMatchNote').textContent =
+                'Fitted from this file \u2014 average error ' + fit.rmse.toFixed(1) + '/255 against the camera\u2019s own JPEG.';
+            } else {
+              camFail('Unavailable for this file \u2014 too few usable pixels in common between the sensor data and the camera\u2019s JPEG to fit a reliable mapping.');
+            }
+          }
+        } catch (e) {
+          console.warn('Camera-colour fit skipped:', e);
+          camFail('Unavailable for this file \u2014 the camera\u2019s JPEG could not be read (' + e.message + ').');
+        }
+      };
+      const buildFull = async () => {
         try {
           /* cv above is deliberately capped at WORKING_MAX_DIM (see the
              comment on rawEngineResultToCanvas itself) -- reusing it here
@@ -995,7 +997,6 @@ async function loadFileInner(file) {
           const fullBlob = await canvasToBlobSafe(fullCv, 'CR2 (' + decoderLabel + ', full-res)', 45000, true);
           if (stale()) return;
           origFile = fullBlob; origW = fullCv.width; origH = fullCv.height;
-          saveSessionImage(fullBlob, savedName);   // so a discarded tab can be recovered
           if (typeof updateExportResOptions === 'function') updateExportResOptions();
           /* renderFullscreenHQ bails out immediately if origFile isn't set
              yet (nothing to render at higher quality) and never retries on
@@ -1016,8 +1017,16 @@ async function loadFileInner(file) {
           console.warn('Full-resolution encode skipped \u2014 export at original resolution and session restore will be unavailable for this load:', e);
           toast('Full-resolution version failed to build (' + (e && e.message ? e.message : 'see console') + ') \u2014 export and Expand will use working size only for this photo');
         }
-      })();
+      };
+      /* Build 152: the photo goes on screen first. The camera-colour fit and the full-resolution copy used to run
+         before it: the fit was awaited, and the full-size canvas (21 MP on a 5D Mk II) was built synchronously at the
+         start of what was meant to be a background task. On a phone that added tens of seconds to every RAW. Both
+         now start once the working-size picture is showing. Session restore keeps the original RAW instead of a
+         21 MP PNG, which was the slowest single step and lossy in nothing but time: restoring re-decodes it. */
+      saveSessionImage(file, file.name);   // so a discarded tab can be recovered
       await finishLoad(cv, cv.width, cv.height, rawFlipToExif(res && res.flip), null, savedName);   // upright, as the camera recorded it
+      // full-size copy first (export at original size and Expand wait on it), then the camera-colour fit
+      setTimeout(async () => { if (stale()) return; await buildFull(); if (stale()) return; await camFit(); }, 60);
       return;
     } else {
       let found = null, prevErr = null;
@@ -1105,7 +1114,7 @@ async function loadFileInner(file) {
            session-restore are still handled, in the same non-blocking
            background task as before. */
         const savedName = file.name.replace(/\.[^.]+$/, '') + '_preview.jpg';
-        (async () => {
+        const buildFull = async () => {
           try {
             // Same fix, same reasoning as the CR2 branch above: cv is
             // capped at WORKING_MAX_DIM, so reusing it here was the actual
@@ -1117,7 +1126,6 @@ async function loadFileInner(file) {
             const fullBlob = await canvasToBlobSafe(fullCv, ext + ' (' + (fullCv.__demosaicName || demosaicPrefName()) + ', full-res)', 45000, true);
             if (stale()) return;
             origFile = fullBlob; origW = fullCv.width; origH = fullCv.height;
-            saveSessionImage(fullBlob, savedName);   // so a discarded tab can be recovered
             if (typeof updateExportResOptions === 'function') updateExportResOptions();
             // Same retry-trigger as the CR2 branch above -- see its comment
             // for why this is needed: renderFullscreenHQ never retries on
@@ -1128,8 +1136,10 @@ async function loadFileInner(file) {
             console.warn('Full-resolution encode skipped \u2014 export at original resolution and session restore will be unavailable for this load:', e);
             toast('Full-resolution version failed to build (' + (e && e.message ? e.message : 'see console') + ') \u2014 export and Expand will use working size only for this photo');
           }
-        })();
+        };
+        saveSessionImage(file, file.name);   // build 152: the original RAW, not a full-size PNG (see the CR2 branch)
         await finishLoad(cv, cv.width, cv.height, rawFlipToExif(res && res.flip), null, savedName);   // upright, as the camera recorded it
+        setTimeout(() => { if (!stale()) buildFull(); }, 60);
         return;
       } catch (e) {
         // Falls through to the embedded-preview path below, same as CR2's
