@@ -458,9 +458,6 @@ const FILTERS=[
    +'(diffuse density chart, converted to transmission via T=10^-D). Replaces a sigmoid fit that was already '
    +'well cross-verified (717.0/716.5nm across two scans) with the exact curve \u2014 a precision upgrade, not a '
    +'correction. Real plateau settles around 90-91% by 800nm+, not a flat 90%.'},
- {id:'jb490',g:'B4',n:'JB490 (GG495 type)',d:'Yellow long-pass \u00b7 490nm minus-blue',c:'#e0cc5a',type:'absorptive',ref:2,
-   bands:[{lo:492.6,ls:5.04,hi:2600,hs:400,T:.910}],
-   same:'Digitised from the seller\u2019s own transmission chart for JB490-2.0, not a manufacturer datasheet \u2014 lower-grade evidence than the Schott and Kodak fits, and recorded as such. Traced values: 50 percent of plateau at 492.6nm, 10-90 percent edge width 22.1nm, plateau 91.0 percent flat to 1100nm with no measurable NIR falloff. Sold as \u201cequal to GG495\u201d and that checks out: 2.6nm below the fitted Schott GG495 cut-on, which is inside the error of reading a chart off a shopping listing. JB is the Chinese designation for this glass family.'},
   {id:'r72',g:'B8',n:'Hoya R72',    d:'The classic · real chart',         c:'#bd3f2b',
   same:'REAL DATA \u2014 exact digitised curve from a real "HOYA R72 Light Transmission Graph." Replaces the '
    +'earlier fit (already excellent, 0.7pp max error against a different real Hoya chart) with the exact curve '

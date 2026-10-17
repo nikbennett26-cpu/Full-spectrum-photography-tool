@@ -114,7 +114,6 @@ const PROV={
   bw023:{s:'bw_handbook',m:'fit'},
   bw041:{s:'kodak1928',m:'fit'},
   w89b:{s:'kodak_w2',m:'chart'},
-  jb490:{s:'tangsinuo',m:'fit'},
   r72:{s:'hoya_r72',m:'chart'},
   w88a:{s:'kodak_peed',m:'fit'},
   w87:{s:'edmund_w87',m:'chart'},
@@ -216,8 +215,8 @@ const PROV={
   tb475:{s:'midopt',m:'chart',cc:'MidOpt/MidOpt_TB475_550_850.tsv',ccd:0.0},
   nf550:{s:'midopt',m:'chart',cc:'MidOpt/MidOpt_NF550.tsv',ccd:0.0},
   qb425:{s:'rapidspectra',m:'fit'},
-  xb29:{s:'omega',m:'chart'},
-  xb30:{s:'omega',m:'chart'},
+  xb29:{s:'omega',m:'eye'},
+  xb30:{s:'omega',m:'eye'},
   didy:{m:'fit'},
   notch532:{m:'fit'},
   sepia:{m:'est'},
@@ -284,6 +283,29 @@ PROV_FIXED_146.forEach(id=>{
   if(id==='bg3')pre+=' SCHOTT’s current BG3 table also differs from the older copy below 320nm (up to 19 points '+
     'lower at 280nm); the current table is used.';
   f.same=pre+(f.same?' Earlier record: '+f.same:'');
+});
+
+/* Build 147: notes that described a change the stored curve does not have. The stored curve wins (it is the source
+   data); the note is corrected at its top so nobody reads the old figure as what is drawn. */
+const LEE_TAIL='The curve drawn is Lee\u2019s published data as digitised by CheeseCube312. Its measured points run to 805nm; '+
+  'beyond that the source holds every Lee gel at a flat 90%, an extrapolation rather than a per-gel measurement, so '+
+  'treat the deep-IR level past ~800nm as approximate.';
+const NOTE_FIX_147={
+  lee139:LEE_TAIL+' The 35% leak estimate described below is NOT applied: the measured points themselves already reach '+
+    '88% by 780nm, so the real leak is far higher than 35%.',
+  lee729:LEE_TAIL+' The 35% leak estimate described below is NOT applied: the measured points themselves already reach '+
+    '88% by 780nm, so the real leak is far higher than 35%.',
+  lee120:LEE_TAIL+' The leak refit described below is not applied; the measured points reach 86% by 800nm, so the '+
+    'flat tail adds only a few points.',
+  lee132:LEE_TAIL+' The leak refit described below is not applied; the measured points reach 87% by 800nm, so the '+
+    'flat tail adds only a few points.',
+  lee119:LEE_TAIL+' The added leak band described below is not used; the measured points reach 86% by 800nm.',
+  lee141:LEE_TAIL+' The added leak band described below is not used; the measured points reach 86% by 800nm.',
+  lee124:LEE_TAIL+' The added leak band described below is not used; the measured points reach 86% by 800nm.'
+};
+Object.keys(NOTE_FIX_147).forEach(id=>{
+  const f=FILTERS.find(x=>x.id===id);if(!f)return;
+  f.same='CORRECTED in build 147: '+NOTE_FIX_147[id]+(f.same?' Earlier record: '+f.same:'');
 });
 
 function provenanceOf(f){
