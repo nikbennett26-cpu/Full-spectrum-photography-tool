@@ -17,6 +17,12 @@ editor) so it opens full screen and keeps working offline.
 - Optional wider-gamut swap using the camera's own colour data, and rebuilding of clipped highlights from the colours
   around them.
 
+**Trichrome:** stack three real shots into one, each feeding one colour, from the home page ("› stack three shots").
+Recipes for red Aerochrome (an infrared, a red-filter and a green-filter shot rebuilt as colour infrared film), classic
+RGB filter trichrome, three infrared bands, and plain shots with no filters. The shots are lined up automatically on the
+parts that did not move (shift and small rotation, with a hand nudge), balanced, and opened in the editor as a 16-bit
+TIFF. Code: `src/trichrome.js`.
+
 **Editing**, in five tabs:
 - **Looks:** channel swaps (R↔B, G↔B, R↔G, cyclic rotations), a channel mix grid with offsets, UV and IR presets,
   film stocks and recipes (including Fedia's Triple Band Aerochrome), your own saved presets, NDVI and NGB index views,
@@ -102,6 +108,7 @@ and published as one file, `editor.js`:
 | `src/colour-mirror.js` | a JS copy of the shader's colour maths, for the readouts |
 | `src/export.js` | EXIF and ICC profiles, full-size render, TIFF, saving the file |
 | `src/dock.js` | the phone dock and sheet, channel-swap space, in-page dialogs |
+| `src/trichrome.js` | the trichrome tool: three shots lined up and stacked into one |
 | `src/selftest.js` | the built-in self-test and its stored baseline |
 | `src/undo-buttons.js` | the undo and redo buttons |
 

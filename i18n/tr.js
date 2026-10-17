@@ -54,6 +54,9 @@
     [/^Data confidence: EST\. (.+)$/, 'tConfEst'],
     [/^(REAL — digitised curve|FIT — fitted, error quantified|FIT — fitted, error not quantified|EST — no measurement): (\d+)$/, 'tTierCount'],
     [/^(\d+) filters total\. (\d+) \((\d+)%\) are backed by a digitised curve or a fit with a documented error figure\. Quantified fits span ([\d.]+)pp to ([\d.]+)pp RMS — the badge shows each one, so a rough fit never reads the same as a tight one\. Note a digitised curve read by eye off a low-resolution chart is not automatically better than a least-squares fit against a published table; the tier describes how the data is stored as much as how good it is\.$/, 'tHealth'],
+    // trichrome (src/trichrome.js): step counter and loaded-shot counter
+    [/^step ([123]) of 3$/, 'tStepOf'],
+    [/^([0123]) of 3$/, 'tNofThree'],
     // the Swap tab's channel verdict (src/view.js), which carries a live number
     [/^Channel means differ by (-?[\d.]+) levels, so there is real separation to work with\.$/, 'tChSpread'],
     [/^The three channels are near-identical \(means within (-?[\d.]+) levels\)\. That is normal above roughly 700nm, where every sensor channel sees much the same infrared — a swap will do very little\. Below that, expect them to differ\.$/, 'tChSame'],

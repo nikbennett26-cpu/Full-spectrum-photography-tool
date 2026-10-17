@@ -1,0 +1,90 @@
+/* Trichrome (build 137): the home page's way in, and the full-screen panel. Dark like the home page in both themes,
+   since it sits between the home page and the editor. */
+
+/* home page: a second prompt line under "open photo" */
+#emptyStateGroup.lab .labTerm .ltPrompt2{display:flex;align-items:center;gap:10px;min-height:44px;margin-top:4px;padding:0;border:0;border-top:1px solid #1d1f23;
+  background:transparent;color:#c9c5bc;font:400 15px/1.2 var(--font-mono);text-align:left;cursor:pointer;width:100%}
+#emptyStateGroup.lab .labTerm .ltPrompt2 .ltCaret{color:#ee6a2c}
+#emptyStateGroup.lab .labTerm .ltPrompt2:hover,#emptyStateGroup.lab .labTerm .ltPrompt2:focus-visible{color:#eceae4}
+.triDots{margin-left:auto;display:flex;gap:4px}
+.triDots i{width:9px;height:9px;border-radius:50%;background:#e0452a}
+.triDots i:nth-child(2){background:#36b06a}
+.triDots i:nth-child(3){background:#2f7de1}
+
+/* the panel */
+body.triOn{overflow:hidden}
+#triPanel{position:fixed;inset:0;z-index:200;overflow-y:auto;-webkit-overflow-scrolling:touch;background:#0b0c0e;color:#eceae4;
+  font-family:var(--font-mono);padding:env(safe-area-inset-top) 0 env(safe-area-inset-bottom)}
+#triPanel[hidden]{display:none}
+#triPanel .triInner{max-width:520px;margin:0 auto;padding:14px 16px 24px;display:flex;flex-direction:column;gap:12px;box-sizing:border-box;min-height:100%}
+#triPanel .triHead{display:flex;align-items:center;gap:10px;min-height:44px}
+#triPanel .triIco{width:40px;height:40px;display:flex;align-items:center;justify-content:center;padding:0;border:1px solid #2a2d33;border-radius:6px;background:transparent;color:#eceae4;cursor:pointer}
+#triPanel .triIco svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
+#triPanel .triTitleTxt{font-size:15px;font-weight:700}
+#triPanel .triStepNo{margin-left:auto;font-size:11px;color:#8a867d}
+#triPanel .triLbl{font-size:11px;letter-spacing:.12em;color:#6fab96}
+#triPanel .triNote{margin:0;font:400 12.5px/1.45 var(--font-body);color:#a3a097}
+#triPanel .triMuted{color:#8a867d;font-size:11.5px}
+
+/* which parts show at each step */
+#triPanel .triS1,#triPanel .triS2,#triPanel .triS3,#triPanel .triView{display:none;flex-direction:column;gap:12px}
+#triPanel[data-step="1"] .triS1{display:flex}
+#triPanel[data-step="2"] .triS2,#triPanel[data-step="3"] .triS3{display:flex}
+#triPanel[data-step="2"] .triView,#triPanel[data-step="3"] .triView{display:flex}
+
+#triPanel .triChips{display:flex;flex-wrap:wrap;gap:6px}
+#triPanel .triChips button{min-height:36px;padding:0 12px;border:1px solid #2a2d33;border-radius:18px;background:transparent;color:#c9c5bc;font:400 12px/1 var(--font-mono);cursor:pointer}
+#triPanel .triChips button[aria-pressed="true"]{border-color:#ee6a2c;background:rgba(238,106,44,.16);color:#eceae4;font-weight:700}
+#triPanel .triChips.triSmall button{min-height:32px;font-size:11px}
+
+#triPanel .triSlots{display:flex;flex-direction:column;gap:8px}
+#triPanel .triSlot{display:flex;gap:10px;align-items:center;padding:8px;border:1px dashed #ee6a2c;border-radius:8px;background:transparent}
+#triPanel .triSlot.has{border:1px solid #2a2d33;background:#121316}
+#triPanel .triSlot.busy{opacity:.6}
+#triPanel .triPick{position:relative;width:84px;height:72px;flex:none;padding:0;border:0;border-radius:4px;background:#17191c;overflow:hidden;cursor:pointer}
+#triPanel .triThumb{display:none;width:100%;height:100%;object-fit:cover}
+#triPanel .triSlot.has .triThumb{display:block}
+#triPanel .triPlus{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:#ee6a2c;font-size:22px}
+#triPanel .triSlot.has .triPlus{display:none}
+#triPanel .triSlotTxt{display:flex;flex-direction:column;gap:3px;min-width:0;flex:1}
+#triPanel .triSlotLbl{font-size:12.5px;font-weight:700}
+#triPanel .triSlotHint{font-size:10.5px;color:#8a867d;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#triPanel .triUseRow{display:flex;align-items:center;gap:6px;font-size:10.5px;color:#6fab96}
+#triPanel .triUse{min-height:28px;padding:0 6px;border:1px solid #2a2d33;border-radius:4px;background:#0b0c0e;color:#c9c5bc;font:400 11px/1 var(--font-mono)}
+
+#triPanel .triKey{margin-top:4px;min-height:52px;display:flex;align-items:center;gap:10px;padding:4px 14px 4px 4px;border:1px solid #3a3d44;border-radius:8px;
+  background:#1c1e22;color:#6b6860;font:700 14px/1 var(--font-mono);cursor:pointer;text-align:left}
+#triPanel .triKey .triKeyChip{width:44px;height:44px;border-radius:6px;background:#3a2a22;color:#8a6a58;display:flex;align-items:center;justify-content:center;flex:none}
+#triPanel .triKey.ready{color:#eceae4}
+#triPanel .triKey.ready .triKeyChip{background:#ee6a2c;color:#0b0c0e}
+#triPanel .triKey .triKeyAside{margin-left:auto;font-size:11px;font-weight:400;color:#8a867d}
+#triPanel .triKey:disabled{cursor:default}
+
+#triPanel .triCvWrap{position:relative;border:1px solid #2a2d33;border-radius:8px;overflow:hidden;background:#050506}
+#triPanel #triCv{display:block;width:100%;height:auto;max-height:52vh;object-fit:contain}
+#triPanel #triCv.picking{cursor:crosshair;outline:2px solid #ee6a2c;outline-offset:-2px}
+#triPanel .triCvTag{position:absolute;left:8px;top:8px;padding:4px 8px;border-radius:4px;background:rgba(5,5,6,.78);font-size:10.5px}
+#triPanel .triCvTag:empty{display:none}
+
+#triPanel .triSeg{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));border:1px solid #2a2d33;border-radius:6px;overflow:hidden}
+#triPanel .triSeg button{min-height:40px;border:0;border-left:1px solid #2a2d33;background:transparent;color:#a3a097;font:400 12px/1 var(--font-mono);cursor:pointer}
+#triPanel .triSeg button:first-child{border-left:0}
+#triPanel .triSeg button[aria-pressed="true"]{background:rgba(238,106,44,.16);color:#eceae4;font-weight:700}
+#triPanel .triStatus{display:flex;flex-direction:column;gap:4px;padding:10px 12px;border-radius:8px;background:#121316;border:1px solid #1d1f23;font-size:11px;color:#a3a097}
+#triPanel .triStatus:empty{display:none}
+#triPanel .triStatus .triOk{font-size:12px;font-weight:700;color:#6fab96}
+#triPanel .triStatus .triWarn{font-size:12px;font-weight:700;color:#e0a23a}
+#triPanel .triNudgeHead{display:flex;align-items:center;justify-content:space-between;gap:8px}
+#triPanel .triNudge{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:6px}
+#triPanel .triNudge button{min-height:44px;border:1px solid #2a2d33;border-radius:6px;background:#17191c;color:#eceae4;font-size:15px;cursor:pointer}
+#triPanel .triNudge button:active{border-color:#ee6a2c}
+#triPanel .triCheck{display:flex;align-items:center;justify-content:space-between;gap:10px;min-height:40px;font-size:12px;color:#c9c5bc}
+
+#triPanel .triGain{display:flex;flex-direction:column;gap:4px}
+#triPanel .triGainHead{display:flex;justify-content:space-between;font-size:12px}
+#triPanel .triGainHead i{font-style:normal}
+#triPanel .triGainHead b{color:#6fab96}
+#triPanel .triGain input[type=range]{width:100%;accent-color:#ee6a2c}
+#triPanel .triRow2{display:flex;gap:8px}
+#triPanel .triRow2 button{flex:1;min-height:44px;border:1px solid #2a2d33;border-radius:6px;background:#17191c;color:#eceae4;font:400 12px/1 var(--font-mono);cursor:pointer}
+#triPanel .triRow2 button[aria-pressed="true"]{border-color:#ee6a2c;background:rgba(238,106,44,.16)}
