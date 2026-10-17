@@ -843,7 +843,8 @@ irlabTr.add('ja', {
 "stack three shots": "3枚を重ねる",
 "strong NIR pass": "NIRを強く透過",
 "swaps green and blue, red untouched · works on visible light too": "緑と青を入れ替え、赤はそのまま · 可視光でも使用可",
-"swaps red and green, blue untouched · not yet tested against a real IR/UV photo": "赤と緑を入れ替え、青はそのまま · 実際のIR/UV写真では未検証",
+"swaps red and green, blue untouched": "赤と緑を入れ替え、青はそのまま",
+"Not yet checked against a real IR or UV photo, so no claim is made about the colours it gives.": "実際のIR・UV写真ではまだ確認していないため、得られる色については何も示していません。",
 "tAlsoLee": "Lee {0}とも",
 "tAutoGains": "自動: ゲイン {0}、黒点 {1}",
 "tAutoLevels": "自動レベル: 露出 {0} EV、黒 {1}、明るさ {2}、コントラスト {3}、ハイライト {4}",
@@ -948,5 +949,11 @@ irlabTr.add('ja', {
 "◀ Original": "◀ 元画像",
 "✓ Lined up on the still parts": "✓ 静止部分で位置合わせ済み",
 "✦ Match exposures": "✦ 露出を揃える",
-"Add a filter, e.g. R72 or ZWB2": "フィルターを追加（例：R72、ZWB2）"
+"Add a filter, e.g. R72 or ZWB2": "フィルターを追加（例：R72、ZWB2）",
+"Wide (ProPhoto) — default": "広い（ProPhoto）— 既定",
+"Standard (sRGB) — no widening": "標準（sRGB）— 拡張なし",
+"colour pulled in to fit": "収まるよう色を補正",
+"Reading file…": "ファイルを読み込み中…",
+"Decoding sensor data…": "センサーデータをデコード中…",
+"Building preview…": "プレビューを作成中…"
 });

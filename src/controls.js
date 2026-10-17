@@ -1311,6 +1311,7 @@ function buildPresetButtons(list, containerId) {
         '</svg>'
       : '';
     b.innerHTML = '<b>' + p.n + roll + '</b>' + (p.s ? '<span class="psub">' + p.s + '</span>' : '');
+    if (p.t) b.title = p.t;   // build 156: caveats live in the tooltip, the card says only what the preset does
     b.onclick = () => {
       armUndoCapture();
       // Clicking the ALREADY-selected preset clears it. Previously the only

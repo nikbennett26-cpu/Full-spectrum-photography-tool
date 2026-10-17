@@ -1462,3 +1462,40 @@ $('btnExportLUT').addEventListener('click', async () => {
     toast('LUT saved — ' + chosen);
   } catch (e) { toast('LUT export failed: ' + e.message, true); }
 });
+/* ---------- RAW decode progress (build 156) ----------
+   Decoding a RAW can take many seconds on a phone, and a toast that vanished after two seconds left a frozen-looking
+   screen. This stays up for the whole decode, names the stage (1 Reading file, 2 Decoding sensor, 3 Building preview)
+   and counts the seconds. The bar is indeterminate on purpose: the decoder gives no progress to report. It hides itself
+   if another photo is opened meanwhile (loadToken moves on). */
+const RAWPROG_STEPS = ['Reading file', 'Decoding sensor data', 'Building preview'];
+let rawProgS = null;
+function rawProgStart(step, detail) {
+  let el = $('rawProg');
+  if (!el) {
+    el = document.createElement('div'); el.id = 'rawProg'; el.setAttribute('role', 'status'); el.setAttribute('aria-live', 'polite');
+    el.innerHTML = '<div class="rpTop"><b class="rpStage"></b><span class="rpTime"></span></div><div class="rpSteps"></div><div class="rpBar"></div>';
+    document.body.appendChild(el);
+  }
+  if (!rawProgS || rawProgS.token !== loadToken) {
+    if (rawProgS) clearInterval(rawProgS.iv);
+    rawProgS = { token: loadToken, t0: performance.now(), iv: setInterval(rawProgTick, 250) };
+  }
+  rawProgS.step = step;
+  el.querySelector('.rpStage').textContent = RAWPROG_STEPS[step] + '…';
+  // two nodes so the page translator can match 'step N of 3' (an existing template); the detail (file or decoder name) stays as is
+  const st = el.querySelector('.rpSteps'); st.textContent = '';
+  const n = document.createElement('span'); n.textContent = 'step ' + (step + 1) + ' of 3'; st.appendChild(n);
+  if (detail) { const d = document.createElement('span'); d.className = 'noTr'; d.textContent = ' · ' + detail; st.appendChild(d); }
+  el.hidden = false; rawProgTick();
+}
+function rawProgTick() {
+  const el = $('rawProg'); if (!el || !rawProgS) return;
+  if (rawProgS.token !== loadToken) { rawProgEnd(); return; }
+  if (performance.now() - rawProgS.t0 > 300000) { rawProgEnd(); return; }   // a safety net for any exit path that forgot to close it
+  el.querySelector('.rpTime').textContent = Math.floor((performance.now() - rawProgS.t0) / 1000) + 's';
+}
+function rawProgEnd() {
+  if (rawProgS) clearInterval(rawProgS.iv);
+  rawProgS = null;
+  const el = $('rawProg'); if (el) el.hidden = true;
+}

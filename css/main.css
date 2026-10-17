@@ -1170,3 +1170,14 @@ input[type=range]:focus-visible::-webkit-slider-thumb, input[type=range]:focus-v
     overscroll-behavior:contain}
 
 }
+/* Build 156: RAW decode progress. Stage-based with elapsed time and an indeterminate bar: the WASM decoder reports no
+   percentage, so the bar shows that work is happening, never a made-up fraction. */
+#rawProg{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);z-index:9000;min-width:240px;max-width:calc(100vw - 32px);padding:14px 16px;border-radius:12px;background:rgba(20,20,24,.92);color:#eee;font:13px/1.4 system-ui,sans-serif;box-shadow:0 6px 24px rgba(0,0,0,.4);pointer-events:none}
+#rawProg[hidden]{display:none}
+#rawProg .rpTop{display:flex;justify-content:space-between;gap:12px}
+#rawProg .rpTime{opacity:.7;font-variant-numeric:tabular-nums}
+#rawProg .rpSteps{opacity:.6;font-size:11px;margin-top:2px}
+#rawProg .rpBar{margin-top:10px;height:4px;border-radius:2px;background:rgba(255,255,255,.15);overflow:hidden;position:relative}
+#rawProg .rpBar::after{content:"";position:absolute;top:0;bottom:0;width:35%;border-radius:2px;background:var(--phosphor,#d6336c);animation:rpSlide 1.2s ease-in-out infinite}
+@keyframes rpSlide{0%{left:-35%}100%{left:100%}}
+@media (prefers-reduced-motion:reduce){#rawProg .rpBar::after{animation:none;left:0;width:100%;opacity:.5}}

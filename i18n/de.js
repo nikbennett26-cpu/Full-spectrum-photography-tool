@@ -843,7 +843,8 @@ irlabTr.add('de', {
 "stack three shots": "drei Aufnahmen stapeln",
 "strong NIR pass": "starker NIR-Durchlass",
 "swaps green and blue, red untouched · works on visible light too": "tauscht Grün und Blau, Rot unverändert · funktioniert auch mit sichtbarem Licht",
-"swaps red and green, blue untouched · not yet tested against a real IR/UV photo": "tauscht Rot und Grün, Blau unverändert · noch nicht an einem echten IR/UV-Foto getestet",
+"swaps red and green, blue untouched": "tauscht Rot und Grün, Blau unverändert",
+"Not yet checked against a real IR or UV photo, so no claim is made about the colours it gives.": "Noch nicht an einem echten IR- oder UV-Foto geprüft, daher wird nichts über die entstehenden Farben behauptet.",
 "tAlsoLee": "auch Lee {0}",
 "tAutoGains": "Auto: Verstärkungen {0}, Schwarzpunkt {1}",
 "tAutoLevels": "Auto-Tonwert: Belichtung {0} EV, Schwarz {1}, Helligkeit {2}, Kontrast {3}, Lichter {4}",
@@ -948,5 +949,11 @@ irlabTr.add('de', {
 "◀ Original": "◀ Original",
 "✓ Lined up on the still parts": "✓ An den unbewegten Teilen ausgerichtet",
 "✦ Match exposures": "✦ Belichtungen angleichen",
-"Add a filter, e.g. R72 or ZWB2": "Filter hinzufügen, z. B. R72 oder ZWB2"
+"Add a filter, e.g. R72 or ZWB2": "Filter hinzufügen, z. B. R72 oder ZWB2",
+"Wide (ProPhoto) — default": "Weit (ProPhoto) — Standard",
+"Standard (sRGB) — no widening": "Standard (sRGB) — keine Erweiterung",
+"colour pulled in to fit": "Farbe eingezogen, damit sie passt",
+"Reading file…": "Datei wird gelesen…",
+"Decoding sensor data…": "Sensordaten werden dekodiert…",
+"Building preview…": "Vorschau wird erstellt…"
 });

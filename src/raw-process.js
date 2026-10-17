@@ -722,6 +722,7 @@ async function loadFile(file) {
 async function loadFileInner(file) {
   const myToken = ++loadToken;
   const stale = () => myToken !== loadToken;
+  if (RAW_EXT.includes((file.name.split('.').pop() || '').toUpperCase())) rawProgStart(0, file.name);   // build 156
   /* Build 150: take the bytes into memory now, once. On Android a picked File is only a reference to the provider's
      content, and that permission can lapse later (after the app goes to the background, or simply a while after the
      pick). Every later read then threw NotReadableError: the full-sensor decode after the preview, a re-decode when a
@@ -733,11 +734,12 @@ async function loadFileInner(file) {
     file = new File([await file.arrayBuffer()], file.name, { type: file.type, lastModified: file.lastModified });
   } catch (e) {
     if (stale()) return;
+    rawProgEnd();
     if (sessionRestoring) {
       idbPut('image', null);   // a saved photo that can no longer be read will not become readable; stop offering it
       toast('The saved photo can no longer be read on this device — open it again to carry on');
     } else {
-      alert('This file could not be read (' + (e.name || 'error') + '). The phone may have withdrawn access to it — pick it again from the file picker.');
+      rawProgEnd(); alert('This file could not be read (' + (e.name || 'error') + '). The phone may have withdrawn access to it — pick it again from the file picker.');
     }
     return;
   }
@@ -816,7 +818,7 @@ async function loadFileInner(file) {
     let cv = null;
     try { cv = await tiffToCanvas(await file.arrayBuffer()); }
     catch (e) {
-      alert('This TIFF could not be read.\n\n' + e.message + '\n\nRe-export as uncompressed, LZW or ZIP, 8 or 16-bit, untiled.');
+      rawProgEnd(); alert('This TIFF could not be read.\n\n' + e.message + '\n\nRe-export as uncompressed, LZW or ZIP, 8 or 16-bit, untiled.');
       return;
     }
     if (stale()) return;
@@ -824,7 +826,7 @@ async function loadFileInner(file) {
       src = await canvasToBlobSafe(cv, 'TIFF');
     } catch (e) {
       console.error(e);
-      alert('The TIFF could not be prepared \u2014 ' + e.message);
+      rawProgEnd(); alert('The TIFF could not be prepared \u2014 ' + e.message);
       return;
     }
     if (stale()) return;
@@ -871,7 +873,7 @@ async function loadFileInner(file) {
                  ' rawEngine.supported()=' + rawEngine.supported() +
                  ' \u2192 will attempt AMaZE: ' + (!preferPreview && rawEngine.supported()));
     if (!preferPreview && rawEngine.supported()) {
-      toast('Decoding CR2 sensor data (' + demosaicPrefName() + ')\u2026 this can take a while');
+      rawProgStart(1, demosaicPrefName());
       await new Promise(r => setTimeout(r, 30));
       try {
         // res was previously `const`, block-scoped to just this try —
@@ -886,6 +888,7 @@ async function loadFileInner(file) {
           console.warn('AMaZE: load went stale after demosaic() resolved \u2014 a newer load started while this one was decoding, so this result was discarded.');
           return;
         }
+        rawProgStart(2);
         cv = rawEngineResultToCanvas(res, $('camSpaceSwap') && $('camSpaceSwap').checked, getCamSpaceSwapMatrix(), getCamSpaceSwapName());
       } catch (e) {
         console.warn('AMaZE decode failed:', e);
@@ -900,7 +903,7 @@ async function loadFileInner(file) {
       // status update a fraction of a second later regardless of any
       // duration setting \u2014 an alert can't be silently stomped on the same
       // way, and stays up until it's actually dismissed.
-      alert('RAW sensor decode failed for this file:\n\n' + amazeErr + '\n\nFalling back to the embedded preview now.');
+      rawProgEnd(); alert('RAW sensor decode failed for this file:\n\n' + amazeErr + '\n\nFalling back to the embedded preview now.');
     }
     if (cv) {
       /* A raw sensor decode arrives badly unbalanced and it is not a small
@@ -1043,7 +1046,7 @@ async function loadFileInner(file) {
         if (amazeErr) parts.push('Sensor decode: ' + amazeErr);
         if (prevErr) parts.push('Preview search: ' + prevErr);
         else parts.push('Preview search: no embedded JPEG found');
-        alert('This CR2 could not be opened.\n\n' + parts.join('\n') +
+        rawProgEnd(); alert('This CR2 could not be opened.\n\n' + parts.join('\n') +
               '\n\nFile size: ' + (file.size/1048576).toFixed(1) + ' MB' +
               '\n\nIf that size looks short for a raw file, it is probably only part-downloaded \u2014 open it once in a file manager, or re-download it, and try again.');
         return;
@@ -1087,7 +1090,7 @@ async function loadFileInner(file) {
     const preferPreview = $('cr2PreferPreview') && $('cr2PreferPreview').checked;
     let decodedQuality = false;
     if (!preferPreview && rawEngine.supported()) {
-      toast('Decoding ' + ext + ' sensor data\u2026 this can take a while on a large file');
+      rawProgStart(1, demosaicPrefName());
       await new Promise(r => setTimeout(r, 30));   // let the toast paint first
       try {
         const res = await rawEngine.demosaic(demosaicPref(), file);
@@ -1095,6 +1098,7 @@ async function loadFileInner(file) {
           console.warn(ext + ' AMaZE: load went stale after demosaic() resolved \u2014 a newer load started while this one was decoding, so this result was discarded.');
           return;
         }
+        rawProgStart(2);
         const cv = rawEngineResultToCanvas(res, $('camSpaceSwap') && $('camSpaceSwap').checked, getCamSpaceSwapMatrix(), getCamSpaceSwapName());
         if (stale()) return;
         // Same reasoning as the CR2 sensor path: a raw demosaic arrives
@@ -1151,7 +1155,7 @@ async function loadFileInner(file) {
         // the very next status update a moment later regardless of any
         // duration setting, and (unlike the CR2 case) this one wasn't even
         // including the actual error text before.
-        alert('RAW sensor decode failed for this ' + ext + ':\n\n' + msg + '\n\nFalling back to the embedded preview now.');
+        rawProgEnd(); alert('RAW sensor decode failed for this ' + ext + ':\n\n' + msg + '\n\nFalling back to the embedded preview now.');
       }
     }
     if (!decodedQuality) {
@@ -1159,7 +1163,7 @@ async function loadFileInner(file) {
       let found = null;
       try { found = await extractPreview(file); } catch (e) { found = null; }
       if (!found) {
-        alert(ext + " opened, but no usable preview image was found inside it.\n\nSome bodies only embed a small thumbnail, and a few formats store it in a way this can't reach. Export a JPEG from Lightroom instead.");
+        rawProgEnd(); alert(ext + " opened, but no usable preview image was found inside it.\n\nSome bodies only embed a small thumbnail, and a few formats store it in a way this can't reach. Export a JPEG from Lightroom instead.");
         return;
       }
       src = found.blob;
@@ -1275,9 +1279,11 @@ async function loadFileInner(file) {
       setupCompareOverlay();
       updateExportResOptions();
       render();
+      rawProgEnd();
       // a look opened from a shared link lands on the first photo (src/share.js); a session restore applies it itself
       if (typeof applyPendingLook === 'function' && !sessionRestoring) setTimeout(applyPendingLook, 0);
     } catch (err) {
+      rawProgEnd();
       showLoadError(err);
     }
   }
@@ -1304,9 +1310,9 @@ async function loadFileInner(file) {
     const ext = (file.name.split('.').pop() || '').toUpperCase();
     const known = ['TIF','TIFF','HEIC','HEIF'];
     if (known.includes(ext)) {
-      alert(ext + " files can't be opened directly — web browsers have no decoder for them.\n\nExport as JPEG or PNG instead (16-bit TIFF is still available for EXPORTING from this tool, just not for loading).");
+      rawProgEnd(); alert(ext + " files can't be opened directly — web browsers have no decoder for them.\n\nExport as JPEG or PNG instead (16-bit TIFF is still available for EXPORTING from this tool, just not for loading).");
     } else {
-      alert("Couldn't read that file — it may be corrupt or in a format this browser can't decode. Try JPEG or PNG.");
+      rawProgEnd(); alert("Couldn't read that file — it may be corrupt or in a format this browser can't decode. Try JPEG or PNG.");
     }
   };
   img.src = URL.createObjectURL(src);
@@ -1325,7 +1331,7 @@ function pickedFile(e, fn) {
   e.target.value = '';
   if (!f) return;                       // a real cancel: the user chose nothing
   if (f.size === 0) {
-    alert("That file came back empty.\n\nThis usually means the app you picked from (Google Photos, Drive, or a cloud folder) handed over a placeholder rather than the file itself \u2014 often because it is not downloaded to the device yet.\n\nTry picking it from Files/Downloads instead, or download it locally first.");
+    rawProgEnd(); alert("That file came back empty.\n\nThis usually means the app you picked from (Google Photos, Drive, or a cloud folder) handed over a placeholder rather than the file itself \u2014 often because it is not downloaded to the device yet.\n\nTry picking it from Files/Downloads instead, or download it locally first.");
     return;
   }
   fn(f);

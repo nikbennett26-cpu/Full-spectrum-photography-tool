@@ -843,7 +843,8 @@ irlabTr.add('zh', {
 "stack three shots": "叠合三张",
 "strong NIR pass": "近红外通过强",
 "swaps green and blue, red untouched · works on visible light too": "互换绿与蓝，红不变 · 也适用于可见光",
-"swaps red and green, blue untouched · not yet tested against a real IR/UV photo": "互换红与绿，蓝不变 · 尚未用真实红外/紫外照片测试",
+"swaps red and green, blue untouched": "互换红与绿，蓝不变",
+"Not yet checked against a real IR or UV photo, so no claim is made about the colours it gives.": "尚未用真实的红外或紫外照片验证，因此不对其产生的颜色作任何说明。",
 "tAlsoLee": "亦即 Lee {0}",
 "tAutoGains": "自动：增益 {0}，黑点 {1}",
 "tAutoLevels": "自动色阶：曝光 {0} EV，黑色 {1}，亮度 {2}，对比度 {3}，高光 {4}",
@@ -948,5 +949,11 @@ irlabTr.add('zh', {
 "◀ Original": "◀ 原图",
 "✓ Lined up on the still parts": "✓ 已按静止部分对齐",
 "✦ Match exposures": "✦ 匹配曝光",
-"Add a filter, e.g. R72 or ZWB2": "添加滤镜，例如 R72 或 ZWB2"
+"Add a filter, e.g. R72 or ZWB2": "添加滤镜，例如 R72 或 ZWB2",
+"Wide (ProPhoto) — default": "宽（ProPhoto）— 默认",
+"Standard (sRGB) — no widening": "标准（sRGB）— 不扩展",
+"colour pulled in to fit": "颜色收回以适配",
+"Reading file…": "正在读取文件…",
+"Decoding sensor data…": "正在解码传感器数据…",
+"Building preview…": "正在生成预览…"
 });
