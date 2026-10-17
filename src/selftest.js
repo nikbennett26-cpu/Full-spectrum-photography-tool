@@ -409,4 +409,5 @@ async function runSelfTest() {
   };
   window.__stDone = true;
 }
-if (SELFTEST) window.addEventListener('load', () => { setTimeout(runSelfTest, 400); });
+// this file is fetched separately (see src/i18n.js), so the page may already have finished loading
+if (SELFTEST) { if (document.readyState === 'complete') setTimeout(runSelfTest, 400); else window.addEventListener('load', () => { setTimeout(runSelfTest, 400); }); }

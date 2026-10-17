@@ -116,7 +116,7 @@ and published as one file, `editor.js`:
 | `src/dock.js` | the phone dock and sheet, channel-swap space, in-page dialogs |
 | `src/trichrome.js` | the trichrome tool: three shots lined up and stacked into one |
 | `src/share.js` | Share, Before \| after and look links |
-| `src/selftest.js` | the built-in self-test and its stored baseline |
+| `src/selftest.js` | the built-in self-test and its stored baseline; built on its own into `editor-selftest.js`, which is only fetched for `?selftest` |
 | `src/undo-buttons.js` | the undo and redo buttons |
 
 The filters page works the same way: `filters.html`, `css/filters.css`, and its code in `src-filters/` (layout, the

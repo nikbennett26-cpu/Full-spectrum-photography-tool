@@ -24,12 +24,13 @@
 // The core build + createLibRawGPL3 import are left in place below (and
 // demosaicRaw(), a separate low-level API, is untouched) but decode() no
 // longer calls either.
-import createLibRawGPL3 from '../dist/libraw-gpl3.js';
+// The core build is imported only when init() is first called (demosaicRaw), not up front: a static import made
+// every RAW open download and parse its 1.2 MB even though decode() never uses it.
 import createLibRawGPL3XTrans from '../dist/libraw-gpl3-xtrans.js';
 
 let modP = null;
 export function init(opts = {}) {
-  if (!modP) modP = createLibRawGPL3(opts);
+  if (!modP) modP = import('../dist/libraw-gpl3.js').then(m => m.default(opts));
   return modP;
 }
 

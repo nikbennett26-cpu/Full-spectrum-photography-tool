@@ -17,7 +17,9 @@ import os, re
 
 BUNDLES = [
     ('editor.js', 'src', ['shaders', 'engine', 'i18n', 'view', 'controls', 'raw-preview', 'session', 'raw-process', 'ui',
-                          'wb-lut', 'colour-mirror', 'export', 'dock', 'trichrome', 'share', 'selftest', 'undo-buttons']),
+                          'wb-lut', 'colour-mirror', 'export', 'dock', 'trichrome', 'share', 'undo-buttons']),
+    # the self-test is only fetched when the page is opened with ?selftest (src/i18n.js), so most visits skip its 130 KB
+    ('editor-selftest.js', 'src', ['selftest']),
     ('filters.js', 'src-filters', ['layout', 'model', 'data', 'list-search', 'export', 'recipe', 'chart', 'selftest',
                                    'zoom-guidance', 'spectral']),
 ]
@@ -29,7 +31,8 @@ for out_name, folder, order in BUNDLES:
         s = open(os.path.join(root, folder, name + '.js'), encoding='utf-8').read()
         s = re.sub(r"\A'use strict';\n", '', s)
         parts.append(f'\n/* ==================== {folder}/{name}.js ==================== */\n' + s.rstrip('\n') + '\n')
-    extra = sorted(set(f[:-3] for f in os.listdir(os.path.join(root, folder)) if f.endswith('.js')) - set(order))
+    listed = set(n for _, d, o in BUNDLES if d == folder for n in o)
+    extra = sorted(set(f[:-3] for f in os.listdir(os.path.join(root, folder)) if f.endswith('.js')) - listed)
     assert not extra, f'files in {folder}/ not listed in BUNDLES: {extra}'
     text = ''.join(parts)
     open(os.path.join(root, out_name), 'w', encoding='utf-8').write(text)

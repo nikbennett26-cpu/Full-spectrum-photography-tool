@@ -4,6 +4,9 @@
 
 /* ?selftest runs the built-in colour check (see runSelfTest). It must never touch the saved session. */
 const SELFTEST = /[?&]selftest(&|=|$)/.test(location.search);
+/* The self-test's code and baseline live in editor-selftest.js (built from src/selftest.js), fetched only for ?selftest.
+   It shares this script's globals, so it is added once the editor has finished running. */
+if (SELFTEST) setTimeout(() => { const s = document.createElement('script'); s.src = 'editor-selftest.js?b=' + (window.IRLAB_BUILD || ''); document.body.appendChild(s); }, 0);
 const I18N = {
   en: { demosaicLabel:'Demosaic', slotIdle:'Insert file', slotBusy:'Reading', secLoad:'Load', secDecode:'Decode', secTools:'Tools', whatsNewLabel:'What\u2019s new', languageLabel:'Language', hotspotRemoval:'Hotspot removal', fringing:'Colour fringing', dockLooks:'Looks', dockLight:'Light', dockColour:'Colour', dockDetail:'Detail', dockExport:'Export', maskColour:'Colour', maskPick:'Pick colour', selfTest:'Self-test', localAdj:'Local adjustments', maskAdd:'Add', maskLinear:'Linear', maskRadial:'Radial', maskLum:'Luminosity', maskInvert:'Invert', maskShow:'Show mask', maskDelete:'Delete mask', cropFree:'Free', cropOriginal:'Original', cropReset:'Reset crop', toneCurve:'Tone curve', lensCorrection:'Lens correction', scopeHist:'Histogram', scopeParade:'Parade', fineTag:'fine', cropTitle:'Crop', introTitle:'Upload an IR/UV Photo', chooseImage:'Choose image',
     btnHome:'Home', btnResetAll:'Reset all', undo:'Undo', redo:'Redo',
