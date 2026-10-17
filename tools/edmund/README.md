@@ -1,6 +1,6 @@
 # Edmund Optics filter curves
 
-How the 85 Edmund Optics filters in the filter database (`src-filters/edmund.js`) were collected.
+How the 90 Edmund Optics filters in the filter database (`src-filters/edmund.js`) were collected.
 
 Edmund's product pages draw their curves from the same requests these scripts use, run in a browser console on
 edmundoptics.co.uk (they are same-origin requests there):
@@ -20,7 +20,8 @@ edmundoptics.co.uk (they are same-origin requests there):
    with a checksum to `data/part*.json`; `data/ranges.json` holds each source chart's own wavelength span.
 4. `python3 tools/edmund/convert.py` checks the checksums and writes `src-filters/edmund.js`. The kind of filter and
    its edge or centre are read from the curve itself. Where a chart stops short of 1100nm the curve is held at its
-   last value, so a filter whose chart ends with light still passing (an unknown tail) is left out, and the rest say
+   last value, so a filter whose chart ends with light still passing (an unknown tail) is left out, except the colour filters,
+   which are kept for colour work; all of these say
    "data to …nm" in their description.
 
 Edmund marks these curves "for reference only" (typical or design performance).

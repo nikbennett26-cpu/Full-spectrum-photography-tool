@@ -77,7 +77,8 @@ for stock, (fam, hint, chk, c) in items.items():
     note = ''
     if hi < 1095:
         # past the end of Edmund's chart nothing is known: fine to hold a longpass open, not to guess a tail
-        if 'cut-on' not in d and T(c, hi) > 0.1: dropped.append((stock, d, hi)); continue
+        # (colour filters are kept anyway: they are wanted for colour work, and the description says where the data ends)
+        if 'cut-on' not in d and T(c, hi) > 0.1 and 'colour' not in FAM.get(fam, ''): dropped.append((stock, d, hi)); continue
         note = f' · data to {hi}nm'
     sig = tuple(round(v, 2) for v in c)
     if sig in seen: continue          # the same coating listed under two families
@@ -87,7 +88,7 @@ for stock, (fam, hint, chk, c) in items.items():
     m = re.search(r'(red|green|blue|cyan|magenta|yellow|orange|amber|violet)', hint or '', re.I)
     extra = (' ' + m.group(1).lower()) if m and 'colour' in label else ''
     n = f'Edmund{extra} {label} #{stock}'
-    key = (label, d)
+    key = (label, d, extra)
     if key in seen: continue
     seen[key] = stock
     out.append((band(wl), n, 'eo_' + stock.replace('-', ''), d + ' · ' + label + note, colour(wl), fam, c))

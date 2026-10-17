@@ -121,7 +121,7 @@ and published as one file, `editor.js`:
 
 The filters page works the same way: `filters.html`, `css/filters.css`, and its code in `src-filters/` (layout, the
 filter model, the filter data, the 221 Thorlabs filters (`src-filters/thorlabs.js`, built from measured data by
-`tools/thorlabs/`, see its README), the 85 Edmund Optics filters (`src-filters/edmund.js`, from `tools/edmund/`), list and search, export, the recipe finder, the chart, the data self-test, zoom and
+`tools/thorlabs/`, see its README), the 90 Edmund Optics filters (`src-filters/edmund.js`, from `tools/edmund/`), list and search, export, the recipe finder, the chart, the data self-test, zoom and
 stacking guidance, the spectral response), built into `filters.js`.
 
 **Edit `src/` and `src-filters/`, never `editor.js` or `filters.js`.** `tools/build.py` joins each page's sources, in the order listed in it, into its one script.
