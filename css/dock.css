@@ -747,3 +747,15 @@ html.dockOn body.has-image .toolbar > [data-lbl], html.dockOn body.has-image .to
 .shareRow button svg{width:15px;height:15px;flex:none;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
 .shareRow button.busy{opacity:.55}
 .shareNote{margin:8px 2px 0!important;font-size:11.5px!important;line-height:1.45!important;color:var(--muted)!important}
+/* Predict from your filters (build 148) */
+.fpSearch{width:100%;box-sizing:border-box;padding:10px 12px;border-radius:8px;border:1px solid var(--line2);background:transparent;color:inherit;font:inherit}
+.fpStack{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0}
+.fpChip{display:inline-flex;align-items:center;gap:6px;padding:4px 4px 4px 10px;border:1px solid var(--line2);border-radius:999px;font-size:12px}
+.fpChip small{opacity:.65;font-size:10px;letter-spacing:.03em}
+.fpChip button{border:0;background:none;color:inherit;font-size:16px;line-height:1;padding:2px 6px;cursor:pointer;min-height:28px}
+.fpSensorRow{display:flex;align-items:center;gap:8px;margin:6px 0 4px}
+.fpSensorRow select{flex:1;min-width:0}
+.fpTbl{width:100%;border-collapse:collapse;font-size:12px;font-variant-numeric:tabular-nums;margin-top:6px}
+.fpTbl th{font-weight:500;opacity:.65;text-align:right;padding:3px 4px}
+.fpTbl td{text-align:right;padding:3px 4px;border-top:1px solid var(--line2)}
+.fpTbl td:first-child,.fpTbl th:first-child{text-align:left}

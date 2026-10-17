@@ -947,5 +947,6 @@ irlabTr.add('zh', {
 "▸ Range controls": "▸ 范围控制",
 "◀ Original": "◀ 原图",
 "✓ Lined up on the still parts": "✓ 已按静止部分对齐",
-"✦ Match exposures": "✦ 匹配曝光"
+"✦ Match exposures": "✦ 匹配曝光",
+"Add a filter, e.g. R72 or ZWB2": "添加滤镜，例如 R72 或 ZWB2"
 });

@@ -947,5 +947,6 @@ irlabTr.add('es', {
 "▸ Range controls": "▸ Controles de rango",
 "◀ Original": "◀ Original",
 "✓ Lined up on the still parts": "✓ Alineadas en las partes quietas",
-"✦ Match exposures": "✦ Igualar exposiciones"
+"✦ Match exposures": "✦ Igualar exposiciones",
+"Add a filter, e.g. R72 or ZWB2": "Añade un filtro, p. ej. R72 o ZWB2"
 });

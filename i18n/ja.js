@@ -947,5 +947,6 @@ irlabTr.add('ja', {
 "▸ Range controls": "▸ 範囲の調整",
 "◀ Original": "◀ 元画像",
 "✓ Lined up on the still parts": "✓ 静止部分で位置合わせ済み",
-"✦ Match exposures": "✦ 露出を揃える"
+"✦ Match exposures": "✦ 露出を揃える",
+"Add a filter, e.g. R72 or ZWB2": "フィルターを追加（例：R72、ZWB2）"
 });

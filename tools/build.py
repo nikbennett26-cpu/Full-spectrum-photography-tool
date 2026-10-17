@@ -32,7 +32,7 @@ READABLE = '--readable' in sys.argv
 
 BUNDLES = [
     ('editor.js', 'src', ['shaders', 'engine', 'i18n', 'view', 'controls', 'raw-preview', 'session', 'raw-process', 'ui',
-                          'wb-lut', 'colour-mirror', 'export', 'dock', 'trichrome', 'share', 'undo-buttons']),
+                          'wb-lut', 'colour-mirror', 'export', 'dock', 'trichrome', 'share', 'filter-predict', 'undo-buttons']),
     # the self-test is only fetched when the page is opened with ?selftest (src/i18n.js), so most visits skip its 130 KB
     ('editor-selftest.js', 'src', ['selftest']),
     ('filters.js', 'src-filters', ['layout', 'model', 'schott', 'data', 'thorlabs', 'edmund', 'provenance', 'list-search', 'export', 'recipe', 'chart', 'selftest',
@@ -50,6 +50,7 @@ for _f in os.listdir(_srcdir):
     _t = re.sub(r'/\*.*?\*/', '', _t, flags=re.S); _t = re.sub(r'(?m)^\s*//.*$', '', _t)   # comments may mention them
     _used = [n for n in _st_names if re.search(r'(?<![\w$.])' + re.escape(n) + r'(?![\w$])', _t)]
     assert not _used, f'src/{_f} uses {_used}, defined only in src/selftest.js (which loads only for ?selftest)'
+subprocess.run(['node', os.path.join(os.path.dirname(os.path.abspath(__file__)), 'editor_filters.mjs')], check=True)
 for out_name, folder, order in BUNDLES:
     parts = [f"'use strict';\n/* {out_name} is BUILT from {folder}/*.js by tools/build.py. Do not edit it: edit {folder}/ and rebuild.\n"
              f"   Each part starts with a ==== {folder}/<file>.js ==== line, so an error's line number leads back to its source. */\n"]

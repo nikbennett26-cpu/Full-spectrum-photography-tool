@@ -947,5 +947,6 @@ irlabTr.add('fr', {
 "▸ Range controls": "▸ Réglages de plage",
 "◀ Original": "◀ Original",
 "✓ Lined up on the still parts": "✓ Alignées sur les parties immobiles",
-"✦ Match exposures": "✦ Égaliser les expositions"
+"✦ Match exposures": "✦ Égaliser les expositions",
+"Add a filter, e.g. R72 or ZWB2": "Ajoutez un filtre, p. ex. R72 ou ZWB2"
 });
