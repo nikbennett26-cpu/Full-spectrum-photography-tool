@@ -127,7 +127,7 @@ uniform float u_debandRad;  // reach, in source texels, at full strength
   uniform float u_maskProbe;      // 1 = write the colour as it reaches the local adjustments and stop (the mask guide pass)
   uniform float u_maskGuideOn;    // 1 = colour and luminosity masks read smoothed colour from u_maskGuide
   uniform sampler2D u_maskGuide; uniform vec2 u_mGuideTexel;
-  uniform float u_maskView;       // -1 = off, else the index of the mask painted red
+  uniform float u_maskView;       // -1 = off, else the index of the mask shown as a matte
   uniform vec4 u_mGeom[4];        // linear: x0,y0,x1,y1 | radial: cx,cy,rx,ry | luminosity: lo,hi,0,0
   uniform vec4 u_mInfo[4];        // type (0 linear, 1 radial, 2 luminosity, 3 colour, 4 foliage/IR index), feather 0..1, invert 0/1, 0
   uniform vec4 u_mAdj[4];         // exposure EV, contrast strength (1 = none), saturation multiplier, temperature
@@ -2878,7 +2878,11 @@ uniform float u_skyL;          // the typical lightness of the sky; anything cle
     if (u_maskN > 0.5) {
       if (u_maskProbe > 0.5) { gl_FragColor = vec4(clamp(srgb, 0.0, 1.0), 1.0); return; }
       srgb = applyLocalAdjust(srgb);
-      if (u_maskView > -0.5) srgb = mix(srgb, vec3(1.0, 0.12, 0.08), g_maskShown * 0.6);
+      /* Show mask (build 154): the selected area keeps the picture, everything outside it drops to a dark grey. It used
+         to paint the selection red at 60%, which disappears on exactly the photos this tool is for: an unswapped or
+         Aerochrome-style infrared frame is already red, so the overlay was indistinguishable from the picture. A matte
+         reads the same on any colour. */
+      if (u_maskView > -0.5) { float Lm = dot(clamp(srgb, 0.0, 1.0), LUMW); srgb = mix(vec3(0.04 + 0.22 * Lm), srgb, g_maskShown); }
     }
 
     /* Clipping / gamut overlay ("blinkies").
