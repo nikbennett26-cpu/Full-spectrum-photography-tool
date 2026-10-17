@@ -722,6 +722,26 @@ async function loadFile(file) {
 async function loadFileInner(file) {
   const myToken = ++loadToken;
   const stale = () => myToken !== loadToken;
+  /* Build 150: take the bytes into memory now, once. On Android a picked File is only a reference to the provider's
+     content, and that permission can lapse later (after the app goes to the background, or simply a while after the
+     pick). Every later read then threw NotReadableError: the full-sensor decode after the preview, a re-decode when a
+     setting changed, and the copy saved for session restore, which then failed on the next visit ("RAW sensor decode
+     failed ... permission problems", falling back to the preview). Reading it straight away and working from the copy
+     makes all of those independent of the provider. Done after the token bump, which restoreSession() relies on
+     happening synchronously. */
+  try {
+    file = new File([await file.arrayBuffer()], file.name, { type: file.type, lastModified: file.lastModified });
+  } catch (e) {
+    if (stale()) return;
+    if (sessionRestoring) {
+      idbPut('image', null);   // a saved photo that can no longer be read will not become readable; stop offering it
+      toast('The saved photo can no longer be read on this device — open it again to carry on');
+    } else {
+      alert('This file could not be read (' + (e.name || 'error') + '). The phone may have withdrawn access to it — pick it again from the file picker.');
+    }
+    return;
+  }
+  if (stale()) return;
   /* A new photo: the previous RAW's cached sensor data must go. It used to stay, and every Undo, Reset or preset
      re-applied the camera-space swap from it, replacing a JPEG opened afterwards with the previous RAW (in the new
      photo's orientation). A RAW decoded below caches its own. */
