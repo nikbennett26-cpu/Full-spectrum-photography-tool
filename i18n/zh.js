@@ -466,7 +466,7 @@ irlabTr.add('zh', {
 "Primary saturation": "原色饱和度",
 "Print (CMYK) warning": "印刷 (CMYK) 警告",
 "ProPhoto — default": "ProPhoto — 默认",
-"Processes every file with the settings currently on screen and returns one .zip. Files are handled one at a time and never touch the preview, so your current image and adjustments are left exactly as they are. CR2 files get the same real sensor decode as loading one normally, and obey the same \"Use quick preview instead of full sensor decode\" option under Decode on the home page; other RAW formats use their embedded preview.": "用屏幕上当前的设置处理每个文件，并返回一个 .zip。文件逐个处理，不会触碰预览，因此当前图像和调整完全不变。CR2 文件与正常打开时一样进行真实的传感器解码，并同样遵循主页“解码”中的“使用快速预览,而非完整传感器解码”选项；其他 RAW 格式使用其内嵌预览。",
+"Processes every file with the settings currently on screen and returns one .zip. Files are handled one at a time and never touch the preview, so your current image and adjustments are left exactly as they are. RAW files of every format get the same real sensor decode as loading one normally, and obey the same \"Use quick preview instead of full sensor decode\" option under Decode on the home page; a RAW that cannot be decoded falls back to its embedded preview.": "用屏幕上当前的设置处理每个文件，并返回一个 .zip。文件逐个处理，不会触碰预览，因此当前图像和调整完全不变。所有格式的 RAW 文件都与正常打开时一样进行真实的传感器解码，并同样遵循主页“解码”中的“使用快速预览,而非完整传感器解码”选项；无法解码的 RAW 会改用其内嵌预览。",
 "Processes every file with today’s settings into one .zip. Your current image and adjustments are untouched.": "用当前设置处理每个文件并打包为一个 .zip。当前图像和调整保持不变。",
 "Pulls pink, magenta and red foliage toward the crimson of the reference pictures: hue toward red, chroma up, a little darker. Pale pink walls and grey stone are left alone.": "将粉、品红和红色植被拉向参考照片中的绯红：色相偏红、彩度提高、略微变暗。浅粉墙面和灰色石头不受影响。",
 "Purple": "紫",
