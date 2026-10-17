@@ -645,7 +645,7 @@ function applyCropToPixels(px, w, h) {
    batch. The shader applies them last, in linear light (see
    applyLocalAdjust); this side keeps the list, builds the uniforms and draws
    the handles. */
-const MASK_MAX = 4, MASK_TYPES = ['linear', 'radial', 'lum', 'color'];
+const MASK_MAX = 4, MASK_TYPES = ['linear', 'radial', 'lum', 'color', 'ir'];
 let masks = [], maskSel = -1;
 function maskNew(type) {
   const base = { type: type, inv: false, feather: 50, exp: 0, con: 0, sat: 0, temp: 0, tint: 0 };
@@ -653,6 +653,8 @@ function maskNew(type) {
   if (type === 'linear') return Object.assign(base, { x0: 0.5, y0: 0.15, x1: 0.5, y1: 0.65 });
   if (type === 'radial') return Object.assign(base, { cx: 0.5, cy: 0.5, rx: 0.25, ry: Math.min(0.5, 0.25 * asp) });
   if (type === 'color') return Object.assign(base, { L0: 0.6, a0: 0.1, b0: 0.05, range: 30, sw: '#b05a50' });
+  // foliage by vegetation index (build 153): index from/to on a -100..100 scale (= -1..1), NDVI by default
+  if (type === 'ir') return Object.assign(base, { nlo: 20, nhi: 100, ngb: false, feather: 40 });
   return Object.assign(base, { lo: 0, hi: 0.35 });
 }
 function maskViewIndex() {
@@ -669,6 +671,7 @@ function maskUniformData() {
     if (m.type === 'linear') { geom[i * 4] = m.x0; geom[i * 4 + 1] = m.y0; geom[i * 4 + 2] = m.x1; geom[i * 4 + 3] = m.y1; }
     else if (m.type === 'radial') { geom[i * 4] = m.cx; geom[i * 4 + 1] = m.cy; geom[i * 4 + 2] = m.rx; geom[i * 4 + 3] = m.ry; }
     else if (m.type === 'color') { geom[i * 4] = m.L0; geom[i * 4 + 1] = m.a0; geom[i * 4 + 2] = m.b0; geom[i * 4 + 3] = 0.01 + (m.range / 100) * 0.25; }
+    else if (m.type === 'ir') { geom[i * 4] = m.nlo / 100; geom[i * 4 + 1] = m.nhi / 100; geom[i * 4 + 2] = m.ngb ? 1 : 0; }
     else { geom[i * 4] = m.lo; geom[i * 4 + 1] = m.hi; }
     info[i * 4] = MASK_TYPES.indexOf(m.type); info[i * 4 + 1] = m.feather / 100; info[i * 4 + 2] = m.inv ? 1 : 0;
     adj[i * 4] = m.exp; adj[i * 4 + 1] = contrastStrength(m.con); adj[i * 4 + 2] = Math.max(0, 1 + m.sat / 100); adj[i * 4 + 3] = m.temp / 100 * 2;
@@ -676,7 +679,7 @@ function maskUniformData() {
   }
   return { n: n, geom: geom, info: info, adj: adj, adj2: adj2 };
 }
-function maskLabel(type) { const d = I18N[uiLang] || I18N.en; return d[type === 'linear' ? 'maskLinear' : type === 'radial' ? 'maskRadial' : type === 'color' ? 'maskColour' : 'maskLum'] || type; }
+function maskLabel(type) { const d = I18N[uiLang] || I18N.en; return d[type === 'linear' ? 'maskLinear' : type === 'radial' ? 'maskRadial' : type === 'color' ? 'maskColour' : type === 'ir' ? 'maskIr' : 'maskLum'] || type; }
 function maskRenderList() {
   const box = $('maskChips'); if (!box) return;
   box.innerHTML = '';
@@ -687,9 +690,9 @@ function maskRenderList() {
     b.addEventListener('click', () => { maskSel = i; maskRenderList(); maskSyncEditor(); drawMaskOverlay(); if (maskViewIndex() >= 0) render(); });
     box.appendChild(b);
   });
-  ['btnMaskLinear', 'btnMaskRadial', 'btnMaskLum', 'btnMaskColour'].forEach(id => { const e = $(id); if (e) e.disabled = masks.length >= MASK_MAX; });
+  ['btnMaskLinear', 'btnMaskRadial', 'btnMaskLum', 'btnMaskColour', 'btnMaskIr'].forEach(id => { const e = $(id); if (e) e.disabled = masks.length >= MASK_MAX; });
 }
-const MASK_SLIDERS = { mExp: 'exp', mCon: 'con', mSat: 'sat', mTemp: 'temp', mTint: 'tint', mFeather: 'feather', mLo: 'lo', mHi: 'hi', mRange: 'range' };
+const MASK_SLIDERS = { mExp: 'exp', mCon: 'con', mSat: 'sat', mTemp: 'temp', mTint: 'tint', mFeather: 'feather', mLo: 'lo', mHi: 'hi', mRange: 'range', mNlo: 'nlo', mNhi: 'nhi' };
 function maskSyncEditor() {
   const ed = $('maskEditor'); if (!ed) return;
   const m = masks[maskSel];
@@ -697,11 +700,12 @@ function maskSyncEditor() {
   if (!m) return;
   $('maskLumRow').style.display = m.type === 'lum' ? 'block' : 'none';
   $('maskColorRow').style.display = m.type === 'color' ? 'block' : 'none';
+  if ($('maskIrRow')) { $('maskIrRow').style.display = m.type === 'ir' ? 'block' : 'none'; $('mNgb').checked = !!m.ngb; }
   $('mSwatch').style.background = m.sw || '#888';
   $('mInvert').checked = !!m.inv;
   Object.keys(MASK_SLIDERS).forEach(id => {
     const k = MASK_SLIDERS[id], el = $(id); if (!el) return;
-    el.value = (k === 'lo' || k === 'hi') ? Math.round((m[k] || 0) * 100) : m[k];
+    el.value = (k === 'lo' || k === 'hi') ? Math.round((m[k] || 0) * 100) : (m[k] == null ? el.defaultValue : m[k]);
     const lbl = $('v_' + id); if (lbl) lbl.textContent = el.value;
     syncSliderFill(el);
   });
@@ -754,6 +758,11 @@ function drawMaskOverlay() {
   $('btnMaskLinear').addEventListener('click', () => addMask('linear'));
   $('btnMaskRadial').addEventListener('click', () => addMask('radial'));
   $('btnMaskLum').addEventListener('click', () => addMask('lum'));
+  if ($('btnMaskIr')) $('btnMaskIr').addEventListener('click', () => addMask('ir'));
+  if ($('mNgb')) $('mNgb').addEventListener('change', () => {
+    const m = masks[maskSel]; if (!m || m.type !== 'ir') return;
+    armUndoCapture(); m.ngb = $('mNgb').checked; commitUndoCapture(); render(); saveSessionState();
+  });
   $('btnMaskColour').addEventListener('click', () => {
     addMask('color');
     if (masks.length && masks[maskSel] && masks[maskSel].type === 'color') { enterPick('maskColor'); toast('Tap a colour in the photo'); }
@@ -784,6 +793,8 @@ function drawMaskOverlay() {
       let v = +el.value;
       if (k === 'lo') { v = Math.min(v, Math.round(m.hi * 100)); el.value = v; m.lo = v / 100; }
       else if (k === 'hi') { v = Math.max(v, Math.round(m.lo * 100)); el.value = v; m.hi = v / 100; }
+      else if (k === 'nlo') { v = Math.min(v, m.nhi); el.value = v; m.nlo = v; }
+      else if (k === 'nhi') { v = Math.max(v, m.nlo); el.value = v; m.nhi = v; }
       else m[k] = v;
       const lbl = $('v_' + id); if (lbl) lbl.textContent = el.value;
       syncSliderFill(el); render(true); saveSessionState();

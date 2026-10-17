@@ -129,7 +129,7 @@ uniform float u_debandRad;  // reach, in source texels, at full strength
   uniform sampler2D u_maskGuide; uniform vec2 u_mGuideTexel;
   uniform float u_maskView;       // -1 = off, else the index of the mask painted red
   uniform vec4 u_mGeom[4];        // linear: x0,y0,x1,y1 | radial: cx,cy,rx,ry | luminosity: lo,hi,0,0
-  uniform vec4 u_mInfo[4];        // type (0 linear, 1 radial, 2 luminosity), feather 0..1, invert 0/1, 0
+  uniform vec4 u_mInfo[4];        // type (0 linear, 1 radial, 2 luminosity, 3 colour, 4 foliage/IR index), feather 0..1, invert 0/1, 0
   uniform vec4 u_mAdj[4];         // exposure EV, contrast strength (1 = none), saturation multiplier, temperature
   uniform vec4 u_mAdj2[4];        // tint, 0, 0, 0
   uniform int u_bandPreview;  // -1 = off, else the index of the band to show
@@ -1712,6 +1712,12 @@ uniform float u_skyL;          // the typical lightness of the sky; anything cle
   }
 
   float g_maskShown = 0.0;
+  /* Build 153: the vegetation index of this pixel, kept for the foliage (IR) mask. Measured exactly where the NDVI /
+     NGB view measures it: on the white-balanced channels BEFORE the swap, while there is still a separate near-IR term
+     (red) and a visible term (green for NDVI, blue for NGB). Leaves reflect strongly in the near infrared and absorb
+     visible light for photosynthesis, so the index separates foliage from sky, water, stone and skin by physics, not by
+     colour, which after a channel swap no longer says anything about what a surface is. */
+  float g_ndvi = 0.0, g_ngb = 0.0;
 
   /* Weight of one mask at this pixel, 0..1. Geometry is in image space with y
      down, which is what v_texCoord is. Linear and radial work from position;
@@ -1733,6 +1739,12 @@ uniform float u_skyL;          // the typical lightness of the sky; anything cle
     } else if (info.x < 2.5) {
       float soft = max(f * 0.3, 0.005);
       m = smoothstep(g.x - soft, g.x, lumaBase) * (1.0 - smoothstep(g.y, g.y + soft, lumaBase));
+    } else if (info.x > 3.5) {
+      /* Foliage (IR): selects by vegetation index, g.x..g.y on the index scale (-1..1), g.z picks the index
+         (0 = NDVI, red vs green; 1 = NGB, red vs blue). */
+      float idx = g.z > 0.5 ? g_ngb : g_ndvi;
+      float soft = max(f * 0.3, 0.005);
+      m = smoothstep(g.x - soft, g.x, idx) * (1.0 - smoothstep(g.y, g.y + soft, idx));
     } else {
       /* Colour range: distance from the picked colour in OKLab, which is
          close to perceptual, so the edge of the selection looks even. Colour
@@ -2347,6 +2359,12 @@ uniform float u_skyL;          // the typical lightness of the sky; anything cle
        NIR or blue term left to difference. White balance is applied first so
        the ratio is measured on corrected channels rather than raw sensor
        response, which is what makes values comparable between frames. */
+    {
+      vec3 wbi = max(rgb * u_preWB, vec3(0.0));
+      float dg = wbi.r + wbi.g, db = wbi.r + wbi.b;
+      g_ndvi = dg > 0.0001 ? (wbi.r - wbi.g) / dg : 0.0;
+      g_ngb = db > 0.0001 ? (wbi.r - wbi.b) / db : 0.0;
+    }
     if (u_indexMode > 0) {
       vec3 wb = rgb * u_preWB;
       float nir = max(wb.r, 0.0);

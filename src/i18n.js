@@ -69,12 +69,12 @@ const I18N_127 = {"en": {"cSrc": "Source channels", "cSrcS": "which one carries 
 Object.keys(I18N_127).forEach(l => { if (I18N[l]) Object.assign(I18N[l], I18N_127[l]); });
 /* Build 148: the "Predict from your filters" card. */
 const I18N_148 = {
-  en: { fpT: 'Predict from your filters', fpS: 'what each channel records, and the swap', fpSensor: 'Sensor' },
-  es: { fpT: 'Predecir según tus filtros', fpS: 'qué registra cada canal y el intercambio', fpSensor: 'Sensor' },
-  fr: { fpT: 'Prédire d’après vos filtres', fpS: 'ce que capte chaque canal, et l’échange', fpSensor: 'Capteur' },
-  de: { fpT: 'Aus deinen Filtern vorhersagen', fpS: 'was jeder Kanal aufnimmt, und der Tausch', fpSensor: 'Sensor' },
-  ja: { fpT: 'フィルターから予測', fpS: '各チャンネルが記録する帯域と入れ替え', fpSensor: 'センサー' },
-  zh: { fpT: '根据滤镜预测', fpS: '各通道记录的波段及互换', fpSensor: '传感器' }
+  en: { fpT: 'Predict from your filters', fpS: 'what each channel records, and the swap', fpSensor: 'Sensor', maskIr: 'Foliage (IR)', maskIrLo: 'Index from', maskIrHi: 'Index to', maskIrNgb: 'Use NGB (red vs blue)', cLocS: 'linear, radial, luminosity, colour, foliage' },
+  es: { fpT: 'Predecir según tus filtros', fpS: 'qué registra cada canal y el intercambio', fpSensor: 'Sensor', maskIr: 'Follaje (IR)', maskIrLo: 'Índice desde', maskIrHi: 'Índice hasta', maskIrNgb: 'Usar NGB (rojo frente a azul)', cLocS: 'lineal, radial, luminosidad, color, follaje' },
+  fr: { fpT: 'Prédire d’après vos filtres', fpS: 'ce que capte chaque canal, et l’échange', fpSensor: 'Capteur', maskIr: 'Feuillage (IR)', maskIrLo: 'Indice de', maskIrHi: 'Indice à', maskIrNgb: 'Utiliser NGB (rouge contre bleu)', cLocS: 'linéaire, radial, luminosité, couleur, feuillage' },
+  de: { fpT: 'Aus deinen Filtern vorhersagen', fpS: 'was jeder Kanal aufnimmt, und der Tausch', fpSensor: 'Sensor', maskIr: 'Laub (IR)', maskIrLo: 'Index von', maskIrHi: 'Index bis', maskIrNgb: 'NGB verwenden (Rot gegen Blau)', cLocS: 'linear, radial, Luminanz, Farbe, Laub' },
+  ja: { fpT: 'フィルターから予測', fpS: '各チャンネルが記録する帯域と入れ替え', fpSensor: 'センサー', maskIr: '葉（IR）', maskIrLo: '指数（下限）', maskIrHi: '指数（上限）', maskIrNgb: 'NGBを使う（赤と青）', cLocS: '線形・円形・輝度・カラー・葉' },
+  zh: { fpT: '根据滤镜预测', fpS: '各通道记录的波段及互换', fpSensor: '传感器', maskIr: '植被（红外）', maskIrLo: '指数下限', maskIrHi: '指数上限', maskIrNgb: '使用NGB（红对蓝）', cLocS: '线性、径向、亮度、颜色、植被' }
 };
 Object.keys(I18N_148).forEach(l => { if (I18N[l]) Object.assign(I18N[l], I18N_148[l]); });
 function detectUILang() {
@@ -250,7 +250,7 @@ const UV_PRESETS = [
      broken one is gone rather than patched. */
 const IR_PRESETS = [
   { n: "R-B swap",        s: "550nm \u2192 pink & teal \u00b7 720nm \u2192 white foliage, blue sky",
-    m: [0,0,100, 0,100,0, 100,0,0] },
+    m: [0,0,100, 0,100,0, 100,0,0], maskIr: '植被（红外）', maskIrLo: '指数下限', maskIrHi: '指数上限', maskIrNgb: '使用NGB（红对蓝）', cLocS: '线性、径向、亮度、颜色、植被' },
   { n: "R-B swap + IR sub", s: "same, minus 30% IR from green and blue \u00b7 darker, cleaner",
     m: [0,0,100, 0,100,-30, 100,0,-30] },
   /* Completes the pairwise-swap set alongside R-B swap and B-G swap below.
