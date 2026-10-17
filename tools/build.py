@@ -17,7 +17,7 @@ import os, re
 
 BUNDLES = [
     ('editor.js', 'src', ['shaders', 'engine', 'i18n', 'view', 'controls', 'raw-preview', 'session', 'raw-process', 'ui',
-                          'wb-lut', 'colour-mirror', 'export', 'dock', 'trichrome', 'selftest', 'undo-buttons']),
+                          'wb-lut', 'colour-mirror', 'export', 'dock', 'trichrome', 'share', 'selftest', 'undo-buttons']),
     ('filters.js', 'src-filters', ['layout', 'model', 'data', 'list-search', 'export', 'recipe', 'chart', 'selftest',
                                    'zoom-guidance', 'spectral']),
 ]

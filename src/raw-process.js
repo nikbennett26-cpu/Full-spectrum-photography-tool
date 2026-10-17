@@ -1245,6 +1245,8 @@ async function loadFileInner(file) {
       setupCompareOverlay();
       updateExportResOptions();
       render();
+      // a look opened from a shared link lands on the first photo (src/share.js); a session restore applies it itself
+      if (typeof applyPendingLook === 'function' && !sessionRestoring) setTimeout(applyPendingLook, 0);
     } catch (err) {
       showLoadError(err);
     }

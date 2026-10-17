@@ -499,3 +499,48 @@ document.addEventListener('wheel', e => {
   if (e.target && e.target.closest && e.target.closest('#cw,#previewFullscreen')) return;   // these zoom the photo themselves
   e.preventDefault();
 }, { passive: false });
+
+/* ---- Build 139: the phone rail shows icons only, so a long press on one shows its name in a small bubble under it,
+   and that press does not also fire the button. A quick tap works as before. ---- */
+(function railNames() {
+  const SEL = '.toolbar > [data-lbl], .toolbar .ptTools > [data-lbl]';
+  let timer = 0, startX = 0, startY = 0, shownFor = null, bubble = null;
+  const onRail = () => document.documentElement.classList.contains('dockOn') && document.body.classList.contains('has-image');
+  function hide() { if (bubble) bubble.remove(); bubble = null; }
+  function show(el) {
+    hide();
+    let name = el.getAttribute('data-lbl') || el.getAttribute('aria-label') || '';
+    const long = el.getAttribute('aria-label') || el.getAttribute('title') || '';
+    // the full name reads better than the one-word label when it is short enough (e.g. "Filter database")
+    if (long && long.length <= 24) name = long;
+    if (window.irlabTr && irlabTr.lang !== 'en') { const t = irlabTr.lookup(name); if (t) name = t; }
+    bubble = document.createElement('div');
+    bubble.className = 'railName noTr'; bubble.textContent = name; bubble.setAttribute('role', 'status');
+    document.body.appendChild(bubble);
+    const r = el.getBoundingClientRect(), bw = bubble.offsetWidth;
+    const left = Math.max(8, Math.min(window.innerWidth - bw - 8, r.left + r.width / 2 - bw / 2));
+    bubble.style.left = left + 'px'; bubble.style.top = (r.bottom + 6) + 'px';
+    if (navigator.vibrate) try { navigator.vibrate(8); } catch (e) {}
+  }
+  document.addEventListener('pointerdown', e => {
+    const el = e.target.closest && e.target.closest(SEL);
+    if (!el || !onRail() || e.pointerType === 'mouse') return;
+    clearTimeout(timer); startX = e.clientX; startY = e.clientY; shownFor = null;
+    timer = setTimeout(() => { shownFor = el; show(el); }, 450);
+  }, true);
+  document.addEventListener('pointermove', e => {
+    if (timer && Math.hypot(e.clientX - startX, e.clientY - startY) > 10) { clearTimeout(timer); timer = 0; }
+  }, true);
+  const end = () => { clearTimeout(timer); timer = 0; if (bubble) setTimeout(hide, 900); };
+  document.addEventListener('pointerup', end, true);
+  document.addEventListener('pointercancel', end, true);
+  // the release after a long press must not also press the button (or open the file picker / link)
+  document.addEventListener('click', e => {
+    if (!shownFor) return;
+    const el = e.target.closest && e.target.closest(SEL);
+    if (el === shownFor) { e.preventDefault(); e.stopPropagation(); }
+    shownFor = null;
+  }, true);
+  document.addEventListener('contextmenu', e => { if (onRail() && e.target.closest && e.target.closest(SEL)) e.preventDefault(); }, true);
+  window.addEventListener('scroll', hide, { passive: true, capture: true });
+})();

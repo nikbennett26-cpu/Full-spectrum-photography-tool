@@ -345,6 +345,13 @@ async function restoreSession(rec) {
      up to 30 minutes ago could land on top of a brand-new image the user
      had just picked themselves, appearing as an unexplained single undo
      entry and a colour cast on a file that should have opened untouched. */
+  sessionRestoring = true;
+  try { await restoreSessionInner(rec); } finally { sessionRestoring = false; }
+  // a look opened from a shared link goes on top of the restored photo (src/share.js)
+  if (typeof applyPendingLook === 'function') applyPendingLook();
+}
+var sessionRestoring = false;
+async function restoreSessionInner(rec) {
   const myToken = loadToken;
   const st = await idbGet('state');
   if (myToken !== loadToken) return;   // the person picked a photo themselves while the saved one was being read

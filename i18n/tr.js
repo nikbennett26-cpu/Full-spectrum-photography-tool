@@ -59,6 +59,43 @@
     [/^([0123]) of 3$/, 'tNofThree'],
     // the Swap tab's channel verdict (src/view.js), which carries a live number
     [/^Channel means differ by (-?[\d.]+) levels, so there is real separation to work with\.$/, 'tChSpread'],
+    // pop-up messages (toast) and dialogs that carry a number or a name (build 139)
+    [/^Undone — (\d+) more steps?$/, 'tUndoneN'],
+    [/^Redone — (\d+) more steps?$/, 'tRedoneN'],
+    [/^(Channel swap|Targeted colour|White balance|Light|Colour|Detail) reset$/, 'tPanelReset'],
+    [/^Build (\d+) is available$/, 'tBuildAvail'],
+    [/^You are on the latest version \(build (\d+)\)$/, 'tLatest'],
+    [/^Could not check for updates \((.+)\)$/, 'tUpdFail'],
+    [/^Up to (\d+) masks$/, 'tMaskMax'],
+    [/^Re-decoded with (.+)$/, 'tRedecoded'],
+    [/^Saved “(.+)”$/, 'tSavedQ'],
+    [/^Saved (\S+\.\w{2,5})$/, 'tSavedName'],
+    [/^LUT saved — (.+)$/, 'tLutSaved'],
+    [/^LUT export failed: (.+)$/, 'tLutFail'],
+    [/^Loaded TIFF — (\d+×\d+) \(full resolution\)$/, 'tLoadedTiff'],
+    [/^Loaded (\S+) sensor data — (\d+×\d+) \((.+)\)$/, 'tLoadedRaw'],
+    [/^Loaded (\S+) embedded preview — (\d+×\d+) \(camera rendering, not raw sensor data\)$/, 'tLoadedEmbPrev'],
+    [/^Loaded (\S+) preview — (\d+×\d+) \(camera rendering, not raw sensor data\)$/, 'tLoadedPrev'],
+    [/^Decoding (\S+) sensor data \((.+)\)… this can take a while$/, 'tDecodingAlg'],
+    [/^Decoding (\S+) sensor data… this can take a while on a large file$/, 'tDecoding'],
+    [/^Reading (\S+) preview…$/, 'tReadingPrev'],
+    [/^Rebuilding preview colour… (\d+)%$/, 'tRebuildPct'],
+    [/^Could not read (.+?)( \(.+\))?$/, 'tCouldNotRead'],
+    [/^Could not combine the shots( \(.+\))?$/, 'tCombineFail'],
+    [/^Delete “(.+)”\?$/, 'tDeleteQ'],
+    [/^Replace “(.+)”\?$/, 'tReplaceQ'],
+    [/^Something failed: (.+)$/, 'tSomethingFailed'],
+    [/^Tone mapping failed \((.+)\)$/, 'tToneFail'],
+    [/^RAW noise reduction failed \((.+)\)$/, 'tNrFail'],
+    [/^Auto levels: exposure (\S+) EV, black (\S+), brightness (\S+), contrast (\S+), highlights (\S+)$/, 'tAutoLevels'],
+    [/^Auto: gains (\S+), black point (-?\d+)$/, 'tAutoGains'],
+    [/^Original \((\d+×\d+)\) exceeds this device’s GPU texture limit \((\d+)px\) — using working size instead$/, 'tGpuLimit'],
+    [/^Full-resolution version failed to build \((.+)\) — export and Expand will use working size only for this photo$/, 'tFullResFail'],
+    [/^Original render failed \((.+)\) — using working size$/, 'tOrigRenderFail'],
+    [/^Export failed: (.+)$/, 'tExportFail'],
+    [/^RAW sensor decode failed for this (\S+):$/, 'tRawFailFor'],
+    [/^(\S+) opened, but no usable preview image was found inside it\.$/, 'tNoPreview'],
+    [/^(\S+) files can't be opened directly — web browsers have no decoder for them\.$/, 'tCantOpen'],
     [/^The three channels are near-identical \(means within (-?[\d.]+) levels\)\. That is normal above roughly 700nm, where every sensor channel sees much the same infrared — a swap will do very little\. Below that, expect them to differ\.$/, 'tChSame'],
   ];
   const tables = {};
@@ -190,6 +227,18 @@
     set(l, done) { load(l, () => { apply(l); if (done) done(); }); },
     lookup: en => lookup(en),
     get lang() { return lang; },
+  };
+  /* alert() boxes are drawn by the browser, outside the page, so the observer never sees them. Translate them here,
+     paragraph by paragraph (then line by line), leaving error details and file names as they are. */
+  const nativeAlert = window.alert.bind(window);
+  window.alert = msg => {
+    if (lang === 'en' || !dict || typeof msg !== 'string') return nativeAlert(msg);
+    const tr = msg.split('\n\n').map(par => {
+      const whole = lookup(par);
+      if (whole != null) return whole;
+      return par.split('\n').map(line => { const v = lookup(line); return v == null ? line : v; }).join('\n');
+    }).join('\n\n');
+    return nativeAlert(tr);
   };
   // the same choice as the editor's detectUILang: the saved pick, else the browser's language if it is one of ours
   const LANGS = ['en', 'es', 'fr', 'de', 'ja', 'zh'];

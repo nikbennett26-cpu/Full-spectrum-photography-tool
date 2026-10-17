@@ -23,6 +23,12 @@ RGB filter trichrome, three infrared bands, and plain shots with no filters. The
 parts that did not move (shift and small rotation, with a hand nudge), balanced, and opened in the editor as a 16-bit
 TIFF. Code: `src/trichrome.js`.
 
+**Sharing.** Under Export Image, *Share* hands a full-quality JPEG to the phone's share sheet (Instagram, Facebook,
+WhatsApp...) with the Web Share API, and saves the file where a browser cannot share files. *Before | after* puts the
+original and the edit in one picture (side by side for an upright photo, stacked for a wide one). *Look link* packs the
+current look (the same things a saved preset keeps) into `#look=` on the page address, deflated and base64url-encoded;
+opening it saves the look to My presets and applies it to the next photo. Code: `src/share.js`.
+
 **Editing**, in five tabs:
 - **Looks:** channel swaps (R↔B, G↔B, R↔G, cyclic rotations), a channel mix grid with offsets, UV and IR presets,
   film stocks and recipes (including Fedia's Triple Band Aerochrome), your own saved presets, NDVI and NGB index views,
@@ -109,6 +115,7 @@ and published as one file, `editor.js`:
 | `src/export.js` | EXIF and ICC profiles, full-size render, TIFF, saving the file |
 | `src/dock.js` | the phone dock and sheet, channel-swap space, in-page dialogs |
 | `src/trichrome.js` | the trichrome tool: three shots lined up and stacked into one |
+| `src/share.js` | Share, Before \| after and look links |
 | `src/selftest.js` | the built-in self-test and its stored baseline |
 | `src/undo-buttons.js` | the undo and redo buttons |
 
