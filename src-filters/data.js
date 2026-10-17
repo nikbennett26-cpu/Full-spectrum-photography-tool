@@ -355,8 +355,10 @@ const FILTERS=[
    +'again right at the edge of this tool\u2019s 1100nm ceiling (still under 1% at 1100nm on this chart, but '
    +'visibly climbing toward ~40% by 1200nm on the source chart itself \u2014 mostly outside what this tool models).'},
  {id:'heliouvir',g:'B5',n:'Heliopan Digital UV-IR',d:'Schott glass · absorptive, not a hot mirror',c:'#72c0a0',
-  bands:[{lo:400,ls:8,hi:670,hs:11,T:.94}],type:'absorptive',
-  same:'built from Schott glass rather than a dielectric coating — avoids the corner colour-shift dichroic hot mirrors can show on wide lenses'},
+  bands:[{lo:400,ls:8,hi:670,hs:11,T:.92}],type:'absorptive',
+  same:'built from Schott glass rather than a dielectric coating — avoids the corner colour-shift dichroic hot mirrors can show on wide lenses. '
+   +'No published Heliopan curve has been found, so this is an idealised shape (EST), not a fit. Build 146: its peak was 94%, '
+   +'which bare absorptive glass cannot reach (two uncoated surfaces keep about 92%); held at that ceiling until real data turns up.'},
  {id:'grb1',g:'B1',n:'GRB1 (2mm)',d:'Real product-specific data · extends furthest into NIR',c:'#a8c9b8',
   bands:[{lo:292.1,ls:13.72,hi:753.0,hs:74.93,T:.88}],type:'absorptive',
   same:'REFITTED to real product-specific GRB1 data (via CheeseCube312\u2019s Filter-Plotter-Data project, MIT-licensed) \u2014 '
@@ -1439,14 +1441,17 @@ SCHOTT_LP.forEach(([name,cut])=>{
   const col=fam==='WG'?'#b9a6f0':fam==='GG'?'#ddd06a':fam==='OG'?'#d69a45':
             cut<700?'#cf5334':cut<850?'#a83c22':'#722113';
   let same;
-  if(hasRealCurve){
+  const sg=SCHOTT_IDS[id]&&SCHOTT_GLASS[SCHOTT_IDS[id][0]];
+  if(sg){
+    // build 146: from SCHOTT's own published table, converted once in src-filters/schott.js
+    same='SCHOTT\u2019s own published data for '+name+': the internal transmittance table (10nm steps, '+sg.d+'mm '
+      +'reference thickness) times the glass\u2019s stated reflection factor Pd='+sg.pd+', which is what an uncoated '
+      +'filter of this glass passes. Taken from SCHOTT\u2019s page for the glass in October 2026 and cross-checked against '
+      +'CheeseCube312\u2019s independent copy of the same table.';
+  } else if(hasRealCurve){
     same='REAL DATA \u2014 Schott\u2019s own official '+name+' datasheet (PDF), full internal transmittance table '
-      +'(10nm steps) with the datasheet\u2019s own stated reflection factor applied, at a 2mm reference thickness '
-      +'(this glass\u2019s official datasheet is published at 2mm, not the 1mm most of this series uses \u2014 the '
-      +'external-transmittance conversion is still correct, just worth knowing if comparing thicknesses '
-      +'directly). This one had no CheeseCube-sourced fit and was previously a synthesised edge (cut/58 slope, '
-      +'flat 91% peak) with no real measurement behind it at all \u2014 this replaces that placeholder outright, '
-      +'not just refines it.';
+      +'(10nm steps) with the datasheet\u2019s own stated reflection factor applied, at a 2mm reference thickness. '
+      +'Previously a synthesised edge (cut/58 slope, flat 91% peak) with no real measurement behind it.';
   } else if(fit){
     same='REFITTED to real Schott transmission data (via CheeseCube312\u2019s Filter-Plotter-Data project), converted from internal to external transmittance with the standard 4 percent per-surface Fresnel loss. Replaces a synthesised edge that was systematically too soft.';
   } else {
@@ -1455,7 +1460,7 @@ SCHOTT_LP.forEach(([name,cut])=>{
   FILTERS.push({
     id, g:bandForWavelength(lo), n:name,
     d:cut+'nm cut-on'+(SCHOTT_NOTE[name]?' \u00b7 '+SCHOTT_NOTE[name]:''),
-    c:col, type:'absorptive', ref:2,
+    c:col, type:'absorptive', ref:sg?sg.d:2,
     // hi:2600/hs:400 reproduces the gentle long-wavelength taper real Schott
     // charts show, without disturbing the fitted rising edge near cut-on.
     // Ignored when hasRealCurve is true -- filterT() checks REAL_CURVES first.
@@ -1465,35 +1470,24 @@ SCHOTT_LP.forEach(([name,cut])=>{
 });
 
 /* ---- JB series (Chinese-market long-pass, sold under "JB" part numbers) ----
-   JB470/JB490/JB510 are stated by their own seller chart as equal to Schott
-   GG475/GG495/GG515 respectively -- reusing those glasses' own SCHOTT_FIT
-   numbers directly rather than re-digitising a curve real, verified data
-   already exists for. GG515 doesn't exist as a genuine Schott part (their
-   yellow "GG" series stops at GG495; the real glass at this cut-on is
-   OG515, orange rather than yellow) -- the seller's "GG515" is almost
-   certainly this same, common mislabelling rather than a distinct glass,
-   so it's mapped to OG515's real fit.
-
-   JB400/JB420/JB450 have no stated Schott equivalent, but sit in the same
-   product line as the three confirmed above and land close to GG400/
-   GG420/GG455's own cut-on points on the seller's own combined chart --
-   inferred from that pattern, not confirmed the way the other three are.
-   Flagged as such in the description rather than presented as equally
-   certain; worth confirming against the actual product datasheet if
-   precision matters for a specific piece of glass. */
-const JB_SERIES=[['JB400','GG400',true],['JB420','GG420',true],['JB450','GG455',true],
-  ['JB470','GG475',false],['JB490','GG495',false],['JB510','OG515',false]];
-JB_SERIES.forEach(([name,schottName,inferred])=>{
+   Build 146: each now uses Tangsinuo's own product chart for that exact JB glass (as digitised in CheeseCube312's
+   Filter-Plotter-Data, stored in REAL_CURVES), replacing the SCHOTT GG/OG fits these used to borrow. The seller states
+   JB470/JB490/JB510 equal GG475/GG495/"GG515" (really OG515); JB400/JB420/JB450 had no stated equivalent and were
+   only inferred, and the real charts show why that mattered: JB400's edge is much softer than GG400's (73% at 420nm
+   where the borrowed fit said 89%) and JB450 reaches 50% about 10nm earlier than GG455. The bands below are kept only
+   as the fallback shape; filterT() uses the stored curve. */
+const JB_SERIES=[['JB400','GG400'],['JB420','GG420'],['JB450','GG455'],['JB470','GG475'],['JB490','GG495'],['JB510','OG515']];
+JB_SERIES.forEach(([name,schottName])=>{
   const fit=SCHOTT_FIT[schottName];
   const src=FILTERS.find(x=>x.id==='sch_'+schottName.toLowerCase());
   FILTERS.push({
     id:'jb_'+name.toLowerCase(), g:bandForWavelength(fit[0]), n:name,
-    d:inferred
-      ? 'Long-pass \u00b7 no stated equivalent, inferred close to '+schottName+' from the seller\u2019s own chart \u2014 not confirmed'
-      : 'Long-pass \u00b7 sold as equal to Schott '+schottName+' (seller\u2019s own datasheet)',
+    d:'Long-pass \u00b7 Tangsinuo\u2019s own chart for this glass \u00b7 sold alongside Schott '+schottName,
     c:src?src.c:'#ddd06a', type:'absorptive',
     bands:[{lo:fit[0],ls:fit[1],hi:2600,hs:400,T:fit[2]}],
-    same:'Uses '+schottName+'\u2019s own measured fit above rather than a separate digitisation \u2014 see that entry\u2019s note for where the numbers come from.'
+    same:'Tangsinuo\u2019s own product chart for '+name+', digitised by CheeseCube312 (Filter-Plotter-Data). Until build '
+      +'146 this entry borrowed '+schottName+'\u2019s fitted edge instead, because the seller sells it as that glass\u2019s '
+      +'equivalent; the product\u2019s own chart is the better evidence for the product.'
   });
 });
 

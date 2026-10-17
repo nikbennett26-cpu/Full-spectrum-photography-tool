@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="irlab-build" content="145">
+<meta name="irlab-build" content="146">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Filter Database — UV/IR Filter Stacking Calculator</title>
 <meta name="description" content="Free transmission curve visualiser and stacking calculator for UV, IR and colour glass filters. 500+ filters — Schott, B+W, Hoya, Wratten, Kodak — fitted to real manufacturer and spectrometer data, with auto-generated stacking guidance.">
@@ -10,7 +10,7 @@
 <meta name="robots" content="index, follow">
 <link rel="canonical" href="https://irlab.uk/filters.html">
 <meta name="theme-color" content="#0b0c0e">
-<script src="i18n/tr.js?b=145"></script>
+<script src="i18n/tr.js?b=146"></script>
 <link rel="icon" href="/favicon.ico?v=2" sizes="any">
 <link rel="icon" href="/favicon.svg?v=2" type="image/svg+xml">
 <link rel="icon" type="image/png" sizes="512x512" href="/favicon-512.png?v=2">
@@ -83,7 +83,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/filters.css?b=145">
+<link rel="stylesheet" href="css/filters.css?b=146">
 <script>
 /* Set the theme before anything renders, so a light-mode user never sees a
    dark flash on load. Deliberately inline and synchronous in <head>. */
@@ -189,6 +189,7 @@ const trT = s => (window.irlabTr && irlabTr.lookup(s)) || s;
       <button type="button" id="curvePreviewClose" style="padding:2px 8px;font-size:11px">×</button>
     </div>
     <canvas id="curvePreviewCanvas" width="700" height="160" style="width:100%;height:160px;margin-top:6px"></canvas>
+    <div id="curvePreviewSrc" class="provLine noTr" lang="en"></div>
   </div>
 
   <div id="filterList" style="margin-top:12px"></div>
@@ -361,33 +362,34 @@ const trT = s => (window.irlabTr && irlabTr.lookup(s)) || s;
     </div>
     <p class="note enOnly">These notes are in English only.</p>
     <div class="note noTr" lang="en" style="margin-top:10px">
-      <p><b>Most of this is now fit to real published or measured data — the "model" part is the smooth curve
-      connecting real numbers, not a guess at the numbers themselves.</b> That's a genuine shift from where this
-      started: the Wratten series is fit to Kodak's own handbook, the Schott series to Schott's own datasheets,
-      several Hoya and Lee entries to real manufacturer charts or product-specific measurements, GRB1/GRB3 to
-      real product data, the astronomy filters to physical constants. Where that's true, treat the curve
-      <i>shape</i> as trustworthy even though a sigmoid can't trace every wiggle of a real glass exactly.
-      A real minority of entries are still genuine estimates rather than fits — generic eBay/AliExpress items
-      with no published data, a few derived-not-measured cases, and the colour-conversion filters generally —
-      and those are flagged individually as they come up below, rather than left for you to guess which is
-      which.</p>
-      <p style="margin-top:8px"><b>150 filters now skip the fitting step entirely and use the real measured
-      curve directly</b> — a step up from everything described below, which is a sigmoid <i>fit</i> to real data
-      points, not the points themselves. (The bar at the top of this panel is computed live, so it is the
-      number to trust if this paragraph ever falls behind.) These span the Lee gels, most of the Schott GG/OG/RG/BG/UG/NG/VG series,
-      GRB1 and GRB3 (from two different real sources, see their own notes), BG3, Hoya's 80A/80B/80C, the MidOpt
-      multi-bandpass filters, several B+W IR and contrast filters, and QB21 — sourced from CheeseCube312's
-      Filter-Plotter-Data project (MIT-licensed), B+W's own Filter Handbook, and Schott's own official datasheet
-      collection, each resampled onto a 10nm grid rather than approximated by a curve shape. Where a filter is in this set, treat the numbers themselves as trustworthy, not just the
-      general shape — for everything else below, it's still a fit, with whatever margin of error that entry's own
-      paragraph describes.</p>
+      <p><b>Every filter now names its source and says how its curve was got from it.</b> Tap a filter's
+      &asymp; Curve, or add it to the stack, and the card shows who published the data, which document, a link where
+      there is one, and the method. The badge follows from that record, not from how a curve happens to be stored:</p>
+      <p style="margin-top:6px"><b>DATA</b> &mdash; the maker's own numbers, used directly: SCHOTT's glass tables,
+      Thorlabs' and Edmund Optics' curve data, Kodak's printed transmission tables. <b>MEAS</b> &mdash; an independent
+      instrument measurement of a real filter. <b>CHART</b> &mdash; a published chart digitised point by point
+      (calibrated traces, CheeseCube312's digitisations, and a few read by eye, which the card says). <b>CALC</b>
+      &mdash; worked out from another real curve under an assumption the note states. <b>FIT</b> &mdash; a smooth
+      model fitted to real evidence, with its error where one is known. <b>EST</b> &mdash; no measurement behind it.
+      The bar above is computed live from these records.</p>
+      <p style="margin-top:8px"><b>How the data is checked.</b> Wherever two independent copies of the same source
+      exist they are compared, and the card reports the result: SCHOTT's tables were taken from SCHOTT's own pages and
+      checked against CheeseCube312's separate transcription (42 glasses, all within 0.15 points except BG3 below
+      320nm and BG39 by 0.4, where SCHOTT's current table is used); every curve taken from CheeseCube312's
+      Filter-Plotter-Data is compared with its file at a pinned commit (all within 4 points, which is resampling).
+      The self-test below fails any filter whose badge and stored data disagree, and any uncoated glass that passes
+      more than its two surfaces physically allow. The scripts are in <code>tools/schott/</code> and
+      <code>tools/provenance/</code> in the repository.</p>
       <p style="margin-top:8px"><b>An internal-vs-external transmittance mixup was found and fixed across
       several Schott entries.</b> Manufacturer datasheets publish <i>internal</i> transmittance (light lost only
       to absorption within the glass, not the ~8-9% typically lost to surface reflection at each face) alongside
       a stated reflection factor for converting it to the real external number a camera actually sees. BG38,
       BG39, BG40 and S8612 were all, at different points, checked against or built from a source using the
       internal figure directly — overstating real transmission by roughly that same 8-9% margin. All four are
-      now corrected using each glass's own official reflection factor.</p>
+      now corrected using each glass's own official reflection factor. <b>Build 146 found the same mistake in 32 more
+      entries</b> &mdash; every SCHOTT GG, OG and RG longpass glass, B+W 040/090/091/092/093/094/099/403, UG11 and BG3
+      &mdash; which had been reading about 8 points high (RG830 peaked at 99.7%, impossible for bare glass). All SCHOTT
+      curves are now converted in one place, from SCHOTT's own tables, so it cannot happen piecemeal again.</p>
       <p style="margin-top:8px"><b>The branded filters are the best-anchored.</b> Their 50% transmission points
       come from the Kodak Photographic Filters Handbook (B-3, 1992) for the Wratten series — which is what
       Tiffen numbering follows — and from B+W's own published figures for the 09x series. Where a manufacturer
@@ -572,9 +574,26 @@ const trT = s => (window.irlabTr && irlabTr.lookup(s)) || s;
 
 <div class="panel">
   <details>
+    <summary class="pt" style="margin-bottom:0">Sources &mdash; every document the curves come from</summary>
+    <p class="note" data-tr-block>Each source with the number of filters that rest on it and how they were taken from
+    it. A filter's own card gives its specific document and any cross-check.</p>
+    <div id="sourceList" class="noTr" lang="en"></div>
+  </details>
+</div>
+
+<div class="panel">
+  <details>
     <summary class="pt" style="margin-bottom:0">Recently added</summary>
     <p class="note enOnly">These notes are in English only.</p>
     <div class="note noTr" lang="en" style="margin-top:10px">
+      <p style="margin:0 0 6px"><b style="color:var(--paper-dim)">Build 146: sources for everything, and a real
+      correction.</b> Every filter now carries a structured source (publisher, document, link, method), shown on its
+      card and listed under Sources. The badge says what the data is &mdash; DATA, MEAS, CHART, CALC, FIT or EST
+      &mdash; instead of lumping 459 filters together as "REAL". Building that record exposed 32 SCHOTT-glass curves
+      that were about 8 points too bright (internal transmittance used as if it were the filter's); all SCHOTT
+      curves now come from SCHOTT's own published tables, cross-checked against an independent copy. The six JB
+      longpass glasses now use Tangsinuo's own charts instead of borrowed SCHOTT fits.</p>
+
       <p style="margin:0 0 6px"><b style="color:var(--paper-dim)">150 filters now use exact real curves, up from
       90</b> (234 total). The live breakdown is in the bar at the top of this panel &mdash; it is computed from
       the data rather than written here, so it cannot go stale the way this sentence did when a duplicate
@@ -676,6 +695,6 @@ const trT = s => (window.irlabTr && irlabTr.lookup(s)) || s;
 
 
 <!-- The filter page's code: filters.js, BUILT from src-filters/*.js by tools/build.py. -->
-<script src="filters.js?b=145"></script>
+<script src="filters.js?b=146"></script>
 </body>
 </html>

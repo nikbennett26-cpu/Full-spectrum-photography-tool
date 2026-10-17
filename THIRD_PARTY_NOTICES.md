@@ -82,3 +82,16 @@ AGPL-3.0 §13.
 
 The "IR" in the irlab logo and icons is drawn from the outlines of Barlow Condensed Bold by Jeremy Tribby,
 licensed under the SIL Open Font License 1.1 (https://openfontlicense.org). The font itself is not shipped.
+
+## Filter transmission data (filters.html)
+
+- **CheeseCube312, Filter-Plotter-Data** (MIT License, Copyright (c) 2025 CheeseCube) —
+  https://github.com/CheeseCube312/Filter-Plotter-Data, used at commit 6c8ff04c18ebaee137a49ca09b89065c7aaba8ab.
+  Digitised transmission curves for Lee Filters, MidOpt, Tangsinuo, Hoya and Kolari products; the file behind each
+  curve is linked from that filter's card and from `src-filters/provenance.js`.
+- **SCHOTT AG** — internal transmittance tables and reflection factors for SCHOTT optical filter glass, from
+  SCHOTT's product pages (retrieved 2026-10-17), archived in `tools/schott/data/tables.txt`. Factual technical data;
+  SCHOTT does not endorse this tool.
+- **Thorlabs** and **Edmund Optics** — published product transmission data (see `tools/thorlabs/` and `tools/edmund/`).
+
+Other manufacturer and third-party sources are named on each filter's card and in the Sources list on the page.

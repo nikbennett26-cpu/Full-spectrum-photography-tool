@@ -222,7 +222,7 @@
         const conf=dataConfidence(f);
         return {id:f.id,name:f.n,copies:n,description:f.d||'',
                 data_confidence:conf.label,confidence_meaning:conf.title,
-                provenance:f.same||null};
+                provenance:provenanceRecord(f),research_note:f.same||null};
       }),
       columns:['wavelength_nm','stack','with_sensor'],
       curve:curve

@@ -540,39 +540,39 @@ function updateLegend(fs){
    drift from what the badges actually say. */
 function renderDataHealth(){
   const el=$('dataHealth');if(!el)return;
-  const counts={real:0,fitq:0,fit:0,est:0};
-  const errs=[];
+  const order=['data','meas','chart','calc','fitq','fit','est'];
+  const counts={};order.forEach(k=>counts[k]=0);
+  const errs=[];let eye=0;
   FILTERS.forEach(f=>{
     const c=dataConfidence(f);
     counts[c.tier]=(counts[c.tier]||0)+1;
+    if(provenanceOf(f).m==='eye')eye++;
     if(c.tier==='fitq'){
       const m=c.label.match(/([\d.]+)pp/);
       if(m)errs.push(parseFloat(m[1]));
     }
   });
   const total=FILTERS.length||1;
-  const COLORS={real:'rgba(111,171,150,.85)',fitq:'rgba(140,178,122,.8)',
-                fit:'rgba(216,161,58,.75)',est:'rgba(122,106,82,.7)'};
-  const LABELS={real:'REAL — digitised curve',fitq:'FIT — fitted, error quantified',
-                fit:'FIT — fitted, error not quantified',est:'EST — no measurement'};
-  const order=['real','fitq','fit','est'];
+  const COLORS={data:'rgba(111,171,150,.95)',meas:'rgba(96,160,170,.85)',chart:'rgba(140,178,122,.8)',
+                calc:'rgba(170,170,110,.75)',fitq:'rgba(216,161,58,.8)',fit:'rgba(216,161,58,.55)',est:'rgba(122,106,82,.7)'};
+  const LABELS={data:'DATA \u2014 the maker\u2019s own numbers',meas:'MEAS \u2014 independent measurement',
+                chart:'CHART \u2014 digitised from a published chart',calc:'CALC \u2014 calculated from a real curve',
+                fitq:'FIT \u2014 fitted, error stated',fit:'FIT \u2014 fitted, no error figure',est:'EST \u2014 no measurement'};
   const pct=k=>(counts[k]/total*100);
   el.innerHTML=
     '<div class="dh-bar">'+order.map(k=>counts[k]?
       '<div class="dh-seg" style="width:'+pct(k).toFixed(2)+'%;background:'+COLORS[k]+'" title="'+
       LABELS[k]+': '+counts[k]+'"></div>':'').join('')+'</div>'+
-    '<div class="dh-legend">'+order.map(k=>
+    '<div class="dh-legend">'+order.filter(k=>counts[k]).map(k=>
       '<span><i style="background:'+COLORS[k]+'"></i>'+LABELS[k]+' &mdash; <b style="color:var(--paper)">'+
       counts[k]+'</b> ('+pct(k).toFixed(0)+'%)</span>').join('')+'</div>'+
-    '<div class="dh-note">'+total+' filters total. '+
-      (counts.real+counts.fitq)+' ('+((counts.real+counts.fitq)/total*100).toFixed(0)+
-      '%) are backed by a digitised curve or a fit with a documented error figure.'+
-      (errs.length?' Quantified fits span '+Math.min(...errs).toFixed(1)+'pp to '+
-        Math.max(...errs).toFixed(1)+'pp RMS \u2014 the badge shows each one, so a rough fit '+
-        'never reads the same as a tight one.':'')+
-      ' Note a digitised curve read by eye off a low-resolution chart is not automatically better '+
-      'than a least-squares fit against a published table; the tier describes how the data is '+
-      'stored as much as how good it is.'+
+    '<div class="dh-note">'+total+' filters. '+(counts.data+counts.meas)+' rest on the maker\u2019s own numbers or an '+
+      'independent measurement, '+counts.chart+' on a published chart digitised point by point ('+eye+' of those read '+
+      'by eye, the coarsest kind), '+counts.calc+(counts.calc===1?' is':' are')+' calculated from another real curve, and '+(counts.fitq+counts.fit)+
+      ' are smooth models fitted to evidence'+(errs.length?' (stated errors '+Math.min(...errs).toFixed(1)+' to '+
+      Math.max(...errs).toFixed(1)+' points)':'')+'. '+counts.est+' have no measurement behind them. Every filter\u2019s '+
+      'card names its source and how the curve was got from it; the full list is under Sources below.'+
     '</div>';
 }
 renderDataHealth();
+if(typeof renderSources==='function')renderSources();

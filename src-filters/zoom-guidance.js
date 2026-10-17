@@ -199,7 +199,6 @@ function describeFilter(f){
     return'passes '+a+'–'+b+'nm ('+where((a+b)/2)+')';
   };
   let s=(pk*100).toFixed(0)+'% peak; '+regions.map(named).join(', ')+'.';
-  if(f.same)s+=' <b>Same glass as:</b> '+f.same+'.';
   if(f.type==='interference'){
     s+=' <b>How it works:</b> this type blocks light by reflecting it away rather than soaking it up, and that '+
       'reflection depends on the angle the light hits the glass at. So the exact cutoff point isn\u2019t quite the '+
@@ -224,6 +223,8 @@ function describeFilter(f){
   }
   if(f.leak)s+=' This is a dye-based filter, and dyes that block visible colour typically go clear again in the infrared \u2014 so past about 700nm it lets infrared straight through too.';
   if(regions.length>1&&!f.leak&&!f.pol)s+=' It passes more than one separate band of light at once, which a colour sensor picks up as different colour channels simultaneously.';
+  s+='<div class="provLine noTr" lang="en">'+provenanceHTML(f)+'</div>';
+  if(f.same)s+='<details class="provNote"><summary>Research notes</summary><div class="noTr" lang="en">'+f.same+'</div></details>';
   return s;
 }
 function renderBehaviour(fs){

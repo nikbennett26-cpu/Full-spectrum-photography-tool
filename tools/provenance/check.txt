@@ -1,0 +1,57 @@
+Stored curves vs CheeseCube312 Filter-Plotter-Data at commit 6c8ff04c18ebaee137a49ca09b89065c7aaba8ab
+(largest difference on a 5nm grid over the source file's own range within 280-1100nm)
+
+qb29             2.3 pp at 315nm   Tangsinuo/Tangsinuo_0_QB292_BG25.tsv
+qb21ar           2.8 pp at 560nm   Tangsinuo/Tangsinuo_0_QB212mm_AR.tsv
+grb1             0.9 pp at 325nm   Tangsinuo/TangsinuoGRB1GRB1.tsv
+c80a             2.1 pp at 355nm   Hoya/Hoya_80A_80A_extrapolated_1100.tsv
+c80b             1.8 pp at 355nm   Hoya/Hoya_80B_80B_extrapolated_1100.tsv
+c80c             3.9 pp at 355nm   Hoya/Hoya_80C_80C_extrapolated_1100.tsv
+kolarichrome     0.7 pp at 750nm   Kolari IR Chrome_interpolated.tsv
+lee139           1.4 pp at 735nm   Lee Filters/LeeFilters139PrimaryGreen.tsv
+lee729           1.4 pp at 735nm   Lee Filters/LeeFilters729ScubaBlue.tsv
+lee192           1.9 pp at 575nm   Lee Filters/LeeFilters192FleshPink.tsv
+lee035           1.5 pp at 565nm   Lee Filters/LeeFilters035LightPink.tsv
+lee441           1.2 pp at 405nm   Lee Filters/LeeFilters441FullCTStraw.tsv
+lee744           1.4 pp at 485nm   Lee Filters/LeeFilters744DirtyWhite.tsv
+lee026           1.2 pp at 605nm   Lee Filters/LeeFilters026BrightRed.tsv
+lee106           1.3 pp at 595nm   Lee Filters/LeeFilters106PrimaryRed.tsv
+lee101           1.1 pp at 475nm   Lee Filters/LeeFilters101Yellow.tsv
+lee010           3.2 pp at 495nm   Lee Filters/LeeFilters010MediumYellow.tsv
+lee105           1.4 pp at 545nm   Lee Filters/LeeFilters105Orange.tsv
+lee158           0.9 pp at 545nm   Lee Filters/LeeFilters158DeepOrange.tsv
+lee020           1.1 pp at 405nm   Lee Filters/LeeFilters020MediumAmber.tsv
+lee022           2.3 pp at 575nm   Lee Filters/LeeFilters022DarkAmber.tsv
+lee113           2.1 pp at 595nm   Lee Filters/LeeFilters113Magenta.tsv
+lee046           1.0 pp at 595nm   Lee Filters/LeeFilters046DarkMagenta.tsv
+lee049           1.2 pp at 635nm   Lee Filters/LeeFilters049MediumPurple.tsv
+lee120           1.8 pp at 805nm   Lee Filters/LeeFilters120DeepBlue.tsv
+lee132           2.2 pp at 405nm   Lee Filters/LeeFilters132MediumBlue.tsv
+lee036           1.8 pp at 565nm   Lee Filters/LeeFilters036MediumPink.tsv
+lee119           2.0 pp at 405nm   Lee Filters/LeeFilters119DarkBlue.tsv
+lee141           2.9 pp at 405nm   Lee Filters/LeeFilters141BrightBlue.tsv
+lee124           2.2 pp at 805nm   Lee Filters/LeeFilters124DarkGreen.tsv
+lee088           2.7 pp at 485nm   Lee Filters/LeeFilters088LimeGreen.tsv
+lee122           1.6 pp at 485nm   Lee Filters/LeeFilters122FernGreen.tsv
+lee121           1.9 pp at 475nm   Lee Filters/LeeFilters121LEEGreen.tsv
+lb16             1.1 pp at 405nm   Tangsinuo/Tangsinuo_0_LB16.tsv
+lb17             1.1 pp at 445nm   Tangsinuo/Tangsinuo_0_LB17.tsv
+lb18             0.6 pp at 505nm   Tangsinuo/Tangsinuo_0_LB18.tsv
+lb19             0.2 pp at 505nm   Tangsinuo/Tangsinuo_0_LB19.tsv
+db395            0.0 pp at 1045nm   MidOpt/MidOpt_DB395_870.tsv
+db475            0.0 pp at 850nm   MidOpt/MidOpt_DB475_850.tsv
+db550            0.0 pp at 885nm   MidOpt/MidOpt_DB550_850.tsv
+db660            0.0 pp at 875nm   MidOpt/MidOpt_DB660_850.tsv
+db735            0.0 pp at 735nm   MidOpt/MidOpt_DB735.tsv
+db850            0.0 pp at 555nm   MidOpt/MidOpt_DB850.tsv
+tb550            0.0 pp at 835nm   MidOpt/MidOpt_TB550_660_850.tsv
+tb475            0.0 pp at 865nm   MidOpt/MidOpt_TB475_550_850.tsv
+nf550            0.0 pp at 1095nm   MidOpt/MidOpt_NF550.tsv
+hy_x0            0.6 pp at 545nm   Hoya/Hoyax0YellowGreen.tsv
+hy_x1            0.7 pp at 535nm   Hoya/HoyaX1Green.tsv
+jb_jb400         0.0 pp at 895nm   Tangsinuo/Tangsinuo_0_JB400.tsv
+jb_jb420         0.0 pp at 410nm   Tangsinuo/Tangsinuo_0_JB420_GG420.tsv
+jb_jb450         0.0 pp at 945nm   Tangsinuo/Tangsinuo_0_JB4502_GG455.tsv
+jb_jb470         0.0 pp at 365nm   Tangsinuo/Tangsinuo_0_JB4702_GG475.tsv
+jb_jb490         0.0 pp at 880nm   Tangsinuo/Tangsinuo_0_JB4902_GG495.tsv
+jb_jb510         0.0 pp at 495nm   Tangsinuo/Tangsinuo_0_JB5102_GG515.tsv

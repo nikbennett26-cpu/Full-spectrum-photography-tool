@@ -244,6 +244,35 @@ function runDataSelfTest(){
     if(c.tier==='fitq'&&!/[\d.]+pp/.test(c.label))add('error',f.id,'quantified-fit badge with no error figure');
   });
 
+  /* --- provenance (build 146) ---
+     Every filter must say where its curve comes from, and what it says must match what is stored: a method that
+     claims real data needs a stored curve behind it, and a fit or estimate must not secretly be one. */
+  const STORED=['tab','meas','trace','chart','eye','der'];
+  FILTERS.forEach(f=>{
+    const p=provenanceOf(f);
+    if(!PROV_METHOD[p.m]){add('error',f.id,'unknown provenance method "'+p.m+'"');return;}
+    if(p.s&&!SOURCES[p.s])add('error',f.id,'provenance names source "'+p.s+'", which is not in SOURCES');
+    const has=REAL_CURVES[f.id]!=null;
+    if(STORED.includes(p.m)&&!has)add('error',f.id,'provenance says "'+p.m+'" (real data) but no stored curve backs it');
+    if(!STORED.includes(p.m)&&has)add('error',f.id,'a stored curve is labelled "'+p.m+'" — say what kind of real data it is');
+    if(p.m!=='est'&&p.m!=='fit'&&!p.s&&!/^custom_/.test(f.id))add('warn',f.id,'real data with no structured source');
+    if(p.cc&&p.ccd!=null&&p.ccd>4)add('warn',f.id,'differs from its CheeseCube312 file by '+p.ccd+' points — more than resampling explains');
+    if(p.glass&&!SCHOTT_GLASS[p.glass])add('error',f.id,'SCHOTT glass '+p.glass+' has no table');
+  });
+  Object.keys(PROV).forEach(id=>{if(!FILTERS.some(f=>f.id===id))add('error',id,'PROV entry for a filter id that does not exist');});
+
+  /* --- surface-loss ceiling (build 146) ---
+     An uncoated piece of glass loses roughly 4% at each of its two surfaces, so it cannot pass more than about 92%
+     anywhere (SCHOTT's reflection factors run 0.908-0.923). 32 SCHOTT curves shipped at up to 99.7% because the
+     internal transmittance was used as if it were the filter's; this is the check that would have caught them.
+     Interference coatings and AR-coated glass are exempt. */
+  FILTERS.forEach(f=>{
+    if(f.type!=='absorptive'||f.ar||f.g==='Custom')return;
+    let pk=0;for(let l=LMIN;l<=LMAX;l+=5)pk=Math.max(pk,filterTBase(l,f));
+    if(pk>0.935)add('error',f.id,'uncoated absorptive glass peaks at '+(pk*100).toFixed(1)+
+      '% — more than two bare surfaces allow (~92%); internal transmittance used as external?');
+  });
+
   return issues;
 }
 

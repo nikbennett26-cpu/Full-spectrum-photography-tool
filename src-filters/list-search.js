@@ -16,36 +16,8 @@ loadCustomFilters().forEach(f => {
   if (f._realCurve) REAL_CURVES[f.id] = f._realCurve;
 });
 
-/* Four honest tiers now, computed from what's actually behind each filter
-   rather than asserted separately. The previous three-tier split measured
-   STORAGE FORMAT, not evidence quality: an entry least-squares-fitted to 24
-   real Kodak table points with 4.1pp error read "FIT", while a curve read by
-   eye off a low-resolution chart image read "REAL" — and at least one case
-   (w8) proved the fit was the more trustworthy of the two. So FIT is now
-   split by whether the entry documents a quantified error against real
-   source data (FIT±, with the figure shown) or is a qualitative fit to a
-   real source with no error figure (FIT). REAL still means an exact
-   digitised curve sits in REAL_CURVES; EST still means no real measurement
-   behind it at all. */
-function fitErrorFigure(note){
-  if(!note)return null;
-  // "RMS 1.6 percentage points", "RMS error 1.2 percentage points",
-  // "mean fitting error 4.1 percentage points", "RMS ~7 percentage points",
-  // "RMS 4.12pp", "max error 5.0pp"
-  const m=note.match(/(?:RMS|mean(?:\s+fitting)?\s+error|RMS\s+error)[^0-9]{0,12}(~?\d+(?:\.\d+)?)\s*(?:percentage\s+points|pp)/i);
-  return m?m[1].replace('~','')+'pp':null;
-}
-function dataConfidence(f){
-  if(REAL_CURVES[f.id]!=null)return{tier:'real',label:'REAL',title:'Exact digitised transmission curve, not an approximation'};
-  if(f.same){
-    const err=fitErrorFigure(f.same);
-    if(err)return{tier:'fitq',label:'FIT '+err,
-      title:'Fitted to real source data with a documented error figure ('+err+' against real data points) \u2014 often more trustworthy than a curve read by eye off a chart image'};
-    return{tier:'fit',label:'FIT',title:'Fitted to real evidence, but with no quantified error figure documented (see its full note for the source)'};
-  }
-  return{tier:'est',label:'EST',title:'No real measurement behind this one \u2014 an idealised placeholder or an unmeasured guess'};
-}
-
+/* dataConfidence() and fitErrorFigure() live in src-filters/provenance.js (build 146): the badge is now decided by
+   each filter's structured source record, not by how its curve happens to be stored. */
 function buildList(){
   const wrap=$('filterList');
   // showCurvePreview() can relocate #curvePreview to sit inside this exact
@@ -343,6 +315,8 @@ function showCurvePreview(f, anchorEl){
   box.style.display = '';
   $('curvePreviewLabel').textContent = f.n;
   drawSparkline($('curvePreviewCanvas'), f);
+  const src = $('curvePreviewSrc');
+  if (src) src.innerHTML = provenanceHTML(f);
   // Move the SAME shared box to sit right after whichever filter was
   // tapped, rather than leaving it fixed at the top of the panel -- tapping
   // "Curve" on something near the bottom of a long list used to mean

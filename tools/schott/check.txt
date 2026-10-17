@@ -1,0 +1,47 @@
+SCHOTT tables (schott.com, retrieved 2026-10-17) vs CheeseCube312 Filter-Plotter-Data copy
+(values are tau_i; agreement threshold 0.15pp, i.e. rounding of a 3-decimal table)
+
+BG25     max |SCHOTT - CheeseCube| =  0.09 pp at 630nm  agree
+BG3      max |SCHOTT - CheeseCube| = 19.28 pp at 280nm  DIFFER (SCHOTT page used)
+BG38     max |SCHOTT - CheeseCube| =  0.06 pp at 300nm  agree
+BG39     max |SCHOTT - CheeseCube| =  0.37 pp at 620nm  DIFFER (SCHOTT page used)
+BG40     max |SCHOTT - CheeseCube| =  0.05 pp at 530nm  agree
+GG395    max |SCHOTT - CheeseCube| =  0.10 pp at 380nm  agree
+GG400    max |SCHOTT - CheeseCube| =  0.05 pp at 880nm  agree
+GG420    max |SCHOTT - CheeseCube| =  0.05 pp at 1100nm  agree
+GG435    max |SCHOTT - CheeseCube| =  0.05 pp at 1060nm  agree
+GG455    max |SCHOTT - CheeseCube| =  0.05 pp at 830nm  agree
+GG475    max |SCHOTT - CheeseCube| =  0.05 pp at 1060nm  agree
+GG495    max |SCHOTT - CheeseCube| =  0.05 pp at 740nm  agree
+KG2      max |SCHOTT - CheeseCube| =  0.05 pp at 390nm  agree
+KG3      max |SCHOTT - CheeseCube| =  0.09 pp at 1000nm  agree
+N-WG280  no CheeseCube copy (SCHOTT page is the only source)
+N-WG295  no CheeseCube copy (SCHOTT page is the only source)
+N-WG305  no CheeseCube copy (SCHOTT page is the only source)
+N-WG320  no CheeseCube copy (SCHOTT page is the only source)
+NG1      max |SCHOTT - CheeseCube| =  0.10 pp at 740nm  agree
+NG11     max |SCHOTT - CheeseCube| =  0.04 pp at 320nm  agree
+NG3      max |SCHOTT - CheeseCube| =  0.05 pp at 560nm  agree
+NG4      max |SCHOTT - CheeseCube| =  0.05 pp at 760nm  agree
+NG5      max |SCHOTT - CheeseCube| =  0.07 pp at 320nm  agree
+NG9      max |SCHOTT - CheeseCube| =  0.08 pp at 360nm  agree
+OG515    max |SCHOTT - CheeseCube| =  0.10 pp at 490nm  agree
+OG530    max |SCHOTT - CheeseCube| =  0.05 pp at 1060nm  agree
+OG550    max |SCHOTT - CheeseCube| =  0.05 pp at 560nm  agree
+OG570    max |SCHOTT - CheeseCube| =  0.05 pp at 1020nm  agree
+OG590    max |SCHOTT - CheeseCube| =  0.05 pp at 880nm  agree
+RG1000   max |SCHOTT - CheeseCube| =  0.07 pp at 820nm  agree
+RG610    max |SCHOTT - CheeseCube| =  0.05 pp at 970nm  agree
+RG630    max |SCHOTT - CheeseCube| =  0.05 pp at 990nm  agree
+RG645    max |SCHOTT - CheeseCube| =  0.05 pp at 1100nm  agree
+RG665    max |SCHOTT - CheeseCube| =  0.05 pp at 1070nm  agree
+RG695    max |SCHOTT - CheeseCube| =  0.05 pp at 1090nm  agree
+RG715    max |SCHOTT - CheeseCube| =  0.05 pp at 1070nm  agree
+RG780    max |SCHOTT - CheeseCube| =  0.09 pp at 740nm  agree
+RG830    max |SCHOTT - CheeseCube| =  0.06 pp at 770nm  agree
+RG850    max |SCHOTT - CheeseCube| =  0.05 pp at 1100nm  agree
+S8612    max |SCHOTT - CheeseCube| =  0.09 pp at 740nm  agree
+UG1      max |SCHOTT - CheeseCube| =  0.09 pp at 420nm  agree
+UG11     max |SCHOTT - CheeseCube| =  0.04 pp at 1030nm  agree
+UG5      max |SCHOTT - CheeseCube| =  0.05 pp at 1070nm  agree
+VG9      max |SCHOTT - CheeseCube| =  0.08 pp at 410nm  agree

@@ -84,8 +84,12 @@ details[open] summary::after{content:'–'}
 .fbinfo{cursor:pointer;flex:1;min-width:120px}
 .fbconf{display:inline-block;font-family:var(--font-mono);font-size:9px;font-weight:600;letter-spacing:.03em;
   padding:1px 5px;border-radius:3px;vertical-align:middle;margin-left:2px;cursor:help}
-.fbconf-real{background:rgba(111,171,150,.18);color:var(--phosphor);border:1px solid rgba(111,171,150,.4)}
-.fbconf-fitq{background:rgba(140,178,122,.16);color:#9ec48a;border:1px solid rgba(140,178,122,.4)}
+/* build 146: the badge says what the data IS, from each filter's provenance record (src-filters/provenance.js) */
+.fbconf-data{background:rgba(111,171,150,.2);color:var(--phosphor);border:1px solid rgba(111,171,150,.5)}
+.fbconf-meas{background:rgba(96,160,170,.18);color:#86bfc6;border:1px solid rgba(96,160,170,.45)}
+.fbconf-chart{background:rgba(140,178,122,.16);color:#9ec48a;border:1px solid rgba(140,178,122,.4)}
+.fbconf-calc{background:rgba(170,170,110,.16);color:#c2bf86;border:1px solid rgba(170,170,110,.4)}
+.fbconf-fitq{background:rgba(216,161,58,.2);color:var(--warn);border:1px solid rgba(216,161,58,.5)}
 .fbconf-fit{background:rgba(216,161,58,.16);color:var(--warn);border:1px solid rgba(216,161,58,.4)}
 .fbconf-est{background:rgba(122,106,82,.16);color:var(--muted);border:1px solid var(--line2)}
 /* Reference zone: visually subordinate to the working tool above it, so
@@ -300,3 +304,18 @@ html:not([lang="en"]) .enOnly{display:block;font-style:italic}
 #fLangPanel{padding:12px 14px}
 .fLangRow{display:flex;align-items:center;justify-content:space-between;gap:12px;font:600 14px/1.2 var(--font-body);color:var(--paper)}
 #fLang{min-height:40px;padding:0 10px;border:1px solid var(--line2);border-radius:6px;background:var(--sunken);color:var(--paper);font:500 13px/1 var(--font-mono)}
+
+/* per-filter source line and the sources register (build 146) */
+.provLine{font-size:11px;line-height:1.5;color:var(--muted);margin-top:6px}
+.provLine b{color:var(--paper-dim);font-weight:600}
+.provLine a,.srcList a{color:var(--phosphor);text-decoration:underline;text-underline-offset:2px;word-break:break-word}
+.provNote{margin-top:4px;font-size:11px;color:var(--muted)}
+.provNote summary{cursor:pointer;color:var(--paper-dim)}
+.provNote div{margin-top:4px;line-height:1.5}
+.srcList{list-style:none;margin:8px 0 0;padding:0;display:flex;flex-direction:column;gap:6px;font-size:12px}
+.srcList li{border-left:2px solid var(--line2);padding:2px 0 2px 8px;color:var(--paper)}
+.srcList li span{color:var(--muted);font-size:11px}
+.srcN{font-family:var(--font-mono);font-size:10px;color:var(--muted);margin-left:4px}
+[data-theme="light"] .fbconf-meas{color:#2f6f78}
+[data-theme="light"] .fbconf-chart{color:#4f7a3c}
+[data-theme="light"] .fbconf-calc{color:#6e6a2c}
