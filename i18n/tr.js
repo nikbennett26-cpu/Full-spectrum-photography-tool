@@ -41,6 +41,8 @@
     [/^(\d+)nm cut-on$/, 'tCutOn'],
     [/^(\d+)nm cut-off$/, 'tCutOff'],
     [/^(\d+)nm centre, (\d+)nm wide$/, 'tCentreWide'],
+    [/^passes (\d+)-(\d+)nm$/, 'tPasses'],
+    [/^data to (\d+)nm$/, 'tDataTo'],
     [/^ND(\d+) \((\d+) stops\)$/, 'tNdStops'],
     [/^sold as equal to Schott (\S+) \(seller’s own datasheet\)$/, 'tSoldAs'],
     [/^no stated equivalent, inferred close to (\S+) from the seller’s own chart — not confirmed$/, 'tInferred'],
