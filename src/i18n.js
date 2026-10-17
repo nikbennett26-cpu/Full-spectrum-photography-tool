@@ -69,12 +69,12 @@ const I18N_127 = {"en": {"cSrc": "Source channels", "cSrcS": "which one carries 
 Object.keys(I18N_127).forEach(l => { if (I18N[l]) Object.assign(I18N[l], I18N_127[l]); });
 /* Build 148: the "Predict from your filters" card. */
 const I18N_148 = {
-  en: { fpT: 'Predict from your filters', fpS: 'what each channel records, and the swap', fpSensor: 'Sensor', fpApply: 'Apply suggested swap' },
-  es: { fpT: 'Predecir según tus filtros', fpS: 'qué registra cada canal y el intercambio', fpSensor: 'Sensor', fpApply: 'Aplicar el intercambio sugerido' },
-  fr: { fpT: 'Prédire d’après vos filtres', fpS: 'ce que capte chaque canal, et l’échange', fpSensor: 'Capteur', fpApply: 'Appliquer l’échange suggéré' },
-  de: { fpT: 'Aus deinen Filtern vorhersagen', fpS: 'was jeder Kanal aufnimmt, und der Tausch', fpSensor: 'Sensor', fpApply: 'Vorgeschlagenen Tausch anwenden' },
-  ja: { fpT: 'フィルターから予測', fpS: '各チャンネルが記録する帯域と入れ替え', fpSensor: 'センサー', fpApply: '提案の入れ替えを適用' },
-  zh: { fpT: '根据滤镜预测', fpS: '各通道记录的波段及互换', fpSensor: '传感器', fpApply: '应用建议的互换' }
+  en: { fpT: 'Predict from your filters', fpS: 'what each channel records, and the swap', fpSensor: 'Sensor' },
+  es: { fpT: 'Predecir según tus filtros', fpS: 'qué registra cada canal y el intercambio', fpSensor: 'Sensor' },
+  fr: { fpT: 'Prédire d’après vos filtres', fpS: 'ce que capte chaque canal, et l’échange', fpSensor: 'Capteur' },
+  de: { fpT: 'Aus deinen Filtern vorhersagen', fpS: 'was jeder Kanal aufnimmt, und der Tausch', fpSensor: 'Sensor' },
+  ja: { fpT: 'フィルターから予測', fpS: '各チャンネルが記録する帯域と入れ替え', fpSensor: 'センサー' },
+  zh: { fpT: '根据滤镜预测', fpS: '各通道记录的波段及互换', fpSensor: '传感器' }
 };
 Object.keys(I18N_148).forEach(l => { if (I18N[l]) Object.assign(I18N[l], I18N_148[l]); });
 function detectUILang() {

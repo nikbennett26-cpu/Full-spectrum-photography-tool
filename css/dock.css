@@ -759,3 +759,7 @@ html.dockOn body.has-image .toolbar > [data-lbl], html.dockOn body.has-image .to
 .fpTbl th{font-weight:500;opacity:.65;text-align:right;padding:3px 4px}
 .fpTbl td{text-align:right;padding:3px 4px;border-top:1px solid var(--line2)}
 .fpTbl td:first-child,.fpTbl th:first-child{text-align:left}
+.fpSwaps{display:flex;flex-direction:column;gap:8px;margin-top:6px}
+.fpSwap{display:flex;gap:10px;align-items:flex-start;font-size:12px;line-height:1.45}
+.fpSwap .swapBtn{flex:0 0 auto;min-width:84px}
+.fpTag{display:inline-block;margin-left:4px;padding:0 6px;border:1px solid var(--line2);border-radius:999px;font-size:10px;opacity:.75}

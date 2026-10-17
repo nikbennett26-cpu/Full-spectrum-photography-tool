@@ -7,9 +7,8 @@
    The physics, per channel c:   signal_c(l) = filter(l) x sensor_c(l) x daylight(l)
    From that: how much of the channel's signal is UV (<400nm), visible or infrared (>700nm), the signal-weighted
    centre wavelength, the channel's relative strength, and the gains a grey card would need (what the grey picker
-   will find). The suggested swap sorts channels by centre wavelength and sends the longest to red, the shortest to
-   blue, which is how colour infrared film maps bands to colours. Behind a 590 or 720nm filter that ordering comes out
-   as the familiar red/blue swap; it is derived here, not assumed.
+   will find). It does not pick a swap (build 151): it lists what each swap would move, and marks the wavelength-
+   ordered one only as the colour infrared film convention.
 
    Sensors (build 149): a real converted Sony A7III, measured 300-800nm by Crowther (J. Imaging 2022, 8:54) and
    extended past 800nm under the assumptions stated in tools/editor_filters.mjs; a generic CMOS approximation; one
@@ -51,36 +50,52 @@ function fpCompute(ids, sensorName) {
 }
 
 function fpRender() {
-  const out = $('fpOut'), apply = $('fpApply');
+  const out = $('fpOut');
   const chips = $('fpStack');
   chips.innerHTML = fpStack.map((id, i) => {
     const f = fpData.byId[id];
     return '<span class="fpChip">' + f[1] + ' <small>' + f[2] + '</small><button type="button" data-i="' + i + '" aria-label="Remove ' + f[1] + '">×</button></span>';
   }).join('');
   const sensor = $('fpSensor').value, r = fpCompute(fpStack, sensor);
-  if (r.peakT < 0.005) { out.innerHTML = '<p class="note">This stack blocks essentially everything between 300 and 1100nm.</p>'; apply.style.display = 'none'; return; }
+  if (r.peakT < 0.005) { out.innerHTML = '<p class="note">This stack blocks essentially everything between 300 and 1100nm.</p>'; return; }
   const pct = v => Math.round(v * 100) + '%';
   const name = { R: 'Red', G: 'Green', B: 'Blue' };
   const rows = r.res.map(c => '<tr><td><b>' + c.ch + '</b></td><td>' + (c.rel > 0.02 ? Math.round(c.centre) + 'nm' : '—') + '</td><td>' +
     pct(c.uv) + '</td><td>' + pct(c.vis) + '</td><td>' + pct(c.ir) + '</td><td>' + pct(c.rel) + '</td></tr>').join('');
-  const permTxt = r.perm === '012' ? 'no swap' :
-    ['R', 'G', 'B'].map((o, i) => o + '←' + 'RGB'[+r.perm[i]]).filter((t, i) => +r.perm[i] !== i).join(', ');
   const g = r.res.map(c => c.gain), gn = g.map(x => (x / g[1]));
-  let verdict;
-  if (r.spread < 15) verdict = 'All three channels record nearly the same band (centres within ' + Math.round(r.spread) +
-    'nm), so any swap only reshuffles small differences: expect a near-monochrome result whatever you choose.';
-  else verdict = 'Suggested: <b>' + permTxt + '</b>. This puts the channels in wavelength order, longest in red and shortest in blue, ' +
-    'the way colour infrared film maps bands to colours. Centres span ' + Math.round(r.spread) + 'nm.';
+  /* Build 151: no recommendation. What looks right is the photographer's call; what the data can say is what each
+     swap MOVES. For every swap: which recorded band each output colour would show, and, where the channels differ
+     enough in IR content to matter, where foliage (bright in near-IR, dark in visible red and blue) and blue sky
+     (bright in blue and UV, dark in IR) would tend to land. The wavelength-ordered swap is only labelled as the colour
+     infrared film convention, not suggested. */
+  const PERMS = [['012', 'No swap'], ['210', 'R\u2194B'], ['021', 'G\u2194B'], ['102', 'R\u2194G'], ['120', 'Rotate \u21bb'], ['201', 'Rotate \u21ba']];
+  const OUT = ['red', 'green', 'blue'];
+  const band = c => c.ir >= 0.6 ? 'mostly IR' : c.uv >= 0.5 ? 'mostly UV' : c.vis >= 0.6 ? 'mostly visible' : 'mixed';
+  const irs = r.res.map(c => c.ir), irSpread = Math.max(...irs) - Math.min(...irs);
+  const mostIR = irs.indexOf(Math.max(...irs));
+  const leastIR = r.res.map((c, i) => [c.ir + c.centre / 1e4, i]).sort((x, y) => x[0] - y[0])[0][1];
+  let swaps;
+  if (r.spread < 15) swaps = '<p class="note">All three channels record nearly the same band (centres within ' + Math.round(r.spread) +
+    'nm), so every swap only reshuffles small differences: expect a near-monochrome result whichever you choose.</p>';
+  else swaps = '<p class="note"><b>What each swap moves</b> (the look is yours to choose; this only says what goes where):</p><div class="fpSwaps">' +
+    PERMS.map(([perm, label]) => {
+      const shows = OUT.map((o, i) => { const c = r.res[+perm[i]]; return o + ' shows ' + c.ch + ' (' + band(c) + ', ' + Math.round(c.centre) + 'nm)'; }).join(' \u00b7 ');
+      let hint = '';
+      if (irSpread > 0.15) {
+        const fol = OUT[perm.indexOf(String(mostIR))], sky = OUT[perm.indexOf(String(leastIR))];
+        hint = ' Foliage tends toward ' + fol + (fol === sky ? '' : ', blue sky toward ' + sky) + '.';
+      }
+      const film = perm === r.perm ? ' <span class="fpTag">colour IR film order</span>' : '';
+      return '<div class="fpSwap"><button type="button" class="swapBtn fpPerm" data-perm="' + perm + '">' + label + '</button><span>' + shows + '.' + hint + film + '</span></div>';
+    }).join('') + '</div>';
   out.innerHTML = (fpStack.length ? '' : '<p class="note">No filter added: this is the bare full-spectrum sensor. Add the filter(s) on your lens.</p>') +
     '<table class="fpTbl"><thead><tr><th></th><th>centre</th><th>UV</th><th>visible</th><th>IR</th><th>strength</th></tr></thead><tbody>' + rows + '</tbody></table>' +
-    '<p class="note">' + verdict + '</p>' +
+    swaps +
     '<p class="note">A grey card in daylight should need gains of about R ' + gn[0].toFixed(2) + ' · G 1.00 · B ' + gn[2].toFixed(2) +
     ' before the swap; the grey picker measures the real figure for your camera.</p>' +
     '<p class="note">Filter curves from the database (badges show what each rests on). Sensor: ' + sensor + '. ' +
     ((fpData.sensorNotes || {})[sensor] || '') + ' Daylight: ' + fpData.illuminant + '. Your own body will differ somewhat, ' +
     'so read this as the shape of the answer and let the grey picker set the exact balance.</p>';
-  apply.style.display = (r.spread >= 15 && r.perm !== '012') ? '' : 'none';
-  apply.dataset.perm = r.perm;
 }
 
 function fpInit() {
@@ -106,6 +121,6 @@ function fpInit() {
   $('fpSearch').addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); add(); } });
   $('fpStack').addEventListener('click', e => { const b = e.target.closest('button[data-i]'); if (b) { fpStack.splice(+b.dataset.i, 1); fpRender(); } });
   $('fpSensor').addEventListener('change', () => fpData && fpRender());
-  $('fpApply').addEventListener('click', () => { if (typeof mxApplyPerm === 'function') mxApplyPerm($('fpApply').dataset.perm); });
+  $('fpOut').addEventListener('click', e => { const b = e.target.closest('.fpPerm'); if (b && typeof mxApplyPerm === 'function') mxApplyPerm(b.dataset.perm); });
 }
 fpInit();
