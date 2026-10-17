@@ -39,6 +39,8 @@
     [/^after: (.+)$/, 'tWbAfter'],
     // filters page: pieces of the filter descriptions, and the data-confidence badges
     [/^(\d+)nm cut-on$/, 'tCutOn'],
+    [/^(\d+)nm cut-off$/, 'tCutOff'],
+    [/^(\d+)nm centre, (\d+)nm wide$/, 'tCentreWide'],
     [/^ND(\d+) \((\d+) stops\)$/, 'tNdStops'],
     [/^sold as equal to Schott (\S+) \(seller’s own datasheet\)$/, 'tSoldAs'],
     [/^no stated equivalent, inferred close to (\S+) from the seller’s own chart — not confirmed$/, 'tInferred'],

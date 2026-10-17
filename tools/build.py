@@ -35,7 +35,7 @@ BUNDLES = [
                           'wb-lut', 'colour-mirror', 'export', 'dock', 'trichrome', 'share', 'undo-buttons']),
     # the self-test is only fetched when the page is opened with ?selftest (src/i18n.js), so most visits skip its 130 KB
     ('editor-selftest.js', 'src', ['selftest']),
-    ('filters.js', 'src-filters', ['layout', 'model', 'data', 'list-search', 'export', 'recipe', 'chart', 'selftest',
+    ('filters.js', 'src-filters', ['layout', 'model', 'data', 'thorlabs', 'list-search', 'export', 'recipe', 'chart', 'selftest',
                                    'zoom-guidance', 'spectral']),
 ]
 root = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..')

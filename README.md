@@ -44,7 +44,7 @@ opening it saves the look to My presets and applies it to the next photo. Code: 
 Undo and redo, before/after comparison, a histogram and RGB parade with clipping and print-gamut warnings, and six
 languages (English, Spanish, French, German, Japanese, Chinese).
 
-**[Filter database](https://irlab.uk/filters.html):** 230+ filters (Schott, B+W, Hoya, Wratten and more), most with
+**[Filter database](https://irlab.uk/filters.html):** 450+ filters (Schott, B+W, Hoya, Wratten and more), most with
 digitised manufacturer transmission curves. Stack them to see the combined transmission, check for IR leaks, and
 export a report.
 
@@ -120,7 +120,8 @@ and published as one file, `editor.js`:
 | `src/undo-buttons.js` | the undo and redo buttons |
 
 The filters page works the same way: `filters.html`, `css/filters.css`, and its code in `src-filters/` (layout, the
-filter model, the filter data, list and search, export, the recipe finder, the chart, the data self-test, zoom and
+filter model, the filter data, the 221 Thorlabs filters (`src-filters/thorlabs.js`, built from measured data by
+`tools/thorlabs/`, see its README), list and search, export, the recipe finder, the chart, the data self-test, zoom and
 stacking guidance, the spectral response), built into `filters.js`.
 
 **Edit `src/` and `src-filters/`, never `editor.js` or `filters.js`.** `tools/build.py` joins each page's sources, in the order listed in it, into its one script.
