@@ -507,7 +507,7 @@ function buildProPhotoICCProfile() {
    buffer has to exist before its compressed size is known, so the file
    layout (which depends on that size) can't be computed up front the way
    the uncompressed version could. */
-async function encodeTIFF16(rgba,w,h,useProPhoto){
+async function encodeTIFF16(rgba,w,h,useProPhoto,xmp){
   const is16 = rgba instanceof Uint16Array;
   const icc = useProPhoto ? buildProPhotoICCProfile() : buildSRGBICCProfile();
   const spp=3;
@@ -527,19 +527,22 @@ async function encodeTIFF16(rgba,w,h,useProPhoto){
   // 15 IFD entries now (34675 ICC Profile added), written in ascending tag
   // order as the TIFF spec requires -- 34675 is far larger than every other
   // tag here, so it has to be the LAST entry, not inserted mid-list.
-  const pixelBytes=compressedPx.length,numEntries=15,ifdOffset=8,ifdSize=2+numEntries*12+4,after=ifdOffset+ifdSize;
+  const xl=xmp?xmp.length:0;   // build 158: XMP (tag 700) carries the filter stack, see src/look-export.js
+  const pixelBytes=compressedPx.length,numEntries=xl?16:15,ifdOffset=8,ifdSize=2+numEntries*12+4,after=ifdOffset+ifdSize;
   const bpsOff=after,xResOff=bpsOff+6,yResOff=xResOff+8,iccOff=yResOff+8;
   // ICC block is 4-byte aligned before the pixel data, matching the alignment
   // already used inside the profile itself -- not required by TIFF, just tidy
-  const pixOff=(iccOff+icc.length+3)&~3;
+  const xmpOff=(iccOff+icc.length+3)&~3;
+  const pixOff=(xmpOff+xl+3)&~3;
   const buf=new ArrayBuffer(pixOff+pixelBytes),dv=new DataView(buf);
   dv.setUint8(0,LE?0x49:0x4D);dv.setUint8(1,LE?0x49:0x4D);dv.setUint16(2,42,LE);dv.setUint32(4,ifdOffset,LE);
   let o=ifdOffset;dv.setUint16(o,numEntries,LE);o+=2;
   const en=(t,ty,c,v)=>{dv.setUint16(o,t,LE);dv.setUint16(o+2,ty,LE);dv.setUint32(o+4,c,LE);dv.setUint32(o+8,v,LE);o+=12;};
-  en(256,4,1,w);en(257,4,1,h);en(258,3,3,bpsOff);en(259,3,1,8);en(262,3,1,2);en(273,4,1,pixOff);en(277,3,1,3);en(278,4,1,h);en(279,4,1,pixelBytes);en(282,5,1,xResOff);en(283,5,1,yResOff);en(284,3,1,1);en(296,3,1,2);en(339,3,1,1);en(34675,7,icc.length,iccOff);dv.setUint32(o,0,LE);
+  en(256,4,1,w);en(257,4,1,h);en(258,3,3,bpsOff);en(259,3,1,8);en(262,3,1,2);en(273,4,1,pixOff);en(277,3,1,3);en(278,4,1,h);en(279,4,1,pixelBytes);en(282,5,1,xResOff);en(283,5,1,yResOff);en(284,3,1,1);en(296,3,1,2);en(339,3,1,1);if(xl)en(700,1,xl,xmpOff);en(34675,7,icc.length,iccOff);dv.setUint32(o,0,LE);
   dv.setUint16(bpsOff,16,LE);dv.setUint16(bpsOff+2,16,LE);dv.setUint16(bpsOff+4,16,LE);
   dv.setUint32(xResOff,72,LE);dv.setUint32(xResOff+4,1,LE);dv.setUint32(yResOff,72,LE);dv.setUint32(yResOff+4,1,LE);
   new Uint8Array(buf,iccOff,icc.length).set(icc);
+  if(xl)new Uint8Array(buf,xmpOff,xl).set(xmp);
   new Uint8Array(buf,pixOff,pixelBytes).set(compressedPx);
   return new Blob([buf],{type:'image/tiff'});
 }
@@ -779,7 +782,7 @@ async function exportNow() {
 
   if (fmt === 'tiff16') {
     if (useProPhoto) px = convertRGBAtoProPhoto(px, is16);
-    const blob = await encodeTIFF16(px, w, h, useProPhoto);
+    const blob = await encodeTIFF16(px, w, h, useProPhoto, buildXmpPacket());
     deliverBlob(blob, 'channel-swap-' + stamp + '.tiff', offerLanding);
     return;
   }
@@ -803,9 +806,11 @@ async function exportNow() {
       let buf = new Uint8Array(await b.arrayBuffer());
       if (fmt === 'png') {
         if (useProPhoto) buf = await spliceICCIntoPngBytes(buf, buildProPhotoICCProfile(), 'ProPhoto RGB');
+        buf = spliceXmpIntoPngBytes(buf, buildXmpPacket());
         if (exifSegment) buf = spliceExifIntoPngBytes(buf, normalizeExifOrientation(exifSegment));
-      } else if (exifSegment) {
-        buf = spliceExifIntoJpegBytes(buf, normalizeExifOrientation(exifSegment));
+      } else {
+        buf = spliceXmpIntoJpegBytes(buf, buildXmpPacket());   // inserted first so the EXIF segment lands ahead of it
+        if (exifSegment) buf = spliceExifIntoJpegBytes(buf, normalizeExifOrientation(exifSegment));
       }
       finalBlob = new Blob([buf], { type: mime });
     } catch (e) {}

@@ -955,5 +955,11 @@ irlabTr.add('es', {
 "colour pulled in to fit": "color ajustado para que quepa",
 "Reading file…": "Leyendo el archivo…",
 "Decoding sensor data…": "Decodificando los datos del sensor…",
-"Building preview…": "Creando la vista previa…"
+"Building preview…": "Creando la vista previa…",
+"Record the filter stack in the file:": "Guardar la pila de filtros en el archivo:",
+"none set — add your filters under Predict from your filters": "ninguna — añade tus filtros en «Predecir según tus filtros»",
+"none set": "ninguna",
+"Save look as .cube (for other editors)": "Guardar el look como .cube (para otros editores)",
+"Writes the filters into the file’s metadata (XMP), so the photo carries its own record of how it was taken. Lightroom, Bridge and Windows show it as the caption or description; the full list is also stored as its own field. Single exports and batch both include it.": "Escribe los filtros en los metadatos del archivo (XMP), para que la foto lleve su propio registro de cómo se tomó. Lightroom, Bridge y Windows lo muestran como pie de foto o descripción; la lista completa también se guarda como un campo propio. Lo incluyen tanto las exportaciones sueltas como el lote.",
+"Saves the colour of this look as a .cube file for other editors: Photoshop (Color Lookup), DaVinci Resolve, Affinity, Final Cut and others. For Lightroom, make it a profile once in Photoshop’s Camera Raw: Alt- or Option-click the new preset button to get Create Profile, tick Color Lookup Table and load the .cube; the profile then appears in Lightroom too. A .cube holds colour only, so noise reduction, sharpening, clarity, dehaze, local tone mapping and masks are not in it. It is made for the photo as irlab receives it, so apply it to a camera JPEG or a RAW developed with the camera’s own white balance and no creative profile.": "Guarda el color de este look como archivo .cube para otros editores: Photoshop (Color Lookup), DaVinci Resolve, Affinity, Final Cut y otros. Para Lightroom, conviértelo una vez en perfil en Camera Raw de Photoshop: haz clic con Alt u Opción en el botón de nuevo ajuste preestablecido para obtener «Crear perfil», marca «Color Lookup Table» y carga el .cube; el perfil aparecerá también en Lightroom. Un .cube solo contiene color, así que no incluye reducción de ruido, enfoque, claridad, eliminar neblina, mapeo tonal local ni máscaras. Está hecho para la foto tal como la recibe irlab, así que aplícalo a un JPEG de la cámara o a un RAW revelado con el balance de blancos de la cámara y sin perfil creativo."
 });

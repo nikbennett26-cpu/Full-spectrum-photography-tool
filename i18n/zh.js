@@ -955,5 +955,11 @@ irlabTr.add('zh', {
 "colour pulled in to fit": "颜色收回以适配",
 "Reading file…": "正在读取文件…",
 "Decoding sensor data…": "正在解码传感器数据…",
-"Building preview…": "正在生成预览…"
+"Building preview…": "正在生成预览…",
+"Record the filter stack in the file:": "将滤镜组合写入文件:",
+"none set — add your filters under Predict from your filters": "未设置 — 请在“根据滤镜预测”中添加滤镜",
+"none set": "未设置",
+"Save look as .cube (for other editors)": "将风格保存为 .cube（用于其他编辑软件）",
+"Writes the filters into the file’s metadata (XMP), so the photo carries its own record of how it was taken. Lightroom, Bridge and Windows show it as the caption or description; the full list is also stored as its own field. Single exports and batch both include it.": "把所用滤镜写入文件的元数据（XMP），让照片自带拍摄方式的记录。Lightroom、Bridge 和 Windows 会将其显示为标题或说明；完整列表也会单独保存为一个字段。单张导出和批量处理都会包含。",
+"Saves the colour of this look as a .cube file for other editors: Photoshop (Color Lookup), DaVinci Resolve, Affinity, Final Cut and others. For Lightroom, make it a profile once in Photoshop’s Camera Raw: Alt- or Option-click the new preset button to get Create Profile, tick Color Lookup Table and load the .cube; the profile then appears in Lightroom too. A .cube holds colour only, so noise reduction, sharpening, clarity, dehaze, local tone mapping and masks are not in it. It is made for the photo as irlab receives it, so apply it to a camera JPEG or a RAW developed with the camera’s own white balance and no creative profile.": "把这个风格的色彩保存为 .cube 文件，供其他编辑软件使用：Photoshop（Color Lookup）、DaVinci Resolve、Affinity、Final Cut 等。用于 Lightroom 时，先在 Photoshop 的 Camera Raw 中把它做成配置文件：按住 Alt 或 Option 点击新建预设按钮以打开“创建配置文件”，勾选“Color Lookup Table”并载入 .cube；该配置文件随后也会出现在 Lightroom 中。.cube 只包含色彩，因此不含降噪、锐化、清晰度、去朦胧、局部色调映射和蒙版。它针对 irlab 接收到的照片而做，所以请应用于相机 JPEG，或用相机白平衡且未加创意配置文件冲洗的 RAW。"
 });

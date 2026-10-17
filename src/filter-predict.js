@@ -49,7 +49,20 @@ function fpCompute(ids, sensorName) {
   return { res, perm, spread, peakT: Math.max(...T) };
 }
 
+/* Build 158: the stack is remembered between visits (a converted camera usually wears the same filters for a whole
+   shoot) and is what export writes into each file's metadata (src/look-export.js). Names are kept beside the ids so the
+   export line can show them before the filter database has been fetched. */
+const FP_KEY = 'irlab.fpStack';
+function fpSave() {
+  try { localStorage.setItem(FP_KEY, JSON.stringify(fpStack.map(id => [id, fpData && fpData.byId[id] ? fpData.byId[id][1] : (fpNames[id] || id)]))); } catch (e) {}
+  if (typeof stackMetaRefresh === 'function') stackMetaRefresh();
+}
+let fpNames = {};
+try { (JSON.parse(localStorage.getItem(FP_KEY) || '[]') || []).forEach(([id, n]) => { if (id) { fpStack.push(id); fpNames[id] = n; } }); } catch (e) {}
+function fpStackNames() { return fpStack.map(id => fpData && fpData.byId[id] ? fpData.byId[id][1] : (fpNames[id] || id)); }
+
 function fpRender() {
+  fpStack = fpStack.filter(id => fpData.byId[id]);   // a filter since removed from the database drops out
   const out = $('fpOut');
   const chips = $('fpStack');
   chips.innerHTML = fpStack.map((id, i) => {
@@ -116,11 +129,11 @@ function fpInit() {
     const v = $('fpSearch').value.trim().toLowerCase(); if (!v || !fpData) return;
     const f = fpData.filters.find(x => x[1].toLowerCase() === v) || fpData.filters.find(x => x[1].toLowerCase().includes(v));
     if (!f) return;
-    fpStack.push(f[0]); $('fpSearch').value = ''; fpRender();
+    fpStack.push(f[0]); $('fpSearch').value = ''; fpRender(); fpSave();
   };
   $('fpSearch').addEventListener('change', add);
   $('fpSearch').addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); add(); } });
-  $('fpStack').addEventListener('click', e => { const b = e.target.closest('button[data-i]'); if (b) { fpStack.splice(+b.dataset.i, 1); fpRender(); } });
+  $('fpStack').addEventListener('click', e => { const b = e.target.closest('button[data-i]'); if (b) { fpStack.splice(+b.dataset.i, 1); fpRender(); fpSave(); } });
   $('fpSensor').addEventListener('change', () => fpData && fpRender());
   $('fpOut').addEventListener('click', e => { const b = e.target.closest('.fpPerm'); if (b && typeof mxApplyPerm === 'function') mxApplyPerm(b.dataset.perm); });
 }

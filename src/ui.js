@@ -1441,7 +1441,7 @@ function commitUndoCapture() {
 $('btnExportLUT').addEventListener('click', async () => {
   if (!loadedImage) { toast('Load an image first'); return; }
   try {
-    const { text, name } = buildCubeLUT(32);
+    const { text, name } = bakeCubeGPU(33) || buildCubeLUT(32);   // build 158: the GPU bake is the real shader; the CPU copy is only a fallback
     /* Auto-generated name (e.g. "ChannelSwap_Aerochrome.cube") was
        downloading immediately with no chance to rename or reconsider —
        every export from the same look landed in Downloads under the

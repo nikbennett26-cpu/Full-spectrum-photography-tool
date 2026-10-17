@@ -123,6 +123,7 @@ async function runBatch(fileList) {
   const fmt = document.querySelector('input[name=fmt]:checked').value;
   const ext = fmt === 'tiff16' ? 'tif' : fmt === 'png' ? 'png' : 'jpg';
   const params = exportParams();
+  const xmp = buildXmpPacket();   // build 158: the same filter-stack record as a single export
 
   /* Every finished file is held in memory until the whole batch is zipped —
      a zip has to be built in one piece, so there is nowhere to put them in
@@ -205,7 +206,7 @@ async function runBatch(fileList) {
 
         let blob;
         if (fmt === 'tiff16') {
-          blob = await encodeTIFF16(px, w, h);
+          blob = await encodeTIFF16(px, w, h, false, xmp);
         } else {
           const oc = document.createElement('canvas');
           oc.width = w; oc.height = h;
@@ -213,6 +214,10 @@ async function runBatch(fileList) {
           id.data.set(px instanceof Uint16Array ? quantize8(px, w, h) : px);
           oc.getContext('2d').putImageData(id, 0, 0);
           blob = await new Promise(r => oc.toBlob(r, fmt === 'png' ? 'image/png' : 'image/jpeg', fmt === 'jpeg' ? 1.0 : undefined));
+          if (xmp) {
+            const b0 = new Uint8Array(await blob.arrayBuffer());
+            blob = new Blob([fmt === 'png' ? spliceXmpIntoPngBytes(b0, xmp) : spliceXmpIntoJpegBytes(b0, xmp)], { type: blob.type });
+          }
         }
         entries.push({ name: safeName(f.name, ext), data: new Uint8Array(await blob.arrayBuffer()) });
       } catch (err) {

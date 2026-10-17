@@ -955,5 +955,11 @@ irlabTr.add('ja', {
 "colour pulled in to fit": "収まるよう色を補正",
 "Reading file…": "ファイルを読み込み中…",
 "Decoding sensor data…": "センサーデータをデコード中…",
-"Building preview…": "プレビューを作成中…"
+"Building preview…": "プレビューを作成中…",
+"Record the filter stack in the file:": "フィルター構成をファイルに記録:",
+"none set — add your filters under Predict from your filters": "未設定 — 「フィルターから予測」でフィルターを追加してください",
+"none set": "未設定",
+"Save look as .cube (for other editors)": "ルックを .cube で保存（他の編集ソフト用）",
+"Writes the filters into the file’s metadata (XMP), so the photo carries its own record of how it was taken. Lightroom, Bridge and Windows show it as the caption or description; the full list is also stored as its own field. Single exports and batch both include it.": "使ったフィルターをファイルのメタデータ（XMP）に書き込み、写真自体に撮影方法の記録を残します。Lightroom、Bridge、Windows ではキャプションまたは説明として表示され、完全なリストは独立した項目としても保存されます。単体の書き出しにも一括処理にも含まれます。",
+"Saves the colour of this look as a .cube file for other editors: Photoshop (Color Lookup), DaVinci Resolve, Affinity, Final Cut and others. For Lightroom, make it a profile once in Photoshop’s Camera Raw: Alt- or Option-click the new preset button to get Create Profile, tick Color Lookup Table and load the .cube; the profile then appears in Lightroom too. A .cube holds colour only, so noise reduction, sharpening, clarity, dehaze, local tone mapping and masks are not in it. It is made for the photo as irlab receives it, so apply it to a camera JPEG or a RAW developed with the camera’s own white balance and no creative profile.": "このルックの色を他の編集ソフト用の .cube ファイルとして保存します: Photoshop（Color Lookup）、DaVinci Resolve、Affinity、Final Cut など。Lightroom では、Photoshop の Camera Raw で一度プロファイルにします: 新規プリセットボタンを Alt／Option キーを押しながらクリックして「プロファイルを作成」を開き、「Color Lookup Table」にチェックを入れて .cube を読み込むと、そのプロファイルは Lightroom にも表示されます。.cube は色しか保持しないため、ノイズ除去、シャープ、明瞭度、かすみの除去、ローカルトーンマッピング、マスクは含まれません。irlab が受け取る状態の写真に合わせて作られるので、カメラの JPEG か、カメラのホワイトバランスでクリエイティブプロファイルなしに現像した RAW に適用してください。"
 });
