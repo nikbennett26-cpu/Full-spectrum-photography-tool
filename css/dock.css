@@ -156,7 +156,7 @@ details[data-step="light"]:not(.showRanges) .rangeSl{display:none !important}
 html.studioOn body.has-image,html.dockOn body.has-image{
     --st-bg:#0c0d0f;--st-stage:#131417;--st-panel:#141518;--st-raise:#1b1d21;--st-raise2:#24272c;
     --st-hair:rgba(255,255,255,.07);--st-hair2:rgba(255,255,255,.14);--st-text:#eceae4;--st-dim:#a3a097;--st-faint:#918d84;
-    --st-glass:rgba(18,19,22,.72);--accent-glow:rgba(238,106,44,.38);
+    --st-glass:rgba(18,19,22,.72);--accent-glow:rgba(194,67,27,.38);
     --bg:var(--st-panel);--surface:var(--st-raise);--surface2:var(--st-raise2);--line:var(--st-hair);--line2:var(--st-hair2);
     --paper:var(--st-text);--paper-dim:var(--st-dim);--phosphor-dim:var(--st-dim);--preview-mat:var(--st-bg);
 }
@@ -216,7 +216,7 @@ html.dockOn body.has-image,html.dockOn body.has-image #previewSticky,html.dockOn
   html.studioOn body.has-image .toolbar #filterDbBtn svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
   html.studioOn body.has-image .toolbar #filterDbBtn:hover{background:var(--st-raise)}
   html.studioOn body.has-image #btnStudioExport{order:15;display:inline-flex;align-items:center;gap:8px;height:38px;margin-left:10px;padding:0 22px;border:none;border-radius:999px;cursor:pointer;
-    font:600 14px/1 ui-sans-serif,system-ui,sans-serif;color:#fff;background:linear-gradient(180deg,#f0702f,#c9461a);
+    font:600 14px/1 ui-sans-serif,system-ui,sans-serif;color:#fff;background:var(--safelight);
     box-shadow:0 8px 22px -8px var(--accent-glow),inset 0 1px 0 rgba(255,255,255,.28);transition:transform .12s,box-shadow .2s}
   html.studioOn body.has-image #btnStudioExport:hover{transform:translateY(-1px);box-shadow:0 12px 28px -8px var(--accent-glow),inset 0 1px 0 rgba(255,255,255,.28)}
   html.studioOn body.has-image #btnStudioExport:active{transform:scale(.97)}
@@ -470,11 +470,11 @@ body:has(#consentBar.on):not(.has-image) #emptyStateGroup.lab{padding-bottom:96p
 #emptyStateGroup.lab .labSec{display:flex;flex-direction:column;gap:12px;margin:0;padding:0;max-width:none;width:auto;border:0;border-radius:0;background:none;
   box-shadow:none;text-align:left;align-items:stretch;justify-content:flex-start;transform:none;-webkit-backdrop-filter:none;backdrop-filter:none}
 #emptyStateGroup.lab .labHd{margin:0;display:flex;gap:10px;align-items:baseline;font:500 11px/1 var(--font-mono);letter-spacing:.1em;text-transform:uppercase;color:#6fab96}
-#emptyStateGroup.lab .labNo{color:#ee6a2c}
+#emptyStateGroup.lab .labNo{color:#c2431b}
 #emptyStateGroup.lab #restoreSlot:empty{display:none}
 #emptyStateGroup.lab #btnRestore{width:100%;height:46px;display:flex;align-items:center;justify-content:space-between;padding:0 16px;margin:0;background:transparent;
   border:1px solid #2a2d33;border-radius:6px;color:#eceae4;font:400 13px/1 var(--font-mono);cursor:pointer}
-#emptyStateGroup.lab #btnRestore:hover{border-color:#ee6a2c}
+#emptyStateGroup.lab #btnRestore:hover{border-color:#c2431b}
 #emptyStateGroup.lab #btnRestore .rsWhen{color:#8a867d}
 #emptyStateGroup.lab .labFmt{margin:0;font-size:10.5px;line-height:1.6;color:#8a867d}
 #emptyStateGroup.lab .labRow{display:flex;justify-content:space-between;align-items:center;gap:16px;min-height:48px;margin:0;padding:4px 0;
@@ -486,11 +486,11 @@ body:has(#consentBar.on):not(.has-image) #emptyStateGroup.lab{padding-bottom:96p
 #emptyStateGroup.lab #landingLinks{margin:0;max-width:none;width:auto;display:flex;flex-direction:column;gap:10px}
 #emptyStateGroup.lab a.labTool{display:flex;flex-direction:column;gap:8px;padding:14px;border:1px solid #2a2d33;border-radius:6px;background:transparent;box-shadow:none;
   color:#eceae4;text-decoration:none;transition:border-color .2s;transform:none}
-#emptyStateGroup.lab a.labTool:hover{border-color:#ee6a2c;background:transparent;box-shadow:none;transform:none}
+#emptyStateGroup.lab a.labTool:hover{border-color:#c2431b;background:transparent;box-shadow:none;transform:none}
 #emptyStateGroup.lab .labChart{position:relative;display:block}
 #emptyStateGroup.lab .labBand{position:absolute;top:3px;font:500 8.5px/1 var(--font-mono);letter-spacing:.08em;opacity:.7;pointer-events:none}
 #emptyStateGroup.lab .flTitle{display:flex;justify-content:space-between;font:500 13px/1.3 var(--font-mono);color:#eceae4;margin:0}
-#emptyStateGroup.lab .flArrow{color:#ee6a2c}
+#emptyStateGroup.lab .flArrow{color:#c2431b}
 #emptyStateGroup.lab .flSub{font:400 11px/1.5 var(--font-mono);color:#8a867d;margin:0}
 #emptyStateGroup.lab #btnInstallTop{margin:0;align-self:flex-start;min-height:40px}
 #emptyStateGroup.lab .labFoot{margin-top:auto;display:flex;flex-direction:column;border-top:1px solid #22252a;font-size:12px}
@@ -507,7 +507,7 @@ body:has(#consentBar.on):not(.has-image) #emptyStateGroup.lab{padding-bottom:96p
 #emptyStateGroup.lab #whatsNew details > div b{color:#eceae4 !important}
 #emptyStateGroup.lab #discordLink{display:flex;justify-content:space-between;align-items:center;width:auto;min-height:46px;margin:0;padding:0;border:0;
   border-bottom:1px solid #1a1c20;border-radius:0;background:none;color:#eceae4;font:400 12px/1 var(--font-mono);text-decoration:none}
-#emptyStateGroup.lab #discordLink:hover .dcGo{color:#ee6a2c}
+#emptyStateGroup.lab #discordLink:hover .dcGo{color:#c2431b}
 #emptyStateGroup.lab #discordLink .dcName{display:flex;align-items:center;gap:8px}
 #emptyStateGroup.lab #discordLink svg{width:16px;height:16px;color:#8a867d}
 #emptyStateGroup.lab #discordLink .dcGo{color:#8a867d;transition:color .2s}
@@ -575,7 +575,7 @@ details[data-step="wb"] .wbGainsBody .sl + .sl{margin-top:8px}
 .keyBtn{background:#1c1e22!important;border:1px solid #3a3d44!important;color:#eceae4!important;box-shadow:none!important;
   border-radius:6px!important;font-family:var(--font-mono)!important;font-weight:700!important;align-items:center!important;
   justify-content:flex-start!important;gap:14px!important;padding:5px 16px 5px 5px!important;text-decoration:none;transition:background .15s,border-color .15s}
-.keyBtn::before{content:'';flex:none;width:var(--chip,44px);height:var(--chip,44px);border-radius:4px;background:#ee6a2c center/46% no-repeat}
+.keyBtn::before{content:'';flex:none;width:var(--chip,44px);height:var(--chip,44px);border-radius:4px;background:var(--safelight) center/46% no-repeat}
  .keyDown::before{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%230b0c0e' stroke-width='2.6' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 5v14M5 12l7 7 7-7'/%3E%3C/svg%3E")} .keyPlus::before{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%230b0c0e' stroke-width='2.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 5v14M5 12h14'/%3E%3C/svg%3E")}
 .keyBtn:hover{background:#22252a!important;border-color:#55524c!important;transform:none!important}
 .keyBtn:active{transform:translateY(1px)!important}
@@ -659,7 +659,7 @@ summary.stepHdr #btnAuto + .hdrActs{margin-left:6px}
 /* 4. Selected toggles (Histogram/Parade, curve channel, crop ratio, HSL group) as a tint with an orange edge, not a solid orange pill. */
 #scopeModeRow button.btnGhostSmall.on,#curveTabs button.btnGhostSmall.on,#cropRow button.btnGhostSmall.on,#maskChips button.btnGhostSmall.on,
 html body #hslTabs button.btnGhostSmall.on,html.studioOn body.has-image #hslTabs button.btnGhostSmall.on,html.dockOn body.has-image #hslTabs button.btnGhostSmall.on{
-  background:rgba(238,106,44,.16)!important;border-color:var(--safelight)!important;color:var(--paper)!important}
+  background:rgba(194,67,27,.16)!important;border-color:var(--safelight)!important;color:var(--paper)!important}
 /* ---- Desktop matches the phone (build 127) ---- */
 html.studioOn body.has-image #scopeModeRow button.btnGhostSmall{border-radius:6px!important}
 html.studioOn body.has-image #studioBrand{gap:10px;font:400 14px/1 var(--font-mono)!important;letter-spacing:0!important}
@@ -692,20 +692,20 @@ html.dockOn body.has-image #exportSection > summary.secHead .stepChip,html.studi
 #emptyStateGroup.lab .labDec{display:flex;flex-direction:column;gap:12px}
 /* ---- Home load control as a command prompt (build 126) ---- */
 #emptyStateGroup.lab .labTerm{display:flex;flex-direction:column;gap:4px;padding:12px 14px;border-radius:8px;background:#050506;border:1px solid #1d1f23;transition:border-color .2s}
-#emptyStateGroup.lab #dropzone.dragover .labTerm{border-color:#ee6a2c}
+#emptyStateGroup.lab #dropzone.dragover .labTerm{border-color:#c2431b}
 #emptyStateGroup.lab .ltStatus{font:400 11.5px/1.5 var(--font-mono);color:#8a867d}
 #emptyStateGroup.lab .ltStatus b{font-weight:400;color:#c9c5bc}
-#emptyStateGroup.lab .ltStatus .slBusy{display:none;color:#ee6a2c}
+#emptyStateGroup.lab .ltStatus .slBusy{display:none;color:#c2431b}
 body.imgLoading #emptyStateGroup.lab .ltStatus .slIdle{display:none}
 body.imgLoading #emptyStateGroup.lab .ltStatus .slBusy{display:inline}
 #emptyStateGroup.lab label.labGo.ltPrompt{display:flex!important;align-items:center!important;gap:10px!important;height:auto!important;min-height:44px!important;margin:0!important;padding:0!important;
   border:0!important;border-radius:0!important;background:transparent!important;box-shadow:none!important;transform:none!important;cursor:pointer;
   font:400 17px/1 var(--font-mono)!important;letter-spacing:0!important;text-transform:none!important;color:#eceae4!important;justify-content:flex-start!important}
 #emptyStateGroup.lab label.labGo.ltPrompt::before,#emptyStateGroup.lab label.labGo.ltPrompt::after{content:none!important;display:none!important}
-#emptyStateGroup.lab label.labGo.ltPrompt:hover .ltCmd{text-decoration:underline;text-decoration-color:#ee6a2c;text-underline-offset:4px}
-#emptyStateGroup.lab label.labGo.ltPrompt:focus-within{outline:2px solid #ee6a2c;outline-offset:4px;border-radius:2px!important}
-#emptyStateGroup.lab .ltCaret{color:#ee6a2c}
-#emptyStateGroup.lab .ltCursor{width:10px;height:20px;background:#ee6a2c;animation:ltBlink 1.05s steps(1) infinite}
+#emptyStateGroup.lab label.labGo.ltPrompt:hover .ltCmd{text-decoration:underline;text-decoration-color:#c2431b;text-underline-offset:4px}
+#emptyStateGroup.lab label.labGo.ltPrompt:focus-within{outline:2px solid #c2431b;outline-offset:4px;border-radius:2px!important}
+#emptyStateGroup.lab .ltCaret{color:#c2431b}
+#emptyStateGroup.lab .ltCursor{width:10px;height:20px;background:#c2431b;animation:ltBlink 1.05s steps(1) infinite}
 body.imgLoading #emptyStateGroup.lab .ltCursor{animation:none;opacity:.35}
 @keyframes ltBlink{50%{opacity:0}}
 #emptyStateGroup.lab .ltHint{font:400 11.5px/1.5 var(--font-mono);color:#8a867d}

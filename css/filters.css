@@ -220,13 +220,13 @@ body{padding:0!important;max-width:none!important;margin:0!important}
   display:flex;align-items:center;justify-content:center;font:15px/1 var(--font-body);color:var(--paper)}
 .rkI svg{width:15px;height:15px;fill:none;stroke:currentColor;stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round}
 .rkTxt{font:700 10px/1 var(--font-mono)}
-.rkKey .rkI{background:#ee6a2c;border-color:#ee6a2c;color:#0b0c0e}
+.rkKey .rkI{background:var(--safelight);border-color:var(--safelight);color:#0b0c0e}
 .rkKey::after{color:var(--paper);font-weight:700}
 /* Build 129: icons only, like the editor's top bar. */
 .rk{height:34px}
 .rk::after{content:none;display:none}
-.rk[aria-pressed="true"] .rkI{border-color:#ee6a2c;background:rgba(238,106,44,.16)}
-.rk:active .rkI{border-color:#ee6a2c}
+.rk[aria-pressed="true"] .rkI{border-color:var(--safelight);background:rgba(194,67,27,.16)}
+.rk:active .rkI{border-color:var(--safelight)}
 .rkTheme #themeBtn{position:absolute!important;inset:0;width:auto!important;height:auto!important;border:0!important;background:transparent!important;padding:0 0 21px!important;
   font-size:15px!important;line-height:30px!important;color:var(--paper)!important;box-sizing:border-box}
 .rkTheme::before{content:'';position:absolute;left:50%;top:2px;width:30px;height:30px;margin-left:-15px;box-sizing:border-box;border:1px solid var(--line2);border-radius:4px;pointer-events:none}
@@ -251,7 +251,7 @@ body{padding:0!important;max-width:none!important;margin:0!important}
   padding-bottom:env(safe-area-inset-bottom);background:var(--sticky-bg);border-top:1px solid var(--line);backdrop-filter:blur(6px)}
 #fTabs button{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;border:0;border-radius:0;background:transparent;color:var(--paper-dim);font:500 11px/1 var(--font-mono);padding:0}
 #fTabs button svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
-#fTabs button[aria-pressed="true"]{color:#ee6a2c}
+#fTabs button[aria-pressed="true"]{color:var(--safelight)}
 #fTabs button:hover{background:transparent;color:var(--paper)}
 .fPane{display:none}
 body[data-pane="find"] .fPane[data-pane="find"],body[data-pane="stack"] .fPane[data-pane="stack"],
@@ -267,9 +267,9 @@ button{border-radius:6px}
 #clearBtn{display:none}
 .fExport{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}
 .fExport #exportPngBtn{display:flex;align-items:center;gap:12px;padding:3px 14px 3px 3px;border:1px solid #3a3d44;background:#1c1e22;color:#eceae4;font:700 12.5px/1 var(--font-mono);min-height:44px}
-.fExport #exportPngBtn::before{content:'';width:36px;height:36px;border-radius:4px;background:#ee6a2c url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%230b0c0e' stroke-width='2.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 5v14M5 12l7 7 7-7'/%3E%3C/svg%3E") center/16px no-repeat}
+.fExport #exportPngBtn::before{content:'';width:36px;height:36px;border-radius:4px;background:var(--safelight) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%230b0c0e' stroke-width='2.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 5v14M5 12l7 7 7-7'/%3E%3C/svg%3E") center/16px no-repeat}
 .chip{border-radius:6px}
-.chip.on{background:rgba(238,106,44,.16);border-color:#ee6a2c;color:var(--paper)}
+.chip.on{background:rgba(194,67,27,.16);border-color:var(--safelight);color:var(--paper)}
 #filterSearch{border-radius:8px!important;min-height:44px}
 /* browse by band: one card, colour dot per band (from option C) */
 #filterList{border:1px solid var(--line2);border-radius:10px;overflow:hidden}
@@ -282,7 +282,7 @@ button{border-radius:6px}
 .grp .fgrid{border:0!important;border-top:1px solid var(--line)!important;border-radius:0!important;background:rgba(0,0,0,.14)}
 .fb{border-left:1px solid var(--line)!important;border-radius:6px}
 .fb .fbinfo > b::before{content:'';display:inline-block;width:8px;height:8px;border-radius:50%;background:var(--c,var(--line2));margin-right:8px;vertical-align:1px}
-.fb.on{background:rgba(238,106,44,.12);border-color:#ee6a2c!important}
+.fb.on{background:rgba(194,67,27,.12);border-color:var(--safelight)!important}
 .zone-ref .panel{opacity:1}
 footer{border-top:0;margin-top:6px;padding:4px 2px 0}
 /* wide screens: chart on the left, tabs on the right */
