@@ -1,0 +1,8 @@
+{
+  "name": "irlab-build-tools",
+  "private": true,
+  "description": "Only used by tools/build.py to shrink editor.js and filters.js. Not part of the site.",
+  "devDependencies": {
+    "terser": "5.31.6"
+  }
+}

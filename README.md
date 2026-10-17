@@ -128,6 +128,12 @@ They are one script split for reading, not modules: they share one global scope,
 so a function anywhere is available from the start. (Loaded as separate files, the browser could run a reopened
 session or a tap between two of them and reach code that had not arrived yet; that broke the app in builds 130-131.)
 
+The published scripts are shrunk (build 141): `tools/build.py` passes each joined script through Terser
+(`tools/minify.mjs`), which removes comments and spacing and shortens local names, so the editor downloads about
+280 KB compressed instead of 420 KB. The sources keep every comment. Each script ships with a `.map` file, so a
+browser's developer tools show errors at the original `src/` file and line. Run `npm install` in `tools/` once
+before building; `python3 tools/build.py --readable` writes the scripts unshrunk for debugging.
+
 After a change, set the new build number everywhere and rebuild in one step:
 
     python3 tools/bump_build.py <build>
