@@ -39,6 +39,17 @@ BUNDLES = [
                                    'zoom-guidance', 'spectral']),
 ]
 root = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..')
+# The self-test is loaded only for ?selftest, so nothing else may use a name that only it defines (build 140 moved
+# it out and the mask colour picker broke on stOKLab). Fail the build if that happens again.
+_st = open(os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'src', 'selftest.js'), encoding='utf-8').read()
+_st_names = set(re.findall(r'^(?:async\s+)?(?:function\s+|const\s+|let\s+)([A-Za-z_$][\w$]*)', _st, re.M))
+_srcdir = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'src')
+for _f in os.listdir(_srcdir):
+    if not _f.endswith('.js') or _f == 'selftest.js': continue
+    _t = open(os.path.join(_srcdir, _f), encoding='utf-8').read()
+    _t = re.sub(r'/\*.*?\*/', '', _t, flags=re.S); _t = re.sub(r'(?m)^\s*//.*$', '', _t)   # comments may mention them
+    _used = [n for n in _st_names if re.search(r'(?<![\w$.])' + re.escape(n) + r'(?![\w$])', _t)]
+    assert not _used, f'src/{_f} uses {_used}, defined only in src/selftest.js (which loads only for ?selftest)'
 for out_name, folder, order in BUNDLES:
     parts = [f"'use strict';\n/* {out_name} is BUILT from {folder}/*.js by tools/build.py. Do not edit it: edit {folder}/ and rebuild.\n"
              f"   Each part starts with a ==== {folder}/<file>.js ==== line, so an error's line number leads back to its source. */\n"]

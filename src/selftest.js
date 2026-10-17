@@ -120,12 +120,7 @@ function stGrid(spec) {
   }
   return out;
 }
-const stS2L = v => { v /= 255; return v <= 0.04045 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4); };
-function stOKLab(r, g, b) { return stOKLabLin(stS2L(r), stS2L(g), stS2L(b)); }
-function stOKLabLin(r, g, b) {
-  const l = Math.cbrt(0.4122214708 * r + 0.5363325363 * g + 0.0514459929 * b), m = Math.cbrt(0.2119034982 * r + 0.6806995451 * g + 0.1073969566 * b), s = Math.cbrt(0.0883024619 * r + 0.2817188376 * g + 0.6299787005 * b);
-  return [0.2104542553 * l + 0.7936177850 * m - 0.0040720468 * s, 1.9779984951 * l - 2.4285922050 * m + 0.4505937099 * s, 0.0259040371 * l + 0.7827717662 * m - 0.8086757660 * s];
-}
+// stS2L, stOKLab and stOKLabLin live in src/ui.js: the mask colour picker uses them too, and this file only loads for ?selftest
 function stDeltaE(a, b) {
   const n = a.length / 3, ds = new Float64Array(n); let sum = 0, max = 0;
   for (let i = 0; i < n; i++) {
