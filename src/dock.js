@@ -292,6 +292,23 @@
       } else if (id in looksWere) { d.open = looksWere[id]; delete looksWere[id]; }
     });
   }
+  /* Build 160: any tool you open snaps to the top of the sheet, the way the Looks groups already did. Opening a card
+     near the bottom used to leave most of it below the fold, so the next move was always a scroll. Only a tap on a
+     card's own header does this (not a tab switch or a reset opening cards in code), it waits for the card to finish
+     opening, and it does nothing when the card already starts near the top. */
+  let lastSummaryTap = 0;
+  zone.addEventListener('click', e => { if (e.target.closest && e.target.closest('summary')) lastSummaryTap = performance.now(); }, true);
+  zone.addEventListener('toggle', e => {
+    const d = e.target;
+    if (!root.classList.contains('dockOn') || !d || d.tagName !== 'DETAILS' || !d.open) return;
+    if (performance.now() - lastSummaryTap > 800) return;
+    if (LOOKS_GROUPS.includes(d.id)) return;   // these have their own handler above
+    setTimeout(() => {
+      const off = d.getBoundingClientRect().top - zone.getBoundingClientRect().top;
+      if (Math.abs(off - 6) < 12) return;
+      zone.scrollTo({ top: Math.max(0, off + zone.scrollTop - 6), behavior: 'smooth' });
+    }, 60);
+  }, true);
   function sync() {
     const on = mq.matches;
     root.classList.toggle('dockOn', on);
