@@ -483,7 +483,9 @@ class WebGLEngine {
      (u_srcGuide in the shader). Only made while there are bands. */
   _srcGuidePass(p) {
     const gl = this.gl;
-    if (!this.isWebGL2 || !(p && p.bands && p.bands.length) || this._sgFail) return false;
+    let irMask = false; const mk = p && p.masks;   // build 165: the foliage (IR) mask reads its index from this guide too
+    if (mk && mk.n) for (let i = 0; i < mk.n; i++) if (mk.info[i * 4] > 3.5) irMask = true;
+    if (!this.isWebGL2 || !((p && p.bands && p.bands.length) || irMask) || this._sgFail) return false;
     try {
       const W = this.canvas.width, H = this.canvas.height, w = Math.max(16, Math.ceil(W / 2)), hh = Math.max(16, Math.ceil(H / 2));
       if (!this._sg || this._sg.w !== w || this._sg.h !== hh) {

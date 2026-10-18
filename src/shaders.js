@@ -636,6 +636,19 @@ uniform sampler2D u_epdBase;   // the smooth, edge-stopping base layer of the lo
   /* Edge-aware average of the source around this pixel: a 5x5 local pass on the guide (noise inside one material is
      averaged, a real edge is kept), then the colour (a,b) from a much wider 5x5 of the guide's mipmap, again counting only
      taps that look like this pixel's local colour, so a sky is judged as one sky right up to a twig against it. */
+  vec3 srcGuideLocal(vec3 labOwn) {   // the local, edge-aware half of srcGuideLab on its own (build 165: the foliage mask uses it)
+    vec2 uv = prepUV(v_texCoord);
+    vec3 acc = labOwn; float ws = 1.0;
+    for (int j = -2; j <= 2; j++) {
+      for (int i = -2; i <= 2; i++) {
+        vec3 t = linearToOklab(max(srgbToLinear(texture2D(u_srcGuide, uv + vec2(float(i), float(j)) * 1.5 * u_srcGuideTexel).rgb), vec3(0.0)));
+        vec3 dv = t - labOwn;
+        float w = exp(-dot(dv, dv) / (0.06 * 0.06));
+        acc += t * w; ws += w;
+      }
+    }
+    return acc / ws;
+  }
   vec3 srcGuideLab(vec3 labOwn) {
     vec2 uv = prepUV(v_texCoord);
     vec3 acc = labOwn; float ws = 1.0;
@@ -1785,7 +1798,7 @@ uniform float u_skyL;          // the typical lightness of the sky; anything cle
      (red) and a visible term (green for NDVI, blue for NGB). Leaves reflect strongly in the near infrared and absorb
      visible light for photosynthesis, so the index separates foliage from sky, water, stone and skin by physics, not by
      colour, which after a channel swap no longer says anything about what a surface is. */
-  float g_ndvi = 0.0, g_ngb = 0.0;
+  float g_ndvi = 0.0, g_ngb = 0.0, g_ndviM = 0.0, g_ngbM = 0.0;   // M: smoothed, for the foliage mask
 
   /* Weight of one mask at this pixel, 0..1. Geometry is in image space with y
      down, which is what v_texCoord is. Linear and radial work from position;
@@ -1810,7 +1823,7 @@ uniform float u_skyL;          // the typical lightness of the sky; anything cle
     } else if (info.x > 3.5) {
       /* Foliage (IR): selects by vegetation index, g.x..g.y on the index scale (-1..1), g.z picks the index
          (0 = NDVI, red vs green; 1 = NGB, red vs blue). */
-      float idx = g.z > 0.5 ? g_ngb : g_ndvi;
+      float idx = g.z > 0.5 ? g_ngbM : g_ndviM;
       float soft = max(f * 0.3, 0.005);
       m = smoothstep(g.x - soft, g.x, idx) * (1.0 - smoothstep(g.y, g.y + soft, idx));
     } else {
@@ -2433,6 +2446,15 @@ uniform float u_skyL;          // the typical lightness of the sky; anything cle
       float dg = wbi.r + wbi.g, db = wbi.r + wbi.b;
       g_ndvi = dg > 0.0001 ? (wbi.r - wbi.g) / dg : 0.0;
       g_ngb = db > 0.0001 ? (wbi.r - wbi.b) / db : 0.0;
+      /* Build 165: the foliage MASK reads the index from the source's local, edge-aware average (when the source guide
+         is on), so a grainy frame gives a clean selection rather than one that flickers pixel to pixel at its edges. The
+         NDVI / NGB views keep the per-pixel index: they are measurements, not selections. */
+      if (u_srcGuideOn > 0.5) {
+        vec3 sm = max(oklabToLinear(srcGuideLocal(linearToOklab(srcLin(v_texCoord)))) * u_preWB, vec3(0.0));
+        float sg = sm.r + sm.g, sb = sm.r + sm.b;
+        g_ndviM = sg > 0.0001 ? (sm.r - sm.g) / sg : 0.0;
+        g_ngbM = sb > 0.0001 ? (sm.r - sm.b) / sb : 0.0;
+      } else { g_ndviM = g_ndvi; g_ngbM = g_ngb; }
     }
     if (u_indexMode > 0) {
       vec3 wb = rgb * u_preWB;
@@ -2563,7 +2585,13 @@ uniform float u_skyL;          // the typical lightness of the sky; anything cle
            edited pixel. It used to divide the EDITED pixel by the UNEDITED surroundings, so any global change (Exposure,
            white balance, the swap) read as local contrast: Exposure +1 with Clarity 50 brightened a featureless grey
            patch from 87 to 112. */
-        float safe_cl   = max(dot(srcLin(v_texCoord), LUMW), 0.0001);
+        /* Build 165: the centre is a small average (the pixel and four neighbours 1.5px away), not the single pixel. With
+           the single pixel, sensor grain counted as "local contrast" and Clarity +80 roughly doubled the grain of a
+           noisy sky; structure at the 12-24px scale Clarity is meant for is unchanged by a 1.5px average. */
+        vec2 cr = u_texelSize * 1.5;
+        float safe_cl   = max((dot(srcLin(v_texCoord), LUMW) * 2.0
+          + dot(srcLin(v_texCoord + vec2( cr.x, 0.0)), LUMW) + dot(srcLin(v_texCoord + vec2(-cr.x, 0.0)), LUMW)
+          + dot(srcLin(v_texCoord + vec2(0.0,  cr.y)), LUMW) + dot(srcLin(v_texCoord + vec2(0.0, -cr.y)), LUMW)) / 6.0, 0.0001);
         float safe_blur = max(blur_luma, 0.0001);
         float log_ratio = log2(safe_cl / safe_blur);
         /* Soft-clip the ratio so extreme edges don't overshoot. */
@@ -2591,12 +2619,13 @@ uniform float u_skyL;          // the typical lightness of the sky; anything cle
        PUSH (u_dehaze < 0): adds a gentle atmospheric veil proportional to
        regional dark channel depth — useful for creating a misty IR mood. */
     if (u_dehaze != 0.0) {
-      vec2 dz = u_texelSize * 3.0;
-      vec3 db0 = srcLin(v_texCoord + vec2( dz.x, 0.0));
-      vec3 db1 = srcLin(v_texCoord + vec2(-dz.x, 0.0));
-      vec3 db2 = srcLin(v_texCoord + vec2(0.0,  dz.y));
-      vec3 db3 = srcLin(v_texCoord + vec2(0.0, -dz.y));
-      vec3 blurLin = (db0 + db1 + db2 + db3) * 0.25;
+      /* Build 165: eight taps at 4px and 10px instead of four at 3px, so the regional haze estimate is not itself grainy
+         (a grainy estimate turned into coloured speckle once divided out below). */
+      vec2 dz = u_texelSize * 4.0, dz2 = u_texelSize * 10.0;
+      vec3 blurLin = (srcLin(v_texCoord + vec2( dz.x, 0.0)) + srcLin(v_texCoord + vec2(-dz.x, 0.0))
+                    + srcLin(v_texCoord + vec2(0.0,  dz.y)) + srcLin(v_texCoord + vec2(0.0, -dz.y))
+                    + srcLin(v_texCoord + vec2( dz2.x, dz2.y)) + srcLin(v_texCoord + vec2(-dz2.x, dz2.y))
+                    + srcLin(v_texCoord + vec2( dz2.x, -dz2.y)) + srcLin(v_texCoord + vec2(-dz2.x, -dz2.y))) * 0.125;
       /* Atmospheric light — slight blue bias matches natural haze colour */
       const vec3 ATMOS = vec3(0.95, 0.97, 1.0);
       /* Haze is judged on the source, centre and surroundings alike, and the removal applied to the edited pixel. */
@@ -2612,8 +2641,14 @@ uniform float u_skyL;          // the typical lightness of the sky; anything cle
         float halo_prot   = smoothstep(0.02, 0.15, edge_diff < 0.0 ? -edge_diff : edge_diff);
         float spatial_dark = mix(regional_dark, pixel_dark, halo_prot);
         float safe_dark    = max(spatial_dark - 0.02, 0.0);
-        float mapped_haze  = safe_dark / (safe_dark + 0.2);
-        float t            = max(1.0 - u_dehaze * mapped_haze * 0.85, 0.15);
+        /* Build 165: the haze is the dark channel itself, as in the dark-channel method this follows, not
+           d / (d + 0.2). That mapping called a mid-grey half haze, so Dehaze +80 sent mid-tones to black while darker
+           and brighter tones survived: the tone response went down and back up. And the transmission is never allowed
+           below what this pixel's own darkest channel can take (1 - 0.9 x min channel / A), so the recovery can deepen
+           a colour but can no longer push a pixel through zero into black. */
+        float t            = max(1.0 - u_dehaze * safe_dark * 0.85, 0.15);
+        float ownMin       = min(rgb.r / ATMOS.r, min(rgb.g / ATMOS.g, rgb.b / ATMOS.b));
+        t = max(t, 1.0 - 0.9 * clamp(ownMin, 0.0, 1.0));
         vec3  recovered    = (rgb - ATMOS) / t + ATMOS;
         /* Shadow floor lift from haze removal */
         float rec_luma   = dot(max(recovered, vec3(0.0)), LUMW);
