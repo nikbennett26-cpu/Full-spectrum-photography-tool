@@ -213,6 +213,8 @@ class WebGLEngine {
       bandHi: gl.getUniformLocation(this.program, 'u_bandHi'),
       bandSelectivity: gl.getUniformLocation(this.program, 'u_bandSelectivity'),
       bandAB: gl.getUniformLocation(this.program, 'u_bandAB'),
+      srcGuide: gl.getUniformLocation(this.program, 'u_srcGuide'), srcGuideTexel: gl.getUniformLocation(this.program, 'u_srcGuideTexel'),
+      srcGuideOn: gl.getUniformLocation(this.program, 'u_srcGuideOn'), srcProbe: gl.getUniformLocation(this.program, 'u_srcProbe'),
       bandPC: gl.getUniformLocation(this.program, 'u_bandPC'),
       bandDL: gl.getUniformLocation(this.program, 'u_bandDL'),
       preWB: gl.getUniformLocation(this.program, 'u_preWB'),
@@ -477,6 +479,34 @@ class WebGLEngine {
   /* The guide for colour and luminosity masks: the picture as it reaches the local adjustments, at half size. Only runs
      when such a mask exists. `p` already carries __bandGuide when the band guide ran, so the colour here is the colour
      the main pass will have at that point. */
+  /* Build 164: the source at half size with mipmaps, for Targeted colour to decide its selection from an area's colour
+     (u_srcGuide in the shader). Only made while there are bands. */
+  _srcGuidePass(p) {
+    const gl = this.gl;
+    if (!this.isWebGL2 || !(p && p.bands && p.bands.length) || this._sgFail) return false;
+    try {
+      const W = this.canvas.width, H = this.canvas.height, w = Math.max(16, Math.ceil(W / 2)), hh = Math.max(16, Math.ceil(H / 2));
+      if (!this._sg || this._sg.w !== w || this._sg.h !== hh) {
+        if (this._sg) { gl.deleteFramebuffer(this._sg.fb); gl.deleteTexture(this._sg.tex); this._sg = null; }
+        const tex = gl.createTexture(); gl.activeTexture(gl.TEXTURE11); gl.bindTexture(gl.TEXTURE_2D, tex);
+        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, w, hh, 0, gl.RGBA, gl.UNSIGNED_BYTE, null);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR); gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE); gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+        const fb = gl.createFramebuffer(); gl.bindFramebuffer(gl.FRAMEBUFFER, fb); gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, tex, 0);
+        if (gl.checkFramebufferStatus(gl.FRAMEBUFFER) !== gl.FRAMEBUFFER_COMPLETE) { gl.bindFramebuffer(gl.FRAMEBUFFER, null); gl.deleteFramebuffer(fb); gl.deleteTexture(tex); throw new Error('source guide framebuffer incomplete'); }
+        gl.activeTexture(gl.TEXTURE0);
+        this._sg = { w: w, h: hh, tex: tex, fb: fb };
+      }
+      gl.bindFramebuffer(gl.FRAMEBUFFER, this._sg.fb); gl.viewport(0, 0, this._sg.w, this._sg.h);
+      gl.activeTexture(gl.TEXTURE11); gl.bindTexture(gl.TEXTURE_2D, null); gl.activeTexture(gl.TEXTURE0);   // never sample the target while drawing into it
+      this.setUniforms(Object.assign({}, p, { __srcProbe: true, __srcGuide: false, dither: false }));
+      gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+      gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+      gl.activeTexture(gl.TEXTURE11); gl.bindTexture(gl.TEXTURE_2D, this._sg.tex); gl.generateMipmap(gl.TEXTURE_2D); gl.activeTexture(gl.TEXTURE0);
+      return true;
+    } catch (err) { this._sgFail = true; gl.bindFramebuffer(gl.FRAMEBUFFER, null); console.warn('source guide disabled:', err && err.message); return false; }
+  }
+
   _maskGuidePass(p) {
     const gl = this.gl, mk = p && p.masks;
     if (!this.isWebGL2 || !mk || !mk.n || this._mgFail) return false;
@@ -495,7 +525,7 @@ class WebGLEngine {
   render(p) {
     const gl = this.gl;
     if (this._prepPass(p)) p = Object.assign({}, p, { __prepped: true });
-    if (this._bandGuidePass(p)) p = Object.assign({}, p, { __bandGuide: true });
+    if (this._bandGuidePass(p)) p = Object.assign({}, p, { __bandGuide: true }); if (this._srcGuidePass(p)) p = Object.assign({}, p, { __srcGuide: true });
     if (this._maskGuidePass(p)) p = Object.assign({}, p, { __maskGuide: true });
     gl.bindFramebuffer(gl.FRAMEBUFFER, null);
     gl.viewport(0, 0, this.canvas.width, this.canvas.height);
@@ -570,7 +600,7 @@ class WebGLEngine {
       }
       // pass 1: the real pipeline at reduced size
       if (this._prepPass(p)) p = Object.assign({}, p, { __prepped: true });
-      if (this._bandGuidePass(p)) p = Object.assign({}, p, { __bandGuide: true });
+      if (this._bandGuidePass(p)) p = Object.assign({}, p, { __bandGuide: true }); if (this._srcGuidePass(p)) p = Object.assign({}, p, { __srcGuide: true });
       if (this._maskGuidePass(p)) p = Object.assign({}, p, { __maskGuide: true });
       gl.bindFramebuffer(gl.FRAMEBUFFER, this._lo.fb);
       gl.viewport(0, 0, w, h);
@@ -701,6 +731,12 @@ class WebGLEngine {
     gl.uniform1f(this.uLocs.hiPivot, p.hiPivot === undefined ? 0.10 : p.hiPivot);
     gl.uniform1f(this.uLocs.shW, p.shW === undefined ? 1.0 : p.shW);
     gl.uniform1f(this.uLocs.bandProbe, p.__bandProbe ? 1 : 0);
+    gl.uniform1f(this.uLocs.srcProbe, p.__srcProbe ? 1 : 0);
+    { const useS = !!(p.__srcGuide && this._sg);
+      gl.uniform1f(this.uLocs.srcGuideOn, useS ? 1 : 0);
+      gl.activeTexture(gl.TEXTURE11); gl.bindTexture(gl.TEXTURE_2D, useS ? this._sg.tex : null); gl.uniform1i(this.uLocs.srcGuide, 11);
+      if (useS) gl.uniform2f(this.uLocs.srcGuideTexel, 1 / this._sg.w, 1 / this._sg.h);
+      gl.activeTexture(gl.TEXTURE0); }
     { const useG = !!(p.__bandGuide && this._bg);
       gl.uniform1f(this.uLocs.bandGuideOn, useG ? 1 : 0);
       gl.activeTexture(gl.TEXTURE8); gl.bindTexture(gl.TEXTURE_2D, useG ? this._bg.tex : null); gl.uniform1i(this.uLocs.bandGuide, 8);
@@ -938,7 +974,7 @@ class WebGLEngine {
     let tex = null, fb = null;
     try {
       if (this._prepPass(p)) p = Object.assign({}, p, { __prepped: true });
-      if (this._bandGuidePass(p)) p = Object.assign({}, p, { __bandGuide: true });
+      if (this._bandGuidePass(p)) p = Object.assign({}, p, { __bandGuide: true }); if (this._srcGuidePass(p)) p = Object.assign({}, p, { __srcGuide: true });
       if (this._maskGuidePass(p)) p = Object.assign({}, p, { __maskGuide: true });
       tex = gl.createTexture();
       gl.activeTexture(gl.TEXTURE0);

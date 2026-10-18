@@ -152,7 +152,7 @@ function targetedHSLF(r,g,b,bands,keepSat){
     C=Math.max(0,C*(1+band.dS*w));
     // build 162: exposure-style, line for line with the shader (see its comment)
     const fL=Math.pow(2,band.dL*2*w/3);
-    let Le=L*fL; if(Le>0.9) Le=0.9+0.1*(1-Math.exp(-(Le-0.9)/0.1));
+    let Le=L*fL; { const k=Math.max(L,0.9); if(fL>1&&Le>k&&k<1) Le=k+(1-k)*(1-Math.exp(-(Le-k)/(1-k))); }
     C*=L>1e-5?Le/L:fL; L=Le;
   }
   /* Shared ceiling across ALL bands combined, not per band. Each band's dS

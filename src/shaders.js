@@ -572,6 +572,12 @@ uniform sampler2D u_epdBase;   // the smooth, edge-stopping base layer of the lo
      sent, which keeps them on the hue test exactly as before. */
   uniform vec2 u_bandAB[MAX_BANDS];
   uniform float u_bandPC[MAX_BANDS];
+  /* Build 164: the source picture at half size with mipmaps (the source guide pass), so a band decides which pixels it
+     owns from the colour of the AREA around each pixel, not the pixel's own noisy colour. Deciding per pixel made the
+     selection itself noisy on a grainy sky: neighbouring pixels got different weights, so Lightness, Hue or Saturation
+     came out as salt-and-pepper speckle, where a global Exposure change on the same sky stays smooth. */
+  uniform sampler2D u_srcGuide; uniform vec2 u_srcGuideTexel; uniform float u_srcGuideOn;
+  uniform float u_srcProbe;   // 1 = write the source colour and stop (the source guide pass)
 
   float hueDegOf(vec2 ab) {
     float d = degrees(atan(ab.y, ab.x));
@@ -627,6 +633,35 @@ uniform sampler2D u_epdBase;   // the smooth, edge-stopping base layer of the lo
   vec3 srcEnc(vec2 uv) { return u_prepped > 0.5 ? texture2D(u_image, prepUV(uv)).rgb : stage1At(uv); }
   vec3 srcLin(vec2 uv) { return srgbToLinear(srcEnc(uv)); }
 
+  /* Edge-aware average of the source around this pixel: a 5x5 local pass on the guide (noise inside one material is
+     averaged, a real edge is kept), then the colour (a,b) from a much wider 5x5 of the guide's mipmap, again counting only
+     taps that look like this pixel's local colour, so a sky is judged as one sky right up to a twig against it. */
+  vec3 srcGuideLab(vec3 labOwn) {
+    vec2 uv = prepUV(v_texCoord);
+    vec3 acc = labOwn; float ws = 1.0;
+    for (int j = -2; j <= 2; j++) {
+      for (int i = -2; i <= 2; i++) {
+        vec3 t = linearToOklab(max(srgbToLinear(texture2D(u_srcGuide, uv + vec2(float(i), float(j)) * 1.5 * u_srcGuideTexel).rgb), vec3(0.0)));
+        vec3 dv = t - labOwn;
+        float w = exp(-dot(dv, dv) / (0.06 * 0.06));
+        acc += t * w; ws += w;
+      }
+    }
+    vec3 loc = acc / ws;
+    float lod = 3.0 + log2(max(u_nrScale, 1.0));
+    vec2 st = exp2(lod) * u_srcGuideTexel;
+    vec2 accW = loc.yz; float wW = 1.0;
+    for (int j = -2; j <= 2; j++) {
+      for (int i = -2; i <= 2; i++) {
+        vec3 t = linearToOklab(max(srgbToLinear(texture2D(u_srcGuide, uv + vec2(float(i), float(j)) * st, lod).rgb), vec3(0.0)));
+        vec3 dv = t - loc;
+        float w = exp(-dot(dv, dv) / (0.04 * 0.04));
+        accW += t.yz * w; wW += w;
+      }
+    }
+    return vec3(loc.x, accW / wW);
+  }
+
   vec3 targetedHSL(vec3 lin) {
     if (u_bandCount <= 0) return lin;
     vec3 lab = linearToOklab(lin);
@@ -680,6 +715,11 @@ uniform sampler2D u_epdBase;   // the smooth, edge-stopping base layer of the lo
     float wN3 = exp(-distance(labN3, lab) * 6.0);
     vec3 labSmoothed = (lab + labN0*wN0 + labN1*wN1 + labN2*wN2 + labN3*wN3)
                       / (1.0 + wN0 + wN1 + wN2 + wN3);
+    float Hm = H0, Cm = C0, Lm = L;   // what the bands MATCH on (the applied colour still starts from H0, C0, L)
+    if (u_srcGuideOn > 0.5) {   // build 164: match on the area's colour from the source guide
+      labSmoothed = srcGuideLab(lab);
+      Hm = hueDegOf(labSmoothed.yz); Cm = length(labSmoothed.yz); Lm = labSmoothed.x;
+    }
     float Hsmoothed = hueDegOf(labSmoothed.yz);
     float Csmoothed = length(labSmoothed.yz);
 
@@ -688,8 +728,8 @@ uniform sampler2D u_epdBase;   // the smooth, edge-stopping base layer of the lo
       // angDelta, not a plain mix \u2014 H0 and Hsmoothed can sit on opposite
       // sides of the 0/360 wrap, where a linear mix would swing the wrong
       // way around the circle
-      float Huse = H0 + angDelta(Hsmoothed, H0) * u_bandSelectivity[i];
-      float Cuse = mix(C0, Csmoothed, u_bandSelectivity[i]);
+      float Huse = Hm + angDelta(Hsmoothed, Hm) * u_bandSelectivity[i];
+      float Cuse = mix(Cm, Csmoothed, u_bandSelectivity[i]);
       float delta = angDelta(Huse, u_bandHue[i]);
       /* Hue is only as trustworthy as the pixel is colourful. The angular
          error in a hue reading scales roughly with 1/chroma, so on a nearly
@@ -741,8 +781,8 @@ uniform sampler2D u_epdBase;   // the smooth, edge-stopping base layer of the lo
          already computed above. */
       float lo = u_bandLo[i], hi = u_bandHi[i];
       float feather = max(0.04, (hi - lo) * 0.18);
-      float lGate = smoothstep(lo - feather, lo + feather, L) *
-           (1.0 - smoothstep(hi - feather, hi + feather, L));
+      float lGate = smoothstep(lo - feather, lo + feather, Lm) *
+           (1.0 - smoothstep(hi - feather, hi + feather, Lm));
       t *= lGate;
       float w = t * t * (3.0 - 2.0 * t);   // smoothstep, so the band edge is invisible
       /* Weighted by how chromatic the pixel is, not only how close its hue is
@@ -770,7 +810,7 @@ uniform sampler2D u_epdBase;   // the smooth, edge-stopping base layer of the lo
          L 0.9 instead of clipping, taking chroma down with it so the colour does not go out of range as it nears white. */
       float fL = exp2(u_bandDL[i] * 2.0 * w / 3.0);
       float Le = L * fL;
-      if (Le > 0.9) Le = 0.9 + 0.1 * (1.0 - exp(-(Le - 0.9) / 0.1));
+      { float k = max(L, 0.9); if (fL > 1.0 && Le > k && k < 1.0) Le = k + (1.0 - k) * (1.0 - exp(-(Le - k) / (1.0 - k))); }   // roll-off only on what brightening adds, so 0 EV changes nothing
       C *= L > 1e-5 ? Le / L : fL;
       L = Le;
     }
@@ -1073,9 +1113,13 @@ uniform float u_skyL;          // the typical lightness of the sky; anything cle
     float fS = max(0.0, 1.0 + d.y * gate);
     float h2 = atan(lab.z, lab.y) + ang;
     float dl = d.z * gate;
-    float L2 = dl < 0.0 ? lab.x * (1.0 + 0.30 * dl) : lab.x + (1.0 - lab.x) * 0.30 * dl;
+    /* Build 164: Luminance works like exposure, the same as the targeted colour Lightness (build 162): the light is
+       multiplied (+-100 is +-2 stops), so OKLab lightness and chroma both scale by the cube root and the band keeps its
+       contrast and saturation instead of being lifted or pushed flat. Brightening rolls off softly above L 0.9. */
+    float L2 = lab.x * exp2(dl * 2.0 / 3.0);
+    { float k = max(lab.x, 0.9); if (dl > 0.0 && L2 > k && k < 1.0) L2 = k + (1.0 - k) * (1.0 - exp(-(L2 - k) / (1.0 - k))); }   // only on what brightening adds
     float ratio = lab.x > 1e-4 ? L2 / lab.x : 1.0;
-    float C2 = C * fS * (ratio < 1.0 ? sqrt(ratio) : 1.0);
+    float C2 = C * fS * ratio;
     return oklabToLinear(vec3(clamp(L2, 0.0, 1.0), C2 * cos(h2), C2 * sin(h2)));
   }
   vec3 hueSat(vec3 lin, float hueFrac, float sat, float keepSat, float vibrance) {
@@ -1820,6 +1864,7 @@ uniform float u_skyL;          // the typical lightness of the sky; anything cle
   }
 
   void main() {
+    if (u_srcProbe > 0.5) { gl_FragColor = vec4(clamp(srcEnc(v_texCoord), 0.0, 1.0), 1.0); return; }   // build 164: source guide pass
     vec4 texColor = texture2D(u_image, u_prepped > 0.5 ? prepUV(v_texCoord) : v_texCoord);
     if (u_prepped < 0.5) {
     /* Lateral chromatic aberration: red and blue are magnified slightly
