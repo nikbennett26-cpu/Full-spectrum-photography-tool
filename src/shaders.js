@@ -748,7 +748,17 @@ uniform sampler2D u_epdBase;   // the smooth, edge-stopping base layer of the lo
       if (w <= 0.0) continue;
       H += u_bandDH[i] * w;
       C = max(0.0, C * (1.0 + u_bandDS[i] * w));
-      L = clamp(L + u_bandDL[i] * 0.4 * w, 0.0, 1.0);
+      /* Build 162: Lightness works like exposure on the selected colour. It used to ADD to OKLab lightness, which lifted
+         dark and bright parts of the selection by the same amount: shadows inside a sky or a tree washed out, texture
+         flattened and the colour turned pale. Exposure multiplies the light instead, and OKLab is a cube root of light,
+         so multiplying the light by k multiplies L and chroma both by k^(1/3): every part of the selection keeps its
+         contrast against its neighbours and its saturation. +-100% is +-2 stops. Brightening rolls off softly above
+         L 0.9 instead of clipping, taking chroma down with it so the colour does not go out of range as it nears white. */
+      float fL = exp2(u_bandDL[i] * 2.0 * w / 3.0);
+      float Le = L * fL;
+      if (Le > 0.9) Le = 0.9 + 0.1 * (1.0 - exp(-(Le - 0.9) / 0.1));
+      C *= L > 1e-5 ? Le / L : fL;
+      L = Le;
     }
 
     /* Shared ceiling across ALL bands combined, not per band — mirrors

@@ -144,7 +144,10 @@ function targetedHSLF(r,g,b,bands,keepSat){
     if(w<=0) continue;
     H+=band.dH*w;
     C=Math.max(0,C*(1+band.dS*w));
-    L=Math.max(0,Math.min(1,L+band.dL*0.4*w));
+    // build 162: exposure-style, line for line with the shader (see its comment)
+    const fL=Math.pow(2,band.dL*2*w/3);
+    let Le=L*fL; if(Le>0.9) Le=0.9+0.1*(1-Math.exp(-(Le-0.9)/0.1));
+    C*=L>1e-5?Le/L:fL; L=Le;
   }
   /* Shared ceiling across ALL bands combined, not per band. Each band's dS
      used to be tuned in isolation, trusting that whatever else might overlap

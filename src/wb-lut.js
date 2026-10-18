@@ -699,7 +699,7 @@ function bandRenderList() {
     const specs = [
       ['dH', -180, 180, 1, band.dH, v => Math.round(v) + '°', v => band.dH = v],
       ['dS', -100, 100, 1, band.dS * 100, v => Math.round(v) + '%', v => band.dS = v / 100],
-      ['dL', -100, 100, 1, band.dL * 100, v => Math.round(v) + '%', v => band.dL = v / 100],
+      ['dL', -100, 100, 1, band.dL * 100, v => (v > 0 ? '+' : v < 0 ? '\u2212' : '') + Math.abs(v / 50).toFixed(1) + ' EV', v => band.dL = v / 100],   // build 162: exposure-style, the full slider is \u00b12 stops
       ['width', 5, 90, 1, band.width, v => Math.round(v) + '°', v => band.width = v],
       // 0 = the tool's usual behaviour: widen up to 3x on desaturated pixels,
       // since hue is mostly noise there. 100 = trust the Width exactly as
