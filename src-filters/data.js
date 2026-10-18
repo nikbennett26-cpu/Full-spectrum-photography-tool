@@ -1319,6 +1319,59 @@ const FILTERS=[
    +'flat past 750nm). 50% at about 604nm, 10-90% over roughly 590-624nm, about 95.5% through deep red. Wratten 25 \u2014 '
    +'sold as R1, R(A25) or 25A depending on era. The earlier placeholder (600nm) was close; the real edge is a '
    +'little later and noticeably gentler.'},
+ {id:'hy_y48',g:'B4',n:'Hoya Y48 glass',d:'480nm colour-glass long-pass \u00b7 Hoya\u2019s own table',c:'#e6d24a',type:'absorptive',
+  same:'REAL DATA \u2014 Hoya Candeo Optronics\u2019 own datasheet table for Y48 (the optical-glass version, sold by Edmund '
+   +'Optics as stock #18-864, 12.5mm \u00d7 2.5mm, cut-on 480\u00b15nm). 50% at about 482nm, 87% by 500nm and a flat '
+   +'90-91% from there right through the infrared (the table runs to 5000nm). Not a screw-in camera filter: it is a '
+   +'bare glass plate, roughly Hoya\u2019s equivalent of SCHOTT GG475, useful for a filter holder or a custom stack.'},
+ {id:'hyg_y44',g:'B4',n:'Hoya Y44 glass',d:'440nm colour-glass long-pass \u00b7 Hoya\u2019s own table',c:'#ece66a',type:'absorptive',
+  same:'REAL DATA \u2014 Hoya Candeo Optronics\u2019 own datasheet table for Y44 at 2.5mm, reflection losses included. '
+   +'50% at about 440nm, about 90% through the infrared to 1100nm. A bare glass plate, not a screw-in camera '
+   +'filter; roughly Hoya\u2019s equivalent of SCHOTT GG435.'},
+ {id:'hyg_y50',g:'B5',n:'Hoya Y50 glass',d:'503nm colour-glass long-pass \u00b7 Hoya\u2019s own table',c:'#e6c845',type:'absorptive',
+  same:'REAL DATA \u2014 Hoya Candeo Optronics\u2019 own datasheet table for Y50 at 2.5mm, reflection losses included. '
+   +'50% at about 503nm, about 90% through the infrared to 1100nm. A bare glass plate, not a screw-in camera '
+   +'filter; roughly Hoya\u2019s equivalent of SCHOTT GG495.'},
+ {id:'hyg_y52',g:'B5',n:'Hoya Y52 glass',d:'521nm colour-glass long-pass \u00b7 Hoya\u2019s own table',c:'#e3bb3f',type:'absorptive',
+  same:'REAL DATA \u2014 Hoya Candeo Optronics\u2019 own datasheet table for Y52 at 2.5mm, reflection losses included. '
+   +'50% at about 521nm, about 90% through the infrared to 1100nm. A bare glass plate, not a screw-in camera '
+   +'filter; roughly Hoya\u2019s equivalent of SCHOTT OG515.'},
+ {id:'hyg_o54',g:'B5',n:'Hoya O54 glass',d:'543nm colour-glass long-pass \u00b7 Hoya\u2019s own table',c:'#e2a83a',type:'absorptive',
+  same:'REAL DATA \u2014 Hoya Candeo Optronics\u2019 own datasheet table for O54 at 2.5mm, reflection losses included. '
+   +'50% at about 543nm, about 90% through the infrared to 1100nm. A bare glass plate, not a screw-in camera '
+   +'filter; roughly Hoya\u2019s equivalent of SCHOTT OG530.'},
+ {id:'hyg_o56',g:'B5',n:'Hoya O56 glass',d:'563nm colour-glass long-pass \u00b7 Hoya\u2019s own table',c:'#de9535',type:'absorptive',
+  same:'REAL DATA \u2014 Hoya Candeo Optronics\u2019 own datasheet table for O56 at 2.5mm, reflection losses included. '
+   +'50% at about 563nm, about 90% through the infrared to 1100nm. A bare glass plate, not a screw-in camera '
+   +'filter; roughly Hoya\u2019s equivalent of SCHOTT OG550.'},
+ {id:'hyg_o58',g:'B6',n:'Hoya O58 glass',d:'584nm colour-glass long-pass \u00b7 Hoya\u2019s own table',c:'#da8131',type:'absorptive',
+  same:'REAL DATA \u2014 Hoya Candeo Optronics\u2019 own datasheet table for O58 at 2.5mm, reflection losses included. '
+   +'50% at about 584nm, about 90% through the infrared to 1100nm. A bare glass plate, not a screw-in camera '
+   +'filter; roughly Hoya\u2019s equivalent of SCHOTT OG570.'},
+ {id:'hyg_r60',g:'B7',n:'Hoya R60 glass',d:'602nm colour-glass long-pass \u00b7 Hoya\u2019s own table',c:'#d4672e',type:'absorptive',
+  same:'REAL DATA \u2014 Hoya Candeo Optronics\u2019 own datasheet table for R60 at 2.5mm, reflection losses included. '
+   +'50% at about 602nm, about 90% through the infrared to 1100nm. A bare glass plate, not a screw-in camera '
+   +'filter; roughly Hoya\u2019s equivalent of SCHOTT OG590.'},
+ {id:'hyg_r62',g:'B7',n:'Hoya R62 glass',d:'622nm colour-glass long-pass \u00b7 Hoya\u2019s own table',c:'#cc552b',type:'absorptive',
+  same:'REAL DATA \u2014 Hoya Candeo Optronics\u2019 own datasheet table for R62 at 2.5mm, reflection losses included. '
+   +'50% at about 622nm, about 90% through the infrared to 1100nm. A bare glass plate, not a screw-in camera '
+   +'filter; roughly Hoya\u2019s equivalent of SCHOTT RG610.'},
+ {id:'hyg_r64',g:'B7',n:'Hoya R64 glass',d:'643nm colour-glass long-pass \u00b7 Hoya\u2019s own table',c:'#c34828',type:'absorptive',
+  same:'REAL DATA \u2014 Hoya Candeo Optronics\u2019 own datasheet table for R64 at 2.5mm, reflection losses included. '
+   +'50% at about 643nm, about 90% through the infrared to 1100nm. A bare glass plate, not a screw-in camera '
+   +'filter; roughly Hoya\u2019s equivalent of SCHOTT RG630.'},
+ {id:'hyg_r66',g:'B7',n:'Hoya R66 glass',d:'663nm colour-glass long-pass \u00b7 Hoya\u2019s own table',c:'#b83e25',type:'absorptive',
+  same:'REAL DATA \u2014 Hoya Candeo Optronics\u2019 own datasheet table for R66 at 2.5mm, reflection losses included. '
+   +'50% at about 663nm, about 90% through the infrared to 1100nm. A bare glass plate, not a screw-in camera '
+   +'filter; roughly Hoya\u2019s equivalent of SCHOTT RG665.'},
+ {id:'hyg_r70',g:'B8',n:'Hoya R70 glass',d:'702nm colour-glass long-pass \u00b7 Hoya\u2019s own table',c:'#a83522',type:'absorptive',
+  same:'REAL DATA \u2014 Hoya Candeo Optronics\u2019 own datasheet table for R70 at 2.5mm, reflection losses included. '
+   +'50% at about 702nm, about 90% through the infrared to 1100nm. A bare glass plate, not a screw-in camera '
+   +'filter; roughly Hoya\u2019s equivalent of SCHOTT RG695.'},
+ {id:'hyg_r72',g:'B8',n:'Hoya R72 glass',d:'722nm colour-glass long-pass \u00b7 Hoya\u2019s own table',c:'#9a2f1f',type:'absorptive',
+  same:'REAL DATA \u2014 Hoya Candeo Optronics\u2019 own datasheet table for R72 at 2.5mm, reflection losses included. '
+   +'50% at about 722nm, about 90% through the infrared to 1100nm. A bare glass plate, not a screw-in camera '
+   +'filter; roughly Hoya\u2019s equivalent of SCHOTT RG715.'},
  /* ---- Hoya IR series (branded, cutoff given by the model number itself) ----
     Same source as UG5 above. The article is explicit that Hoya\u2019s OWN stated
     Wratten-number equivalents for this range are wrong ("Note that the
@@ -1332,8 +1385,8 @@ const FILTERS=[
     under the Hoya brand and its own model-number naming, since someone
     holding an actual Hoya-branded filter searches for "R72", not "720nm". */
  {id:'hy_r70',g:'B7',n:'Hoya R70',d:'IR long-pass \u00b7 Hoya\u2019s R70 glass table',c:'#c85f33',
-  same:'DERIVED from real data \u2014 Hoya Candeo Optronics\u2019 own datasheet table for R70 glass at 2.5mm, '
-   +'on the assumption that the camera filter uses that glass at about that thickness. 50% at about '
+  same:'DERIVED from real data \u2014 Hoya Candeo Optronics\u2019 own datasheet table for R70 glass at 2.5mm (see the Hoya R70 '
+   +'glass card), on the assumption that the camera filter uses that glass at about that thickness. 50% at about '
    +'702nm: the number names the 50% point, not a 70% point as this card used to say. Replaces an estimate.'},
  {id:'hy_r76',g:'B8',n:'Hoya R76',d:'Real chart \u00b7 IR long-pass',c:'#bc552d',
   same:'REAL DATA \u2014 exact digitised curve from Hoya\u2019s own published IR-series chart (IR76N/IR80N/IR83N/'
