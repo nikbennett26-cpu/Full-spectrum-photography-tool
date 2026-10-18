@@ -973,5 +973,11 @@ irlabTr.add('ja', {
 "Tone curve lights": "トーンカーブ ライト",
 "Tone curve darks": "トーンカーブ ダーク",
 "Tone curve shadows": "トーンカーブ シャドウ",
-"Region sliders bend the curve for you and can never make it fold back on itself. Points gives the full editor for exact shapes.": "領域スライダーはカーブを自動で曲げ、カーブが折り返すことはありません。正確な形は「ポイント」の完全なエディターで作れます。"
+"Region sliders bend the curve for you and can never make it fold back on itself. Points gives the full editor for exact shapes.": "領域スライダーはカーブを自動で曲げ、カーブが折り返すことはありません。正確な形は「ポイント」の完全なエディターで作れます。",
+"Medium": "中",
+"Strong": "強",
+"Luminance only": "輝度のみ",
+"Delete selected point": "選択したポイントを削除",
+"Reset every channel's curve, points and regions": "全チャンネルのカーブ（ポイントと領域）をリセット",
+"Luminance only: the RGB curve changes brightness without shifting colours": "輝度のみ: RGB カーブは色をずらさずに明るさだけを変えます"
 });

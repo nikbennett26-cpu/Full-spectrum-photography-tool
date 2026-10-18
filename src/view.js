@@ -65,6 +65,7 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 let histSrc = null, histCtx = null, histTimer = null;
 function scheduleHistogram() {
+  if (typeof scheduleCurveHist === 'function') scheduleCurveHist();   // build 169: the histogram behind the Points curve
   if (histTimer) clearTimeout(histTimer);
   histTimer = setTimeout(() => { if (gamutWarnShown || maskViewIndex() >= 0) return; drawHistogram(); }, 90);
 }

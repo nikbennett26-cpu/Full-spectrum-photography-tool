@@ -25,7 +25,7 @@
 <meta name="twitter:image" content="https://irlab.uk/og-card.png?v=112">
 <link rel="canonical" href="https://irlab.uk/">
 <meta name="theme-color" content="#160f0a">
-<meta name="irlab-build" content="168">
+<meta name="irlab-build" content="169">
 <link rel="manifest" href="/manifest.json">
 <link rel="icon" href="/favicon.ico?v=2" sizes="any">
 <link rel="icon" href="/favicon.svg?v=2" type="image/svg+xml">
@@ -57,8 +57,8 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
 
-<script src="i18n/tr.js?b=168"></script>
-<link rel="stylesheet" href="css/main.css?b=168">
+<script src="i18n/tr.js?b=169"></script>
+<link rel="stylesheet" href="css/main.css?b=169">
 <script>
 /* Applied before anything renders so a light-mode user never sees a dark
    flash. Deliberately inline and synchronous. */
@@ -70,9 +70,9 @@
   }catch(e){}
 })();
 </script>
-<link rel="stylesheet" id="uxRefresh" href="css/refresh.css?b=168">
-<link rel="stylesheet" href="css/trichrome.css?b=168">
-<link rel="stylesheet" id="uxDock" href="css/dock.css?b=168">
+<link rel="stylesheet" id="uxRefresh" href="css/refresh.css?b=169">
+<link rel="stylesheet" href="css/trichrome.css?b=169">
+<link rel="stylesheet" id="uxDock" href="css/dock.css?b=169">
 </head>
 <body>
 
@@ -206,6 +206,9 @@
       <details>
         <summary><span data-i18n="whatsNewLabel">What’s new</span><span class="wnLatest">Curve regions</span></summary>
       <div style="margin-top:6px">
+        <p style="margin:0 0 3px"><b style="color:var(--phosphor-dim)">Redesigned Points tab.</b> Channels are one segmented control (RGB, R, G,
+          B) with Reset beside it; the curve sits over the photo&rsquo;s histogram for the channel you are editing; the selected point has
+          its In and Out values and a delete button; presets and Luminance only are pills underneath.</p>
         <p style="margin:0 0 3px"><b style="color:var(--phosphor-dim)">Tone curve: Regions and Points.</b> The tone curve opens on four sliders,
           Highlights, Lights, Darks and Shadows, that bend the curve for you on RGB or any one channel, with a small preview of the shape.
           They can never fold the curve back on itself. Points has the full point editor as before, and the two work together: the
@@ -396,7 +399,7 @@
       <path d="M20.317 4.37a19.79 19.79 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028 14.09 14.09 0 0 0 1.226-1.994.076.076 0 0 0-.041-.106 13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128 10.2 10.2 0 0 0 .372-.292.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.956-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.955-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.946 2.418-2.157 2.418z"/>
     </svg> Discord</span><span class="dcGo">Join →</span>
     </a>
-    <div id="buildStampHome">Version 2026-10-18 · build 168</div>
+    <div id="buildStampHome">Version 2026-10-18 · build 169</div>
   </footer>
 </div>
 
@@ -915,27 +918,32 @@
           <p class="note" style="margin:8px 0 0">Region sliders bend the curve for you and can never make it fold back on itself. Points gives the full editor for exact shapes.</p>
         </div>
         <div id="curvePoints" hidden>
-        <div class="wbrow" id="curveTabs" style="margin-top:10px">
-          <button type="button" data-ch="master" class="btnGhostSmall on">RGB</button>
-          <button type="button" data-ch="r" class="btnGhostSmall">R</button>
-          <button type="button" data-ch="g" class="btnGhostSmall">G</button>
-          <button type="button" data-ch="b" class="btnGhostSmall">B</button>
-          <button type="button" id="btnCurveReset" class="btnGhostSmall">Reset curves</button>
+        <!-- Build 169: design A from the tone-curve canvas: segmented channel control with Reset, the curve over the
+             photo's histogram, the selected point's values with a delete button, then presets as pills. -->
+        <div class="cpHead">
+          <div id="curveTabs" class="cpSeg" role="tablist" aria-label="Curve channel">
+            <button type="button" data-ch="master" class="on" role="tab" aria-selected="true">RGB</button>
+            <button type="button" data-ch="r" role="tab" aria-selected="false"><span class="crDot" style="background:#e0664a" aria-hidden="true"></span>R</button>
+            <button type="button" data-ch="g" role="tab" aria-selected="false"><span class="crDot" style="background:#6fc08a" aria-hidden="true"></span>G</button>
+            <button type="button" data-ch="b" role="tab" aria-selected="false"><span class="crDot" style="background:#6aa0e0" aria-hidden="true"></span>B</button>
+          </div>
+          <button type="button" id="btnCurveReset" class="cpPill" title="Reset every channel's curve, points and regions">Reset</button>
         </div>
-        <div class="wbrow" id="curvePresets" style="margin-top:8px;align-items:center;gap:6px;flex-wrap:wrap">
-          <span class="note" style="margin:0 4px 0 0">Start from</span>
-          <button type="button" data-cp="linear" class="btnGhostSmall">Linear</button>
-          <button type="button" data-cp="medium" class="btnGhostSmall">Medium contrast</button>
-          <button type="button" data-cp="strong" class="btnGhostSmall">Strong contrast</button>
-        </div>
-        <label class="ctl" style="display:flex;align-items:center;gap:8px;margin-top:8px"><input type="checkbox" id="curveLum" style="margin:0"><span>Luminance only &mdash; the RGB curve changes brightness without shifting colours</span></label>
         <canvas id="curveCv" width="256" height="256" aria-label="Tone curve editor"></canvas>
-        <div class="wbrow" id="curvePointRow" style="margin-top:8px;align-items:center;gap:8px">
-          <span class="note" style="margin:0">Selected point</span>
-          <label class="ctl" style="display:inline-flex;align-items:center;gap:6px">In <input type="number" id="curveIn" min="0" max="255" step="1" inputmode="numeric" style="width:64px" disabled></label>
-          <label class="ctl" style="display:inline-flex;align-items:center;gap:6px">Out <input type="number" id="curveOut" min="0" max="255" step="1" inputmode="numeric" style="width:64px" disabled></label>
+        <div id="curvePointRow" class="cpPoint">
+          <label>In <input type="number" id="curveIn" min="0" max="255" step="1" inputmode="numeric" disabled></label>
+          <label>Out <input type="number" id="curveOut" min="0" max="255" step="1" inputmode="numeric" disabled></label>
+          <button type="button" id="btnCurveDel" class="cpIcon" aria-label="Delete selected point" title="Delete selected point" disabled>
+            <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M3 4h10M6 4V2.5h4V4M5 4l.6 9h4.8L11 4"></path></svg>
+          </button>
         </div>
-        <p class="note" title="Tap or click the line to add a point, drag to move it. Double-tap a point, or drag it off the side, to remove it. RGB applies to all three channels first, then R, G and B on top. Works on the encoded image, after Brightness and before Hue and Saturation.">Tap to add a point &middot; drag to move &middot; double-tap to remove</p>
+        <div id="curvePresets" class="cpPills">
+          <button type="button" data-cp="linear" class="cpPill">Linear</button>
+          <button type="button" data-cp="medium" class="cpPill">Medium</button>
+          <button type="button" data-cp="strong" class="cpPill">Strong</button>
+          <label class="cpPill cpToggle" title="Luminance only: the RGB curve changes brightness without shifting colours"><input type="checkbox" id="curveLum"><span>Luminance only</span></label>
+        </div>
+        <p class="note cpHint" title="Tap or click the line to add a point, drag to move it. Double-tap a point, or drag it off the side, to remove it. RGB applies to all three channels first, then R, G and B on top. Works on the encoded image, after Brightness and before Hue and Saturation.">Tap to add a point &middot; drag to move &middot; double-tap to remove</p>
         </div>
         </div>
       </details>
@@ -1398,7 +1406,7 @@
       <br><a href="#" id="consentReopen" style="color:var(--muted);text-decoration:underline">Cookie notice</a>
       <br><a href="LICENSE.md" target="_blank" rel="noopener" style="color:var(--muted);text-decoration:underline">Source: AGPL-3.0</a>
       <br><a href="THIRD_PARTY_NOTICES.md" target="_blank" rel="noopener" style="color:var(--muted);text-decoration:underline">Third-party notices (LibRaw, RawTherapee)</a>
-<br><span id="buildStamp" style="color:var(--muted)" title="Which version of the app this is. Tap the arrow to check for a newer one and update.">Version 2026-10-18 · build 168</span>
+<br><span id="buildStamp" style="color:var(--muted)" title="Which version of the app this is. Tap the arrow to check for a newer one and update.">Version 2026-10-18 · build 169</span>
       <br><button id="btnInstall" type="button">Install as an app</button>
       <span id="kbHint">Ctrl+Z undo &middot; Ctrl+Shift+Z redo &middot; [ ] cycle presets &middot; F full quality view &middot; Space hold to compare</span>
     </footer>
@@ -1494,6 +1502,6 @@
 <!-- The editor's code: editor.js, BUILT from src/*.js by tools/build.py (see the README's Code layout). One script, so
      it all runs in one go, as the single inline block it came from did. ?b=<build> keeps the service worker's cached
      copy of an older editor.js from ever running under a newer page; tools/bump_build.py sets it. -->
-<script src="editor.js?b=168"></script>
+<script src="editor.js?b=169"></script>
 </body>
 </html>

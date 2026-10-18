@@ -973,5 +973,11 @@ irlabTr.add('zh', {
 "Tone curve lights": "色调曲线 亮部",
 "Tone curve darks": "色调曲线 暗部",
 "Tone curve shadows": "色调曲线 阴影",
-"Region sliders bend the curve for you and can never make it fold back on itself. Points gives the full editor for exact shapes.": "区域滑块会替你弯曲曲线，且曲线绝不会折回。需要精确形状时可用“点”中的完整编辑器。"
+"Region sliders bend the curve for you and can never make it fold back on itself. Points gives the full editor for exact shapes.": "区域滑块会替你弯曲曲线，且曲线绝不会折回。需要精确形状时可用“点”中的完整编辑器。",
+"Medium": "中等",
+"Strong": "强",
+"Luminance only": "仅亮度",
+"Delete selected point": "删除所选点",
+"Reset every channel's curve, points and regions": "重置所有通道的曲线（点和区域）",
+"Luminance only: the RGB curve changes brightness without shifting colours": "仅亮度：RGB 曲线只改变亮度，不偏移颜色"
 });

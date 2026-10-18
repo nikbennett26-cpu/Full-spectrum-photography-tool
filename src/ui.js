@@ -1005,6 +1005,33 @@ function getCurveLut() {
   return _curveCache;
 }
 const CURVE_PAD = 12;
+/* Build 169: a small histogram of the preview for the Points curve, refreshed a moment after each render while the
+   Points tab is open. Read with drawImage from the preview canvas, so it costs nothing on devices without a preserved
+   drawing buffer (where it is simply not drawn). */
+let curveHist = null, curveHistTimer = null, curveHistCv = null;
+function scheduleCurveHist() {
+  if (curveHistTimer) clearTimeout(curveHistTimer);
+  curveHistTimer = setTimeout(() => {
+    curveHistTimer = null;
+    const det = $('curveDetails'), pts = $('curvePoints'), pv = $('preview');
+    if (!det || !det.open || !pts || pts.hidden || !loadedImage || !pv || !pv.width || !engine || !engine.hasPreserveBuffer) return;
+    try {
+      if (!curveHistCv) curveHistCv = document.createElement('canvas');
+      const w = 128, h = Math.max(1, Math.round(128 * pv.height / pv.width));
+      curveHistCv.width = w; curveHistCv.height = h;
+      const cx = curveHistCv.getContext('2d', { willReadFrequently: true });
+      cx.drawImage(pv, 0, 0, w, h);
+      const d = cx.getImageData(0, 0, w, h).data, N = 64;
+      const hs = { l: new Float32Array(N), r: new Float32Array(N), g: new Float32Array(N), b: new Float32Array(N) };
+      for (let i = 0; i < d.length; i += 4) {
+        const r = d[i], g = d[i + 1], b = d[i + 2];
+        hs.r[r >> 2]++; hs.g[g >> 2]++; hs.b[b >> 2]++;
+        hs.l[Math.min(63, Math.round(0.2126 * r + 0.7152 * g + 0.0722 * b) >> 2)]++;
+      }
+      curveHist = hs; drawCurveEditor();
+    } catch (e) { curveHist = null; }
+  }, 160);
+}
 const CURVE_COL = { master: '#d8c8ad', r: '#e0664a', g: '#6fc08a', b: '#6aa0e0' };
 function drawCurveEditor() {
   try { syncCurveRegions(); } catch (e) {}   // build 168: undo, reset and loaded looks redraw through here
@@ -1021,6 +1048,18 @@ function drawCurveEditor() {
      is drawn whole instead of being cut in half by the border. */
   const P = CURVE_PAD;
   ctx.save(); ctx.translate(P, P); W -= 2 * P; H -= 2 * P;
+  /* Build 169: the photo's histogram behind the curve (luminance for RGB, the channel itself for R, G or B), so you can
+     see which tones a point will move. Square-root scaled so thin shadows and highlights still show. */
+  if (curveHist) {
+    const hb = curveHist[curveChan === 'master' ? 'l' : curveChan], n = hb.length;
+    let mx = 0; for (let i = 0; i < n; i++) mx = Math.max(mx, hb[i]);
+    if (mx > 0) {
+      ctx.fillStyle = curveChan === 'master' ? 'rgba(163,160,151,.28)' : CURVE_COL[curveChan] + '40';
+      ctx.beginPath(); ctx.moveTo(0, H);
+      for (let i = 0; i < n; i++) ctx.lineTo((i + 0.5) / n * W, H - Math.sqrt(hb[i] / mx) * H * 0.9);
+      ctx.lineTo(W, H); ctx.closePath(); ctx.fill();
+    }
+  }
   ctx.strokeStyle = 'rgba(84,64,42,.55)'; ctx.lineWidth = 1;
   ctx.strokeRect(.5, .5, W - 1, H - 1);
   for (let q = 1; q < 4; q++) {
@@ -1063,9 +1102,10 @@ let curveSel = -1;
 function syncCurvePointRow() {
   const fin = $('curveIn'), fout = $('curveOut'); if (!fin || !fout) return;
   const pts = curveState[curveChan];
-  if (curveSel < 0 || curveSel >= pts.length) { curveSel = -1; fin.disabled = fout.disabled = true; fin.value = fout.value = ''; return; }
+  if (curveSel < 0 || curveSel >= pts.length) { curveSel = -1; fin.disabled = fout.disabled = true; fin.value = fout.value = ''; const del = $('btnCurveDel'); if (del) del.disabled = true; return; }
   const q = pts[curveSel], end = curveSel === 0 || curveSel === pts.length - 1;
   fin.disabled = end; fout.disabled = false;   // the two end points stay at the left and right edges
+  const del = $('btnCurveDel'); if (del) del.disabled = end;   // build 169: the end points cannot be deleted
   if (document.activeElement !== fin) fin.value = Math.round(q[0] * 255);
   if (document.activeElement !== fout) fout.value = Math.round(q[1] * 255);
 }
@@ -1157,8 +1197,14 @@ function curveChanged() { drawCurveEditor(); if (typeof syncCurveRegions === 'fu
     armUndoCapture(); pts[i] = [x, y]; commitUndoCapture(); curveChanged();
   };
   ['curveIn', 'curveOut'].forEach(id => { $(id).addEventListener('change', applyPointFields); $(id).addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); applyPointFields(); e.target.blur(); } }); });
-  $('curveDetails').addEventListener('toggle', drawCurveEditor);
+  $('curveDetails').addEventListener('toggle', () => { drawCurveEditor(); scheduleCurveHist(); });
   window.addEventListener('resize', drawCurveEditor);
+  const del = $('btnCurveDel');
+  if (del) del.addEventListener('click', () => {
+    const pts = curveState[curveChan], i = curveSel;
+    if (i <= 0 || i >= pts.length - 1) return;
+    armUndoCapture(); pts.splice(i, 1); curveSel = -1; commitUndoCapture(); curveChanged();
+  });
 })();
 
 /* ---------- Region sliders and the Regions / Points switch (build 168) ---------- */
@@ -1203,7 +1249,7 @@ function setCurveMode(m) {
   const r = $('curveRegions'), pt = $('curvePoints');
   if (r) r.hidden = m !== 'regions';
   if (pt) pt.hidden = m !== 'points';
-  if (m === 'points') drawCurveEditor(); else syncCurveRegions();
+  if (m === 'points') { drawCurveEditor(); scheduleCurveHist(); } else syncCurveRegions();
 }
 function setCurveChan(ch) {
   curveChan = ch; curveSel = -1;

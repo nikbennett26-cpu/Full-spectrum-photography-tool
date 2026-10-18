@@ -973,5 +973,11 @@ irlabTr.add('de', {
 "Tone curve lights": "Gradationskurve Lichter",
 "Tone curve darks": "Gradationskurve dunkle Töne",
 "Tone curve shadows": "Gradationskurve Tiefen",
-"Region sliders bend the curve for you and can never make it fold back on itself. Points gives the full editor for exact shapes.": "Die Bereichsregler biegen die Kurve für dich und können sie nie zurückfalten lassen. Unter Punkte gibt es den vollen Editor für exakte Formen."
+"Region sliders bend the curve for you and can never make it fold back on itself. Points gives the full editor for exact shapes.": "Die Bereichsregler biegen die Kurve für dich und können sie nie zurückfalten lassen. Unter Punkte gibt es den vollen Editor für exakte Formen.",
+"Medium": "Mittel",
+"Strong": "Stark",
+"Luminance only": "Nur Luminanz",
+"Delete selected point": "Ausgewählten Punkt löschen",
+"Reset every channel's curve, points and regions": "Kurven aller Kanäle zurücksetzen, Punkte und Bereiche",
+"Luminance only: the RGB curve changes brightness without shifting colours": "Nur Luminanz: Die RGB-Kurve ändert die Helligkeit, ohne die Farben zu verschieben"
 });
