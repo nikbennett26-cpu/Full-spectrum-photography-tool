@@ -987,10 +987,11 @@ function getCurveLut() {
   _curveCache = { key: key, lut: lut };
   return _curveCache;
 }
+const CURVE_PAD = 12;
 const CURVE_COL = { master: '#d8c8ad', r: '#e0664a', g: '#6fc08a', b: '#6aa0e0' };
 function drawCurveEditor() {
   const cv = $('curveCv'); if (!cv) return;
-  const W = cv.clientWidth, H = cv.clientHeight;
+  let W = cv.clientWidth, H = cv.clientHeight;
   if (!W || !H) return;   // collapsed
   const dpr = Math.min(2, window.devicePixelRatio || 1);
   const bw = Math.round(W * dpr), bh = Math.round(H * dpr);
@@ -998,7 +999,12 @@ function drawCurveEditor() {
   const ctx = cv.getContext('2d');
   ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
   ctx.fillStyle = '#0b0c0e'; ctx.fillRect(0, 0, W, H);
+  /* Build 167: the graph sits CURVE_PAD px inside the canvas, so a point at black, white or the top and bottom edges
+     is drawn whole instead of being cut in half by the border. */
+  const P = CURVE_PAD;
+  ctx.save(); ctx.translate(P, P); W -= 2 * P; H -= 2 * P;
   ctx.strokeStyle = 'rgba(84,64,42,.55)'; ctx.lineWidth = 1;
+  ctx.strokeRect(.5, .5, W - 1, H - 1);
   for (let q = 1; q < 4; q++) {
     const gx = Math.round(W * q / 4) + .5, gy = Math.round(H * q / 4) + .5;
     ctx.beginPath(); ctx.moveTo(gx, 0); ctx.lineTo(gx, H); ctx.stroke();
@@ -1023,6 +1029,7 @@ function drawCurveEditor() {
     ctx.beginPath(); ctx.arc(q[0] * W, H - q[1] * H, i === curveSel ? 7 : 5, 0, 6.2832); ctx.fill(); ctx.stroke();
     if (i === curveSel) { ctx.beginPath(); ctx.arc(q[0] * W, H - q[1] * H, 11, 0, 6.2832); ctx.strokeStyle = CURVE_COL[curveChan]; ctx.lineWidth = 1.5; ctx.stroke(); ctx.strokeStyle = '#0b0c0e'; }
   });
+  ctx.restore();
   const lc = $('curveLum'); if (lc) lc.checked = !!curveState.lum;
   syncCurvePointRow();
 }
@@ -1046,7 +1053,9 @@ function curveChanged() { drawCurveEditor(); render(true); }
 (function wireCurveEditor() {
   const cv = $('curveCv'); if (!cv) return;
   const clamp01 = v => Math.max(0, Math.min(1, v));
-  const pos = e => { const r = cv.getBoundingClientRect(); return [(e.clientX - r.left) / r.width, 1 - (e.clientY - r.top) / r.height, r]; };
+  // the graph's own box, inside the padding (see drawCurveEditor)
+  const box = () => { const r = cv.getBoundingClientRect(); return { left: r.left + CURVE_PAD, top: r.top + CURVE_PAD, width: r.width - 2 * CURVE_PAD, height: r.height - 2 * CURVE_PAD, right: r.right, bottom: r.bottom }; };
+  const pos = e => { const r = box(); return [(e.clientX - r.left) / r.width, 1 - (e.clientY - r.top) / r.height, r]; };
   let drag = null, lastTap = { t: 0 };
   function nearest(pts, x, y, r) {
     let best = -1, bd = 1e9;

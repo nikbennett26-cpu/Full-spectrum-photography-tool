@@ -1181,3 +1181,7 @@ input[type=range]:focus-visible::-webkit-slider-thumb, input[type=range]:focus-v
 #rawProg .rpBar::after{content:"";position:absolute;top:0;bottom:0;width:35%;border-radius:2px;background:var(--phosphor,#d6336c);animation:rpSlide 1.2s ease-in-out infinite}
 @keyframes rpSlide{0%{left:-35%}100%{left:100%}}
 @media (prefers-reduced-motion:reduce){#rawProg .rpBar::after{animation:none;left:0;width:100%;opacity:.5}}
+
+/* Build 167: on a phone the tone curve took most of the controls panel. It is now a modest square, centred, and never
+   taller than about a third of the screen, so the channel tabs and the point fields fit beside it. */
+html.dockOn #curveCv{max-width:min(250px,32vh);margin:8px auto 4px}
