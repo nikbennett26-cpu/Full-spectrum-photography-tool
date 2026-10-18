@@ -62,7 +62,7 @@ for (const [name, key] of [['Generic CMOS (approximation)', 'CMOS sensor'], ['Ko
   })]));
 }
 const sensorNotes = {
-  'Sony A7III full spectrum (measured to 800nm)': 'Measured 300-800nm on a real converted body (Crowther 2022, J. Imaging 8:54, CC BY 4.0), traced from the paper\u2019s figure. Past 800nm it is modelled: the colour filters stop separating the channels (same paper) and the response falls with silicon\u2019s.',
+  'Sony A7III full spectrum (measured to 800nm)': 'Measured 300-800nm on a real converted body by JMC Scientific Consulting Ltd (Dr Jonathan Crowther), published in J. Imaging 2022, 8, 54 (doi:10.3390/jimaging8030054, CC BY 4.0); traced from the paper\u2019s Figure 1f. Past 800nm it is modelled: the colour filters stop separating the channels (same paper) and the response falls with silicon\u2019s.',
   'Generic CMOS (approximation)': 'A generic approximation, not a measured camera; no data past 1000nm.',
   'Kodak KAF-8300 CCD (real, astronomy)': 'A real measured sensor, but an astronomy CCD, not a camera body.'
 };

@@ -10,7 +10,7 @@
    will find). The suggested swap (build 152) is the wavelength-ordered one, the colour infrared film convention,
    stated with where foliage and sky will tend to land; it is a starting point, not a verdict.
 
-   Sensors (build 149): a real converted Sony A7III, measured 300-800nm by Crowther (J. Imaging 2022, 8:54) and
+   Sensors (build 149): a real converted Sony A7III, measured 300-800nm by JMC Scientific Consulting Ltd (Dr Jonathan Crowther; J. Imaging 2022, 8:54; credited as he asked) and
    extended past 800nm under the assumptions stated in tools/editor_filters.mjs; a generic CMOS approximation; one
    real astronomy sensor. Each sensor's note says which it is. Treat the numbers as the shape of the answer, not your
    camera's exact response. */

@@ -98,7 +98,7 @@ Other manufacturer and third-party sources are named on each filter's card and i
 
 ## Camera sensor response (editor, "Predict from your filters")
 
-- **Crowther, J. (2022).** Monochrome Camera Conversion: Effect on Sensitivity for Multispectral Imaging
+- **JMC Scientific Consulting Ltd** (Dr Jonathan Crowther), credited as the author asked. **Crowther, J. (2022).** Monochrome Camera Conversion: Effect on Sensitivity for Multispectral Imaging
   (Ultraviolet, Visible, and Infrared). *J. Imaging* 8, 54. https://doi.org/10.3390/jimaging8030054 —
   licensed CC BY 4.0. The Sony A7III multispectral channel responses (Figure 1f, 300-800nm) were traced from the
   published figure into `tools/sensors/crowther2022_a7iii.json`; the extension past 800nm is irlab's own model
