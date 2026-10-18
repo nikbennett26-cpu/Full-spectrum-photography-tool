@@ -1185,3 +1185,18 @@ input[type=range]:focus-visible::-webkit-slider-thumb, input[type=range]:focus-v
 /* Build 167: on a phone the tone curve took most of the controls panel. It is now a modest square, centred, and never
    taller than about a third of the screen, so the channel tabs and the point fields fit beside it. */
 html.dockOn #curveCv{max-width:min(250px,32vh);margin:8px auto 4px}
+
+/* Build 168: tone curve Regions / Points */
+#curveModeRow{display:inline-flex;background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:3px;margin:10px 0 2px}
+#curveModeRow button{min-height:34px;padding:0 16px;border:0;border-radius:999px;background:none;color:var(--paper-dim);font:500 12px var(--font-mono);cursor:pointer}
+#curveModeRow button.on{background:var(--phosphor-dim);color:#fff}
+#curveRegions .crTop{display:flex;gap:12px;align-items:stretch;margin-top:10px}
+#curveMini{width:150px;height:150px;flex-shrink:0;border:1px solid var(--line);border-radius:8px;display:block}
+#curveRegions .crChan{flex:1;display:flex;flex-direction:column;justify-content:center;gap:8px;min-width:0}
+#curveRegions .crCap{font:500 11px var(--font-mono);color:var(--muted);letter-spacing:.04em;text-transform:uppercase}
+#curveTabsR{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}
+#curveTabsR button{display:inline-flex;align-items:center;justify-content:center;gap:7px;min-height:40px;border-radius:8px;border:1px solid var(--line2);background:none;color:var(--paper);font:600 12px var(--font-mono);cursor:pointer}
+#curveTabsR button.on{border-color:#d8c8ad;background:var(--surface2)}
+#curveRegions .crCard{margin-top:12px;padding:12px 14px 6px;background:var(--surface);border:1px solid var(--line);border-radius:12px}
+#curveRegions .crCard .sl{margin-bottom:6px}
+#curveTabsR .crDot{width:10px;height:10px;border-radius:50%;flex-shrink:0}

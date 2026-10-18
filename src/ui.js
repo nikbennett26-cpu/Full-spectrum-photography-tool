@@ -946,7 +946,24 @@ function curveDefault() { const id = () => [[0, 0], [1, 1]]; return { master: id
 let curveState = curveDefault(), curveChan = 'master';
 function curveCopy(c) { return JSON.parse(JSON.stringify(c)); }
 function curvePtsIdentity(pts) { for (const q of pts) if (Math.abs(q[0] - q[1]) > 1e-6) return false; return true; }
-function curveAllIdentity() { return CURVE_CH.every(k => curvePtsIdentity(curveState[k])); }
+function curveAllIdentity() { return CURVE_CH.every(k => curvePtsIdentity(curveState[k]) && !curveParamActive(k)); }
+/* ---------- Region sliders (build 168) ----------
+   Highlights, Lights, Darks and Shadows bend the curve for you, per channel, the way Lightroom's parametric curve does.
+   Each slider moves one control point (at 12.5%, 37.5%, 62.5% and 87.5% of the range) by up to 0.11 either way, and the
+   curve through them is the same monotone spline the point editor uses. The points sit 0.25 apart and move at most 0.22
+   relative to each other, so the curve can only ever rise: it cannot fold back on itself whatever the sliders say.
+   Stored as curveState.param[channel] = {h, l, d, s} (-1..1), applied BEFORE that channel's point curve, so both can be
+   used together. Absent means untouched, so every curve saved before this renders exactly as it did. */
+const CURVE_REGIONS = ['h', 'l', 'd', 's'];
+const CURVE_REG_AMP = 0.11;
+function curveParam(ch) { return (curveState.param && curveState.param[ch]) || null; }
+function curveParamActive(ch) { const p = curveParam(ch); return !!p && CURVE_REGIONS.some(k => Math.abs(p[k] || 0) > 1e-6); }
+function makeParamFn(ch) {
+  if (!curveParamActive(ch)) return null;
+  const p = curveParam(ch), a = CURVE_REG_AMP;
+  return makeCurveFn([[0, 0], [0.125, 0.125 + (p.s || 0) * a], [0.375, 0.375 + (p.d || 0) * a], [0.625, 0.625 + (p.l || 0) * a], [0.875, 0.875 + (p.h || 0) * a], [1, 1]]);
+}
+function makeChanFn(ch) { const f = makeCurveFn(curveState[ch]), pf = makeParamFn(ch); return pf ? (x => f(pf(x))) : f; }
 function makeCurveFn(pts) {
   const n = pts.length, xs = pts.map(q => q[0]), ys = pts.map(q => q[1]);
   if (n < 2) return x => x;
@@ -972,7 +989,7 @@ let _curveCache = { key: '', lut: null };
 function getCurveLut() {
   const key = JSON.stringify(curveState);
   if (_curveCache.key === key) return _curveCache;
-  const fm = makeCurveFn(curveState.master), fr = makeCurveFn(curveState.r), fg = makeCurveFn(curveState.g), fb = makeCurveFn(curveState.b);
+  const fm = makeChanFn('master'), fr = makeChanFn('r'), fg = makeChanFn('g'), fb = makeChanFn('b');   // build 168: region sliders included
   const lut = new Float32Array(CURVE_N * 4);
   const lumMode = !!curveState.lum;
   for (let i = 0; i < CURVE_N; i++) {
@@ -990,6 +1007,7 @@ function getCurveLut() {
 const CURVE_PAD = 12;
 const CURVE_COL = { master: '#d8c8ad', r: '#e0664a', g: '#6fc08a', b: '#6aa0e0' };
 function drawCurveEditor() {
+  try { syncCurveRegions(); } catch (e) {}   // build 168: undo, reset and loaded looks redraw through here
   const cv = $('curveCv'); if (!cv) return;
   let W = cv.clientWidth, H = cv.clientHeight;
   if (!W || !H) return;   // collapsed
@@ -1015,8 +1033,15 @@ function drawCurveEditor() {
   const order = ['r', 'g', 'b', 'master'].filter(k => k !== curveChan).concat([curveChan]);
   order.forEach(k => {
     const pts = curveState[k];
-    if (k !== curveChan && curvePtsIdentity(pts)) return;
+    if (k !== curveChan && curvePtsIdentity(pts) && !curveParamActive(k)) return;
     const fn = makeCurveFn(pts);
+    if (k === curveChan && curveParamActive(k)) {   // build 168: the full result, region sliders included, dashed behind the point curve
+      const full = makeChanFn(k);
+      ctx.globalAlpha = 0.6; ctx.strokeStyle = CURVE_COL[k]; ctx.lineWidth = 1.25; ctx.setLineDash([5, 4]);
+      ctx.beginPath();
+      for (let px = 0; px <= W; px += 2) { const y = H - full(px / W) * H; if (px === 0) ctx.moveTo(px, y); else ctx.lineTo(px, y); }
+      ctx.stroke(); ctx.setLineDash([]);
+    }
     ctx.globalAlpha = k === curveChan ? 1 : 0.35;
     ctx.strokeStyle = CURVE_COL[k]; ctx.lineWidth = k === curveChan ? 2 : 1.25;
     ctx.beginPath();
@@ -1049,7 +1074,7 @@ const CURVE_PRESETS = {
   medium: [[0, 0], [64 / 255, 56 / 255], [128 / 255, 128 / 255], [192 / 255, 199 / 255], [1, 1]],
   strong: [[0, 0], [64 / 255, 46 / 255], [128 / 255, 128 / 255], [192 / 255, 210 / 255], [1, 1]],
 };
-function curveChanged() { drawCurveEditor(); render(true); }
+function curveChanged() { drawCurveEditor(); if (typeof syncCurveRegions === 'function') syncCurveRegions(); render(true); }
 (function wireCurveEditor() {
   const cv = $('curveCv'); if (!cv) return;
   const clamp01 = v => Math.max(0, Math.min(1, v));
@@ -1134,6 +1159,83 @@ function curveChanged() { drawCurveEditor(); render(true); }
   ['curveIn', 'curveOut'].forEach(id => { $(id).addEventListener('change', applyPointFields); $(id).addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); applyPointFields(); e.target.blur(); } }); });
   $('curveDetails').addEventListener('toggle', drawCurveEditor);
   window.addEventListener('resize', drawCurveEditor);
+})();
+
+/* ---------- Region sliders and the Regions / Points switch (build 168) ---------- */
+const CURVE_MODE_KEY = 'irlab.curveMode';
+let curveMode = 'regions';
+try { if (localStorage.getItem(CURVE_MODE_KEY) === 'points') curveMode = 'points'; } catch (e) {}
+function drawCurveMini() {
+  const cv = $('curveMini'); if (!cv) return;
+  const W0 = cv.clientWidth, H0 = cv.clientHeight; if (!W0 || !H0) return;
+  const dpr = Math.min(2, window.devicePixelRatio || 1);
+  if (cv.width !== Math.round(W0 * dpr) || cv.height !== Math.round(H0 * dpr)) { cv.width = Math.round(W0 * dpr); cv.height = Math.round(H0 * dpr); }
+  const ctx = cv.getContext('2d'); ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  ctx.fillStyle = '#0b0c0e'; ctx.fillRect(0, 0, W0, H0);
+  const P = 8, W = W0 - 2 * P, H = H0 - 2 * P; ctx.save(); ctx.translate(P, P);
+  // the four regions, the one being dragged lit
+  CURVE_REGIONS.slice().reverse().forEach((k, i) => {   // s, d, l, h from left to right
+    ctx.fillStyle = 'rgba(111,171,150,' + (curveMiniHot === k ? 0.22 : (i % 2 ? 0.10 : 0.05)) + ')';
+    ctx.fillRect(W * i / 4, 0, W / 4, H);
+  });
+  ctx.strokeStyle = 'rgba(168,147,114,.35)'; ctx.setLineDash([3, 3]); ctx.beginPath(); ctx.moveTo(0, H); ctx.lineTo(W, 0); ctx.stroke(); ctx.setLineDash([]);
+  const fn = makeChanFn(curveChan);
+  ctx.strokeStyle = CURVE_COL[curveChan]; ctx.lineWidth = 2; ctx.beginPath();
+  for (let px = 0; px <= W; px += 1) { const y = H - fn(px / W) * H; if (px === 0) ctx.moveTo(px, y); else ctx.lineTo(px, y); }
+  ctx.stroke(); ctx.restore();
+}
+let curveMiniHot = '';
+function syncCurveRegions() {
+  const p = curveParam(curveChan) || {};
+  CURVE_REGIONS.forEach(k => {
+    const el = $('crg_' + k); if (!el) return;
+    const v = Math.round((p[k] || 0) * 100);
+    if (document.activeElement !== el || +el.value !== v) el.value = v;
+    const out = $('v_crg_' + k); if (out) out.textContent = (v > 0 ? '+' : v < 0 ? '\u2212' : '') + Math.abs(v);
+    if (typeof syncSliderFill === 'function') syncSliderFill(el);
+  });
+  drawCurveMini();
+}
+function setCurveMode(m) {
+  curveMode = m;
+  try { localStorage.setItem(CURVE_MODE_KEY, m); } catch (e) {}
+  document.querySelectorAll('#curveModeRow button[data-cm]').forEach(b => { const on = b.dataset.cm === m; b.classList.toggle('on', on); b.setAttribute('aria-selected', on ? 'true' : 'false'); });
+  const r = $('curveRegions'), pt = $('curvePoints');
+  if (r) r.hidden = m !== 'regions';
+  if (pt) pt.hidden = m !== 'points';
+  if (m === 'points') drawCurveEditor(); else syncCurveRegions();
+}
+function setCurveChan(ch) {
+  curveChan = ch; curveSel = -1;
+  document.querySelectorAll('#curveTabs button[data-ch], #curveTabsR button[data-ch]').forEach(o => { const on = o.getAttribute('data-ch') === ch; o.classList.toggle('on', on); o.setAttribute('aria-selected', on ? 'true' : 'false'); });
+  drawCurveEditor(); syncCurveRegions();
+}
+(function wireCurveRegions() {
+  if (!$('curveRegions')) return;
+  document.querySelectorAll('#curveModeRow button[data-cm]').forEach(b => b.addEventListener('click', () => setCurveMode(b.dataset.cm)));
+  document.querySelectorAll('#curveTabsR button[data-ch]').forEach(b => b.addEventListener('click', () => setCurveChan(b.getAttribute('data-ch'))));
+  // the point editor's own tabs keep the two views on the same channel
+  document.querySelectorAll('#curveTabs button[data-ch]').forEach(b => b.addEventListener('click', () => setCurveChan(b.getAttribute('data-ch'))));
+  CURVE_REGIONS.forEach(k => {
+    const el = $('crg_' + k); if (!el) return;
+    el.addEventListener('input', () => {
+      if (!curveState.param) curveState.param = {};
+      const p = curveState.param[curveChan] || (curveState.param[curveChan] = {});
+      p[k] = (+el.value || 0) / 100;
+      if (!CURVE_REGIONS.some(q => Math.abs(p[q] || 0) > 1e-6)) delete curveState.param[curveChan];
+      if (curveState.param && !Object.keys(curveState.param).length) delete curveState.param;
+      curveMiniHot = k; syncCurveRegions(); render(true);
+    });
+    // one undo step per completed adjustment, like every other slider
+    el.addEventListener('pointerdown', armUndoCapture);
+    el.addEventListener('focus', armUndoCapture);
+    el.addEventListener('pointerup', () => setTimeout(commitUndoCapture, 0));
+    el.addEventListener('pointercancel', () => { preChangeSnapshot = null; });
+    el.addEventListener('change', () => { curveMiniHot = ''; drawCurveMini(); commitUndoCapture(); });
+  });
+  $('curveDetails').addEventListener('toggle', () => setCurveMode(curveMode));
+  window.addEventListener('resize', drawCurveMini);
+  setCurveMode(curveMode);
 })();
 
 function captureState() {
