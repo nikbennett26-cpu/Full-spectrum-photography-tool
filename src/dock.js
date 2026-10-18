@@ -223,14 +223,20 @@
   zone.addEventListener('touchstart', e => {
     if (!root.classList.contains('dockOn') || e.touches.length !== 1) { sw = null; return; }
     const t = e.target;
-    if (t && t.closest && t.closest('input,canvas,select,textarea,button,a,label,summary,[contenteditable]')) { sw = null; return; }
-    sw = { y: e.touches[0].clientY, h: H, active: false, atTop: zone.scrollTop <= 0 };
+    /* Build 159: a whole slider row counts as a control, not just the thin track. A touch that landed beside the track
+       (between it and the - and + buttons, or just above or below the thumb) used to start a pull on the sheet, so with
+       the panel scrolled to the top, adjusting a slider kept collapsing the controls instead. */
+    if (t && t.closest && t.closest('input,canvas,select,textarea,button,a,label,summary,[contenteditable],.sl,.slStep,.wbrow,.ctl,[role=tablist],[role=slider]')) { sw = null; return; }
+    sw = { x: e.touches[0].clientX, y: e.touches[0].clientY, h: H, active: false, atTop: zone.scrollTop <= 0 };
   }, { passive: true });
   zone.addEventListener('touchmove', e => {
     if (!sw) return;
     const y = e.touches[0].clientY, dy = y - sw.y;
     if (!sw.active) {
-      if (sw.atTop && zone.scrollTop <= 0 && dy > 14 && !photoFits()) { sw.active = true; sw.y = y; sw.h = H; sw.top = peekH(); root.classList.add('sheetDrag'); }
+      const dx = Math.abs(e.touches[0].clientX - sw.x);
+      if (dx > 12 && dx > dy) { sw = null; return; }   // a sideways gesture is someone working a control, never a pull
+      // a deliberate pull: 28px down and clearly more down than sideways (was 14px, any direction)
+      if (sw.atTop && zone.scrollTop <= 0 && dy > 28 && dy > 2 * dx && !photoFits()) { sw.active = true; sw.y = y; sw.h = H; sw.top = peekH(); root.classList.add('sheetDrag'); }
       else return;
     }
     e.preventDefault();
