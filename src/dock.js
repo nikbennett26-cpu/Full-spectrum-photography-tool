@@ -303,11 +303,14 @@
     if (!root.classList.contains('dockOn') || !d || d.tagName !== 'DETAILS' || !d.open) return;
     if (performance.now() - lastSummaryTap > 800) return;
     if (LOOKS_GROUPS.includes(d.id)) return;   // these have their own handler above
+    // build 161: a sheet pulled low to see more of the photo comes back up to its normal height, so the tool has room
+    const raised = rest === 'custom' && H < peekH() - 2;
+    if (raised) setRest('peek');
     setTimeout(() => {
       const off = d.getBoundingClientRect().top - zone.getBoundingClientRect().top;
       if (Math.abs(off - 6) < 12) return;
       zone.scrollTo({ top: Math.max(0, off + zone.scrollTop - 6), behavior: 'smooth' });
-    }, 60);
+    }, raised ? 340 : 60);   // after the sheet has finished rising, so the measurement is of its final size
   }, true);
   function sync() {
     const on = mq.matches;
