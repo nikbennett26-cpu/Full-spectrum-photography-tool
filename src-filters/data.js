@@ -416,7 +416,7 @@ const FILTERS=[
  {id:'bw022',g:'B4',n:'B+W 022',     d:'Medium yellow contrast filter \u00b7 real B+W chart',c:'#dcc838',
   bands:[{lo:495,ls:10,T:.95}],
   same:'REAL DATA (read from a chart) \u2014 same source as bw021 (p.33). 50%-point read at ~495nm. Close '
-   +'enough to Wratten 8/K2\u2019s own corrected fit (492nm, least-squares against Kodak\u2019s table \u2014 see hy_k2\u2019s '
+   +'enough to Wratten 8/K2 (Kodak\u2019s 1928 table puts it near 495nm; Hoya\u2019s own Y2 chart near 489nm \u2014 see hy_k2\u2019s '
    +'note) that the two are almost certainly the same filter under different names, consistent with a '
    +'duplicate id this entry used to share with a since-removed second bw022 definition that made the same '
    +'claim from a different angle (B+W\u2019s naming convention rather than a direct chart read). REAL DATA now '
@@ -1276,12 +1276,13 @@ const FILTERS=[
     use X1 for a fuller green. Where they conflict, Hoya's own naming wins
     here, since that is what is engraved on a Hoya filter. All are dye
     filters, so on a converted body they pass their colour plus infrared. */
- {id:'hy_k2',g:'B4',n:'Hoya Y (K2)',   d:'Yellow · = Wratten 8 · real Kodak 1928 data',       c:'#e3cf5c',
-  same:'REAL DATA \u2014 exact percentages transcribed from Eastman Kodak\u2019s own "Wratten Light Filters" catalogue '
-   +'(May 1928), p.63, "PERCENTAGE TRANSMISSION" table, filter No. 8 (Kodak\u2019s own historical alias for this '
-   +'one is "K2" \u2014 also sold as Y2 in older Tiffen naming, and this is the same glass Hoya\u2019s Y/K2 is built to '
-   +'match). Real 50%-crossing sits close to 495nm, matching the earlier fit\u2019s 492.2nm closely \u2014 a precision '
-   +'upgrade to the exact curve, not a correction. Table covers 400-700nm; held flat outside that range.'},
+ {id:'hy_k2',g:'B4',n:'Hoya Y (K2)',   d:'Yellow \u00b7 = Wratten 8 \u00b7 Hoya\u2019s own chart',       c:'#e3cf5c',
+  same:'REAL DATA \u2014 traced from Hoya\u2019s own transmission chart for Y2 (= K2) in the Hoya Filter Catalog 2016, '
+   +'p.73, calibrated against the chart\u2019s gridlines (350-750nm; held flat past 750nm). 50% at about 489nm, '
+   +'rising from 10% to 90% over roughly 478-505nm, then 96-99% through red. Replaces Kodak\u2019s 1928 table for '
+   +'Wratten 8 gelatin, which this filter is built to match: that table puts the 50% point near 495nm and only '
+   +'reaches 74-78% because it describes a gelatin film, not Hoya\u2019s coated glass. Hoya\u2019s figures above 92% '
+   +'imply a coated filter (bare glass loses about 8% at its two surfaces).'},
 
  {id:'hy_og',g:'B5',n:'Hoya O (G)',    d:'Deep yellow · cut-on disputed (510 or ~538nm)', c:'#d9ad3c',
   bands:[{lo:510,ls:12,T:.92}],same:'Wratten 15 — Kodak\u2019s letter G was always deep yellow, not orange. '
@@ -1289,8 +1290,11 @@ const FILTERS=[
    +'comparison of 15 yellow and orange filters posted on ultravioletphotography.com (Ulf, 2020) lists Hoya O(G) at '
    +'about 538nm, and it is often suggested as the nearest substitute for the B+W 099 (550nm). Treat the cut-on '
    +'here as uncertain by up to about 30nm until a measured curve replaces it.'},
- {id:'hy_ya3',g:'B5',n:'Hoya YA3',      d:'Orange · factor 4',          c:'#d68b34',
-  bands:[{lo:540,ls:12,T:.91}],same:'sits between Wratten 21 and 22 — Hoya rate it factor 4 (2 stops)'},
+ {id:'hy_ya3',g:'B5',n:'Hoya YA3',      d:'Orange \u00b7 factor 4 \u00b7 Hoya\u2019s own chart',          c:'#d68b34',
+  same:'REAL DATA \u2014 traced from Hoya\u2019s own YA3 curve in the Hoya Filter Catalog 2016, p.73 (350-750nm, held '
+   +'flat past 750nm). 50% at about 563nm, 10-90% over roughly 552-576nm, with a faint 1-2% foot from about 530nm. '
+   +'The earlier placeholder put the cut-on at 540nm, about 23nm too short: YA3 is closer to Wratten 22 than to 21. '
+   +'Hoya rate it factor 4 (2 stops).'},
  {id:'hy_x0',g:'B4',n:'Hoya X0',       d:'Yellow-green · real double-hump, refitted',c:'#8fc059',
   bands:[{lo:485.5,ls:19.1,hi:638.7,hs:60.1,T:1.00},{lo:656.4,ls:56.7,T:.90}],leak:true,
   same:'REFITTED to real Hoya X0 data (via CheeseCube312\u2019s Filter-Plotter-Data project, MIT-licensed) \u2014 RMS 1.4 '
@@ -1305,9 +1309,21 @@ const FILTERS=[
    +'chart reading was drastically under-scaled) was expected, but the real data also revealed something the earlier '
    +'model missed entirely: rather than settling to a flat ~6-7% floor through red and NIR, X1 climbs slowly but '
    +'steadily from ~3.4% around 680nm back up to ~17.6% by 1080nm \u2014 a genuine late-NIR rise this file previously had '
-   +'no reason to suspect, now captured with an open-ended rising band rather than a flat tail'},
- {id:'hy_r1',g:'B6',n:'Hoya R (25A)',  d:'Red · = Wratten 25',         c:'#d4553c',
-  bands:[{lo:600,ls:12,T:.90}],same:'Wratten 25 — sold as R1, R(A25) or 25A depending on era'},
+   +'no reason to suspect, now captured with an open-ended rising band rather than a flat tail. '
+   +'CAUTION: Hoya\u2019s own 2016 catalogue chart (p.73) draws X1 lower \u2014 peak about 60% near 535nm, about 6% '
+   +'through deep red \u2014 while X0 on that chart (peak ~83%, dip ~57%) agrees with the data used here to within '
+   +'about 7 points. Two Hoya charts disagree on X1\u2019s peak by about 20 points; kept on the CheeseCube312 file '
+   +'until a measured filter settles it.'},
+ {id:'hy_r1',g:'B6',n:'Hoya R (25A)',  d:'Red \u00b7 = Wratten 25 \u00b7 Hoya\u2019s own chart',         c:'#d4553c',
+  same:'REAL DATA \u2014 traced from Hoya\u2019s own R1 curve in the Hoya Filter Catalog 2016, p.73 (350-750nm, held '
+   +'flat past 750nm). 50% at about 604nm, 10-90% over roughly 590-624nm, about 95.5% through deep red. Wratten 25 \u2014 '
+   +'sold as R1, R(A25) or 25A depending on era. The earlier placeholder (600nm) was close; the real edge is a '
+   +'little later and noticeably gentler.'},
+ {id:'hy_y48',g:'B4',n:'Hoya Y48 glass',d:'480nm colour-glass long-pass \u00b7 Hoya\u2019s own table',c:'#e6d24a',type:'absorptive',
+  same:'REAL DATA \u2014 Hoya Candeo Optronics\u2019 own datasheet table for Y48 (the optical-glass version, sold by Edmund '
+   +'Optics as stock #18-864, 12.5mm \u00d7 2.5mm, cut-on 480\u00b15nm). 50% at about 482nm, 87% by 500nm and a flat '
+   +'90-91% from there right through the infrared (the table runs to 5000nm). Not a screw-in camera filter: it is a '
+   +'bare glass plate, roughly Hoya\u2019s equivalent of SCHOTT GG475, useful for a filter holder or a custom stack.'},
  /* ---- Hoya IR series (branded, cutoff given by the model number itself) ----
     Same source as UG5 above. The article is explicit that Hoya\u2019s OWN stated
     Wratten-number equivalents for this range are wrong ("Note that the
