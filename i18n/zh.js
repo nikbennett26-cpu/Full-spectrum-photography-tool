@@ -979,5 +979,9 @@ irlabTr.add('zh', {
 "Luminance only": "仅亮度",
 "Delete selected point": "删除所选点",
 "Reset every channel's curve, points and regions": "重置所有通道的曲线（点和区域）",
-"Luminance only: the RGB curve changes brightness without shifting colours": "仅亮度：RGB 曲线只改变亮度，不偏移颜色"
+"Luminance only: the RGB curve changes brightness without shifting colours": "仅亮度：RGB 曲线只改变亮度，不偏移颜色",
+"Simple": "简易",
+"Editor mode": "编辑模式",
+"Also in use": "另外正在使用",
+"show": "显示"
 });

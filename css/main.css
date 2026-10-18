@@ -1220,3 +1220,13 @@ html.dockOn #curveCv{max-width:min(250px,32vh);margin:8px auto 4px}
 #curvePoints .cpHint{text-align:center;margin:8px 0 0}
 #curveCv{margin:10px auto 4px}
 html.dockOn #curveCv{max-width:min(260px,32vh)}
+
+/* Build 171: Simple / Advanced */
+html.simpleMode .adv{display:none !important}
+#modeBar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:4px 0 10px}
+#modeBar .modeSeg{display:inline-flex;background:var(--surface);border:1px solid var(--line);border-radius:999px;padding:3px}
+#modeBar .modeSeg button{min-height:34px;padding:0 16px;border:0;border-radius:999px;background:none;color:var(--paper-dim);font:500 12px var(--font-mono);cursor:pointer}
+#modeBar .modeSeg button[aria-checked="true"]{background:var(--phosphor);color:var(--bg)}
+#modeNote{flex:1 1 160px;min-width:0;text-align:left;background:none;border:0;padding:4px 0;color:var(--phosphor);font:500 11.5px var(--font-mono);cursor:pointer;text-decoration:underline;text-underline-offset:3px}
+html.dockOn body.has-image #reorderZone > #modeBar{display:flex !important;order:-10}
+html.studioOn body.has-image #reorderZone > #modeBar{display:flex !important;order:-10}

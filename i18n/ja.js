@@ -979,5 +979,9 @@ irlabTr.add('ja', {
 "Luminance only": "輝度のみ",
 "Delete selected point": "選択したポイントを削除",
 "Reset every channel's curve, points and regions": "全チャンネルのカーブ（ポイントと領域）をリセット",
-"Luminance only: the RGB curve changes brightness without shifting colours": "輝度のみ: RGB カーブは色をずらさずに明るさだけを変えます"
+"Luminance only: the RGB curve changes brightness without shifting colours": "輝度のみ: RGB カーブは色をずらさずに明るさだけを変えます",
+"Simple": "シンプル",
+"Editor mode": "編集モード",
+"Also in use": "使用中の詳細ツール",
+"show": "表示"
 });

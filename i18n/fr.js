@@ -979,5 +979,9 @@ irlabTr.add('fr', {
 "Luminance only": "Luminance seule",
 "Delete selected point": "Supprimer le point sélectionné",
 "Reset every channel's curve, points and regions": "Réinitialiser la courbe de chaque canal, points et zones",
-"Luminance only: the RGB curve changes brightness without shifting colours": "Luminance seule : la courbe RVB change la luminosité sans décaler les couleurs"
+"Luminance only: the RGB curve changes brightness without shifting colours": "Luminance seule : la courbe RVB change la luminosité sans décaler les couleurs",
+"Simple": "Simple",
+"Editor mode": "Mode de l’éditeur",
+"Also in use": "Également utilisé",
+"show": "afficher"
 });

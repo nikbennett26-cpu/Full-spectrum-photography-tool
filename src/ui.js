@@ -320,7 +320,7 @@ function refreshStepIndicators() {
     if (panel) panel.classList.toggle('modified', mod);
     const btn = document.querySelector('#stepStrip button[data-jump="' + key + '"]');
     if (btn) btn.classList.toggle('mod', mod);
-  });
+  });  if (typeof updateModeNote === 'function') updateModeNote();   // build 171
 }
 function buildStepStrip() {
   const strip = document.getElementById('stepStrip');
@@ -1246,9 +1246,9 @@ function syncCurveRegions() {
   });
   drawCurveMini();
 }
-function setCurveMode(m) {
+function setCurveMode(m, persist) {
   curveMode = m;
-  try { localStorage.setItem(CURVE_MODE_KEY, m); } catch (e) {}
+  if (persist) { try { localStorage.setItem(CURVE_MODE_KEY, m); } catch (e) {} }   // only a user's own choice is remembered
   document.querySelectorAll('#curveModeRow button[data-cm]').forEach(b => { const on = b.dataset.cm === m; b.classList.toggle('on', on); b.setAttribute('aria-selected', on ? 'true' : 'false'); });
   const r = $('curveRegions'), pt = $('curvePoints');
   if (r) r.hidden = m !== 'regions';
@@ -1262,7 +1262,7 @@ function setCurveChan(ch) {
 }
 (function wireCurveRegions() {
   if (!$('curveRegions')) return;
-  document.querySelectorAll('#curveModeRow button[data-cm]').forEach(b => b.addEventListener('click', () => setCurveMode(b.dataset.cm)));
+  document.querySelectorAll('#curveModeRow button[data-cm]').forEach(b => b.addEventListener('click', () => setCurveMode(b.dataset.cm, true)));
   document.querySelectorAll('#curveTabsR button[data-ch]').forEach(b => b.addEventListener('click', () => setCurveChan(b.getAttribute('data-ch'))));
   // the point editor's own tabs keep the two views on the same channel
   document.querySelectorAll('#curveTabs button[data-ch]').forEach(b => b.addEventListener('click', () => setCurveChan(b.getAttribute('data-ch'))));
