@@ -140,7 +140,13 @@ function targetedHSLF(r,g,b,bands,keepSat){
     const delta=angDeltaF(H0,band.hue);
     const t=Math.max(0,Math.min(1,1-Math.abs(delta)/Math.max(band.width,1e-3)));
     const _cw=Math.max(0,Math.min(1,(C0-0.010)/0.040));
-    const w=t*t*(3-2*t)*(_cw*_cw*(3-2*_cw));   // chroma-weighted — see shader
+    let w=t*t*(3-2*t)*(_cw*_cw*(3-2*_cw));   // chroma-weighted — see shader
+    if(band.pc!==undefined&&band.pc<0.06){   // build 163: near-grey pick, by colour distance (shader, without its neighbour smoothing)
+      const sig=0.006+0.012*Math.max(0.2,Math.min(3,band.width/30));
+      const da=A-band.pa, db=B-band.pb, wAB=Math.exp(-(da*da+db*db)/(sig*sig));
+      const k=Math.max(0,Math.min(1,(band.pc-0.02)/0.04)), s=k*k*(3-2*k);
+      w=wAB+(w-wAB)*s;
+    }
     if(w<=0) continue;
     H+=band.dH*w;
     C=Math.max(0,C*(1+band.dS*w));

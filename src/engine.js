@@ -212,6 +212,8 @@ class WebGLEngine {
       bandLo: gl.getUniformLocation(this.program, 'u_bandLo'),
       bandHi: gl.getUniformLocation(this.program, 'u_bandHi'),
       bandSelectivity: gl.getUniformLocation(this.program, 'u_bandSelectivity'),
+      bandAB: gl.getUniformLocation(this.program, 'u_bandAB'),
+      bandPC: gl.getUniformLocation(this.program, 'u_bandPC'),
       bandDL: gl.getUniformLocation(this.program, 'u_bandDL'),
       preWB: gl.getUniformLocation(this.program, 'u_preWB'),
       postWB: gl.getUniformLocation(this.program, 'u_postWB'),
@@ -652,7 +654,8 @@ class WebGLEngine {
       const n = Math.min(5, bands.length);
       const hue = new Float32Array(5), width = new Float32Array(5),
             dH = new Float32Array(5), dS = new Float32Array(5), dL = new Float32Array(5),
-            lo = new Float32Array(5), hi = new Float32Array(5), sel = new Float32Array(5);
+            lo = new Float32Array(5), hi = new Float32Array(5), sel = new Float32Array(5),
+            ab = new Float32Array(10), pc = new Float32Array(5).fill(1);
       for (let i = 0; i < n; i++) {
         hue[i] = bands[i].hue; width[i] = bands[i].width;
         dH[i] = bands[i].dH; dS[i] = bands[i].dS; dL[i] = bands[i].dL;
@@ -662,6 +665,8 @@ class WebGLEngine {
         // absent means the old, always-on 3x widening \u2014 same reasoning as
         // lo/hi above, an existing band must render exactly as it always has
         sel[i] = bands[i].selectivity === undefined ? 0 : bands[i].selectivity;
+        // build 163: the picked colour; a band without it stays on the hue test (chroma 1)
+        if (bands[i].pc !== undefined) { ab[i * 2] = bands[i].pa; ab[i * 2 + 1] = bands[i].pb; pc[i] = bands[i].pc; }
       }
       gl.uniform1i(this.uLocs.bandCount, n);
       gl.uniform1fv(this.uLocs.bandHue, hue);
@@ -672,6 +677,8 @@ class WebGLEngine {
       gl.uniform1fv(this.uLocs.bandLo, lo);
       gl.uniform1fv(this.uLocs.bandHi, hi);
       gl.uniform1fv(this.uLocs.bandSelectivity, sel);
+      gl.uniform2fv(this.uLocs.bandAB, ab);
+      gl.uniform1fv(this.uLocs.bandPC, pc);
     }
 
     gl.uniform3fv(this.uLocs.preWB, new Float32Array(p.preWB));

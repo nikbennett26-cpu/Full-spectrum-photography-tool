@@ -565,6 +565,13 @@ uniform sampler2D u_epdBase;   // the smooth, edge-stopping base layer of the lo
   uniform float u_bandLo[MAX_BANDS];
   uniform float u_bandHi[MAX_BANDS];
   uniform float u_bandSelectivity[MAX_BANDS];   // 0..1, dials down the low-chroma widening below
+  /* Build 163: the picked colour itself (OKLab a,b) and its chroma. A pick on a nearly grey colour, such as a dim sky
+     in a raw capture before the swap, has no meaningful hue, and the hue test below then selected nothing at all: the
+     selection preview stayed black and every slider appeared to do nothing. For such picks the band selects by
+     closeness in colour (a,b) instead, blended in as the picked chroma falls. Bands from before this have chroma 1
+     sent, which keeps them on the hue test exactly as before. */
+  uniform vec2 u_bandAB[MAX_BANDS];
+  uniform float u_bandPC[MAX_BANDS];
 
   float hueDegOf(vec2 ab) {
     float d = degrees(atan(ab.y, ab.x));
@@ -734,8 +741,9 @@ uniform sampler2D u_epdBase;   // the smooth, edge-stopping base layer of the lo
          already computed above. */
       float lo = u_bandLo[i], hi = u_bandHi[i];
       float feather = max(0.04, (hi - lo) * 0.18);
-      t *= smoothstep(lo - feather, lo + feather, L) *
+      float lGate = smoothstep(lo - feather, lo + feather, L) *
            (1.0 - smoothstep(hi - feather, hi + feather, L));
+      t *= lGate;
       float w = t * t * (3.0 - 2.0 * t);   // smoothstep, so the band edge is invisible
       /* Weighted by how chromatic the pixel is, not only how close its hue is
          to the band. Hue is numerically meaningless on a near-neutral pixel,
@@ -744,6 +752,12 @@ uniform sampler2D u_epdBase;   // the smooth, edge-stopping base layer of the lo
          the selection preview was drawing. Same threshold the solve uses, so
          both agree on what counts as a real colour. */
       w *= smoothstep(0.010, 0.050, Cuse);
+      if (u_bandPC[i] < 0.06) {   // build 163: a near-grey pick selects by colour distance (see the uniform's comment)
+        vec2 dab = labSmoothed.yz - u_bandAB[i];
+        float sig = 0.006 + 0.012 * clamp(u_bandWidth[i] / 30.0, 0.2, 3.0);   // Width still sets how loose: 30 gives 0.018
+        float wAB = exp(-dot(dab, dab) / (sig * sig)) * lGate;
+        w = mix(wAB, w, smoothstep(0.02, 0.06, u_bandPC[i]));
+      }
       if (i == u_bandPreview) g_bandW = w;
       if (w <= 0.0) continue;
       H += u_bandDH[i] * w;

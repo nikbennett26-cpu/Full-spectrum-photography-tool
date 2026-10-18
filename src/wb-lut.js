@@ -561,7 +561,7 @@ function targetedDoPick(clientX, clientY) {
   // picked. The one just added stays open, since tuning it is the next
   // thing you're about to do.
   targetedBands.forEach(b => b.collapsed = true);
-  targetedBands.push({ id: bandNextId++, hue, width: 30, dH: 0, dS: 0, dL: 0, swatch: rgbToHex(r, g, b), collapsed: false });
+  targetedBands.push({ id: bandNextId++, hue, width: 30, dH: 0, dS: 0, dL: 0, swatch: rgbToHex(r, g, b), collapsed: false, pa: A, pb: B, pc: Math.hypot(A, B) });   // build 163: picked colour, for near-grey picks
   commitUndoCapture();
   bandRenderList();
   haptic('select');
