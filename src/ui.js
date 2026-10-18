@@ -355,7 +355,11 @@ function buildStepStrip() {
      phone opened Targeted Colour, the one panel most photos never need, and
      collapsed the headline feature. Keying on the step's name instead of its
      printed number means renumbering cannot silently repoint it again. */
-  if (window.matchMedia && window.matchMedia('(max-width:1099px)').matches) {
+  /* Build 170: not when the tabbed layout (phone dock, or the desktop studio) is on. There each tab shows its own
+     sections and the dock opens them; this ran again after every photo load, so opening a photo while on the Light or
+     Detail tab closed that tab's only section and left an empty panel until something reopened it. */
+  const tabbed = document.documentElement.classList.contains('dockOn') || document.documentElement.classList.contains('studioOn');
+  if (!tabbed && window.matchMedia && window.matchMedia('(max-width:1099px)').matches) {
     STEP_DEFS.forEach(([key]) => {
       const p = stepPanelFor(key);
       if (p && p.tagName === 'DETAILS') p.open = (key === 'swap');
