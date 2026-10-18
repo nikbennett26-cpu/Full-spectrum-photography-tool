@@ -773,7 +773,8 @@ function currentParams() {
     deband: (+($('debandAmt') && $('debandAmt').value) || 0) / 100,
     eir: eirParams(),
     curveLum: !!curveState.lum,
-    hsl: hslParams()
+    hsl: hslParams(),
+    irSub: (typeof irLeakMatrix === 'function') ? irLeakMatrix() : null   // build 172
   };
 }
 

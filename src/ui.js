@@ -106,6 +106,7 @@ function resetAllControls() {
   if ($('filmToneRow')) $('filmToneRow').style.display = 'none';
   if ($('filmToneAmt')) { $('filmToneAmt').value = 0; $('v_filmToneAmt').textContent = 0; }
   camMatchOn = false; if ($('camMatch')) $('camMatch').checked = false;
+  if (typeof irLeakOn !== 'undefined') { irLeakOn = false; irLeakAmt = 1; irlSync(); }   // build 172
   targetedBands = []; bandRenderList();
   ['hotR','hotG','hotB','caR','caB','bright','hue','brightness','blackPt','whitePt','noiseReduction','sharpen','noiseColour','temp','tint','satPreserve','contrast','highlights','shadows','vigAmt','vibrance',
    'clarity','dehaze','calRH','calGH','calBH','calRS','calGS','calBS','calST','rawNrL','rawNrC','rawHl','epdAmt','debandAmt','skyDeep','crimsonFol']
@@ -1319,6 +1320,7 @@ function captureState() {
        loaded file, not to an edit, and a snapshot from before the fit existed
        would otherwise wipe them. Only the on/off state travels. */
     camMatch: camMatchOn,
+    irLeak: (typeof irLeakOn !== 'undefined') ? { on: irLeakOn, amt: irLeakAmt } : undefined,   // build 172
     filmTone: filmToneOn,
     /* The experimental ProPhoto swap checkbox and its preset dropdown were
        missing from here entirely, not just uncaptured by the HASH_SLIDERS
@@ -1391,6 +1393,7 @@ function applyState(snap) {
   // see captureState: these three are not sliders, so they need restoring by
   // hand or undo walks straight past them
   camMatchOn = !!snap.camMatch;
+  if (typeof irLeakOn !== 'undefined') { irLeakOn = !!(snap.irLeak && snap.irLeak.on); irLeakAmt = snap.irLeak && isFinite(snap.irLeak.amt) ? snap.irLeak.amt : 1; irlSync(); }   // build 172
   if ($('camMatch') && !$('camMatch').disabled) $('camMatch').checked = camMatchOn;
   filmToneOn = !!snap.filmTone;
   if ($('chkFilmTone')) {
@@ -1499,6 +1502,7 @@ function stateKey(s) {
     // captureState/applyState but not compared here, so toggling the swap
     // produced two identical keys and never reached the undo stack at all
     camSpaceSwap: s.camSpaceSwap, camSpaceSwapPreset: s.camSpaceSwapPreset,
+    irLeak: s.irLeak,   // build 172
     /* The LUT, identified rather than serialised. captureState has always
        stored it and applyState has always restored it, but it was never
        compared here \u2014 so loading or clearing a LUT produced two identical

@@ -218,6 +218,7 @@ uniform float u_debandRad;  // reach, in source texels, at full strength
     -0.072850, -0.008348, 1.118729
   );
   uniform vec3 u_preWB;
+  uniform mat3 u_irSub; uniform float u_irSubOn;   // build 172: IR leak removal (src/ir-leak.js), before WB and the swap
   uniform vec3 u_postWB;
   uniform mat3 u_preWBM;
   uniform mat3 u_postWBM;
@@ -2430,6 +2431,7 @@ uniform float u_skyL;          // the typical lightness of the sky; anything cle
     } else {
       rgb = srgbToLinear(texColor.rgb);
     }
+    if (u_irSubOn > 0.5) rgb = max(u_irSub * rgb, vec3(0.0));   // build 172: IR leak removal
     // Reset BEFORE targetedHSL, not after: it now reports its own
     // out-of-gamut overshoot, and resetting afterward would wipe it.
     g_over = 0.0; g_under = 0.0;

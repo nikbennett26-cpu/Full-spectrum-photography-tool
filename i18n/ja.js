@@ -983,5 +983,14 @@ irlabTr.add('ja', {
 "Simple": "シンプル",
 "Editor mode": "編集モード",
 "Also in use": "使用中の詳細ツール",
-"show": "表示"
+"show": "表示",
+"IR leak removal": "IR漏れの除去",
+"cleaner Aerochrome-style colour": "よりクリーンなエアロクローム風の色",
+"For filter stacks that block blue (Aerochrome style): the blue channel then holds pure infrared, and some infrared also leaks into red and green. This takes that leak back out before the swap, for cleaner foliage and sky.": "青を遮るフィルター構成（エアロクローム風）では、青チャンネルは純粋な赤外線を記録し、赤と緑にも赤外線が一部漏れ込みます。入れ替えの前にその漏れを取り除き、葉と空をよりクリーンにします。",
+"Remove IR leak": "IR漏れを除去",
+"Measure from this 850nm photo": "この850nm写真から測定",
+"Use the estimate instead": "推定値を使う",
+"Try:": "試す:",
+"Fedia’s Aerochrome stack": "Fediaのエアロクローム構成",
+"Open a photo taken through an 850nm (or longer) infrared filter, then press this. Every channel sees only infrared there, so their ratio is exactly how much leaks in. Needed once per camera; it is remembered by camera model.": "850nm（またはそれ以上）の赤外フィルターで撮った写真を開いてからこれを押します。そこでは各チャンネルが赤外線だけを見るので、その比率がそのまま漏れ量です。カメラごとに一度だけ必要で、機種ごとに記憶されます。"
 });

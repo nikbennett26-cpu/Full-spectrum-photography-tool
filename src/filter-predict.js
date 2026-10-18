@@ -135,6 +135,11 @@ function fpInit() {
   $('fpSearch').addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); add(); } });
   $('fpStack').addEventListener('click', e => { const b = e.target.closest('button[data-i]'); if (b) { fpStack.splice(+b.dataset.i, 1); fpRender(); fpSave(); } });
   $('fpSensor').addEventListener('change', () => fpData && fpRender());
+  // build 172: one-tap example stacks, real combinations people use
+  document.querySelectorAll('#fpExamples button[data-stack]').forEach(b => b.addEventListener('click', () => {
+    if (!fpData) return;
+    fpStack = b.dataset.stack.split(',').filter(id => fpData.byId[id]); fpRender(); fpSave();
+  }));
   $('fpOut').addEventListener('click', e => { const b = e.target.closest('.fpPerm'); if (b && typeof mxApplyPerm === 'function') mxApplyPerm(b.dataset.perm); });
 }
 fpInit();

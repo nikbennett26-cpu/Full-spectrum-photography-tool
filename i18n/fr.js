@@ -983,5 +983,14 @@ irlabTr.add('fr', {
 "Simple": "Simple",
 "Editor mode": "Mode de l’éditeur",
 "Also in use": "Également utilisé",
-"show": "afficher"
+"show": "afficher",
+"IR leak removal": "Retrait de la fuite IR",
+"cleaner Aerochrome-style colour": "couleurs style Aerochrome plus propres",
+"For filter stacks that block blue (Aerochrome style): the blue channel then holds pure infrared, and some infrared also leaks into red and green. This takes that leak back out before the swap, for cleaner foliage and sky.": "Pour les piles de filtres qui bloquent le bleu (style Aerochrome) : le canal bleu contient alors de l’infrarouge pur, et un peu d’infrarouge fuit aussi dans le rouge et le vert. Ceci retire cette fuite avant l’échange, pour une végétation et un ciel plus propres.",
+"Remove IR leak": "Retirer la fuite IR",
+"Measure from this 850nm photo": "Mesurer avec cette photo à 850 nm",
+"Use the estimate instead": "Utiliser l’estimation",
+"Try:": "Essayer :",
+"Fedia’s Aerochrome stack": "La pile Aerochrome de Fedia",
+"Open a photo taken through an 850nm (or longer) infrared filter, then press this. Every channel sees only infrared there, so their ratio is exactly how much leaks in. Needed once per camera; it is remembered by camera model.": "Ouvrez une photo prise à travers un filtre infrarouge de 850 nm (ou plus) puis appuyez ici. Chaque canal n’y voit que l’infrarouge, leur rapport est donc exactement la fuite. Une fois par appareil ; c’est mémorisé par modèle."
 });

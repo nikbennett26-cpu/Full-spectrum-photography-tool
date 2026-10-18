@@ -213,6 +213,7 @@ class WebGLEngine {
       bandHi: gl.getUniformLocation(this.program, 'u_bandHi'),
       bandSelectivity: gl.getUniformLocation(this.program, 'u_bandSelectivity'),
       bandAB: gl.getUniformLocation(this.program, 'u_bandAB'),
+      irSub: gl.getUniformLocation(this.program, 'u_irSub'), irSubOn: gl.getUniformLocation(this.program, 'u_irSubOn'),
       srcGuide: gl.getUniformLocation(this.program, 'u_srcGuide'), srcGuideTexel: gl.getUniformLocation(this.program, 'u_srcGuideTexel'),
       srcGuideOn: gl.getUniformLocation(this.program, 'u_srcGuideOn'), srcProbe: gl.getUniformLocation(this.program, 'u_srcProbe'),
       bandPC: gl.getUniformLocation(this.program, 'u_bandPC'),
@@ -734,6 +735,8 @@ class WebGLEngine {
     gl.uniform1f(this.uLocs.shW, p.shW === undefined ? 1.0 : p.shW);
     gl.uniform1f(this.uLocs.bandProbe, p.__bandProbe ? 1 : 0);
     gl.uniform1f(this.uLocs.srcProbe, p.__srcProbe ? 1 : 0);
+    gl.uniform1f(this.uLocs.irSubOn, p.irSub ? 1 : 0);
+    gl.uniformMatrix3fv(this.uLocs.irSub, false, p.irSub || new Float32Array([1, 0, 0, 0, 1, 0, 0, 0, 1]));
     { const useS = !!(p.__srcGuide && this._sg);
       gl.uniform1f(this.uLocs.srcGuideOn, useS ? 1 : 0);
       gl.activeTexture(gl.TEXTURE11); gl.bindTexture(gl.TEXTURE_2D, useS ? this._sg.tex : null); gl.uniform1i(this.uLocs.srcGuide, 11);

@@ -983,5 +983,14 @@ irlabTr.add('zh', {
 "Simple": "简易",
 "Editor mode": "编辑模式",
 "Also in use": "另外正在使用",
-"show": "显示"
+"show": "显示",
+"IR leak removal": "去除红外泄漏",
+"cleaner Aerochrome-style colour": "更干净的 Aerochrome 风格色彩",
+"For filter stacks that block blue (Aerochrome style): the blue channel then holds pure infrared, and some infrared also leaks into red and green. This takes that leak back out before the swap, for cleaner foliage and sky.": "对于阻挡蓝光的滤镜组合（Aerochrome 风格）：蓝色通道只记录红外，而部分红外也会漏入红色和绿色。此功能在互换前去除这部分泄漏，让植物和天空更干净。",
+"Remove IR leak": "去除红外泄漏",
+"Measure from this 850nm photo": "用这张 850nm 照片测量",
+"Use the estimate instead": "改用估算值",
+"Try:": "试试：",
+"Fedia’s Aerochrome stack": "Fedia 的 Aerochrome 组合",
+"Open a photo taken through an 850nm (or longer) infrared filter, then press this. Every channel sees only infrared there, so their ratio is exactly how much leaks in. Needed once per camera; it is remembered by camera model.": "打开一张通过 850nm（或更长）红外滤镜拍摄的照片，然后点这里。此时每个通道只看到红外，它们的比例正是泄漏量。每台相机只需一次，按机型记住。"
 });

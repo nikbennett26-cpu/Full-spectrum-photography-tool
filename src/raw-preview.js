@@ -1291,6 +1291,7 @@ function rawEngineResultToCanvas(res, doCamSpaceSwap, doCamSpaceSwapMatrix, doCa
   const swapMatrix = swapActive && Array.isArray(doCamSpaceSwapMatrix) ? doCamSpaceSwapMatrix : [0,0,1, 0,1,0, 1,0,0];
   const camToOutputSwapped = bfMat3mul(PROPHOTO_LIN_TO_SRGB_LIN, bfMat3mul(swapMatrix, camToPP));
   const M = swapActive ? camToOutputSwapped : camToOutput;
+  res.__M = hasCameraCal ? M : null;   // build 172: the IR leak correction needs the exact camera->output step (src/ir-leak.js)
   /* wb IS multiplied in here, before the matrix -- standard order for any
      RAW pipeline (white balance, then the colour-space matrix), and the
      ONLY order that makes sense for the swap specifically: permuting raw,

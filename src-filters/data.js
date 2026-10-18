@@ -437,7 +437,10 @@ const FILTERS=[
    +'against a datasheet the way the rest of this entry is; treat the name link itself as the less certain part.'},
  {id:'bw099',g:'B5',n:'B+W 099',     d:'= Schott OG550 · same glass as 040',c:'#d68a3a',
   same:'REAL DATA \u2014 same Schott OG550 curve as bw040 (see its note), replacing an earlier undocumented '
-   +'sigmoid that had wrongly placed 099 at 520nm before an earlier correction already fixed it to match 040.'},
+   +'sigmoid that had wrongly placed 099 at 520nm before an earlier correction already fixed it to match 040. '
+   +'OLDER FILTERS DIFFER: a vintage B+W 099 (probably 1960s) measured on a spectrometer by Ulf on '
+   +'ultravioletphotography.com (2020) crosses 50% at about 522nm and looks yellow, not orange. B+W changed the glass '
+   +'to OG550 at some point without renaming the filter, so a second-hand 099 may not match this curve.'},
  {id:'bw041',g:'B6',n:'B+W 041',     d:'= Wratten 22 · red-orange contrast',c:'#d47c36',bands:[{lo:566.7,ls:5.09,T:.896}],
   same:'B+W 041 is Wratten #22 equivalent glass \u2014 aligned to the Wratten 22 entry\u2019s Kodak-table fit (see w22\u2019s '
    +'note) rather than kept as a separate rough estimate. Note this is a visible-light red-orange contrast filter for '
@@ -1280,8 +1283,12 @@ const FILTERS=[
    +'match). Real 50%-crossing sits close to 495nm, matching the earlier fit\u2019s 492.2nm closely \u2014 a precision '
    +'upgrade to the exact curve, not a correction. Table covers 400-700nm; held flat outside that range.'},
 
- {id:'hy_og',g:'B5',n:'Hoya O (G)',    d:'Deep yellow · = Wratten 15', c:'#d9ad3c',
-  bands:[{lo:510,ls:12,T:.92}],same:'Wratten 15 — Kodak\u2019s letter G was always deep yellow, not orange'},
+ {id:'hy_og',g:'B5',n:'Hoya O (G)',    d:'Deep yellow · cut-on disputed (510 or ~538nm)', c:'#d9ad3c',
+  bands:[{lo:510,ls:12,T:.92}],same:'Wratten 15 — Kodak\u2019s letter G was always deep yellow, not orange. '
+   +'DISPUTED: this curve is an estimate that assumes O(G) equals Wratten 15 (50% near 510nm). A spectrometer '
+   +'comparison of 15 yellow and orange filters posted on ultravioletphotography.com (Ulf, 2020) lists Hoya O(G) at '
+   +'about 538nm, and it is often suggested as the nearest substitute for the B+W 099 (550nm). Treat the cut-on '
+   +'here as uncertain by up to about 30nm until a measured curve replaces it.'},
  {id:'hy_ya3',g:'B5',n:'Hoya YA3',      d:'Orange · factor 4',          c:'#d68b34',
   bands:[{lo:540,ls:12,T:.91}],same:'sits between Wratten 21 and 22 — Hoya rate it factor 4 (2 stops)'},
  {id:'hy_x0',g:'B4',n:'Hoya X0',       d:'Yellow-green · real double-hump, refitted',c:'#8fc059',
