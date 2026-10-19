@@ -8,13 +8,15 @@
 const MODE_KEY = 'irlab.mode';
 // tool cards that only show in Advanced, with the short name the note uses
 const ADV_TOOLS = {
-  channelDetails: 'Source channels', fpWrap: 'Predict from your filters', matrixDetails: 'Swap & mix',
+  channelDetails: 'Source channels', fpWrap: 'Predict from your filters',
   maskDetails: 'Local adjustments', hslDetails: 'Colour by band', colCal: 'Calibration', colSpace: 'Swap working space',
   lutDetails: 'LUT', lensDetails: 'Hotspot removal', epdGrp: 'Tone mapping', fringeDetails: 'Colour fringing',
   decodeGrp: 'Decode settings', batchPanel: 'Batch'
 };
 // these change without the user touching them (a preset sets the mix), so they never count as "in use"
-const ADV_SILENT = ['matrixDetails', 'channelDetails', 'fpWrap', 'decodeGrp', 'batchPanel'];
+// Swap & mix stays in Simple (the swap buttons are core), but its mix grid, fine bar, lift and brightness weighting are Advanced
+const ADV_PARTS = '#lumaWDetails, #mx, #mxFine, #matrixDetails .mxHint, #mxOff';
+const ADV_SILENT = ['channelDetails', 'fpWrap', 'decodeGrp', 'batchPanel'];
 let editorMode = 'simple';
 try {
   const m = localStorage.getItem(MODE_KEY);
@@ -55,6 +57,7 @@ function setEditorMode(m, persist) {
 (function wireMode() {
   Object.keys(ADV_TOOLS).forEach(id => { const d = $(id); if (d) d.classList.add('adv'); });
   const cm = $('curveModeRow'); if (cm) cm.classList.add('adv');
+  document.querySelectorAll(ADV_PARTS).forEach(el => el.classList.add('adv'));
   document.querySelectorAll('#modeBar button[data-mode]').forEach(b => b.addEventListener('click', () => { setEditorMode(b.dataset.mode, true); if (typeof haptic === 'function') haptic('select'); }));
   const n = $('modeNote'); if (n) n.addEventListener('click', () => setEditorMode('advanced', true));
   setEditorMode(editorMode, false);
