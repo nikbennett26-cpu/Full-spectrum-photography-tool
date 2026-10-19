@@ -811,6 +811,43 @@ const FILTERS=[
    +'20, 40", p.23). High in blue/violet, declining through green into a moderate red plateau. The real curve '
    +'has a small secondary bump around 600nm that this single-band fit doesn\u2019t capture, similar in kind to '
    +'the CC20R simplification above.'},
+ /* ---- Kodak CC magenta (Wratten gelatin), real Kodak table, all six common densities ---- */
+ {id:'kcc05m',g:'B5',n:'Kodak CC05M',d:'Magenta colour-compensating \u00b7 real Kodak table',c:'#d9a3c4',
+  same:'REAL DATA \u2014 Kodak\u2019s own percentage-transmittance table for the Wratten gelatin CC magenta series, '
+   +'400-700nm in 10nm steps, as reproduced in the Olympus/Evident Microscopy Resource Center. Minus-green: the '
+   +'dip bottoms out at 81.2% near 550nm while blue and red pass at 81-91%. Exposure increase 1/3 stop. Past 700nm '
+   +'held at Kodak\u2019s 700nm value (91.5%; the gelatin dyes are clear in the infrared). Below 400nm not tabulated: '
+   +'Kodak describe a second absorption peak at 375nm, so UV through this filter is lower than the 400nm value suggests.'},
+ {id:'kcc10m',g:'B5',n:'Kodak CC10M',d:'Magenta colour-compensating \u00b7 real Kodak table',c:'#d495bb',
+  same:'REAL DATA \u2014 Kodak\u2019s own percentage-transmittance table for the Wratten gelatin CC magenta series, '
+   +'400-700nm in 10nm steps, as reproduced in the Olympus/Evident Microscopy Resource Center. Minus-green: the '
+   +'dip bottoms out at 72.2% near 550nm while blue and red pass at 81-91%. Exposure increase 1/3 stop. Past 700nm '
+   +'held at Kodak\u2019s 700nm value (91.5%; the gelatin dyes are clear in the infrared). Below 400nm not tabulated: '
+   +'Kodak describe a second absorption peak at 375nm, so UV through this filter is lower than the 400nm value suggests.'},
+ {id:'kcc20m',g:'B5',n:'Kodak CC20M',d:'Magenta colour-compensating \u00b7 real Kodak table',c:'#cc84b0',
+  same:'REAL DATA \u2014 Kodak\u2019s own percentage-transmittance table for the Wratten gelatin CC magenta series, '
+   +'400-700nm in 10nm steps, as reproduced in the Olympus/Evident Microscopy Resource Center. Minus-green: the '
+   +'dip bottoms out at 58.0% near 550nm while blue and red pass at 81-91%. Exposure increase 1/3 stop. Past 700nm '
+   +'held at Kodak\u2019s 700nm value (91.5%; the gelatin dyes are clear in the infrared). Below 400nm not tabulated: '
+   +'Kodak describe a second absorption peak at 375nm, so UV through this filter is lower than the 400nm value suggests.'},
+ {id:'kcc30m',g:'B5',n:'Kodak CC30M',d:'Magenta colour-compensating \u00b7 real Kodak table',c:'#c374a6',
+  same:'REAL DATA \u2014 Kodak\u2019s own percentage-transmittance table for the Wratten gelatin CC magenta series, '
+   +'400-700nm in 10nm steps, as reproduced in the Olympus/Evident Microscopy Resource Center. Minus-green: the '
+   +'dip bottoms out at 46.0% near 550nm while blue and red pass at 81-91%. Exposure increase 2/3 stop. Past 700nm '
+   +'held at Kodak\u2019s 700nm value (91.5%; the gelatin dyes are clear in the infrared). Below 400nm not tabulated: '
+   +'Kodak describe a second absorption peak at 375nm, so UV through this filter is lower than the 400nm value suggests.'},
+ {id:'kcc40m',g:'B5',n:'Kodak CC40M',d:'Magenta colour-compensating \u00b7 real Kodak table',c:'#b9649b',
+  same:'REAL DATA \u2014 Kodak\u2019s own percentage-transmittance table for the Wratten gelatin CC magenta series, '
+   +'400-700nm in 10nm steps, as reproduced in the Olympus/Evident Microscopy Resource Center. Minus-green: the '
+   +'dip bottoms out at 36.0% near 550nm while blue and red pass at 81-91%. Exposure increase 2/3 stop. Past 700nm '
+   +'held at Kodak\u2019s 700nm value (91.5%; the gelatin dyes are clear in the infrared). Below 400nm not tabulated: '
+   +'Kodak describe a second absorption peak at 375nm, so UV through this filter is lower than the 400nm value suggests.'},
+ {id:'kcc50m',g:'B5',n:'Kodak CC50M',d:'Magenta colour-compensating \u00b7 real Kodak table',c:'#ae5590',
+  same:'REAL DATA \u2014 Kodak\u2019s own percentage-transmittance table for the Wratten gelatin CC magenta series, '
+   +'400-700nm in 10nm steps, as reproduced in the Olympus/Evident Microscopy Resource Center. Minus-green: the '
+   +'dip bottoms out at 29.1% near 550nm while blue and red pass at 81-91%. Exposure increase 2/3 stop. Past 700nm '
+   +'held at Kodak\u2019s 700nm value (91.5%; the gelatin dyes are clear in the infrared). Below 400nm not tabulated: '
+   +'Kodak describe a second absorption peak at 375nm, so UV through this filter is lower than the 400nm value suggests.'},
  {id:'sch_vg9',g:'B5',n:'Schott VG9',d:'Green bandpass glass \u00b7 real Schott datasheet',c:'#6cae5c',
   same:'REAL DATA \u2014 Schott\u2019s own official VG9 datasheet (PDF), full internal transmittance table (10nm steps) '
    +'with the datasheet\u2019s own stated reflection factor (Pd=0.911) applied, 1mm reference. A genuine, distinct '
@@ -1290,7 +1327,7 @@ const FILTERS=[
    +'comparison of 15 yellow and orange filters posted on ultravioletphotography.com (Ulf, 2020) lists Hoya O(G) at '
    +'about 538nm, and it is often suggested as the nearest substitute for the B+W 099 (550nm). Treat the cut-on '
    +'here as uncertain by up to about 30nm until a measured curve replaces it.'},
- {id:'hy_ya3',g:'B5',n:'Hoya YA3',      d:'Orange \u00b7 factor 4 \u00b7 Hoya\u2019s own chart',          c:'#d68b34',
+ {id:'hy_ya3',g:'B6',n:'Hoya YA3',      d:'Orange \u00b7 factor 4 \u00b7 Hoya\u2019s own chart',          c:'#d68b34',
   same:'REAL DATA \u2014 traced from Hoya\u2019s own YA3 curve in the Hoya Filter Catalog 2016, p.73 (350-750nm, held '
    +'flat past 750nm). 50% at about 563nm, 10-90% over roughly 552-576nm, with a faint 1-2% foot from about 530nm. '
    +'The earlier placeholder put the cut-on at 540nm, about 23nm too short: YA3 is closer to Wratten 22 than to 21. '
@@ -1314,7 +1351,7 @@ const FILTERS=[
    +'through deep red \u2014 while X0 on that chart (peak ~83%, dip ~57%) agrees with the data used here to within '
    +'about 7 points. Two Hoya charts disagree on X1\u2019s peak by about 20 points; kept on the CheeseCube312 file '
    +'until a measured filter settles it.'},
- {id:'hy_r1',g:'B6',n:'Hoya R (25A)',  d:'Red \u00b7 = Wratten 25 \u00b7 Hoya\u2019s own chart',         c:'#d4553c',
+ {id:'hy_r1',g:'B7',n:'Hoya R (25A)',  d:'Red \u00b7 = Wratten 25 \u00b7 Hoya\u2019s own chart',         c:'#d4553c',
   same:'REAL DATA \u2014 traced from Hoya\u2019s own R1 curve in the Hoya Filter Catalog 2016, p.73 (350-750nm, held '
    +'flat past 750nm). 50% at about 604nm, 10-90% over roughly 590-624nm, about 95.5% through deep red. Wratten 25 \u2014 '
    +'sold as R1, R(A25) or 25A depending on era. The earlier placeholder (600nm) was close; the real edge is a '
@@ -1340,7 +1377,7 @@ const FILTERS=[
   same:'REAL DATA \u2014 Hoya Candeo Optronics\u2019 own datasheet table for O54 at 2.5mm, reflection losses included. '
    +'50% at about 543nm, about 90% through the infrared to 1100nm. A bare glass plate, not a screw-in camera '
    +'filter; roughly Hoya\u2019s equivalent of SCHOTT OG530.'},
- {id:'hyg_o56',g:'B5',n:'Hoya O56 glass',d:'563nm colour-glass long-pass \u00b7 Hoya\u2019s own table',c:'#de9535',type:'absorptive',
+ {id:'hyg_o56',g:'B6',n:'Hoya O56 glass',d:'563nm colour-glass long-pass \u00b7 Hoya\u2019s own table',c:'#de9535',type:'absorptive',
   same:'REAL DATA \u2014 Hoya Candeo Optronics\u2019 own datasheet table for O56 at 2.5mm, reflection losses included. '
    +'50% at about 563nm, about 90% through the infrared to 1100nm. A bare glass plate, not a screw-in camera '
    +'filter; roughly Hoya\u2019s equivalent of SCHOTT OG550.'},
