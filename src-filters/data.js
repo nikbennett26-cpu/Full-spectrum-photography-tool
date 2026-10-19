@@ -811,40 +811,52 @@ const FILTERS=[
    +'20, 40", p.23). High in blue/violet, declining through green into a moderate red plateau. The real curve '
    +'has a small secondary bump around 600nm that this single-band fit doesn\u2019t capture, similar in kind to '
    +'the CC20R simplification above.'},
- /* ---- Kodak CC magenta (Wratten gelatin), real Kodak table, all six common densities ---- */
+ /* ---- Kodak CC magenta (Wratten gelatin), real Kodak data, all seven densities (CC025M to CC50M) ---- */
+ {id:'kcc025m',g:'B5',n:'Kodak CC025M',d:'Faintest magenta colour-compensating \u00b7 real Kodak chart',c:'#ddb0cb',
+  same:'REAL DATA \u2014 exact curve from Kodak\u2019s own WRATTEN 2 Color Compensating Magenta Series spectral chart (2019 '
+   +'PDF; the chart is vector data, so it is read straight from the file, not by eye), converted from diffuse density. '
+   +'The faintest of the series: the green dip only reaches about 86% near 550nm, too slight to need an exposure '
+   +'increase. Past 700nm held at Kodak\u2019s 700nm value; below 400nm not charted (Kodak describe a second absorption '
+   +'peak at 375nm, so UV is lower than the 400nm value suggests).'},
  {id:'kcc05m',g:'B5',n:'Kodak CC05M',d:'Magenta colour-compensating \u00b7 real Kodak table',c:'#d9a3c4',
   same:'REAL DATA \u2014 Kodak\u2019s own percentage-transmittance table for the Wratten gelatin CC magenta series, '
-   +'400-700nm in 10nm steps, as reproduced in the Olympus/Evident Microscopy Resource Center. Minus-green: the '
+   +'400-700nm in 10nm steps, as reproduced in the Olympus/Evident Microscopy Resource Center, and matching Kodak\u2019s own WRATTEN 2 chart '
+   +'for the series to within 0.3 points. Minus-green: the '
    +'dip bottoms out at 81.2% near 550nm while blue and red pass at 81-91%. Exposure increase 1/3 stop. Past 700nm '
    +'held at Kodak\u2019s 700nm value (91.5%; the gelatin dyes are clear in the infrared). Below 400nm not tabulated: '
    +'Kodak describe a second absorption peak at 375nm, so UV through this filter is lower than the 400nm value suggests.'},
  {id:'kcc10m',g:'B5',n:'Kodak CC10M',d:'Magenta colour-compensating \u00b7 real Kodak table',c:'#d495bb',
   same:'REAL DATA \u2014 Kodak\u2019s own percentage-transmittance table for the Wratten gelatin CC magenta series, '
-   +'400-700nm in 10nm steps, as reproduced in the Olympus/Evident Microscopy Resource Center. Minus-green: the '
+   +'400-700nm in 10nm steps, as reproduced in the Olympus/Evident Microscopy Resource Center, and matching Kodak\u2019s own WRATTEN 2 chart '
+   +'for the series to within 0.3 points. Minus-green: the '
    +'dip bottoms out at 72.2% near 550nm while blue and red pass at 81-91%. Exposure increase 1/3 stop. Past 700nm '
    +'held at Kodak\u2019s 700nm value (91.5%; the gelatin dyes are clear in the infrared). Below 400nm not tabulated: '
    +'Kodak describe a second absorption peak at 375nm, so UV through this filter is lower than the 400nm value suggests.'},
  {id:'kcc20m',g:'B5',n:'Kodak CC20M',d:'Magenta colour-compensating \u00b7 real Kodak table',c:'#cc84b0',
   same:'REAL DATA \u2014 Kodak\u2019s own percentage-transmittance table for the Wratten gelatin CC magenta series, '
-   +'400-700nm in 10nm steps, as reproduced in the Olympus/Evident Microscopy Resource Center. Minus-green: the '
+   +'400-700nm in 10nm steps, as reproduced in the Olympus/Evident Microscopy Resource Center, and matching Kodak\u2019s own WRATTEN 2 chart '
+   +'for the series to within 0.3 points. Minus-green: the '
    +'dip bottoms out at 58.0% near 550nm while blue and red pass at 81-91%. Exposure increase 1/3 stop. Past 700nm '
    +'held at Kodak\u2019s 700nm value (91.5%; the gelatin dyes are clear in the infrared). Below 400nm not tabulated: '
    +'Kodak describe a second absorption peak at 375nm, so UV through this filter is lower than the 400nm value suggests.'},
  {id:'kcc30m',g:'B5',n:'Kodak CC30M',d:'Magenta colour-compensating \u00b7 real Kodak table',c:'#c374a6',
   same:'REAL DATA \u2014 Kodak\u2019s own percentage-transmittance table for the Wratten gelatin CC magenta series, '
-   +'400-700nm in 10nm steps, as reproduced in the Olympus/Evident Microscopy Resource Center. Minus-green: the '
+   +'400-700nm in 10nm steps, as reproduced in the Olympus/Evident Microscopy Resource Center, and matching Kodak\u2019s own WRATTEN 2 chart '
+   +'for the series to within 0.3 points. Minus-green: the '
    +'dip bottoms out at 46.0% near 550nm while blue and red pass at 81-91%. Exposure increase 2/3 stop. Past 700nm '
    +'held at Kodak\u2019s 700nm value (91.5%; the gelatin dyes are clear in the infrared). Below 400nm not tabulated: '
    +'Kodak describe a second absorption peak at 375nm, so UV through this filter is lower than the 400nm value suggests.'},
  {id:'kcc40m',g:'B5',n:'Kodak CC40M',d:'Magenta colour-compensating \u00b7 real Kodak table',c:'#b9649b',
   same:'REAL DATA \u2014 Kodak\u2019s own percentage-transmittance table for the Wratten gelatin CC magenta series, '
-   +'400-700nm in 10nm steps, as reproduced in the Olympus/Evident Microscopy Resource Center. Minus-green: the '
+   +'400-700nm in 10nm steps, as reproduced in the Olympus/Evident Microscopy Resource Center, and matching Kodak\u2019s own WRATTEN 2 chart '
+   +'for the series to within 0.3 points. Minus-green: the '
    +'dip bottoms out at 36.0% near 550nm while blue and red pass at 81-91%. Exposure increase 2/3 stop. Past 700nm '
    +'held at Kodak\u2019s 700nm value (91.5%; the gelatin dyes are clear in the infrared). Below 400nm not tabulated: '
    +'Kodak describe a second absorption peak at 375nm, so UV through this filter is lower than the 400nm value suggests.'},
  {id:'kcc50m',g:'B5',n:'Kodak CC50M',d:'Magenta colour-compensating \u00b7 real Kodak table',c:'#ae5590',
   same:'REAL DATA \u2014 Kodak\u2019s own percentage-transmittance table for the Wratten gelatin CC magenta series, '
-   +'400-700nm in 10nm steps, as reproduced in the Olympus/Evident Microscopy Resource Center. Minus-green: the '
+   +'400-700nm in 10nm steps, as reproduced in the Olympus/Evident Microscopy Resource Center, and matching Kodak\u2019s own WRATTEN 2 chart '
+   +'for the series to within 0.3 points. Minus-green: the '
    +'dip bottoms out at 29.1% near 550nm while blue and red pass at 81-91%. Exposure increase 2/3 stop. Past 700nm '
    +'held at Kodak\u2019s 700nm value (91.5%; the gelatin dyes are clear in the infrared). Below 400nm not tabulated: '
    +'Kodak describe a second absorption peak at 375nm, so UV through this filter is lower than the 400nm value suggests.'},
