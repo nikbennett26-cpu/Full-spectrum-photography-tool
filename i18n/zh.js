@@ -992,5 +992,17 @@ irlabTr.add('zh', {
 "Use the estimate instead": "改用估算值",
 "Try:": "试试：",
 "Fedia’s Aerochrome stack": "Fedia 的 Aerochrome 组合",
-"Open a photo taken through an 850nm (or longer) infrared filter, then press this. Every channel sees only infrared there, so their ratio is exactly how much leaks in. Needed once per camera; it is remembered by camera model.": "打开一张通过 850nm（或更长）红外滤镜拍摄的照片，然后点这里。此时每个通道只看到红外，它们的比例正是泄漏量。每台相机只需一次，按机型记住。"
+"Open a photo taken through an 850nm (or longer) infrared filter, then press this. Every channel sees only infrared there, so their ratio is exactly how much leaks in. Needed once per camera; it is remembered by camera model.": "打开一张通过 850nm（或更长）红外滤镜拍摄的照片，然后点这里。此时每个通道只看到红外，它们的比例正是泄漏量。每台相机只需一次，按机型记住。",
+"On your lens": "镜头上的滤镜",
+"Clear all": "全部移除",
+"Search to add a filter: R72, ZWB2, Wratten 12…": "搜索并添加滤镜：R72、ZWB2、Wratten 12…",
+"Search the filter database": "搜索滤镜数据库",
+"Matching filters": "匹配的滤镜",
+"Add every filter on the lens, one after another: the light passes through all of them, so they stack. Tap × on a filter to take it off.": "把镜头上的每片滤镜依次加进来：光会穿过所有滤镜，所以效果会叠加。点滤镜上的 × 可移除。",
+"720nm infrared": "720nm 红外",
+"UV only": "仅紫外",
+"Aerochrome-style": "Aerochrome 风格",
+"Hoya R72: the classic 720nm infrared filter": "Hoya R72：经典的 720nm 红外滤镜",
+"ZWB2 UV-pass glass with a Schott BG39 to block its infrared leak": "ZWB2 紫外透过玻璃，加 Schott BG39 挡住它的红外泄漏",
+"MidOpt TB550/660/850 triple bandpass + Lee 192 Flesh Pink + GRB3: a digital Aerochrome stack that needs no infrared subtraction after the swap": "MidOpt TB550/660/850 三带通 + Lee 192 Flesh Pink + GRB3：一种数字 Aerochrome 组合，交换通道后无需扣除红外"
 });

@@ -992,5 +992,17 @@ irlabTr.add('ja', {
 "Use the estimate instead": "推定値を使う",
 "Try:": "試す:",
 "Fedia’s Aerochrome stack": "Fediaのエアロクローム構成",
-"Open a photo taken through an 850nm (or longer) infrared filter, then press this. Every channel sees only infrared there, so their ratio is exactly how much leaks in. Needed once per camera; it is remembered by camera model.": "850nm（またはそれ以上）の赤外フィルターで撮った写真を開いてからこれを押します。そこでは各チャンネルが赤外線だけを見るので、その比率がそのまま漏れ量です。カメラごとに一度だけ必要で、機種ごとに記憶されます。"
+"Open a photo taken through an 850nm (or longer) infrared filter, then press this. Every channel sees only infrared there, so their ratio is exactly how much leaks in. Needed once per camera; it is remembered by camera model.": "850nm（またはそれ以上）の赤外フィルターで撮った写真を開いてからこれを押します。そこでは各チャンネルが赤外線だけを見るので、その比率がそのまま漏れ量です。カメラごとに一度だけ必要で、機種ごとに記憶されます。",
+"On your lens": "レンズに装着中",
+"Clear all": "すべて外す",
+"Search to add a filter: R72, ZWB2, Wratten 12…": "フィルターを検索して追加：R72、ZWB2、Wratten 12…",
+"Search the filter database": "フィルターデータベースを検索",
+"Matching filters": "一致するフィルター",
+"Add every filter on the lens, one after another: the light passes through all of them, so they stack. Tap × on a filter to take it off.": "レンズに付けているフィルターを順番にすべて追加してください。光はそのすべてを通るので、重ねた効果になります。外すにはフィルターの × をタップします。",
+"720nm infrared": "720nm赤外線",
+"UV only": "UVのみ",
+"Aerochrome-style": "エアロクローム風",
+"Hoya R72: the classic 720nm infrared filter": "Hoya R72：定番の720nm赤外線フィルター",
+"ZWB2 UV-pass glass with a Schott BG39 to block its infrared leak": "ZWB2 UV透過ガラスに、赤外線漏れを止めるSchott BG39を組み合わせたもの",
+"MidOpt TB550/660/850 triple bandpass + Lee 192 Flesh Pink + GRB3: a digital Aerochrome stack that needs no infrared subtraction after the swap": "MidOpt TB550/660/850 トリプルバンドパス + Lee 192 Flesh Pink + GRB3：入れ替え後に赤外線の差し引きが不要なデジタル・エアロクローム構成"
 });

@@ -33,7 +33,7 @@ const at = (arr, l) => arr[l - 300];   // spectral.js curves sit on a 300-1100nm
 
 const filters = X.FILTERS.filter(f => f.g !== 'Custom').map(f => {
   const c = X.dataConfidence(f), p = X.provenanceOf(f), s = p.s && X.SOURCES[p.s];
-  return [f.id, f.n, c.label, s ? s.who : '', WL.map(l => q(X.filterTBase(l, f)))];
+  return [f.id, f.n, c.label, s ? s.who : '', WL.map(l => q(X.filterTBase(l, f))), f.d || ''];   // [5] short description, searched by the editor's filter picker (build 180)
 });
 const sensors = {};
 for (const [name, key] of [['Generic CMOS (approximation)', 'CMOS sensor'], ['Kodak KAF-8300 CCD (real, astronomy)', 'KAF 8300 CCD']]) {

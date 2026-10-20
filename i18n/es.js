@@ -992,5 +992,17 @@ irlabTr.add('es', {
 "Use the estimate instead": "Usar la estimación",
 "Try:": "Prueba:",
 "Fedia’s Aerochrome stack": "La pila Aerochrome de Fedia",
-"Open a photo taken through an 850nm (or longer) infrared filter, then press this. Every channel sees only infrared there, so their ratio is exactly how much leaks in. Needed once per camera; it is remembered by camera model.": "Abre una foto hecha con un filtro infrarrojo de 850 nm (o más) y pulsa aquí. Ahí cada canal ve solo infrarrojo, así que su proporción es justo lo que se filtra. Basta una vez por cámara; se guarda por modelo de cámara."
+"Open a photo taken through an 850nm (or longer) infrared filter, then press this. Every channel sees only infrared there, so their ratio is exactly how much leaks in. Needed once per camera; it is remembered by camera model.": "Abre una foto hecha con un filtro infrarrojo de 850 nm (o más) y pulsa aquí. Ahí cada canal ve solo infrarrojo, así que su proporción es justo lo que se filtra. Basta una vez por cámara; se guarda por modelo de cámara.",
+"On your lens": "En tu objetivo",
+"Clear all": "Quitar todos",
+"Search to add a filter: R72, ZWB2, Wratten 12…": "Busca para añadir un filtro: R72, ZWB2, Wratten 12…",
+"Search the filter database": "Buscar en la base de filtros",
+"Matching filters": "Filtros que coinciden",
+"Add every filter on the lens, one after another: the light passes through all of them, so they stack. Tap × on a filter to take it off.": "Añade cada filtro del objetivo, uno tras otro: la luz los atraviesa todos, así que se suman. Toca × en un filtro para quitarlo.",
+"720nm infrared": "Infrarrojo 720 nm",
+"UV only": "Solo UV",
+"Aerochrome-style": "Estilo Aerochrome",
+"Hoya R72: the classic 720nm infrared filter": "Hoya R72: el clásico filtro infrarrojo de 720 nm",
+"ZWB2 UV-pass glass with a Schott BG39 to block its infrared leak": "Vidrio de paso UV ZWB2 con un Schott BG39 que bloquea su fuga de infrarrojo",
+"MidOpt TB550/660/850 triple bandpass + Lee 192 Flesh Pink + GRB3: a digital Aerochrome stack that needs no infrared subtraction after the swap": "Triple paso banda MidOpt TB550/660/850 + Lee 192 Flesh Pink + GRB3: una pila Aerochrome digital que no necesita restar infrarrojo tras el intercambio"
 });

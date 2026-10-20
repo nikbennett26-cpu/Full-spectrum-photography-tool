@@ -763,3 +763,32 @@ html.dockOn body.has-image .toolbar > [data-lbl], html.dockOn body.has-image .to
 .fpSwap{display:flex;gap:10px;align-items:flex-start;font-size:12px;line-height:1.45}
 .fpSwap .swapBtn{flex:0 0 auto;min-width:84px}
 .fpTag{display:inline-block;margin-left:4px;padding:0 6px;border:1px solid var(--line2);border-radius:999px;font-size:10px;opacity:.75}
+/* Build 180: filter picker */
+.fpHdr{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:2px 0 4px}
+.fpHdrT{font:500 11px var(--font-mono);letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.fpStack .fpEmpty{margin:0}
+.fpChip{min-height:34px;box-sizing:border-box;background:var(--surface2)}
+.fpChip button{min-width:32px;min-height:32px}
+.fpAdd{margin-top:8px}
+.fpSearch{min-height:44px;font-size:16px}
+.fpResults{display:flex;flex-direction:column;gap:4px;margin-top:6px}
+.fpResults:empty{display:none}
+.fpResults .fpNone{margin:2px 0}
+.fpHit{display:grid;grid-template-columns:1fr auto;grid-template-areas:"n a" "d a";align-items:center;gap:1px 10px;text-align:left;width:100%;min-height:48px;padding:7px 10px;border:1px solid var(--line2);border-radius:8px;background:none;color:inherit;font:inherit;cursor:pointer}
+.fpHit:hover{border-color:var(--safelight)}
+.fpHitN{grid-area:n;font-size:14px;font-weight:500}
+.fpHitD{grid-area:d;font-size:11.5px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.fpHitA{grid-area:a;font:500 12px var(--font-mono);color:var(--safelight);white-space:nowrap}
+.fpHit.on{border-color:var(--safelight);background:var(--surface2)}
+.fpHit.on .fpHitA{color:var(--phosphor)}
+.fpHelp{margin:8px 0 4px}
+.fpExamples{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin:4px 0 8px}
+.fpSees{list-style:none;margin:6px 0 8px;padding:0;display:flex;flex-direction:column;gap:5px;font-size:13.5px;line-height:1.4}
+.fpSees li span{color:var(--muted);font-size:12px}
+.fpSug{margin:4px 0 8px}
+.fpMore{margin-top:10px}
+.fpMore>summary{cursor:pointer;font:500 12px var(--font-mono);color:var(--phosphor-dim)}
+.fpExamples button{min-height:34px;padding:0 12px;border:1px solid var(--line2);border-radius:999px;background:none;color:var(--paper);font:500 12px system-ui,-apple-system,sans-serif;cursor:pointer}
+.fpExamples button:hover{border-color:var(--safelight);color:var(--safelight)}
+.fpSensorRow select{max-width:100%;text-overflow:ellipsis}
+.fpAlias{margin:2px 0;font-size:11.5px}
