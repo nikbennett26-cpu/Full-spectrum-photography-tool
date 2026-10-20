@@ -146,7 +146,7 @@ function spliceXmpIntoPngBytes(png, xmp) {
 function stackMetaRefresh() {
   const el = $('stackMetaNames'); if (!el) return;
   const names = (typeof fpStackNames === 'function') ? fpStackNames() : [];
-  el.textContent = names.length ? names.join(' + ') : 'none set — add your filters under Predict from your filters';
+  el.textContent = names.length ? names.join(' + ') : 'none set, add them below';
   el.classList.toggle('noTr', !!names.length);   // filter names stay as they are; the hint is translated
   const box = $('exportStackMeta'); if (box) box.disabled = !names.length;
 }

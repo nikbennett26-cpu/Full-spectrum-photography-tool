@@ -8,7 +8,7 @@
 const MODE_KEY = 'irlab.mode';
 // tool cards that only show in Advanced, with the short name the note uses
 const ADV_TOOLS = {
-  channelDetails: 'Source channels', fpWrap: 'Predict from your filters',
+  channelDetails: 'Source channels',
   maskDetails: 'Local adjustments', hslDetails: 'Colour by band', colCal: 'Calibration', colSpace: 'Swap working space',
   lutDetails: 'LUT', lensDetails: 'Hotspot removal', epdGrp: 'Tone mapping', fringeDetails: 'Colour fringing',
   decodeGrp: 'Decode settings', batchPanel: 'Batch'
@@ -16,7 +16,7 @@ const ADV_TOOLS = {
 // these change without the user touching them (a preset sets the mix), so they never count as "in use"
 // Swap & mix stays in Simple (the swap buttons are core), but its mix grid, fine bar, lift and brightness weighting are Advanced
 const ADV_PARTS = '#lumaWDetails, #mx, #mxFine, #matrixDetails .mxHint, #mxOff';
-const ADV_SILENT = ['channelDetails', 'fpWrap', 'decodeGrp', 'batchPanel'];
+const ADV_SILENT = ['channelDetails', 'decodeGrp', 'batchPanel'];
 let editorMode = 'simple';
 try {
   const m = localStorage.getItem(MODE_KEY);

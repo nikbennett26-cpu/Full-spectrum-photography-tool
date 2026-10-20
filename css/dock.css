@@ -811,3 +811,9 @@ b.fpMeas,span.fpMeas{background:var(--safelight)}
 .fpAct.done{border-color:var(--phosphor)}
 .fpAct.done b{background:var(--phosphor)}
 .fpActNote{display:flex;align-items:center;gap:10px;margin:6px 0 0}
+/* Build 183: the stack picker now sits in Export, under "Record the filter stack" */
+.fpPick{margin:6px 0 4px 22px;display:flex;flex-direction:column;gap:6px}
+.fpPick .fpStack{margin:0}
+.fpPick .fpStack:empty{display:none}
+.fpPick #fpClear{align-self:flex-start}
+.fpPick .fpSearch{min-height:40px;font-size:15px}

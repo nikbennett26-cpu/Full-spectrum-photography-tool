@@ -1,4 +1,4 @@
-/* ---------- Predict from your filters (build 148) ----------
+/* ---------- Filter stack picker (was Predict from your filters, build 148; the prediction card was removed in build 183) ----------
    Pick the filters on the lens and this works out, from their measured curves, what each sensor channel actually
    records, then suggests the swap that puts the channels in wavelength order. Data: filter-data.json, generated from
    the filters page's own database at build time (tools/editor_filters.mjs), so both pages always agree. Fetched only
@@ -24,29 +24,6 @@ function fpLoad() {
       .then(d => { fpData = d; d.byId = Object.fromEntries(d.filters.map(f => [f[0], f])); return d; });
   }
   return fpLoading;
-}
-
-function fpCompute(ids, sensorName) {
-  const d = fpData, [lo, , step] = d.wl, s = d.sensors[sensorName];
-  const n = d.ill.length, T = new Array(n).fill(1);
-  ids.forEach(id => { const f = d.byId[id]; if (f) f[4].forEach((t, i) => { T[i] *= t; }); });
-  const res = ['R', 'G', 'B'].map(ch => {
-    let tot = 0, uv = 0, ir = 0, wsum = 0;
-    for (let i = 0; i < n; i++) {
-      const l = lo + i * step, v = T[i] * s[ch][i] * d.ill[i];
-      tot += v; wsum += v * l;
-      if (l < 400) uv += v; else if (l > 700) ir += v;
-    }
-    return { ch, tot, uv: tot ? uv / tot : 0, ir: tot ? ir / tot : 0, vis: tot ? 1 - (uv + ir) / tot : 0, centre: tot ? wsum / tot : 0 };
-  });
-  const max = Math.max(...res.map(r => r.tot));
-  res.forEach(r => { r.rel = max ? r.tot / max : 0; r.gain = r.tot ? max / r.tot : Infinity; });
-  // wavelength order: longest centre -> output red, shortest -> output blue (only among channels with real signal)
-  const order = [0, 1, 2].sort((a, b) => res[b].centre - res[a].centre);
-  const perm = order.join('');
-  const live = res.filter(r => r.rel > 0.02);
-  const spread = live.length > 1 ? Math.max(...live.map(r => r.centre)) - Math.min(...live.map(r => r.centre)) : 0;
-  return { res, perm, spread, peakT: Math.max(...T) };
 }
 
 /* Build 158: the stack is remembered between visits (a converted camera usually wears the same filters for a whole
@@ -114,117 +91,37 @@ function fpRenderResults() {
 
 function fpRender() {
   fpStack = fpStack.filter(id => fpData.byId[id]);   // a filter since removed from the database drops out
-  const out = $('fpOut');
-  $('fpStack').innerHTML = fpStack.length ? fpStack.map((id, i) => {
+  $('fpStack').innerHTML = fpStack.map((id, i) => {
     const f = fpData.byId[id];
-    return '<span class="fpChip">' + fpEsc(f[1]) + ' <small>' + f[2] + '</small><button type="button" data-i="' + i + '" aria-label="Remove ' + fpEsc(f[1]) + '">×</button></span>';
-  }).join('') : '<p class="note fpEmpty">None yet (bare sensor)</p>';
+    return '<span class="fpChip">' + fpEsc(f[1]) + '<button type="button" data-i="' + i + '" aria-label="Remove ' + fpEsc(f[1]) + '">×</button></span>';
+  }).join('');
   $('fpClear').hidden = fpStack.length < 2;
   fpRenderResults();
-  const sensor = $('fpSensor').value, r = fpCompute(fpStack, sensor);
-  if (r.peakT < 0.005) { out.innerHTML = '<p class="note">This stack blocks almost all light. Check for an IR-pass and an IR-block filter together.</p>'; return; }
-  const pct = v => Math.round(v * 100) + '%';
-  const rows = r.res.map(c => '<tr><td><b>' + c.ch + '</b></td><td>' + (c.rel > 0.02 ? Math.round(c.centre) + 'nm' : '—') + '</td><td>' +
-    pct(c.uv) + '</td><td>' + pct(c.vis) + '</td><td>' + pct(c.ir) + '</td><td>' + pct(c.rel) + '</td></tr>').join('');
-  const g = r.res.map(c => c.gain), gn = g.map(x => (x / g[1]));
-  /* Build 180: the answer first, in words: what each channel of the camera records. The suggestion (build 152) is the
-     wavelength-ordered swap, the colour infrared film convention, with where foliage and sky will tend to land. The
-     numbers and sources fold away underneath. */
-  const OUT = ['red', 'green', 'blue'];
-  const band = c => c.rel <= 0.02 ? 'almost nothing' : c.ir >= 0.6 ? 'mostly infrared' : c.uv >= 0.5 ? 'mostly UV' : c.vis >= 0.6 ? 'mostly visible' : 'a mix of ' + [c.uv >= 0.2 ? 'UV' : '', c.vis >= 0.2 ? 'visible' : '', c.ir >= 0.2 ? 'infrared' : ''].filter(Boolean).join(' and ');
-  const LABEL = { '012': 'No swap', '210': 'R↔B', '021': 'G↔B', '102': 'R↔G', '120': 'Rotate ↻', '201': 'Rotate ↺' };
-  const NAME = { R: 'Red', G: 'Green', B: 'Blue' };
-  const sees = '<ul class="fpSees">' + r.res.map(c => '<li><b class="rl-' + c.ch.toLowerCase() + '">' + NAME[c.ch] + '</b> ' + band(c) +
-    (c.rel > 0.02 ? ' <span>' + Math.round(c.centre) + 'nm' + (c.rel < 0.25 ? ', weak' : '') + '</span>' : '') + '</li>').join('') + '</ul>';
-  const irs = r.res.map(c => c.ir), irSpread = Math.max(...irs) - Math.min(...irs);
-  const mostIR = irs.indexOf(Math.max(...irs));
-  const leastIR = r.res.map((c, i) => [c.ir + c.centre / 1e4, i]).sort((x, y) => x[0] - y[0])[0][1];
-  let swaps;
-  if (r.spread < 15) swaps = '<p class="note fpSug">All three channels see the same band, so expect near-monochrome whatever the swap.</p>';
-  else {
-    const perm = r.perm;
-    let hint = '';
-    if (irSpread > 0.15) {
-      const fol = OUT[perm.indexOf(String(mostIR))], sky = OUT[perm.indexOf(String(leastIR))];
-      hint = ' Foliage \u2192 ' + fol + (fol === sky ? '' : ', sky \u2192 ' + sky) + '.';
-    }
-    swaps = '<p class="note fpSug" title="Puts the channels in wavelength order, longest in red: the colour infrared film convention">Suggested: <b>' + LABEL[perm] + '</b>.' + hint + '</p>';
-    if (perm !== '012') swaps += '<button type="button" class="swapBtn fpPerm" data-perm="' + perm + '">Apply ' + LABEL[perm] + '</button>';
-  }
-  /* Build 181: compare with the photo. The source channels are measured from the photo as loaded; the prediction says
-     what this stack should give. Only a coarse check is honest: scene colour moves the channel means, and a JPEG has
-     already been white balanced in camera, which rebalances them. So it flags a clear mismatch (channels that should
-     differ but are identical, or the other way round) and otherwise just shows the photo's figures beside the
-     prediction. */
-  let photo = '';
-  const hasPhoto = typeof srcChMeans !== 'undefined' && srcChMeans && typeof loadedImage !== 'undefined' && loadedImage;
-  if (hasPhoto) {
-    const isRaw = typeof rawEngine !== 'undefined' && rawEngine.lastResult && rawEngine.lastGen === loadToken;
-    const lin = srcChMeans.map(m => Math.pow(Math.max(0, m) / 255, 2.2)), lmax = Math.max(...lin) || 1;
-    const lvSpread = Math.max(...srcChMeans) - Math.min(...srcChMeans);
-    let verdict;
-    if (r.spread >= 40 && lvSpread < 1.5) verdict = 'Doesn\u2019t match: your photo\u2019s channels are identical. Check the filters.';
-    else if (r.spread < 15 && lvSpread >= 12) verdict = isRaw ? 'Doesn\u2019t match: your photo\u2019s channels differ more than expected. Check the filters.' : 'Channels differ more than expected (normal for a JPEG).';
-    else verdict = 'Matches your photo.' + (isRaw ? '' : ' (Rough check on a JPEG.)');
-    photo = '<div class="fpPhoto"><div class="fpPhotoT">Check</div><div class="fpBars">' + r.res.map((c, i) =>
-      '<div class="fpBar"><span class="rl-' + c.ch.toLowerCase() + '">' + c.ch + '</span><i><b style="width:' + Math.round(100 * c.rel) + '%" class="fpPred"></b><b style="width:' + Math.round(100 * lin[i] / lmax) + '%" class="fpMeas"></b></i></div>').join('') +
-      '</div><div class="fpKey"><span class="fpPred"></span>predicted <span class="fpMeas"></span>your photo</div><p class="note">' + verdict + '</p></div>';
-  }
-  /* Build 181: what to do with it. Nothing above changes the photo; these do. */
-  const steps = [];
-  if (r.spread >= 15 && r.perm !== '012') steps.push('<button type="button" class="fpAct fpPerm" data-perm="' + r.perm + '"><b>1</b>Apply ' + LABEL[r.perm] + ' swap</button>');
-  else if (r.spread >= 15) steps.push('<p class="note fpActNote"><b>1</b> No swap needed</p>');
-  steps.push('<button type="button" class="fpAct" id="fpPickGrey"><b>' + (steps.length + 1) + '</b>Pick grey in the photo</button>');
-  const blueIR = r.res[2].ir >= 0.6 && (r.res[0].vis >= 0.4 || r.res[1].vis >= 0.4);
-  if (blueIR) steps.push('<button type="button" class="fpAct" id="fpIrLeak"><b>' + (steps.length + 1) + '</b>Remove IR leak</button>');
-  const next = '<div class="fpNext"><div class="fpPhotoT">Apply</div>' + steps.join('') + '</div>';
-  out.innerHTML = sees + swaps.replace(/<button type="button" class="swapBtn fpPerm"[^>]*>[^<]*<\/button>/, '') + photo + next +
-    '<details class="fpMore"><summary>Details</summary>' +
-    '<table class="fpTbl"><thead><tr><th></th><th>centre</th><th>UV</th><th>visible</th><th>IR</th><th>strength</th></tr></thead><tbody>' + rows + '</tbody></table>' +
-    '<p class="note">Grey-card gains (before swap): R ' + gn[0].toFixed(2) + ' \u00b7 G 1.00 \u00b7 B ' + gn[2].toFixed(2) + '</p>' +
-    '<p class="note" title="' + fpEsc(((fpData.sensorNotes || {})[sensor] || '') + ' Daylight: ' + fpData.illuminant + '.') + '">Estimate from ' + fpEsc(sensor) + ' data. Your camera will differ a little.</p></details>';
 }
 
+/* Build 183: the Predict card is gone. What is left is the filter picker in the Export panel, which records the stack in
+   the exported file and feeds the IR leak estimate. The database loads the first time the search box is used. */
 function fpInit() {
-  const wrap = $('fpWrap'); if (!wrap) return;
+  const sIn = $('fpSearch'); if (!sIn) return;
   let ready = false;
-  const boot = () => {
-    if (ready) return;
-    $('fpOut').innerHTML = '<p class="note">Loading the filter database…</p>';
-    fpLoad().then(d => {
-      ready = true;
-      $('fpSensor').innerHTML = Object.keys(d.sensors).map(k => '<option>' + k + '</option>').join('');
-      fpRender();
-    }).catch(() => { $('fpOut').innerHTML = '<p class="note">Could not load the filter database (offline before it was ever opened?).</p>'; });
-  };
-  wrap.addEventListener('toggle', () => { if (wrap.open) boot(); });
+  const boot = () => { if (ready) return; fpLoad().then(() => { ready = true; fpRender(); }).catch(() => {}); };
   const add = id => {
     if (!fpData || !fpData.byId[id]) return;
     const i = fpStack.indexOf(id);
-    if (i >= 0) fpStack.splice(i, 1); else fpStack.push(id);   // tapping a filter already on the lens takes it off
+    if (i >= 0) fpStack.splice(i, 1); else fpStack.push(id);   // tapping a filter already added takes it off
     fpRender(); fpSave();
     if (typeof haptic === 'function') haptic('select');
   };
-  const sIn = $('fpSearch');
+  sIn.addEventListener('focus', boot);
   sIn.addEventListener('input', () => { boot(); fpRenderResults(); });
   sIn.addEventListener('keydown', e => {
     if (e.key === 'Enter') { e.preventDefault(); const h = $('fpResults').querySelector('.fpHit:not(.on)') || $('fpResults').querySelector('.fpHit'); if (h) { add(h.dataset.id); sIn.value = ''; fpRenderResults(); } }
     else if (e.key === 'Escape') { sIn.value = ''; fpRenderResults(); }
   });
-  // results: tap adds and keeps the search, so a second filter from the same search is one more tap
   $('fpResults').addEventListener('click', e => { const b = e.target.closest('.fpHit'); if (b) add(b.dataset.id); });
-  $('fpStack').addEventListener('click', e => { const b = e.target.closest('button[data-i]'); if (b) { fpStack.splice(+b.dataset.i, 1); fpRender(); fpSave(); } });
-  $('fpClear').addEventListener('click', () => { fpStack = []; fpRender(); fpSave(); });
-  $('fpSensor').addEventListener('change', () => fpData && fpRender());
-  // build 172: one-tap example stacks, real combinations people use (build 180: plain names, no people)
-  document.querySelectorAll('#fpExamples button[data-stack]').forEach(b => b.addEventListener('click', () => {
-    if (!fpData) return;
-    fpStack = b.dataset.stack.split(',').filter(id => fpData.byId[id]); fpRender(); fpSave();
-  }));
-  $('fpOut').addEventListener('click', e => {
-    const b = e.target.closest('.fpPerm'); if (b && typeof mxApplyPerm === 'function') { mxApplyPerm(b.dataset.perm); b.classList.add('done'); }
-    if (e.target.closest('#fpPickGrey') && typeof enterPick === 'function') { if (typeof loadedImage === 'undefined' || !loadedImage) return; enterPick('pre'); if (typeof toast === 'function') toast('Tap something grey or white in the photo'); }
-    const l = e.target.closest('#fpIrLeak'); if (l) { const c = $('irLeakOn'); if (c && !c.checked) c.click(); l.classList.add('done'); }
-  });
+  $('fpStack').addEventListener('click', e => { const b = e.target.closest('button[data-i]'); if (b) { fpStack.splice(+b.dataset.i, 1); if (fpData) fpRender(); fpSave(); } });
+  $('fpClear').addEventListener('click', () => { fpStack = []; if (fpData) fpRender(); fpSave(); });
+  // show the remembered stack straight away; names are stored beside the ids, so this needs no database
+  $('fpStack').innerHTML = fpStack.map((id, i) => '<span class="fpChip">' + fpEsc(fpNames[id] || id) + '<button type="button" data-i="' + i + '" aria-label="Remove">×</button></span>').join('');
 }
 fpInit();
