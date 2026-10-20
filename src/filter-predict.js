@@ -101,9 +101,9 @@ function fpRenderResults() {
   if (!q) { box.innerHTML = ''; return; }
   if (!fpData) { box.innerHTML = '<p class="note">Loading the filter database…</p>'; return; }
   const { hits, exact, alias } = fpSearch(q);
-  if (!hits.length) { box.innerHTML = '<p class="note fpNone">No filter matches “' + fpEsc(q) + '”. Try the number on the ring (e.g. 12, 720, 093) or the glass (e.g. BG38).</p>'; return; }
+  if (!hits.length) { box.innerHTML = '<p class="note fpNone">No match for “' + fpEsc(q) + '”. Try the number on the ring, e.g. 12 or 720.</p>'; return; }
   box.innerHTML = (exact ? '' : '<p class="note fpNone">No exact match for “' + fpEsc(q) + '”. Closest:</p>') +
-    (alias ? '<p class="note fpAlias">Tiffen numbers its filters by the Wratten system, so Tiffen ' + fpEsc(alias) + ' is Wratten ' + fpEsc(alias) + '.</p>' : '') +
+    (alias ? '<p class="note fpAlias">Tiffen ' + fpEsc(alias) + ' = Wratten ' + fpEsc(alias) + '</p>' : '') +
     hits.map(f => {
       const on = fpStack.includes(f[0]);
       return '<button type="button" class="fpHit' + (on ? ' on' : '') + '" role="option" aria-selected="' + on + '" data-id="' + fpEsc(f[0]) + '">' +
@@ -118,11 +118,11 @@ function fpRender() {
   $('fpStack').innerHTML = fpStack.length ? fpStack.map((id, i) => {
     const f = fpData.byId[id];
     return '<span class="fpChip">' + fpEsc(f[1]) + ' <small>' + f[2] + '</small><button type="button" data-i="' + i + '" aria-label="Remove ' + fpEsc(f[1]) + '">×</button></span>';
-  }).join('') : '<p class="note fpEmpty">Nothing yet: the readout below is the bare full-spectrum sensor.</p>';
+  }).join('') : '<p class="note fpEmpty">None yet (bare sensor)</p>';
   $('fpClear').hidden = fpStack.length < 2;
   fpRenderResults();
   const sensor = $('fpSensor').value, r = fpCompute(fpStack, sensor);
-  if (r.peakT < 0.005) { out.innerHTML = '<p class="note">This stack blocks essentially everything between 300 and 1100nm: check you haven’t combined a filter that passes only infrared with one that blocks it.</p>'; return; }
+  if (r.peakT < 0.005) { out.innerHTML = '<p class="note">This stack blocks almost all light. Check for an IR-pass and an IR-block filter together.</p>'; return; }
   const pct = v => Math.round(v * 100) + '%';
   const rows = r.res.map(c => '<tr><td><b>' + c.ch + '</b></td><td>' + (c.rel > 0.02 ? Math.round(c.centre) + 'nm' : '—') + '</td><td>' +
     pct(c.uv) + '</td><td>' + pct(c.vis) + '</td><td>' + pct(c.ir) + '</td><td>' + pct(c.rel) + '</td></tr>').join('');
@@ -131,24 +131,24 @@ function fpRender() {
      wavelength-ordered swap, the colour infrared film convention, with where foliage and sky will tend to land. The
      numbers and sources fold away underneath. */
   const OUT = ['red', 'green', 'blue'];
-  const band = c => c.rel <= 0.02 ? 'almost nothing' : c.ir >= 0.6 ? 'mostly infrared' : c.uv >= 0.5 ? 'mostly UV' : c.vis >= 0.6 ? 'mostly visible light' : 'a mix of ' + [c.uv >= 0.2 ? 'UV' : '', c.vis >= 0.2 ? 'visible' : '', c.ir >= 0.2 ? 'infrared' : ''].filter(Boolean).join(' and ');
+  const band = c => c.rel <= 0.02 ? 'almost nothing' : c.ir >= 0.6 ? 'mostly infrared' : c.uv >= 0.5 ? 'mostly UV' : c.vis >= 0.6 ? 'mostly visible' : 'a mix of ' + [c.uv >= 0.2 ? 'UV' : '', c.vis >= 0.2 ? 'visible' : '', c.ir >= 0.2 ? 'infrared' : ''].filter(Boolean).join(' and ');
   const LABEL = { '012': 'No swap', '210': 'R↔B', '021': 'G↔B', '102': 'R↔G', '120': 'Rotate ↻', '201': 'Rotate ↺' };
   const NAME = { R: 'Red', G: 'Green', B: 'Blue' };
-  const sees = '<ul class="fpSees">' + r.res.map(c => '<li><b class="rl-' + c.ch.toLowerCase() + '">' + NAME[c.ch] + '</b> records ' + band(c) +
-    (c.rel > 0.02 ? ' <span>around ' + Math.round(c.centre) + 'nm' + (c.rel < 0.25 ? ', weak' : '') + '</span>' : '') + '</li>').join('') + '</ul>';
+  const sees = '<ul class="fpSees">' + r.res.map(c => '<li><b class="rl-' + c.ch.toLowerCase() + '">' + NAME[c.ch] + '</b> ' + band(c) +
+    (c.rel > 0.02 ? ' <span>' + Math.round(c.centre) + 'nm' + (c.rel < 0.25 ? ', weak' : '') + '</span>' : '') + '</li>').join('') + '</ul>';
   const irs = r.res.map(c => c.ir), irSpread = Math.max(...irs) - Math.min(...irs);
   const mostIR = irs.indexOf(Math.max(...irs));
   const leastIR = r.res.map((c, i) => [c.ir + c.centre / 1e4, i]).sort((x, y) => x[0] - y[0])[0][1];
   let swaps;
-  if (r.spread < 15) swaps = '<p class="note fpSug">All three channels record nearly the same band, so swapping only reshuffles small differences: expect a near-monochrome result whatever you choose.</p>';
+  if (r.spread < 15) swaps = '<p class="note fpSug">All three channels see the same band, so expect near-monochrome whatever the swap.</p>';
   else {
     const perm = r.perm;
     let hint = '';
     if (irSpread > 0.15) {
       const fol = OUT[perm.indexOf(String(mostIR))], sky = OUT[perm.indexOf(String(leastIR))];
-      hint = ' Foliage will tend toward ' + fol + (fol === sky ? '' : ', blue sky toward ' + sky) + '.';
+      hint = ' Foliage \u2192 ' + fol + (fol === sky ? '' : ', sky \u2192 ' + sky) + '.';
     }
-    swaps = '<p class="note fpSug">Suggested swap: <b>' + LABEL[perm] + '</b>. It puts the channels in wavelength order (longest in red, shortest in blue), the colour infrared film convention.' + hint + '</p>';
+    swaps = '<p class="note fpSug" title="Puts the channels in wavelength order, longest in red: the colour infrared film convention">Suggested: <b>' + LABEL[perm] + '</b>.' + hint + '</p>';
     if (perm !== '012') swaps += '<button type="button" class="swapBtn fpPerm" data-perm="' + perm + '">Apply ' + LABEL[perm] + '</button>';
   }
   /* Build 181: compare with the photo. The source channels are measured from the photo as loaded; the prediction says
@@ -163,29 +163,26 @@ function fpRender() {
     const lin = srcChMeans.map(m => Math.pow(Math.max(0, m) / 255, 2.2)), lmax = Math.max(...lin) || 1;
     const lvSpread = Math.max(...srcChMeans) - Math.min(...srcChMeans);
     let verdict;
-    if (r.spread >= 40 && lvSpread < 1.5) verdict = 'Your photo\u2019s three channels are almost identical, but this stack should separate them clearly. Check the filters above are the ones on your lens.';
-    else if (r.spread < 15 && lvSpread >= 12) verdict = 'Your photo\u2019s channels differ more than this stack predicts. ' + (isRaw ? 'Check the filters above are the ones on your lens.' : 'That is expected from a JPEG: the camera\u2019s white balance has already rebalanced them.');
-    else verdict = 'Your photo fits this stack: nothing obviously mismatched.' + (isRaw ? '' : ' (From a JPEG the camera\u2019s white balance has already shifted the channel levels, so compare the pattern, not the exact figures.)');
-    photo = '<div class="fpPhoto"><div class="fpPhotoT">Your photo</div><div class="fpBars">' + r.res.map((c, i) =>
+    if (r.spread >= 40 && lvSpread < 1.5) verdict = 'Doesn\u2019t match: your photo\u2019s channels are identical. Check the filters.';
+    else if (r.spread < 15 && lvSpread >= 12) verdict = isRaw ? 'Doesn\u2019t match: your photo\u2019s channels differ more than expected. Check the filters.' : 'Channels differ more than expected (normal for a JPEG).';
+    else verdict = 'Matches your photo.' + (isRaw ? '' : ' (Rough check on a JPEG.)');
+    photo = '<div class="fpPhoto"><div class="fpPhotoT">Check</div><div class="fpBars">' + r.res.map((c, i) =>
       '<div class="fpBar"><span class="rl-' + c.ch.toLowerCase() + '">' + c.ch + '</span><i><b style="width:' + Math.round(100 * c.rel) + '%" class="fpPred"></b><b style="width:' + Math.round(100 * lin[i] / lmax) + '%" class="fpMeas"></b></i></div>').join('') +
-      '</div><div class="fpKey"><span class="fpPred"></span>predicted <span class="fpMeas"></span>your photo (channel strength)</div><p class="note">' + verdict + '</p></div>';
+      '</div><div class="fpKey"><span class="fpPred"></span>predicted <span class="fpMeas"></span>your photo</div><p class="note">' + verdict + '</p></div>';
   }
   /* Build 181: what to do with it. Nothing above changes the photo; these do. */
   const steps = [];
-  if (r.spread >= 15 && r.perm !== '012') steps.push('<button type="button" class="fpAct fpPerm" data-perm="' + r.perm + '"><b>1</b>Apply the ' + LABEL[r.perm] + ' swap</button>');
-  else if (r.spread >= 15) steps.push('<p class="note fpActNote"><b>1</b> No swap needed: the channels are already in wavelength order.</p>');
-  steps.push('<button type="button" class="fpAct" id="fpPickGrey"><b>' + (steps.length + 1) + '</b>Tap something grey or white in the photo to balance it (before-swap picker)</button>');
+  if (r.spread >= 15 && r.perm !== '012') steps.push('<button type="button" class="fpAct fpPerm" data-perm="' + r.perm + '"><b>1</b>Apply ' + LABEL[r.perm] + ' swap</button>');
+  else if (r.spread >= 15) steps.push('<p class="note fpActNote"><b>1</b> No swap needed</p>');
+  steps.push('<button type="button" class="fpAct" id="fpPickGrey"><b>' + (steps.length + 1) + '</b>Pick grey in the photo</button>');
   const blueIR = r.res[2].ir >= 0.6 && (r.res[0].vis >= 0.4 || r.res[1].vis >= 0.4);
-  if (blueIR) steps.push('<button type="button" class="fpAct" id="fpIrLeak"><b>' + (steps.length + 1) + '</b>Turn on IR leak removal (blue holds pure infrared here, so the leak into red and green can be taken out)</button>');
-  const next = '<div class="fpNext"><div class="fpPhotoT">Use it on your photo</div>' + steps.join('') + '</div>';
+  if (blueIR) steps.push('<button type="button" class="fpAct" id="fpIrLeak"><b>' + (steps.length + 1) + '</b>Remove IR leak</button>');
+  const next = '<div class="fpNext"><div class="fpPhotoT">Apply</div>' + steps.join('') + '</div>';
   out.innerHTML = sees + swaps.replace(/<button type="button" class="swapBtn fpPerm"[^>]*>[^<]*<\/button>/, '') + photo + next +
-    '<details class="fpMore"><summary>Numbers and sources</summary>' +
+    '<details class="fpMore"><summary>Details</summary>' +
     '<table class="fpTbl"><thead><tr><th></th><th>centre</th><th>UV</th><th>visible</th><th>IR</th><th>strength</th></tr></thead><tbody>' + rows + '</tbody></table>' +
-    '<p class="note">A grey card in daylight should need gains of about R ' + gn[0].toFixed(2) + ' · G 1.00 · B ' + gn[2].toFixed(2) +
-    ' before the swap; the grey picker measures the real figure for your camera.</p>' +
-    '<p class="note">Filter curves from the database (badges show what each rests on). Sensor: ' + sensor + '. ' +
-    ((fpData.sensorNotes || {})[sensor] || '') + ' Daylight: ' + fpData.illuminant + '. Your own body will differ somewhat, ' +
-    'so read this as the shape of the answer and let the grey picker set the exact balance.</p></details>';
+    '<p class="note">Grey-card gains (before swap): R ' + gn[0].toFixed(2) + ' \u00b7 G 1.00 \u00b7 B ' + gn[2].toFixed(2) + '</p>' +
+    '<p class="note" title="' + fpEsc(((fpData.sensorNotes || {})[sensor] || '') + ' Daylight: ' + fpData.illuminant + '.') + '">Estimate from ' + fpEsc(sensor) + ' data. Your camera will differ a little.</p></details>';
 }
 
 function fpInit() {
