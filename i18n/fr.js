@@ -1004,5 +1004,6 @@ irlabTr.add('fr', {
 "Aerochrome-style": "Style Aerochrome",
 "Hoya R72: the classic 720nm infrared filter": "Hoya R72 : le filtre infrarouge 720 nm classique",
 "ZWB2 UV-pass glass with a Schott BG39 to block its infrared leak": "Verre passe-UV ZWB2 avec un Schott BG39 qui bloque sa fuite infrarouge",
-"MidOpt TB550/660/850 triple bandpass + Lee 192 Flesh Pink + GRB3: a digital Aerochrome stack that needs no infrared subtraction after the swap": "Triple passe-bande MidOpt TB550/660/850 + Lee 192 Flesh Pink + GRB3 : un empilement Aerochrome numérique qui ne demande aucune soustraction d’infrarouge après l’échange"
+"MidOpt TB550/660/850 triple bandpass + Lee 192 Flesh Pink + GRB3: a digital Aerochrome stack that needs no infrared subtraction after the swap": "Triple passe-bande MidOpt TB550/660/850 + Lee 192 Flesh Pink + GRB3 : un empilement Aerochrome numérique qui ne demande aucune soustraction d’infrarouge après l’échange",
+"Tell it which filters are on your lens. It works out what each colour channel of your photo really recorded (UV, visible light or infrared), checks that against the photo, and suggests a swap. Nothing changes on your photo until you use the buttons at the end.": "Indique les filtres montés sur ton objectif. Il calcule ce que chaque canal de couleur de ta photo a vraiment enregistré (UV, lumière visible ou infrarouge), le vérifie sur la photo et propose un échange. Ta photo ne change pas tant que tu n’utilises pas les boutons en bas."
 });

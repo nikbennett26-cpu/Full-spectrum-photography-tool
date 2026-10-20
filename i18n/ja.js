@@ -1004,5 +1004,6 @@ irlabTr.add('ja', {
 "Aerochrome-style": "エアロクローム風",
 "Hoya R72: the classic 720nm infrared filter": "Hoya R72：定番の720nm赤外線フィルター",
 "ZWB2 UV-pass glass with a Schott BG39 to block its infrared leak": "ZWB2 UV透過ガラスに、赤外線漏れを止めるSchott BG39を組み合わせたもの",
-"MidOpt TB550/660/850 triple bandpass + Lee 192 Flesh Pink + GRB3: a digital Aerochrome stack that needs no infrared subtraction after the swap": "MidOpt TB550/660/850 トリプルバンドパス + Lee 192 Flesh Pink + GRB3：入れ替え後に赤外線の差し引きが不要なデジタル・エアロクローム構成"
+"MidOpt TB550/660/850 triple bandpass + Lee 192 Flesh Pink + GRB3: a digital Aerochrome stack that needs no infrared subtraction after the swap": "MidOpt TB550/660/850 トリプルバンドパス + Lee 192 Flesh Pink + GRB3：入れ替え後に赤外線の差し引きが不要なデジタル・エアロクローム構成",
+"Tell it which filters are on your lens. It works out what each colour channel of your photo really recorded (UV, visible light or infrared), checks that against the photo, and suggests a swap. Nothing changes on your photo until you use the buttons at the end.": "レンズに付けているフィルターを指定してください。写真の各色チャンネルが実際に何を記録したか（UV、可視光、赤外線）を計算し、写真と照らし合わせて、チャンネル入れ替えを提案します。最後のボタンを使うまで写真は変わりません。"
 });

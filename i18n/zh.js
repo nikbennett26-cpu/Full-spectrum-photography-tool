@@ -1004,5 +1004,6 @@ irlabTr.add('zh', {
 "Aerochrome-style": "Aerochrome 风格",
 "Hoya R72: the classic 720nm infrared filter": "Hoya R72：经典的 720nm 红外滤镜",
 "ZWB2 UV-pass glass with a Schott BG39 to block its infrared leak": "ZWB2 紫外透过玻璃，加 Schott BG39 挡住它的红外泄漏",
-"MidOpt TB550/660/850 triple bandpass + Lee 192 Flesh Pink + GRB3: a digital Aerochrome stack that needs no infrared subtraction after the swap": "MidOpt TB550/660/850 三带通 + Lee 192 Flesh Pink + GRB3：一种数字 Aerochrome 组合，交换通道后无需扣除红外"
+"MidOpt TB550/660/850 triple bandpass + Lee 192 Flesh Pink + GRB3: a digital Aerochrome stack that needs no infrared subtraction after the swap": "MidOpt TB550/660/850 三带通 + Lee 192 Flesh Pink + GRB3：一种数字 Aerochrome 组合，交换通道后无需扣除红外",
+"Tell it which filters are on your lens. It works out what each colour channel of your photo really recorded (UV, visible light or infrared), checks that against the photo, and suggests a swap. Nothing changes on your photo until you use the buttons at the end.": "告诉它你镜头上装了哪些滤镜。它会算出照片每个颜色通道实际记录的是什么（紫外、可见光或红外），与照片核对，并建议一种通道交换。在你使用最后的按钮之前，照片不会改变。"
 });

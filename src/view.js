@@ -927,6 +927,7 @@ async function updApply() {
    as greyscale so it can be judged on its own, with its mean level printed —
    a channel averaging in the low teens is essentially noise, and promoting it
    into a visible slot amplifies that noise rather than revealing detail. */
+let srcChMeans = null;   // mean of each source channel (0-255, as loaded), set by buildChannelStrip
 function buildChannelStrip() {
   if (!rawPixels || !loadedImage) return;
   const sw = rawCanvas.width, sh = rawCanvas.height;
@@ -995,6 +996,9 @@ function buildChannelStrip() {
      a real and correct result for a 720nm capture and a symptom of a problem
      for a 550nm one, and no amount of staring at three dark thumbnails
      distinguishes the two. The numbers do. */
+  // build 181: Predict from your filters compares its prediction with these
+  srcChMeans = stats.map(st => st.mean);
+  if (typeof fpRender === 'function' && typeof fpData !== 'undefined' && fpData && $('fpWrap') && $('fpWrap').open) fpRender();
   const v = $('chVerdict');
   if (v) {
     const ms = stats.map(s => s.mean);

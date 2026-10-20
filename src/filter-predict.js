@@ -151,7 +151,34 @@ function fpRender() {
     swaps = '<p class="note fpSug">Suggested swap: <b>' + LABEL[perm] + '</b>. It puts the channels in wavelength order (longest in red, shortest in blue), the colour infrared film convention.' + hint + '</p>';
     if (perm !== '012') swaps += '<button type="button" class="swapBtn fpPerm" data-perm="' + perm + '">Apply ' + LABEL[perm] + '</button>';
   }
-  out.innerHTML = sees + swaps +
+  /* Build 181: compare with the photo. The source channels are measured from the photo as loaded; the prediction says
+     what this stack should give. Only a coarse check is honest: scene colour moves the channel means, and a JPEG has
+     already been white balanced in camera, which rebalances them. So it flags a clear mismatch (channels that should
+     differ but are identical, or the other way round) and otherwise just shows the photo's figures beside the
+     prediction. */
+  let photo = '';
+  const hasPhoto = typeof srcChMeans !== 'undefined' && srcChMeans && typeof loadedImage !== 'undefined' && loadedImage;
+  if (hasPhoto) {
+    const isRaw = typeof rawEngine !== 'undefined' && rawEngine.lastResult && rawEngine.lastGen === loadToken;
+    const lin = srcChMeans.map(m => Math.pow(Math.max(0, m) / 255, 2.2)), lmax = Math.max(...lin) || 1;
+    const lvSpread = Math.max(...srcChMeans) - Math.min(...srcChMeans);
+    let verdict;
+    if (r.spread >= 40 && lvSpread < 1.5) verdict = 'Your photo\u2019s three channels are almost identical, but this stack should separate them clearly. Check the filters above are the ones on your lens.';
+    else if (r.spread < 15 && lvSpread >= 12) verdict = 'Your photo\u2019s channels differ more than this stack predicts. ' + (isRaw ? 'Check the filters above are the ones on your lens.' : 'That is expected from a JPEG: the camera\u2019s white balance has already rebalanced them.');
+    else verdict = 'Your photo fits this stack: nothing obviously mismatched.' + (isRaw ? '' : ' (From a JPEG the camera\u2019s white balance has already shifted the channel levels, so compare the pattern, not the exact figures.)');
+    photo = '<div class="fpPhoto"><div class="fpPhotoT">Your photo</div><div class="fpBars">' + r.res.map((c, i) =>
+      '<div class="fpBar"><span class="rl-' + c.ch.toLowerCase() + '">' + c.ch + '</span><i><b style="width:' + Math.round(100 * c.rel) + '%" class="fpPred"></b><b style="width:' + Math.round(100 * lin[i] / lmax) + '%" class="fpMeas"></b></i></div>').join('') +
+      '</div><div class="fpKey"><span class="fpPred"></span>predicted <span class="fpMeas"></span>your photo (channel strength)</div><p class="note">' + verdict + '</p></div>';
+  }
+  /* Build 181: what to do with it. Nothing above changes the photo; these do. */
+  const steps = [];
+  if (r.spread >= 15 && r.perm !== '012') steps.push('<button type="button" class="fpAct fpPerm" data-perm="' + r.perm + '"><b>1</b>Apply the ' + LABEL[r.perm] + ' swap</button>');
+  else if (r.spread >= 15) steps.push('<p class="note fpActNote"><b>1</b> No swap needed: the channels are already in wavelength order.</p>');
+  steps.push('<button type="button" class="fpAct" id="fpPickGrey"><b>' + (steps.length + 1) + '</b>Tap something grey or white in the photo to balance it (before-swap picker)</button>');
+  const blueIR = r.res[2].ir >= 0.6 && (r.res[0].vis >= 0.4 || r.res[1].vis >= 0.4);
+  if (blueIR) steps.push('<button type="button" class="fpAct" id="fpIrLeak"><b>' + (steps.length + 1) + '</b>Turn on IR leak removal (blue holds pure infrared here, so the leak into red and green can be taken out)</button>');
+  const next = '<div class="fpNext"><div class="fpPhotoT">Use it on your photo</div>' + steps.join('') + '</div>';
+  out.innerHTML = sees + swaps.replace(/<button type="button" class="swapBtn fpPerm"[^>]*>[^<]*<\/button>/, '') + photo + next +
     '<details class="fpMore"><summary>Numbers and sources</summary>' +
     '<table class="fpTbl"><thead><tr><th></th><th>centre</th><th>UV</th><th>visible</th><th>IR</th><th>strength</th></tr></thead><tbody>' + rows + '</tbody></table>' +
     '<p class="note">A grey card in daylight should need gains of about R ' + gn[0].toFixed(2) + ' · G 1.00 · B ' + gn[2].toFixed(2) +
@@ -197,6 +224,10 @@ function fpInit() {
     if (!fpData) return;
     fpStack = b.dataset.stack.split(',').filter(id => fpData.byId[id]); fpRender(); fpSave();
   }));
-  $('fpOut').addEventListener('click', e => { const b = e.target.closest('.fpPerm'); if (b && typeof mxApplyPerm === 'function') mxApplyPerm(b.dataset.perm); });
+  $('fpOut').addEventListener('click', e => {
+    const b = e.target.closest('.fpPerm'); if (b && typeof mxApplyPerm === 'function') { mxApplyPerm(b.dataset.perm); b.classList.add('done'); }
+    if (e.target.closest('#fpPickGrey') && typeof enterPick === 'function') { if (typeof loadedImage === 'undefined' || !loadedImage) return; enterPick('pre'); if (typeof toast === 'function') toast('Tap something grey or white in the photo'); }
+    const l = e.target.closest('#fpIrLeak'); if (l) { const c = $('irLeakOn'); if (c && !c.checked) c.click(); l.classList.add('done'); }
+  });
 }
 fpInit();
