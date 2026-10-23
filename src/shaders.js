@@ -1094,6 +1094,19 @@ uniform float u_skyL;          // the typical lightness of the sky; anything cle
     }
     return acc / wsum;
   }
+  vec3 guidedLabS(sampler2D guide, vec2 texel, vec3 labOwn, float sig) {   // build 189: guidedLab with its colour tolerance as a parameter
+    vec2 uv = prepUV(v_texCoord);
+    vec3 acc = labOwn; float wsum = 1.0;
+    for (int j = -2; j <= 2; j++) {
+      for (int i = -2; i <= 2; i++) {
+        vec3 t = linearToOklab(max(srgbToLinear(texture2D(guide, uv + vec2(float(i), float(j)) * 1.5 * texel).rgb), vec3(0.0)));
+        vec3 dv = t - labOwn;
+        float w = exp(-dot(dv, dv) / (sig * sig));
+        acc += t * w; wsum += w;
+      }
+    }
+    return acc / wsum;
+  }
   /* Build 109. The local average removes speckle but not the slower wander of a noisy sky's colour: patches tens of
      pixels wide that sit a few degrees bluer or purpler than the rest. Where a sky lies on the line between two bands
      (blue and purple after a channel swap, say) and only one band is moved, those patches moved by different amounts
@@ -1101,7 +1114,9 @@ uniform float u_skyL;          // the typical lightness of the sky; anything cle
      and full size, built only from parts of the picture that are this pixel's colour (below). Only the hue and chroma
      are taken from it: which band, and how grey, not the pixel's lightness. */
   vec3 bandColour(vec3 labOwn) {
-    vec3 labLocal = guidedLab(u_bandGuide, u_guideTexel, labOwn);
+    // build 189: bright areas carry little noise, so their small neighbourhood can match colour strictly and keep the edge of a
+    // differently coloured object out (a thin light rim round a pink tree on a pale wall otherwise)
+    vec3 labLocal = guidedLabS(u_bandGuide, u_guideTexel, labOwn, mix(0.06, 0.042, smoothstep(0.55, 0.75, labOwn.x)));
     /* 5x5 taps of the guide's mipmap, each already an average of a 16x16 block, spread over about 60 preview pixels;
        each counts only if it is the same colour as this pixel's local average, so near an edge the far side drops out
        and the sky still gets the sky's wide average right up to the tree. */
@@ -1132,6 +1147,14 @@ uniform float u_skyL;          // the typical lightness of the sky; anything cle
     vec2 ab = accW / wW;
     float cL = length(labLocal.yz), cW = length(ab);
     if (cW < cL && cW > 1e-5) ab *= cL / cW;   // the direction (hue) from the wide average, never less colour than the pixel's own area
+    /* Build 189: the wide average reads 25 points spread over about 60 pixels, and next to something of a very different
+       colour (a pink tree against a white wall) each point crosses its outline at a different place, which printed
+       shifted copies of the outline, a grid of lines, onto a pale wall, most of all once temperature or tint put the
+       wall's colour on the boundary between two bands. The wide average exists for dark, noisy areas (a converted
+       camera's night-dark swapped sky), where a pixel's own colour is too noisy to choose a band from. Bright areas carry
+       little noise, so they now choose from their own small neighbourhood, and so do pale ones, with a gradual change
+       between the two so nothing switches at a threshold. */
+    ab = mix(labLocal.yz, ab, smoothstep(0.035, 0.085, cL) * (1.0 - smoothstep(0.55, 0.75, labLocal.x)));
     return vec3(labLocal.x, ab);
   }
   vec3 applyHslBands(vec3 lin, float useGuide) {
