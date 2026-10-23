@@ -1114,12 +1114,18 @@ uniform float u_skyL;          // the typical lightness of the sky; anything cle
        Luminance was pulled down. The wide average still decides the hue (which is what keeps a noisy sky in one band),
        but it may no longer come out greyer than the pixel's own small neighbourhood. Judging taps on lightness or
        tightening the weight also removed the rim, but brought back the speckle this average exists to prevent. */
+    /* Build 188: how close a tap's colour must be scales with how much colour the pixel's area has. On a pale surface
+       (a white wall with a slight cast) a block that took in a little of the pink bush beside it is still within the
+       sky-sized tolerance, and against so little colour of its own a few such blocks swung its hue and band: blotches and
+       streaks in the size of the blocks. Saturated areas, where the speckle this average prevents lives, keep the
+       full tolerance. */
+    float sigW = 0.045 * clamp(length(labLocal.yz) / 0.07, 0.25, 1.0);
     vec2 accW = labLocal.yz * 0.05; float wW = 0.05;
     for (int j = -2; j <= 2; j++) {
       for (int i = -2; i <= 2; i++) {
         vec2 t = linearToOklab(max(srgbToLinear(texture2D(u_bandGuide, uv + vec2(float(i), float(j)) * st, lod).rgb), vec3(0.0))).yz;
         vec2 dv = t - labLocal.yz;
-        float w = exp(-dot(dv, dv) / (0.045 * 0.045));
+        float w = exp(-dot(dv, dv) / (sigW * sigW));
         accW += t * w; wW += w;
       }
     }
