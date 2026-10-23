@@ -940,6 +940,7 @@ function wbPos(eff) {
   return Math.round(600 * Math.max(-1, Math.min(1, u)));
 }
 function fmtSliderValue(id, v) {
+  if (id === 'temp' && wbkActive()) return wbkFmt(wbkKelvinAt(wbEff(v)));   // build 194: Kelvin on a RAW (src/wb-kelvin.js)
   if (WB_CURVE[id]) return Math.round(wbEff(v));
   return id === 'sharpenRadius' ? (v / 10).toFixed(1) : v;
 }

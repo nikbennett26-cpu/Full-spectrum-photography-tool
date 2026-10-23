@@ -11,7 +11,10 @@ third-party components, each retaining its own copyright and licence.
 ## LibRaw
 
 Used for RAW parsing, `unpack()`, and metadata (CFA pattern, black/white
-levels, `cam_mul`, `rgb_cam`, crop geometry).
+levels, `cam_mul`, `rgb_cam`, crop geometry). Its camera colour-matrix table
+(`adobe_coeff` in `src/tables/colordata.cpp`) is also copied as data into
+`src/wbk-table.js` by `tools/gen_wbk_table.py`, to show RAW white balance in
+Kelvin; same licence.
 
 - Copyright: (C) Alex Tutubalin / Iliah Borg / LibRaw LLC; includes
   dcraw-derived code (C) Dave Coffin, and DCB demosaic (C) Jacek Gozdz (BSD).
