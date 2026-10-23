@@ -611,11 +611,11 @@ $('btnRotR').onclick = () => applyRotation(1);
       const prev = bEl.textContent;
       const inp = document.createElement('input');
       inp.type = 'number'; inp.className = 'vedit';
+      if ((id === 'rawTemp' || id === 'rawGreen') && typeof rtwbTypeOpen === 'function') { delete bEl.dataset.editing; rtwbTypeOpen(id, bEl); return; }   // build 197
       const curved = typeof WB_CURVE !== 'undefined' && WB_CURVE[id];   // build 190: typed in the units shown
-      const kel = id === 'temp' && wbkActive();   // build 194: typed in Kelvin on a RAW
-      inp.min = kel ? WBK_MIN : curved ? -600 : range.min; inp.max = kel ? WBK_MAX : curved ? 600 : range.max;
-      inp.step = kel ? 50 : curved ? 1 : (range.step || 'any');
-      inp.value = kel ? wbkNowK(wbEff(range.value)) : curved ? Math.round(wbEff(range.value)) : range.value;
+      inp.min = curved ? -600 : range.min; inp.max = curved ? 600 : range.max;
+      inp.step = curved ? 1 : (range.step || 'any');
+      inp.value = curved ? Math.round(wbEff(range.value)) : range.value;
       bEl.textContent = '';
       bEl.appendChild(inp);
       inp.focus(); inp.select();
@@ -628,14 +628,13 @@ $('btnRotR').onclick = () => applyRotation(1);
         if (commit && inp.value !== '' && isFinite(+inp.value)) {
           // clamp to the slider's own limits so typing can't produce a state
           // dragging could never reach
-          const lo = kel ? WBK_MIN : curved ? -600 : +range.min, hi = kel ? WBK_MAX : curved ? 600 : +range.max;
+          const lo = curved ? -600 : +range.min, hi = curved ? 600 : +range.max;
           v = String(Math.min(hi, Math.max(lo, +inp.value)));
         }
         bEl.textContent = v;
         if (commit && v !== prev) {
           armUndoCapture();
-          if (kel) { const e = wbkEffFor(+v); if (e != null) range.value = wbPos(e); }
-          else range.value = curved ? wbPos(v) : v;
+          range.value = curved ? wbPos(v) : v;
           bEl.textContent = curved ? fmtSliderValue(id, range.value) : range.value;   // let the input re-snap it to its step
               render();
           commitUndoCapture();
@@ -1762,7 +1761,7 @@ function tempTintGains() {
   const t = wbEff($('temp') ? $('temp').value : 0) / 100;   // build 190: the sliders hold a position on a curve
   const m = wbEff($('tint') ? $('tint').value : 0) / 100;
   ['temp', 'tint'].forEach(id => { const l = $('v_' + id), el = $(id); if (l && el && !l.dataset.editing) { const s = String(fmtSliderValue(id, el.value)); if (l.textContent !== s) l.textContent = s; } });
-  wbkSyncNote();
+  if (typeof rtwbSyncUi === 'function') rtwbSyncUi();   // build 197: the RAW white balance readout
   if (t === 0 && m === 0) return [1, 1, 1];
   /* Exponential rather than linear. The old form subtracted from 1, so blue
      hit zero at slider 357 and went negative past it — which is why the range

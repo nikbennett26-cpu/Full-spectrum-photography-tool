@@ -1,7 +1,12 @@
 /* irlab interface text in fr, keyed by the English (spaces collapsed). Used by i18n/tr.js. A string missing here
    stays in English; tools/i18n_check.py lists them. */
 irlabTr.add('fr', {
-"No Temperature setting puts this shot's white balance on the Kelvin scale (filtered shots are often too far from the colour of any real light), so it's shown as ±.": "Aucun réglage de température ne place la balance des blancs de cette photo sur l’échelle Kelvin (les prises filtrées sont souvent trop loin de la couleur de toute lumière réelle) : elle s’affiche donc en ±.",
+"This shot's own white balance is beyond this scale (filtered shots often are), so the sliders show the nearest point. Moving them leaves it; As shot brings it back.": "La balance des blancs propre à cette photo est hors de cette échelle (fréquent avec les prises filtrées) : les curseurs affichent le point le plus proche. Les déplacer la quitte ; Tel que pris la rétablit.",
+"Camera white balance (RAW)": "Balance des blancs de l’appareil (RAW)",
+"· set before the swap, like the camera's own setting": "· appliquée avant l’échange, comme le réglage de l’appareil",
+"As shot": "Tel que pris",
+"RawTherapee's model, 1500–60000 K.": "Modèle de RawTherapee, 1500–60000 K.",
+"Cast after the swap": "Dominante après l’échange",
 "Save look for camera (.IRL)": "Enregistrer le rendu pour l’appareil (.IRL)",
 "Saves this look as an .IRL file for a Canon camera running Magic Lantern with the irlut module: copy it to ML/LUTS on the card and the camera shows the look in LiveView, image review and playback. Only the preview changes; the camera still records normal RAW and JPEG files. Like a .cube it holds colour only.": "Enregistre ce rendu en fichier .IRL pour un Canon équipé de Magic Lantern et du module irlut : copiez-le dans ML/LUTS sur la carte et l’appareil affiche le rendu en LiveView, à la revue des images et en lecture. Seul l’aperçu change ; l’appareil enregistre toujours des fichiers RAW et JPEG normaux. Comme un .cube, il ne contient que la couleur.",
 "Save camera LUT as (8 letters max)": "Enregistrer la LUT de l’appareil sous (8 lettres max.)",

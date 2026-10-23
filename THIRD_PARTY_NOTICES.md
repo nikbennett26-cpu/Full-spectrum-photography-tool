@@ -42,6 +42,12 @@ minimal standalone equivalents.
 - AHD (Adaptive Homogeneity-Directed) — original method (C) Keigo Hirakawa
   & Thomas W. Parks, RawTherapee implementation by the RawTherapee
   development team.
+- White balance (build 197, `src/rt-wb.js`) — Temperature/Green to
+  multipliers and back (`temp2mulxyz`, `temp2mul`, `mul2temp`), the blackbody
+  and CIE daylight spectra, the 2° observer table (`rtengine/colortemp.cc`)
+  and `sRGBd65_xyz` (`rtengine/iccmatrices.h`), ported to JavaScript; the
+  camera step follows `RawImageSource::getImage`. Colour temperature code
+  (C) Jacques Desmis and the RawTherapee development team.
 - Licence: GPL-3.0-or-later.
 - Upstream: https://github.com/Beep6581/RawTherapee
 - Version: 5.11

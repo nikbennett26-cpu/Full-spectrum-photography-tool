@@ -31,7 +31,7 @@ def vlq(n):
 READABLE = '--readable' in sys.argv
 
 BUNDLES = [
-    ('editor.js', 'src', ['shaders', 'engine', 'wbk-table', 'wb-kelvin', 'i18n', 'view', 'controls', 'raw-preview', 'session', 'raw-process', 'ui',
+    ('editor.js', 'src', ['shaders', 'engine', 'wbk-table', 'wb-kelvin', 'rt-wb', 'raw-wb', 'i18n', 'view', 'controls', 'raw-preview', 'session', 'raw-process', 'ui',
                           'wb-lut', 'colour-mirror', 'export', 'dock', 'trichrome', 'share', 'filter-predict', 'ir-leak', 'dust', 'look-export', 'mode', 'undo-buttons']),
     # the self-test is only fetched when the page is opened with ?selftest (src/i18n.js), so most visits skip its 130 KB
     ('editor-selftest.js', 'src', ['selftest']),

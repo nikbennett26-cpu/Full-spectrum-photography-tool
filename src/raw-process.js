@@ -474,6 +474,10 @@ function rawClipFor(res) {
    white. Either way the before-swap grey picker still overrides it. */
 function rawWbMode() { try { return localStorage.getItem('irlab.rawWb') === 'auto' ? 'auto' : 'camera'; } catch (e) { return 'camera'; } }
 function rawWbCompute(res) {
+  if (typeof rawWbCustom !== 'undefined' && rawWbCustom) {   // build 197: Temperature + Green set on the RAW (src/raw-wb.js)
+    const g = rtwbGains(res, rawWbCustom.t, rawWbCustom.g);
+    if (g) return { wb: g, source: 'custom' };
+  }
   const cam = pp_wbGain(res.camMul), camOk = res.camMul && res.camMul.length >= 3 && res.camMul[0] > 0 && res.camMul[1] > 0 && res.camMul[2] > 0;
   if (rawWbMode() === 'camera' && camOk) return { wb: cam, source: 'camera' };
   const e = chengPCAGains(res.R, res.G, res.B);
@@ -481,7 +485,9 @@ function rawWbCompute(res) {
   return { wb: e, source: 'eigenvector' };
 }
 function rawWbFor(res) {   // the white balance rawEngineResultToCanvas applies, computed once per decode
-  if (!res.__wb) { const w = rawWbCompute(res); res.__wb = w.wb; res.__wbSrc = w.source; }
+  // the decode's own result is recomputed when the choice changes; copies made for noise reduction or export carry the
+  // white balance they were built with (no __wbKey) and keep it
+  if (!res.__wb || (res.__wbKey !== undefined && res.__wbKey !== rawWbKey())) { const w = rawWbCompute(res); res.__wb = w.wb; res.__wbSrc = w.source; res.__wbKey = rawWbKey(); }
   return res.__wb;
 }
 
@@ -778,7 +784,7 @@ async function loadFileInner(file) {
   /* A new photo: the previous RAW's cached sensor data must go. It used to stay, and every Undo, Reset or preset
      re-applied the camera-space swap from it, replacing a JPEG opened afterwards with the previous RAW (in the new
      photo's orientation). A RAW decoded below caches its own. */
-  rawEngine.lastResult = null; rawEngine.lastGen = -1; rawEngine.builtKey = null; rawEngine.fullKey = null; rawEngine.nrPrev = null; rawEngine.builtNr = '0|0|0'; rawEngine.autoWb = false;
+  rawEngine.lastResult = null; rawEngine.lastGen = -1; rawEngine.builtKey = null; rawWbCustom = null; rawWbDrag = null; rawWbBuilt = null; rawEngine.fullKey = null; rawEngine.nrPrev = null; rawEngine.builtNr = '0|0|0'; rawEngine.autoWb = false;
   document.body.classList.remove('rawOpen');
   LAST_LINEAR_FLOAT = null;   // belongs to the previous photo; a RAW decoded below parks its own
 
@@ -1027,7 +1033,7 @@ async function loadFileInner(file) {
              screen -- the same place this "best effort" work already ran,
              just actually producing what it claimed to. */
           const fullCv = rawEngineResultToCanvas(res, $('camSpaceSwap') && $('camSpaceSwap').checked, getCamSpaceSwapMatrix(), getCamSpaceSwapName(), true);
-          rawEngine.fullKey = camSwapKey(!!($('camSpaceSwap') && $('camSpaceSwap').checked), getCamSpaceSwapMatrix(), getCamSpaceSwapName());   // which swap the saved full-size copy has
+          rawEngine.fullKey = camSwapKey(!!($('camSpaceSwap') && $('camSpaceSwap').checked), getCamSpaceSwapMatrix(), getCamSpaceSwapName()) + '|' + rawWbKey();   // which swap the saved full-size copy has
           const fullBlob = await canvasToBlobSafe(fullCv, 'CR2 (' + decoderLabel + ', full-res)', 45000, true);
           if (stale()) return;
           origFile = fullBlob; origW = fullCv.width; origH = fullCv.height;
@@ -1157,7 +1163,7 @@ async function loadFileInner(file) {
             // with forceFullRes=true to get a genuine full-resolution
             // canvas instead of mislabelling the already-capped one.
             const fullCv = rawEngineResultToCanvas(res, $('camSpaceSwap') && $('camSpaceSwap').checked, getCamSpaceSwapMatrix(), getCamSpaceSwapName(), true);
-          rawEngine.fullKey = camSwapKey(!!($('camSpaceSwap') && $('camSpaceSwap').checked), getCamSpaceSwapMatrix(), getCamSpaceSwapName());   // which swap the saved full-size copy has
+          rawEngine.fullKey = camSwapKey(!!($('camSpaceSwap') && $('camSpaceSwap').checked), getCamSpaceSwapMatrix(), getCamSpaceSwapName()) + '|' + rawWbKey();   // which swap the saved full-size copy has
             const fullBlob = await canvasToBlobSafe(fullCv, ext + ' (' + (fullCv.__demosaicName || demosaicPrefName()) + ', full-res)', 45000, true);
             if (stale()) return;
             origFile = fullBlob; origW = fullCv.width; origH = fullCv.height;
@@ -1504,10 +1510,6 @@ $('btnSocialPreset').onclick = applySocialPreset;
         // build 190: Temperature and Tint sit on a curve; their buttons move the shown value by one, not the position
         const curved = typeof WB_CURVE !== 'undefined' && WB_CURVE[el.id];
         let v = curved ? wbPos(Math.round(wbEff(el.value)) + dir) : (+el.value || 0) + dir * step;
-        if (el.id === 'temp' && wbkActive()) {   // build 194: 50 K a press when the readout is in Kelvin
-          const e = wbkEffFor(wbkNowK(wbEff(el.value)) + dir * 50);
-          if (e != null) v = wbPos(e);
-        }
         if (curved && v === +el.value) v += dir;
         v = Math.max(+el.min, Math.min(+el.max, v));
         if (v === +el.value) return stop();

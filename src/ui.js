@@ -169,6 +169,7 @@ $('bReset').onclick = () => {
   if ($('cr2PreferPreviewEditor')) $('cr2PreferPreviewEditor').checked = false;
   if ($('camSpaceSwap')) $('camSpaceSwap').checked = false;
   if ($('camSpaceSwapEditor')) $('camSpaceSwapEditor').checked = false;
+  if (typeof rawWbCustom !== 'undefined') rawWbCustom = null;   // build 197: back to the file's own white balance
   /* Setting .checked in JS, unlike an actual click, does not fire a
      'change' event -- so the listener that keeps the displayed image in
      sync with this checkbox (reapplyCamSpaceSwap, wired to 'change')
@@ -1309,6 +1310,7 @@ function captureState() {
     // variable rather than an <input>, so it is not covered by the
     // HASH_SLIDERS sweep above and has to be captured explicitly
     vigCentre: [...vigCentre],
+    rawWb: rawWbCustom ? { t: rawWbCustom.t, g: rawWbCustom.g } : null,   // build 197: RAW Temperature + Green (src/raw-wb.js)
     indexMode: indexMode,
     lumPreserve: lumPreserve,
     filmOn: filmOn,
@@ -1455,6 +1457,7 @@ function applyState(snap) {
   if ($('camSpaceSwapEditor')) $('camSpaceSwapEditor').checked = !!snap.camSpaceSwap;
   if ($('camSpaceSwapPreset')) $('camSpaceSwapPreset').value = snap.camSpaceSwapPreset || '';
   if ($('camSpaceSwapPresetEditor')) $('camSpaceSwapPresetEditor').value = snap.camSpaceSwapPreset || '';
+  rawWbCustom = snap.rawWb && snap.rawWb.t > 0 && snap.rawWb.g > 0 ? { t: +snap.rawWb.t, g: +snap.rawWb.g } : null;   // build 197
   if (typeof reapplyCamSpaceSwap === 'function') reapplyCamSpaceSwap();
   if (typeof syncRangeToggle === 'function') syncRangeToggle();
   if (typeof syncEpdLabels === 'function') syncEpdLabels();
@@ -1491,7 +1494,7 @@ function stateKey(s) {
     m: s.m, mOff: s.mOff, s: s.s, preWB: s.preWB, postWB: s.postWB, bands: s.bands,
     activePreset: s.activePreset, curves: s.curves, crop: s.crop, masks: s.masks,
     preWBM: s.preWBM, postWBM: s.postWBM, wbMethod: s.wbMethod,
-    hueSpace: s.hueSpace, swapSpace: s.swapSpace, vigCentre: s.vigCentre, indexMode: s.indexMode,
+    hueSpace: s.hueSpace, swapSpace: s.swapSpace, vigCentre: s.vigCentre, indexMode: s.indexMode, rawWb: s.rawWb || null,
     lumPreserve: s.lumPreserve, filmOn: s.filmOn,
     /* Anything captureState stores MUST be compared here too. This function
        is what decides whether a change happened at all — if a field is

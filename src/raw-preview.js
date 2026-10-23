@@ -1261,6 +1261,7 @@ function rawEngineResultToCanvas(res, doCamSpaceSwap, doCamSpaceSwapMatrix, doCa
      neutral" when it actually means "gave up". */
   // build 192: the camera's own white balance by default, the estimate on request (rawWbCompute in raw-process.js)
   const wb = rawWbFor(res);   // the same numbers every time for this decode, including the noise-reduced preview
+  if (!forceFullRes && typeof rawEngine !== 'undefined') { rawWbBuilt = wb.slice(); rawEngine.builtWbKey = rawWbKey(); }   // build 197: what the drag preview measures from
   const wbSource = res.__wbSrc || 'camera';
   // build 192: where each channel really clips in this file (rawClipFor); Infinity when it never does
   const clipL = res.__clip || rawClipFor(res), icR = 1 / clipL[0], icG = 1 / clipL[1], icB = 1 / clipL[2];

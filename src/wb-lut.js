@@ -876,7 +876,9 @@ function reapplyCamSpaceSwap() {
   const checked = !!($('camSpaceSwap') && $('camSpaceSwap').checked);
   const swapSame = camSwapKey(checked, getCamSpaceSwapMatrix(), getCamSpaceSwapName()) === rawEngine.builtKey;
   if (typeof syncRawHlButtons === 'function') syncRawHlButtons();
-  if (swapSame && rawNrKey() === (rawEngine.builtNr || '0|0|0')) return;
+  const wbSame = rawWbKey() === rawEngine.builtWbKey;   // build 197: the RAW white balance is baked in too
+  if (swapSame && wbSame && rawNrKey() === (rawEngine.builtNr || '0|0|0')) return;
+  if (!wbSame) rawEngine.nrPrev = null;
   if (rawNrKey() !== '0|0|0') { rebuildRawPreview(); return; }   // the noise-reduced path, which handles the swap too
   rawNrRun++;   // cancels any noise reduction still running: it is off now
   const cv2 = rawEngineResultToCanvas(rawEngine.lastResult, checked, getCamSpaceSwapMatrix(), getCamSpaceSwapName());
@@ -925,7 +927,7 @@ async function rebuildRawPreview() {
   const swapSame = camSwapKey(checked, getCamSpaceSwapMatrix(), getCamSpaceSwapName()) === rawEngine.builtKey;
   let res = base;
   if (rawProcActive(v)) {
-    if (!(rawEngine.nrPrev && rawEngine.nrPrev.key === key && rawEngine.nrPrev.gen === token)) {
+    if (!(rawEngine.nrPrev && rawEngine.nrPrev.key === key && rawEngine.nrPrev.gen === token && rawEngine.nrPrev.wbKey === rawWbKey())) {
       setRawNrBusy(true, (v.L > 0 || v.C > 0) ? 'Reducing noise\u2026' : 'Rebuilding highlights\u2026');
       const ds = rawWorkingPlanes(base), wb = rawWbFor(base);
       let out;
@@ -937,7 +939,7 @@ async function rebuildRawPreview() {
         return;
       }
       if (my !== rawNrRun || token !== loadToken || rawEngine.lastResult !== base) return;   // superseded
-      rawEngine.nrPrev = { key: key, gen: token, res: Object.assign({}, base, { R: out.R, G: out.G, B: out.B, width: ds.width, height: ds.height, __wb: wb, __ds: null, __hlDone: !!out.hlDone, __clip: rawClipFor(base) }) };
+      rawEngine.nrPrev = { key: key, wbKey: rawWbKey(), gen: token, res: Object.assign({}, base, { R: out.R, G: out.G, B: out.B, width: ds.width, height: ds.height, __wb: wb, __ds: null, __hlDone: !!out.hlDone, __clip: rawClipFor(base) }) };
     }
     res = rawEngine.nrPrev.res;
   }

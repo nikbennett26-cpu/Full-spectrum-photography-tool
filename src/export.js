@@ -192,7 +192,7 @@ async function rawFullResSource() {
     const nr = rawNrValues();
     // the common case: the swap has not changed since the RAW loaded, so the saved full-size copy, with its parked
     // high-precision twin, is already right, and rebuilding it from the sensor data would only cost seconds
-    if (!rawProcActive(nr) && rawEngine.fullKey && camSwapKey(checked, getCamSpaceSwapMatrix(), getCamSpaceSwapName()) === rawEngine.fullKey &&
+    if (!rawProcActive(nr) && rawEngine.fullKey && camSwapKey(checked, getCamSpaceSwapMatrix(), getCamSpaceSwapName()) + '|' + rawWbKey() === rawEngine.fullKey &&
         LAST_LINEAR_FLOAT && LAST_LINEAR_FLOAT.gen === loadToken && LAST_LINEAR_FLOAT.w === origW && LAST_LINEAR_FLOAT.h === origH) return null;
     let src = rawEngine.lastResult;
     if (rawProcActive(nr)) {   // the same highlight rebuild and noise reduction, at full resolution this time

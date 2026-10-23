@@ -612,7 +612,7 @@ const qs = sel => sel[0] === '.' || sel[0] === '[' ? document.querySelector(sel)
 /* Reset one panel: take what Reset all would give, but keep it only for the settings this panel owns. */
 const PANEL_FIELDS = [
   [['m', 'mOff'], 'm00'], [['lumPreserve'], 'lumPreserve'], [['lumaW'], 'lumaR'], [['filmOn'], 'filmOn'], [['filmTone'], 'chkFilmTone'],
-  [['indexMode'], '.idxBtn'], [['activePreset'], '.pb'], [['bands'], 'bandList'], [['preWB', 'postWB', 'preWBM', 'postWBM', 'wbMethod'], 'wbPreStatus'],
+  [['indexMode'], '.idxBtn'], [['activePreset'], '.pb'], [['bands'], 'bandList'], [['preWB', 'postWB', 'preWBM', 'postWBM', 'wbMethod'], 'wbPreStatus'], [['rawWb'], '#rawWbBox'],
   [['curves'], 'curveCv'], [['masks'], 'maskDetails'], [['swapSpace'], 'swapSpace'], [['hueSpace'], '.hueSpaceBtn'], [['lut', 'preLUT', 'lutStatusText'], 'lutStatus'],
   [['vigCentre'], 'vigCentreNote'], [['camMatch'], 'camMatch'], [['camSpaceSwap', 'camSpaceSwapPreset'], 'camSpaceSwap'],
 ];
@@ -707,9 +707,9 @@ function currentParams() {
     matrix: getMatrixUI(),
     mOffset: getMatrixOffsetUI(),
     bands: targetedBands,
-    preWB: preWB,
+    preWB: rtwbPreWB(preWB),   // build 197: a RAW white balance mid-change, previewed as gains until the rebuild lands
     postWB: postWB,
-    preWBM: preWBM,
+    preWBM: rtwbPreWBM(preWBM),
     postWBM: postWBM,
     // only applied when the toggle is on AND a fit exists for this file
     camCoef: (camCoef && camMatchOn) ? camCoef : null,
@@ -795,7 +795,7 @@ function currentParams() {
 // The overlay is a diagnostic, never an output. Every export path renders
 // through this instead of currentParams() so a forgotten checkbox can't
 // silently write red hatching into someone's TIFF.
-function exportParams() { return Object.assign(currentParams(), { clipView: false, gamutDrag: false, dither: false, dustView: false, maskView: -1, bandPreview: null }); }
+function exportParams() { return Object.assign(currentParams(), { preWB: preWB, preWBM: preWBM, clipView: false, gamutDrag: false, dither: false, dustView: false, maskView: -1, bandPreview: null }); }
 function lutMixUI() { const e = $('lutMix'); return (e ? (+e.value || 0) : 100) / 100; }
 
 /* Keeps every slider's fill in sync with its value. The native accent-color
@@ -940,7 +940,6 @@ function wbPos(eff) {
   return Math.round(600 * Math.max(-1, Math.min(1, u)));
 }
 function fmtSliderValue(id, v) {
-  if (id === 'temp' && wbkActive()) return wbkFmt(wbkKelvinAt(wbEff(v)));   // build 194: Kelvin on a RAW (src/wb-kelvin.js)
   if (WB_CURVE[id]) return Math.round(wbEff(v));
   return id === 'sharpenRadius' ? (v / 10).toFixed(1) : v;
 }
