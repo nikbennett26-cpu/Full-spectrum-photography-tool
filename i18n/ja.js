@@ -1,7 +1,7 @@
 /* irlab interface text in ja, keyed by the English (spaces collapsed). Used by i18n/tr.js. A string missing here
    stays in English; tools/i18n_check.py lists them. */
 irlabTr.add('ja', {
-"This shot's white balance isn't the colour of a real light, as filtered shots usually aren't, so Temperature is shown as ± rather than Kelvin.": "この写真のホワイトバランスは実在する光の色ではありません（フィルター撮影ではよくあります）。そのため色温度はケルビンではなく±で表示します。",
+"No Temperature setting puts this shot's white balance on the Kelvin scale (filtered shots are often too far from the colour of any real light), so it's shown as ±.": "どの色温度設定でもこの写真のホワイトバランスはケルビンの範囲に入りません（フィルター撮影は実在する光の色から大きく外れることが多いため）。そのため±で表示します。",
 "Save look for camera (.IRL)": "カメラ用にルックを保存 (.IRL)",
 "Saves this look as an .IRL file for a Canon camera running Magic Lantern with the irlut module: copy it to ML/LUTS on the card and the camera shows the look in LiveView, image review and playback. Only the preview changes; the camera still records normal RAW and JPEG files. Like a .cube it holds colour only.": "このルックを、Magic Lantern と irlut モジュールを入れた Canon カメラ用の .IRL ファイルとして保存します。カードの ML/LUTS にコピーすると、ライブビュー、撮影直後の確認、再生でこのルックが表示されます。変わるのはプレビューだけで、カメラは通常の RAW と JPEG を記録します。.cube と同じく色だけを保持します。",
 "Save camera LUT as (8 letters max)": "カメラ用 LUT の保存名（8文字まで）",

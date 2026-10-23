@@ -615,7 +615,7 @@ $('btnRotR').onclick = () => applyRotation(1);
       const kel = id === 'temp' && wbkActive();   // build 194: typed in Kelvin on a RAW
       inp.min = kel ? WBK_MIN : curved ? -600 : range.min; inp.max = kel ? WBK_MAX : curved ? 600 : range.max;
       inp.step = kel ? 50 : curved ? 1 : (range.step || 'any');
-      inp.value = kel ? Math.round(wbkKelvinAt(wbEff(range.value)) / 50) * 50 : curved ? Math.round(wbEff(range.value)) : range.value;
+      inp.value = kel ? wbkNowK(wbEff(range.value)) : curved ? Math.round(wbEff(range.value)) : range.value;
       bEl.textContent = '';
       bEl.appendChild(inp);
       inp.focus(); inp.select();

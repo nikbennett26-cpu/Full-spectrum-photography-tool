@@ -1505,7 +1505,7 @@ $('btnSocialPreset').onclick = applySocialPreset;
         const curved = typeof WB_CURVE !== 'undefined' && WB_CURVE[el.id];
         let v = curved ? wbPos(Math.round(wbEff(el.value)) + dir) : (+el.value || 0) + dir * step;
         if (el.id === 'temp' && wbkActive()) {   // build 194: 50 K a press when the readout is in Kelvin
-          const e = wbkEffFor(Math.round(wbkKelvinAt(wbEff(el.value)) / 50) * 50 + dir * 50);
+          const e = wbkEffFor(wbkNowK(wbEff(el.value)) + dir * 50);
           if (e != null) v = wbPos(e);
         }
         if (curved && v === +el.value) v += dir;

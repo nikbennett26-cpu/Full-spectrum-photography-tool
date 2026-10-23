@@ -1,7 +1,7 @@
 /* irlab interface text in de, keyed by the English (spaces collapsed). Used by i18n/tr.js. A string missing here
    stays in English; tools/i18n_check.py lists them. */
 irlabTr.add('de', {
-"This shot's white balance isn't the colour of a real light, as filtered shots usually aren't, so Temperature is shown as ± rather than Kelvin.": "Der Weißabgleich dieser Aufnahme entspricht keiner echten Lichtfarbe, wie meist bei Filteraufnahmen, daher zeigt Temperatur ± statt Kelvin.",
+"No Temperature setting puts this shot's white balance on the Kelvin scale (filtered shots are often too far from the colour of any real light), so it's shown as ±.": "Keine Temperatureinstellung bringt den Weißabgleich dieser Aufnahme auf die Kelvin-Skala (Filteraufnahmen liegen oft zu weit von der Farbe jedes echten Lichts entfernt), daher wird er als ± angezeigt.",
 "Save look for camera (.IRL)": "Look für die Kamera speichern (.IRL)",
 "Saves this look as an .IRL file for a Canon camera running Magic Lantern with the irlut module: copy it to ML/LUTS on the card and the camera shows the look in LiveView, image review and playback. Only the preview changes; the camera still records normal RAW and JPEG files. Like a .cube it holds colour only.": "Speichert diesen Look als .IRL-Datei für eine Canon mit Magic Lantern und dem Modul irlut: in ML/LUTS auf die Karte kopieren, dann zeigt die Kamera den Look in LiveView, in der Bildkontrolle und bei der Wiedergabe. Nur die Vorschau ändert sich; die Kamera speichert weiterhin normale RAW- und JPEG-Dateien. Wie eine .cube enthält sie nur die Farbe.",
 "Save camera LUT as (8 letters max)": "Kamera-LUT speichern als (max. 8 Zeichen)",

@@ -13,11 +13,10 @@
    own tags, a maker note -- nothing matches and the slider simply keeps its +/- numbers.
 
    Filtered shots: a UV or infrared white balance set off grass or a grey card is usually not the colour of any real
-   light (this file's is 0.21 off the blackbody line, where Lightroom's whole tint range is about 0.05), so a Kelvin
-   figure for it would be invented. When the shot's own white balance is that far off, the slider stays +/- and a short
-   note says why. */
+   light (this file's is 0.21 off the blackbody line, where Lightroom's whole tint range is about 0.05). Lightroom pins
+   those at one end of its scale; see wbkActive for when this gives Kelvin and when it keeps +/-. */
 const WBK_XYZ_RGB = [0.412453, 0.357580, 0.180423, 0.212671, 0.715160, 0.072169, 0.019334, 0.119193, 0.950227];
-const WBK_MIN = 1500, WBK_MAX = 25000, WBK_DUV = 0.05;
+const WBK_MIN = 2000, WBK_MAX = 50000;   // Lightroom's range
 
 function wbkInv3(m) {
   const [a, b, c, d, e, f, g, h, i] = m;
@@ -63,26 +62,35 @@ function wbkCamera(res) {
   return res.__wbk;
 }
 
-/* Planckian locus in CIE 1960 uv (Krystek 1985; good from 1000 K to well past 15000 K). */
-function wbkPlanckUV(T) {
-  return [(0.860117757 + 1.54118254e-4 * T + 1.28641212e-7 * T * T) / (1 + 8.42420235e-4 * T + 7.08145163e-7 * T * T),
-          (0.317398726 + 4.22806245e-5 * T + 4.20481691e-8 * T * T) / (1 - 2.89741816e-5 * T + 1.61456053e-7 * T * T)];
-}
-/* Correlated colour temperature and Duv of an XYZ colour: the nearest point of the locus, searched in mireds. */
+/* Robertson (1968): correlated colour temperature from CIE 1960 uv by its isotemperature lines, exact to the infinite
+   end of the locus, which a fitted curve is not (Krystek's, used first, drifts above about 15000 K and Lightroom's range
+   runs to 50000 K). Rows: mired, u, v, slope of the isotemperature line. Covers 1667 K upward; anything warmer is
+   reported as 1667 K and clamps to the 2000 K floor anyway. */
+const WBK_ROB = [[0,.18006,.26352,-.24341],[10,.18066,.26589,-.25479],[20,.18133,.26846,-.26876],[30,.18208,.27119,-.28539],
+  [40,.18293,.27407,-.30470],[50,.18388,.27709,-.32675],[60,.18494,.28021,-.35156],[70,.18611,.28342,-.37915],
+  [80,.18740,.28668,-.40955],[90,.18880,.28997,-.44278],[100,.19032,.29326,-.47888],[125,.19462,.30141,-.58204],
+  [150,.19962,.30921,-.70471],[175,.20525,.31647,-.84901],[200,.21142,.32312,-1.0182],[225,.21807,.32909,-1.2168],
+  [250,.22511,.33439,-1.4512],[275,.23247,.33904,-1.7298],[300,.24010,.34308,-2.0637],[325,.24792,.34655,-2.4681],
+  [350,.25591,.34951,-2.9641],[375,.26400,.35200,-3.5814],[400,.27218,.35407,-4.3633],[425,.28039,.35577,-5.3762],
+  [450,.28863,.35714,-6.7262],[475,.29685,.35823,-8.5955],[500,.30505,.35907,-11.324],[525,.31320,.35968,-15.628],
+  [550,.32129,.36011,-23.325],[575,.32931,.36038,-40.770],[600,.33724,.36051,-116.45]];
 function wbkCCT(XYZ) {
   const d = XYZ[0] + 15 * XYZ[1] + 3 * XYZ[2];
   if (!(d > 0) || !(XYZ[1] > 0)) return null;
   const u = 4 * XYZ[0] / d, v = 6 * XYZ[1] / d;
-  const dist = mr => { const p = wbkPlanckUV(1e6 / mr); return (p[0] - u) * (p[0] - u) + (p[1] - v) * (p[1] - v); };
-  let best = 40, bd = Infinity;
-  for (let mr = 30; mr <= 1100; mr += 5) { const e = dist(mr); if (e < bd) { bd = e; best = mr; } }
-  let lo = Math.max(20, best - 5), hi = best + 5;   // golden-section polish
-  for (let k = 0; k < 40; k++) {
-    const a = lo + (hi - lo) * 0.382, b = lo + (hi - lo) * 0.618;
-    if (dist(a) < dist(b)) hi = b; else lo = a;
+  // signed distance from each isotemperature line; the temperature is where it changes sign
+  const dist = r => ((v - r[2]) - r[3] * (u - r[1])) / Math.sqrt(1 + r[3] * r[3]);
+  let prev = dist(WBK_ROB[0]);
+  if (prev < 0) return { T: Infinity };   // beyond the blue end of the locus
+  for (let i = 1; i < WBK_ROB.length; i++) {
+    const di = dist(WBK_ROB[i]);
+    if (di < 0) {
+      const f = prev / (prev - di), mr = WBK_ROB[i - 1][0] + f * (WBK_ROB[i][0] - WBK_ROB[i - 1][0]);
+      return { T: mr > 0 ? 1e6 / mr : Infinity };
+    }
+    prev = di;
   }
-  const mr = (lo + hi) / 2, T = 1e6 / mr, p = wbkPlanckUV(T);
-  return { T, duv: Math.sqrt(dist(mr)) * (v >= p[1] ? 1 : -1) };
+  return { T: 1e6 / 600 };
 }
 
 /* The RAW result behind the picture on screen, if the picture on screen is a RAW. */
@@ -106,13 +114,22 @@ function wbkLightFor(tEff, mEff) {
   return wbkCCT(wbkMulV(cam.xyzCam, camLight));
 }
 
-/* Kelvin applies when the shot's own white balance (slider at 0) is a real light. */
+/* Kelvin whenever some Temperature setting puts the picture's light inside Lightroom's 2000-50000 K. A filtered shot's
+   white balance can sit so far off the colour of any real light that the readout jumps from "<2000" straight to ">50000"
+   with nothing between (IMG_4028, a UV frame, does it between -200 and -150); a number that can only ever say that is no
+   use, so those keep +/- and a note says why. */
 function wbkActive() {
-  const b = wbkLightFor(0, 0);
-  return !!(b && b.T >= WBK_MIN && b.T <= WBK_MAX && Math.abs(b.duv) <= WBK_DUV);
+  if (!wbkLightFor(0, 0)) return false;
+  for (let t = -600; t <= 600; t += 25) { const T = wbkKelvinAt(t); if (T >= WBK_MIN && T <= WBK_MAX) return true; }
+  return false;
 }
 function wbkTintNow() { return wbEff($('tint') ? $('tint').value : 0); }
-function wbkKelvinAt(tEff) { const l = wbkLightFor(tEff, wbkTintNow()); return l ? l.T : null; }
+function wbkKelvinAt(tEff) {
+  const l = wbkLightFor(tEff, wbkTintNow());
+  if (l) return l.T;
+  // a push so far that the light would need negative amounts of a primary: off one end, and the slider says which
+  return wbkCamera(wbkRes()) ? (tEff >= 0 ? Infinity : 0) : null;
+}
 function wbkFmt(T) {
   if (T == null) return '';
   if (T < WBK_MIN) return '<' + WBK_MIN + ' K';
@@ -129,9 +146,11 @@ function wbkEffFor(K) {
   for (let k = 0; k < 40; k++) { const mid = (lo + hi) / 2; if (wbkKelvinAt(mid) < K) lo = mid; else hi = mid; }
   return (lo + hi) / 2;
 }
-/* Shows or hides the "outside the Kelvin scale" note: only for a RAW whose camera we know but whose light is off it. */
+/* The readout clamped to Lightroom's range and rounded to 50 K: where the buttons and the typed box start from. */
+function wbkNowK(tEff) { const T = wbkKelvinAt(tEff); return Math.round(Math.min(WBK_MAX, Math.max(WBK_MIN, T == null ? 5000 : T)) / 50) * 50; }
+/* Shows the "not on the Kelvin scale" note: a RAW whose camera we know but whose light never reaches the scale. */
 function wbkSyncNote() {
   const n = $('wbkNote'); if (!n) return;
-  const res = wbkRes(), off = !!(res && wbkCamera(res) && !wbkActive());
+  const off = !!(wbkCamera(wbkRes()) && !wbkActive());
   if (n.hidden === off) n.hidden = !off;
 }
