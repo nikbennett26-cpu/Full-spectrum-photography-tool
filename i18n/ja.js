@@ -1,6 +1,9 @@
 /* irlab interface text in ja, keyed by the English (spaces collapsed). Used by i18n/tr.js. A string missing here
    stays in English; tools/i18n_check.py lists them. */
 irlabTr.add('ja', {
+"Save look for camera (.IRL)": "カメラ用にルックを保存 (.IRL)",
+"Saves this look as an .IRL file for a Canon camera running Magic Lantern with the irlut module: copy it to ML/LUTS on the card and the camera shows the look in LiveView, image review and playback. Only the preview changes; the camera still records normal RAW and JPEG files. Like a .cube it holds colour only.": "このルックを、Magic Lantern と irlut モジュールを入れた Canon カメラ用の .IRL ファイルとして保存します。カードの ML/LUTS にコピーすると、ライブビュー、撮影直後の確認、再生でこのルックが表示されます。変わるのはプレビューだけで、カメラは通常の RAW と JPEG を記録します。.cube と同じく色だけを保持します。",
+"Save camera LUT as (8 letters max)": "カメラ用 LUT の保存名（8文字まで）",
 "(JPEG and PNG)": "（JPEGとPNG）",
 "(best for Lightroom)": "（Lightroomに最適）",
 "(re-decodes the open RAW)": "（開いているRAWを再デコード）",

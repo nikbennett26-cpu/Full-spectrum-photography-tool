@@ -1631,6 +1631,21 @@ $('btnExportLUT').addEventListener('click', async () => {
     toast('LUT saved — ' + chosen);
   } catch (e) { toast('LUT export failed: ' + e.message, true); }
 });
+$('btnExportIRL').addEventListener('click', async () => {
+  if (!loadedImage) { toast('Load an image first'); return; }
+  try {
+    const { bytes, name } = bakeIrlForCamera();
+    let chosen = await askText('Save camera LUT as (8 letters max)', name, 'Save');
+    if (chosen === null) return;               // cancelled
+    chosen = irlCameraName(chosen.trim() || name);
+    const blob = new Blob([bytes], { type: 'application/octet-stream' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a'); a.href = url; a.download = chosen;
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    setTimeout(() => URL.revokeObjectURL(url), 4000);
+    toast('Camera LUT saved — ' + chosen + '. Copy it to ML/LUTS on the card.');
+  } catch (e) { toast('Camera LUT export failed: ' + e.message, true); }
+});
 /* ---------- RAW decode progress (build 156) ----------
    Decoding a RAW can take many seconds on a phone, and a toast that vanished after two seconds left a frozen-looking
    screen. This stays up for the whole decode, names the stage (1 Reading file, 2 Decoding sensor, 3 Building preview)

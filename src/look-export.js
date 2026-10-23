@@ -151,3 +151,39 @@ function stackMetaRefresh() {
   const box = $('exportStackMeta'); if (box) box.disabled = !names.length;
 }
 stackMetaRefresh();
+
+/* ---------- Look for the camera: .IRL (build 190) ----------
+   The same GPU-baked table as the .cube, written in the small binary form the irlut Magic Lantern module reads, so a
+   Canon running it shows this look in LiveView, image review and playback. 8-byte header ("IRL1", cube size N, two
+   zero bytes reserved, one zero flags byte), then N^3 RGB triplets as bytes, red changing fastest (.cube order).
+   The camera applies it to its own display image, which is close to a camera JPEG: the input irlab's .cube expects.
+   Camera cards use 8.3 names, so the file is named in capitals, at most 8 characters, .IRL. */
+const IRL_MAX_N = 33;
+
+function cubeTextToIrl(text) {
+  let n = 0; const vals = [];
+  for (const raw of text.split(/\r?\n/)) {
+    const line = raw.trim();
+    if (!line || line[0] === '#') continue;
+    if (/^LUT_3D_SIZE/i.test(line)) { n = parseInt(line.split(/\s+/)[1], 10); continue; }
+    if (/^[-+.\d]/.test(line)) { const p = line.split(/\s+/); if (p.length >= 3) vals.push(+p[0], +p[1], +p[2]); }
+  }
+  if (!n || n > IRL_MAX_N || vals.length !== n * n * n * 3) throw new Error('unexpected table size');
+  const out = new Uint8Array(8 + vals.length);
+  out.set([0x49, 0x52, 0x4c, 0x31], 0);   // "IRL1"
+  out[4] = n;
+  for (let i = 0; i < vals.length; i++) out[8 + i] = Math.max(0, Math.min(255, Math.round(vals[i] * 255)));
+  return out;
+}
+
+function irlCameraName(name) {
+  const base = String(name || 'LOOK').replace(/\.[^.]*$/, '').replace(/^irlab_/i, '')
+    .toUpperCase().replace(/[^A-Z0-9_]/g, '').slice(0, 8);
+  return (base || 'LOOK') + '.IRL';
+}
+
+/* Returns { bytes, name }. */
+function bakeIrlForCamera() {
+  const baked = bakeCubeGPU(33) || buildCubeLUT(32);
+  return { bytes: cubeTextToIrl(baked.text), name: irlCameraName(lookNameNow()) };
+}
