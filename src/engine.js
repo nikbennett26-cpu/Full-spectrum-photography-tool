@@ -488,7 +488,9 @@ class WebGLEngine {
     const gl = this.gl;
     let irMask = false; const mk = p && p.masks;   // build 165: the foliage (IR) mask reads its index from this guide too
     if (mk && mk.n) for (let i = 0; i < mk.n; i++) if (mk.info[i * 4] > 3.5) irMask = true;
-    if (!this.isWebGL2 || !((p && p.bands && p.bands.length) || irMask) || this._sgFail) return false;
+    // build 186: a wide-space swap takes its colour correction from the guide too (see the swap stage in the shader)
+    const wideSwap = p && p.swapSpace != null && [1, 2, 3].includes(+p.swapSpace) && p.matrix && p.matrix.some((v, i) => Math.abs(v - [1, 0, 0, 0, 1, 0, 0, 0, 1][i]) > 1e-6);
+    if (!this.isWebGL2 || !((p && p.bands && p.bands.length) || irMask || wideSwap) || this._sgFail) return false;
     try {
       const W = this.canvas.width, H = this.canvas.height, w = Math.max(16, Math.ceil(W / 2)), hh = Math.max(16, Math.ceil(H / 2));
       if (!this._sg || this._sg.w !== w || this._sg.h !== hh) {

@@ -2494,20 +2494,7 @@ uniform float u_skyL;          // the typical lightness of the sky; anything cle
        original, un-widened behaviour for anyone who wants the swap to
        match exactly what the raw matrix numbers say with no gamut-space
        side effect at all. */
-    if (u_swapSpace == 1) {
-      rgb = SRGB_TO_REC2020 * rgb;
-      rgb = u_matrix * rgb;
-      rgb += u_mOffset;
-      rgb = REC2020_TO_SRGB * rgb;
-    } else if (u_swapSpace == 0) {
-      rgb = u_matrix * rgb;
-      rgb += u_mOffset;
-    } else if (u_swapSpace == 3) {
-      rgb = u_swapT * rgb;
-      rgb = u_matrix * rgb;
-      rgb += u_mOffset;
-      rgb = u_swapTi * rgb;
-    } else if (u_swapSpace == 4) {
+    if (u_swapSpace == 4) {
       /* Encoded: the matrix runs on the gamma-encoded values, which is what Photoshop's Channel Mixer does (and
          Lightroom-era channel-swap actions were written for). The same nine numbers give a different, and for
          recipes taken from such actions the intended, colour than in linear light. Clamped to the 0..1 box
@@ -2515,11 +2502,31 @@ uniform float u_skyL;          // the typical lightness of the sky; anything cle
       vec3 enc = linearToSrgb(max(rgb, vec3(0.0)));
       enc = clamp(u_matrix * enc + u_mOffset, vec3(0.0), vec3(1.0));
       rgb = srgbToLinear(enc);
-    } else {
-      rgb = SRGB_TO_PROPHOTO * rgb;
+    } else if (u_swapSpace == 0) {
       rgb = u_matrix * rgb;
       rgb += u_mOffset;
-      rgb = PROPHOTO_TO_SRGB * rgb;
+    } else {
+      /* Build 186: wide-space swaps without the extra noise. Swapping in a wider space is, seen from sRGB, a mix that
+         pulls channels against each other: R<->B in ProPhoto makes red = 1.7 blue - 0.5 green - 0.2 red, which raises
+         red's noise about 1.8x and drew most of it from blue, usually the weakest channel on a converted camera. A
+         Photoshop channel swap only moves channels, so its noise stays as it was; side by side on the same frame irlab's
+         sky was visibly noisier. The wide space's colour is a smooth correction on top of a plain swap, so now the plain
+         swap runs on the pixel and the correction is taken from an edge-aware local average of the photo (the source
+         guide, the same one the colour bands use): colours land where the wide space puts them, noise passes through
+         the swap as Photoshop's does. The average is brought to this stage by scaling this pixel by smoothed/own source,
+         which follows exposure and white balance exactly, since both are per-channel gains. */
+      vec3 plainS = u_matrix * rgb + u_mOffset;
+      vec3 xs = rgb;
+      if (u_srcGuideOn > 0.5) {
+        vec3 sL = max(srcLin(v_texCoord), vec3(0.0));
+        vec3 sS = max(oklabToLinear(srcGuideLocal(linearToOklab(sL))), vec3(0.0));
+        xs = rgb * (sS + 0.002) / (sL + 0.002);
+      }
+      vec3 wideS;
+      if (u_swapSpace == 1) wideS = REC2020_TO_SRGB * (u_matrix * (SRGB_TO_REC2020 * xs) + u_mOffset);
+      else if (u_swapSpace == 3) wideS = u_swapTi * (u_matrix * (u_swapT * xs) + u_mOffset);
+      else wideS = PROPHOTO_TO_SRGB * (u_matrix * (SRGB_TO_PROPHOTO * xs) + u_mOffset);
+      rgb = plainS + (wideS - (u_matrix * xs + u_mOffset));
     }
     if (u_lumPreserve == 1) rgb = preserveLuma(rgb, yPreSwap);   // step 4
     /* Bring the swap back into gamut here, rather than letting the values
