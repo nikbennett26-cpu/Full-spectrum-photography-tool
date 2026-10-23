@@ -1011,5 +1011,13 @@ irlabTr.add('zh', {
 "Orton glow": "Orton 柔光",
 "dreamy soft glow": "梦幻般的柔光",
 "Softness": "柔和度",
-"A blurred, brightened copy laid over the sharp photo. Lovely on IR foliage; it deepens shadows too.": "在清晰的照片上叠加一层模糊、提亮的副本。用在红外植物上很好看，也会加深阴影。"
+"A blurred, brightened copy laid over the sharp photo. Lovely on IR foliage; it deepens shadows too.": "在清晰的照片上叠加一层模糊、提亮的副本。用在红外植物上很好看，也会加深阴影。",
+"Dust removal": "除尘",
+"heal sensor spots": "修复传感器污点",
+"Add spots": "添加污点",
+"Done adding": "添加完成",
+"Show dust": "显示灰尘",
+"Spot size": "污点大小",
+"Clear all spots": "清除所有污点",
+"Tap Add spots, then tap each speck. Show dust makes them easy to find.": "点“添加污点”，再点每个灰尘点。“显示灰尘”能让它们更容易找到。"
 });

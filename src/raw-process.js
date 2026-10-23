@@ -1266,7 +1266,7 @@ async function loadFileInner(file) {
 
     try {
       if (!engine) engine = new WebGLEngine($('preview'));
-      engine.setImage(rawCanvas);
+      engine.setImage(dustPrepare(rawCanvas));
       engine.setLUT(currentLUT); engine.setLUTPre(preLUTUser || decodeFilmLUT());
       updatePrecisionNote();
       buildChannelStrip();

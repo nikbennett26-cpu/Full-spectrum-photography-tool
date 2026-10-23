@@ -25,7 +25,7 @@ const LOOK_SPATIAL_OFF = {
 };
 /* Measured (build 158): with every slider pushed to 80% in turn, the GPU-baked table reproduced the render within 1 level
    (mean) for all but dehaze (28) and the HSL magenta and purple bands (about 6, from their edge-aware smoothing). */
-const LOOK_SPATIAL_NAMES = 'noise reduction, sharpening, clarity, dehaze, Orton glow, local tone mapping, masks, chromatic aberration and hotspot correction; HSL can differ slightly at colour edges';
+const LOOK_SPATIAL_NAMES = 'dust removal, noise reduction, sharpening, clarity, dehaze, Orton glow, local tone mapping, masks, chromatic aberration and hotspot correction; HSL can differ slightly at colour edges';
 
 function lookNameNow() {
   return ((document.querySelector('.pb.on b') || {}).textContent || 'Custom').trim();

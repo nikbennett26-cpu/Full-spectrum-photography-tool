@@ -98,6 +98,7 @@ const FS_SOURCE = `
   uniform float u_cmykWarn;   // 0 = off; >0 also flags colours ink cannot reach
   uniform float u_gamutDrag;  // 0 = off; >0 hatches only the gamut-mapped (amber) pixels
   uniform float u_dither;     // 1 = triangular dither on the 8-bit output (preview only)
+  uniform float u_dustView;   // build 185: show dust (fine detail of the source, contrast boosted)
 uniform float u_deband;     // 0..1: how hard to smooth banding in the 8-bit source; 0 = off
 uniform float u_debandRad;  // reach, in source texels, at full strength
   uniform float u_caR;        // lateral CA: radial scale of red relative to green
@@ -1883,6 +1884,14 @@ uniform float u_skyL;          // the typical lightness of the sky; anything cle
 
   void main() {
     if (u_srcProbe > 0.5) { gl_FragColor = vec4(clamp(srcEnc(v_texCoord), 0.0, 1.0), 1.0); return; }   // build 164: source guide pass
+    /* Build 185, Show dust (like Lightroom's Visualise spots): the source's brightness minus its own local average, hugely
+       amplified, as grey. Smooth sky goes flat mid-grey and every speck stands out as a dark ring or dot. */
+    if (u_dustView > 0.5) {
+      float dL = dot(srcEnc(v_texCoord), LUMW), dA = 0.0;
+      for (int k = 0; k < 12; k++) { float t = float(k) * 0.5236; dA += dot(srcEnc(v_texCoord + vec2(cos(t), sin(t)) * 5.0 * u_texelSize), LUMW); }
+      dA /= 12.0;
+      gl_FragColor = vec4(vec3(clamp(0.5 + (dL - dA) * 10.0, 0.0, 1.0)), 1.0); return;
+    }
     vec4 texColor = texture2D(u_image, u_prepped > 0.5 ? prepUV(v_texCoord) : v_texCoord);
     if (u_prepped < 0.5) {
     /* Lateral chromatic aberration: red and blue are magnified slightly

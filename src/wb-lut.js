@@ -901,7 +901,7 @@ function installRawPreview(cv2, coloursChanged) {
   loadedImage = rawCanvas;
   rawPixels = rawCtx.getImageData(0, 0, rawCanvas.width, rawCanvas.height).data;
   contrastPivot = medianLuminance(rawPixels);
-  if (engine) engine.setImage(rawCanvas);
+  if (engine) engine.setImage(dustPrepare(rawCanvas));
   /* The Original side of Before/After is drawn from rawCanvas, and nothing redrew it when the decode was rebuilt (swap box
      unticked by Reset all, noise reduction, highlight rebuild): the left half kept showing the previous decode while the
      right half showed the new one, which read as the app having wrecked the picture. */

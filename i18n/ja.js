@@ -1011,5 +1011,13 @@ irlabTr.add('ja', {
 "Orton glow": "オートン効果",
 "dreamy soft glow": "夢のような柔らかい光",
 "Softness": "柔らかさ",
-"A blurred, brightened copy laid over the sharp photo. Lovely on IR foliage; it deepens shadows too.": "ぼかして明るくしたコピーをシャープな写真に重ねます。IRの葉に最適で、影も深くなります。"
+"A blurred, brightened copy laid over the sharp photo. Lovely on IR foliage; it deepens shadows too.": "ぼかして明るくしたコピーをシャープな写真に重ねます。IRの葉に最適で、影も深くなります。",
+"Dust removal": "ゴミ除去",
+"heal sensor spots": "センサーのゴミを修復",
+"Add spots": "スポットを追加",
+"Done adding": "追加を終了",
+"Show dust": "ゴミを表示",
+"Spot size": "スポットの大きさ",
+"Clear all spots": "すべてのスポットを消去",
+"Tap Add spots, then tap each speck. Show dust makes them easy to find.": "「スポットを追加」をタップしてから、各ゴミをタップします。「ゴミを表示」で見つけやすくなります。"
 });

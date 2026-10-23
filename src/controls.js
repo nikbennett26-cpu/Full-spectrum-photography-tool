@@ -500,7 +500,7 @@ const EPD_ITERATES = 5, EPD_WORK_EDGE = 1024;
 function epdStrength() { const e = $('epdAmt'); return e ? (+e.value || 0) / 100 : 0; }
 function epdKey(P) {
   return JSON.stringify([P.matrix, P.mOffset, P.preWB, P.postWB, P.preWBM, P.postWBM, P.camCoef, P.wbMethod, P.lumPreserve, P.filmOn, P.lumaW, P.tempTint,
-    P.noiseReduction, P.noiseColour, P.deband, P.sharpen, P.clarity, P.dehaze, P.orton, P.ortonSoft, P.swapSpace, P.swapWiden, P.indexMode, P.hotspot, P.hotSize, P.caR, P.caB,
+    P.noiseReduction, P.noiseColour, P.deband, P.sharpen, P.clarity, P.dehaze, (typeof dustSpots !== "undefined" ? JSON.stringify(dustSpots) : ""), P.swapSpace, P.swapWiden, P.indexMode, P.hotspot, P.hotSize, P.caR, P.caB,
     P.calRH, P.calGH, P.calBH, P.calRS, P.calGS, P.calBS, P.calST, P.bands, P.hueSpace,
     $('epdEdge') ? $('epdEdge').value : '', $('epdScale') ? $('epdScale').value : '',
     // raising exposure above what the base was measured at may clip more; lowering it never does
@@ -763,6 +763,7 @@ function currentParams() {
     cmykWarn: !!($('chkCmyk') && $('chkCmyk').checked),
     gamutDrag: gamutDragActive(),
     dither: true,
+    dustView: typeof dustShow !== 'undefined' && dustShow,   // build 185, preview only
     masks: maskUniformData(), maskView: maskViewIndex(),
     curveOn: !curveAllIdentity(), curveKey: getCurveLut().key, curveLut: getCurveLut().lut,
     caR: ((+($('caR') && $('caR').value) || 0) / 100) * 0.005,
@@ -783,7 +784,7 @@ function currentParams() {
 // The overlay is a diagnostic, never an output. Every export path renders
 // through this instead of currentParams() so a forgotten checkbox can't
 // silently write red hatching into someone's TIFF.
-function exportParams() { return Object.assign(currentParams(), { clipView: false, gamutDrag: false, dither: false, maskView: -1, bandPreview: null }); }
+function exportParams() { return Object.assign(currentParams(), { clipView: false, gamutDrag: false, dither: false, dustView: false, maskView: -1, bandPreview: null }); }
 function lutMixUI() { const e = $('lutMix'); return (e ? (+e.value || 0) : 100) / 100; }
 
 /* Keeps every slider's fill in sync with its value. The native accent-color

@@ -78,7 +78,7 @@ class WebGLEngine {
         this.contextLost = false;
         // everything the context was holding has to go back up: the image
         // itself, then both LUT slots, then a redraw
-        if (typeof rawCanvas !== 'undefined' && rawCanvas) this.setImage(rawCanvas);
+        if (typeof rawCanvas !== 'undefined' && rawCanvas) this.setImage(typeof dustPrepare === 'function' ? dustPrepare(rawCanvas) : rawCanvas);
         if (typeof currentLUT !== 'undefined') this.setLUT(currentLUT);
         if (typeof decodeFilmLUT === 'function') this.setLUTPre(decodeFilmLUT());
         if (typeof render === 'function') render();
@@ -176,7 +176,7 @@ class WebGLEngine {
       clipView: gl.getUniformLocation(this.program, 'u_clipView'),
       cmykWarn: gl.getUniformLocation(this.program, 'u_cmykWarn'),
       gamutDrag: gl.getUniformLocation(this.program, 'u_gamutDrag'),
-      dither: gl.getUniformLocation(this.program, 'u_dither'),
+      dither: gl.getUniformLocation(this.program, 'u_dither'), dustView: gl.getUniformLocation(this.program, 'u_dustView'),
       deband: gl.getUniformLocation(this.program, 'u_deband'), debandRad: gl.getUniformLocation(this.program, 'u_debandRad'),
       caR: gl.getUniformLocation(this.program, 'u_caR'),
       caB: gl.getUniformLocation(this.program, 'u_caB'),
@@ -859,6 +859,7 @@ class WebGLEngine {
     gl.uniform1f(this.uLocs.cmykWarn, p.cmykWarn ? 1 : 0);
     gl.uniform1f(this.uLocs.gamutDrag, p.gamutDrag ? 1 : 0);
     gl.uniform1f(this.uLocs.dither, (p.dither === false || this._noDither) ? 0 : 1);
+    gl.uniform1f(this.uLocs.dustView, p.dustView && !p.__srcProbe && !p.__ortonProbe && !this._noDither ? 1 : 0);
     gl.uniform1f(this.uLocs.caR, p.caR || 0);
     gl.uniform1f(this.uLocs.caB, p.caB || 0);
     gl.uniform3f(this.uLocs.hotspot, p.hotspot ? p.hotspot[0] : 0, p.hotspot ? p.hotspot[1] : 0, p.hotspot ? p.hotspot[2] : 0);

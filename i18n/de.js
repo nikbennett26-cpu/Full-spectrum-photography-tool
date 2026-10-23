@@ -1011,5 +1011,13 @@ irlabTr.add('de', {
 "Orton glow": "Orton-Glühen",
 "dreamy soft glow": "verträumtes, weiches Leuchten",
 "Softness": "Weichheit",
-"A blurred, brightened copy laid over the sharp photo. Lovely on IR foliage; it deepens shadows too.": "Eine weichgezeichnete, aufgehellte Kopie über dem scharfen Foto. Schön bei IR-Vegetation; sie vertieft auch die Schatten."
+"A blurred, brightened copy laid over the sharp photo. Lovely on IR foliage; it deepens shadows too.": "Eine weichgezeichnete, aufgehellte Kopie über dem scharfen Foto. Schön bei IR-Vegetation; sie vertieft auch die Schatten.",
+"Dust removal": "Staubentfernung",
+"heal sensor spots": "Sensorflecken heilen",
+"Add spots": "Flecken hinzufügen",
+"Done adding": "Fertig",
+"Show dust": "Staub zeigen",
+"Spot size": "Fleckgröße",
+"Clear all spots": "Alle Flecken entfernen",
+"Tap Add spots, then tap each speck. Show dust makes them easy to find.": "Tippe auf Flecken hinzufügen, dann auf jedes Staubkorn. Staub zeigen macht sie leicht sichtbar."
 });

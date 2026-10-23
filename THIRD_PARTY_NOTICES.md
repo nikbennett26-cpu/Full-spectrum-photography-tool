@@ -56,6 +56,16 @@ only the surrounding glue changed for a standalone build.
 - Licence: GPL-3.0-or-later.
 - Upstream: https://github.com/darktable-org/darktable
 
+## darktable (healing, as used by Dust removal in the editor)
+
+`src/dust.js` ports the healing solver from darktable's `src/common/heal.c` (red-black Gauss-Seidel with successive
+over-relaxation; same over-relaxation factor and convergence test), (C) 2017-2024 darktable developers, after
+T. Georgiev, "Photoshop Healing Brush: a Tool for Seamless Cloning". The choice between heal and clone follows the two
+modes of darktable's retouch module. The automatic source search and the rest of the tool are irlab's own.
+
+- Licence: GPL-3.0-or-later.
+- Upstream: https://github.com/darktable-org/darktable
+
 ## Licence-compatibility summary
 
 | Component    | Licence          | Compatible with the AGPL-3.0 whole app |

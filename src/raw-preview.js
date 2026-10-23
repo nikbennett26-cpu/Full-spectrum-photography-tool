@@ -502,6 +502,7 @@ function carryLinearFloat(destCv, srcImg, o) {
 }
 
 function drawOriented(cv, img, w, h, o) {
+  if (typeof dustUnheal === 'function') dustUnheal(cv, false);   // build 185: never redraw from (or carry) healed pixels
   const swap = o >= 5 && o <= 8;
   cv.width = swap ? h : w;
   cv.height = swap ? w : h;

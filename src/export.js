@@ -239,7 +239,7 @@ async function renderAtOriginalRes() {
 
   const exportCanvas = document.createElement('canvas');
   const exportEngine = new WebGLEngine(exportCanvas);
-  exportEngine.setImage(oc);
+  exportEngine.setImage(dustPrepare(oc));   // build 185: dust spots heal at full resolution too
   // currentParams() rather than a hand-rolled duplicate — the old copy here
   // had silently omitted tempTint, so temperature and tint were visible in
   // the preview and absent from every full-resolution export.

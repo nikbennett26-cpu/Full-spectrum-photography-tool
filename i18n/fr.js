@@ -1011,5 +1011,13 @@ irlabTr.add('fr', {
 "Orton glow": "Lueur Orton",
 "dreamy soft glow": "lueur douce et onirique",
 "Softness": "Douceur",
-"A blurred, brightened copy laid over the sharp photo. Lovely on IR foliage; it deepens shadows too.": "Une copie floue et éclaircie posée sur la photo nette. Superbe sur le feuillage IR ; elle approfondit aussi les ombres."
+"A blurred, brightened copy laid over the sharp photo. Lovely on IR foliage; it deepens shadows too.": "Une copie floue et éclaircie posée sur la photo nette. Superbe sur le feuillage IR ; elle approfondit aussi les ombres.",
+"Dust removal": "Suppression des poussières",
+"heal sensor spots": "corriger les taches du capteur",
+"Add spots": "Ajouter des taches",
+"Done adding": "Terminé",
+"Show dust": "Afficher la poussière",
+"Spot size": "Taille de la tache",
+"Clear all spots": "Retirer toutes les taches",
+"Tap Add spots, then tap each speck. Show dust makes them easy to find.": "Touche Ajouter des taches, puis chaque poussière. Afficher la poussière les rend faciles à repérer."
 });

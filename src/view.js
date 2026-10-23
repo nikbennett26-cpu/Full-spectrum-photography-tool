@@ -541,6 +541,7 @@ $('chkCmyk').addEventListener('change', () => { if ($('chkCmyk').checked && !$('
 function applyRotation(dir) {
   if (!sourceImg || !loadedImage) return;
   srcOrient = rotateOrient(srcOrient, dir);
+  if (typeof dustRotate === 'function') dustRotate(dir);   // build 185: spots turn with the photo
   const iw = sourceImg.naturalWidth || sourceImg.width;
   const ih = sourceImg.naturalHeight || sourceImg.height;
   const scale = Math.min(1, WORKING_MAX_DIM / Math.max(iw, ih));
@@ -548,7 +549,7 @@ function applyRotation(dir) {
   carryLinearFloat(rawCanvas, sourceImg, srcOrient);   // keep the raw headroom attached
   rawPixels = rawCtx.getImageData(0, 0, rawCanvas.width, rawCanvas.height).data;
   loadedImage = rawCanvas;
-  if (engine) engine.setImage(rawCanvas);
+  if (engine) engine.setImage(dustPrepare(rawCanvas));
   buildChannelStrip();
   setupCompareOverlay();
   updateExportResOptions();
