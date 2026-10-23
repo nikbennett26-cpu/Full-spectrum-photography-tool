@@ -19,13 +19,13 @@
       the look and the build. Single exports and batch both do it; the checkbox in Export turns it off. */
 
 const LOOK_SPATIAL_OFF = {
-  noiseReduction: 0, noiseColour: 0, sharpen: 0, clarity: 0, dehaze: 0, caR: 0, caB: 0, hotspot: [0, 0, 0],
+  noiseReduction: 0, noiseColour: 0, sharpen: 0, clarity: 0, dehaze: 0, orton: 0, caR: 0, caB: 0, hotspot: [0, 0, 0],
   epd: null, eir: null, deband: 0, indexMode: 0, vigAmt: 0, dither: false, clipView: false, gamutDrag: false,
   maskView: -1, bandPreview: null
 };
 /* Measured (build 158): with every slider pushed to 80% in turn, the GPU-baked table reproduced the render within 1 level
    (mean) for all but dehaze (28) and the HSL magenta and purple bands (about 6, from their edge-aware smoothing). */
-const LOOK_SPATIAL_NAMES = 'noise reduction, sharpening, clarity, dehaze, local tone mapping, masks, chromatic aberration and hotspot correction; HSL can differ slightly at colour edges';
+const LOOK_SPATIAL_NAMES = 'noise reduction, sharpening, clarity, dehaze, Orton glow, local tone mapping, masks, chromatic aberration and hotspot correction; HSL can differ slightly at colour edges';
 
 function lookNameNow() {
   return ((document.querySelector('.pb.on b') || {}).textContent || 'Custom').trim();

@@ -216,6 +216,8 @@ class WebGLEngine {
       irSub: gl.getUniformLocation(this.program, 'u_irSub'), irSubOn: gl.getUniformLocation(this.program, 'u_irSubOn'),
       srcGuide: gl.getUniformLocation(this.program, 'u_srcGuide'), srcGuideTexel: gl.getUniformLocation(this.program, 'u_srcGuideTexel'),
       srcGuideOn: gl.getUniformLocation(this.program, 'u_srcGuideOn'), srcProbe: gl.getUniformLocation(this.program, 'u_srcProbe'),
+      ortonOn: gl.getUniformLocation(this.program, 'u_ortonOn'), ortonProbe: gl.getUniformLocation(this.program, 'u_ortonProbe'), orton: gl.getUniformLocation(this.program, 'u_orton'),
+      ortonBias: gl.getUniformLocation(this.program, 'u_ortonBias'), ortonTex: gl.getUniformLocation(this.program, 'u_ortonTex'), ortonInv: gl.getUniformLocation(this.program, 'u_ortonInv'), ortonTexel: gl.getUniformLocation(this.program, 'u_ortonTexel'),
       bandPC: gl.getUniformLocation(this.program, 'u_bandPC'),
       bandDL: gl.getUniformLocation(this.program, 'u_bandDL'),
       preWB: gl.getUniformLocation(this.program, 'u_preWB'),
@@ -510,6 +512,36 @@ class WebGLEngine {
     } catch (err) { this._sgFail = true; gl.bindFramebuffer(gl.FRAMEBUFFER, null); console.warn('source guide disabled:', err && err.message); return false; }
   }
 
+  /* Build 184: the Orton pass. Renders the whole pipeline once more, stopping at the Orton point, into a half-size
+     mipmapped texture the main pass then blurs from. Only runs while the Orton slider is above zero. */
+  _ortonPass(p) {
+    const gl = this.gl;
+    if (!this.isWebGL2 || !p || !((p.orton || 0) > 0) || this._ogFail) return false;
+    try {
+      const W = this.canvas.width, H = this.canvas.height, w = Math.max(16, Math.ceil(W / 2)), hh = Math.max(16, Math.ceil(H / 2));
+      if (!this._og || this._og.w !== w || this._og.h !== hh) {
+        if (this._og) { gl.deleteFramebuffer(this._og.fb); gl.deleteTexture(this._og.tex); this._og = null; }
+        const tex = gl.createTexture(); gl.activeTexture(gl.TEXTURE12); gl.bindTexture(gl.TEXTURE_2D, tex);
+        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, w, hh, 0, gl.RGBA, gl.UNSIGNED_BYTE, null);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR); gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE); gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+        const fb = gl.createFramebuffer(); gl.bindFramebuffer(gl.FRAMEBUFFER, fb); gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, tex, 0);
+        if (gl.checkFramebufferStatus(gl.FRAMEBUFFER) !== gl.FRAMEBUFFER_COMPLETE) { gl.bindFramebuffer(gl.FRAMEBUFFER, null); gl.deleteFramebuffer(fb); gl.deleteTexture(tex); throw new Error('orton framebuffer incomplete'); }
+        gl.activeTexture(gl.TEXTURE0);
+        this._og = { w: w, h: hh, tex: tex, fb: fb };
+      }
+      gl.bindFramebuffer(gl.FRAMEBUFFER, this._og.fb); gl.viewport(0, 0, this._og.w, this._og.h);
+      gl.activeTexture(gl.TEXTURE12); gl.bindTexture(gl.TEXTURE_2D, null); gl.activeTexture(gl.TEXTURE0);   // never sample the target while drawing into it
+      this.setUniforms(Object.assign({}, p, { __ortonProbe: true, dither: false, clipView: false, cmykWarn: false }));
+      // the probe pass writes into a half-size target, so map fragment coordinates as if it were full size
+      gl.uniform2f(this.uLocs.ortonInv, 1 / this._og.w, 1 / this._og.h);
+      gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+      gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+      gl.activeTexture(gl.TEXTURE12); gl.bindTexture(gl.TEXTURE_2D, this._og.tex); gl.generateMipmap(gl.TEXTURE_2D); gl.activeTexture(gl.TEXTURE0);
+      return true;
+    } catch (err) { this._ogFail = true; gl.bindFramebuffer(gl.FRAMEBUFFER, null); console.warn('orton disabled:', err && err.message); return false; }
+  }
+
   _maskGuidePass(p) {
     const gl = this.gl, mk = p && p.masks;
     if (!this.isWebGL2 || !mk || !mk.n || this._mgFail) return false;
@@ -530,6 +562,7 @@ class WebGLEngine {
     if (this._prepPass(p)) p = Object.assign({}, p, { __prepped: true });
     if (this._bandGuidePass(p)) p = Object.assign({}, p, { __bandGuide: true }); if (this._srcGuidePass(p)) p = Object.assign({}, p, { __srcGuide: true });
     if (this._maskGuidePass(p)) p = Object.assign({}, p, { __maskGuide: true });
+    if (this._ortonPass(p)) p = Object.assign({}, p, { __ortonReady: true });
     gl.bindFramebuffer(gl.FRAMEBUFFER, null);
     gl.viewport(0, 0, this.canvas.width, this.canvas.height);
     this.setUniforms(p);
@@ -605,6 +638,7 @@ class WebGLEngine {
       if (this._prepPass(p)) p = Object.assign({}, p, { __prepped: true });
       if (this._bandGuidePass(p)) p = Object.assign({}, p, { __bandGuide: true }); if (this._srcGuidePass(p)) p = Object.assign({}, p, { __srcGuide: true });
       if (this._maskGuidePass(p)) p = Object.assign({}, p, { __maskGuide: true });
+      if (this._ortonPass(p)) p = Object.assign({}, p, { __ortonReady: true });
       gl.bindFramebuffer(gl.FRAMEBUFFER, this._lo.fb);
       gl.viewport(0, 0, w, h);
       this.setUniforms(p);
@@ -735,6 +769,18 @@ class WebGLEngine {
     gl.uniform1f(this.uLocs.shW, p.shW === undefined ? 1.0 : p.shW);
     gl.uniform1f(this.uLocs.bandProbe, p.__bandProbe ? 1 : 0);
     gl.uniform1f(this.uLocs.srcProbe, p.__srcProbe ? 1 : 0);
+    {   // build 184: Orton effect
+      const on = !!(p.__ortonReady || p.__ortonProbe) && (p.orton || 0) > 0;
+      gl.uniform1f(this.uLocs.ortonOn, on ? 1 : 0); gl.uniform1f(this.uLocs.ortonProbe, p.__ortonProbe ? 1 : 0);
+      gl.uniform1f(this.uLocs.orton, Math.min(1, Math.max(0, p.orton || 0)));
+      const W = this.canvas.width, H = this.canvas.height;
+      gl.uniform2f(this.uLocs.ortonInv, 1 / W, 1 / H);
+      if (this._og) gl.uniform2f(this.uLocs.ortonTexel, 1 / this._og.w, 1 / this._og.h);
+      // softness 0..1 -> blur radius 0.4% .. 5% of the short edge, expressed as a mip level of the half-size texture
+      const rad = (0.004 + 0.046 * Math.pow(Math.min(1, Math.max(0, p.ortonSoft == null ? 0.5 : p.ortonSoft)), 1.3)) * Math.min(W, H) / 2;
+      gl.uniform1f(this.uLocs.ortonBias, Math.max(0, Math.log2(Math.max(1, rad / 2))));
+      gl.uniform1i(this.uLocs.ortonTex, 12);
+    }
     gl.uniform1f(this.uLocs.irSubOn, p.irSub ? 1 : 0);
     gl.uniformMatrix3fv(this.uLocs.irSub, false, p.irSub || new Float32Array([1, 0, 0, 0, 1, 0, 0, 0, 1]));
     { const useS = !!(p.__srcGuide && this._sg);
@@ -981,6 +1027,7 @@ class WebGLEngine {
       if (this._prepPass(p)) p = Object.assign({}, p, { __prepped: true });
       if (this._bandGuidePass(p)) p = Object.assign({}, p, { __bandGuide: true }); if (this._srcGuidePass(p)) p = Object.assign({}, p, { __srcGuide: true });
       if (this._maskGuidePass(p)) p = Object.assign({}, p, { __maskGuide: true });
+      if (this._ortonPass(p)) p = Object.assign({}, p, { __ortonReady: true });
       tex = gl.createTexture();
       gl.activeTexture(gl.TEXTURE0);
       gl.bindTexture(gl.TEXTURE_2D, tex);

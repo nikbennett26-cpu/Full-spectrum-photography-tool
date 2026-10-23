@@ -579,6 +579,10 @@ uniform sampler2D u_epdBase;   // the smooth, edge-stopping base layer of the lo
      came out as salt-and-pepper speckle, where a global Exposure change on the same sky stays smooth. */
   uniform sampler2D u_srcGuide; uniform vec2 u_srcGuideTexel; uniform float u_srcGuideOn;
   uniform float u_srcProbe;   // 1 = write the source colour and stop (the source guide pass)
+  /* Build 184: Orton effect. A first pass writes the finished picture, screened onto itself (brighter), into a half-size
+     mipmapped texture; the main pass blurs that and multiplies it onto the screened sharp picture, the way Michael
+     Orton sandwiched a sharp and an out-of-focus overexposed slide. */
+  uniform float u_ortonOn, u_ortonProbe, u_orton, u_ortonBias; uniform sampler2D u_ortonTex; uniform vec2 u_ortonInv, u_ortonTexel;
 
   float hueDegOf(vec2 ab) {
     float d = degrees(atan(ab.y, ab.x));
@@ -2989,6 +2993,28 @@ uniform float u_skyL;          // the typical lightness of the sky; anything cle
          Aerochrome-style infrared frame is already red, so the overlay was indistinguishable from the picture. A matte
          reads the same on any colour. */
       if (u_maskView > -0.5) { float Lm = dot(clamp(srgb, 0.0, 1.0), LUMW); srgb = mix(vec3(0.04 + 0.22 * Lm), srgb, g_maskShown); }
+    }
+
+    if (u_ortonOn > 0.5) {
+      vec3 ox = clamp(srgb, 0.0, 1.0);
+      vec3 oScr = 1.0 - (1.0 - ox) * (1.0 - ox);   // the picture screened onto itself: Orton's overexposed copy
+      if (u_ortonProbe > 0.5) { gl_FragColor = vec4(oScr, 1.0); return; }
+      vec2 ouv = gl_FragCoord.xy * u_ortonInv;
+      vec2 ost = exp2(u_ortonBias) * u_ortonTexel;
+      vec3 ob = vec3(0.0); float ow = 0.0;
+      for (int j = -2; j <= 2; j++) {
+        for (int i = -2; i <= 2; i++) {
+          float w = exp(-float(i * i + j * j) / 4.5);
+          ob += texture2D(u_ortonTex, ouv + vec2(float(i), float(j)) * ost, u_ortonBias + 1.0).rgb * w; ow += w;
+        }
+      }
+      ob /= ow;
+      /* Multiplying darkens: on a dark infrared frame the classic sandwich buried the shadows. Put the brightness back at
+         the blur's scale, comparing the blurred picture (recovered from the blurred screened copy) with the blurred
+         result, so the glow and the softened contrast stay and the overall level does not drop. */
+      vec3 xb = 1.0 - sqrt(max(1.0 - ob, 0.0));
+      float lk = clamp(dot(xb, LUMW) / max(dot(ob * ob, LUMW), 1e-4), 1.0, 3.0);
+      srgb = mix(srgb, min(oScr * ob * lk, vec3(1.0)), u_orton);   // multiply: the blur's glow over the sharp copy's detail
     }
 
     /* Clipping / gamut overlay ("blinkies").

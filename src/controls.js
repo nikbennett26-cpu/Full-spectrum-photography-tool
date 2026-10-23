@@ -500,7 +500,7 @@ const EPD_ITERATES = 5, EPD_WORK_EDGE = 1024;
 function epdStrength() { const e = $('epdAmt'); return e ? (+e.value || 0) / 100 : 0; }
 function epdKey(P) {
   return JSON.stringify([P.matrix, P.mOffset, P.preWB, P.postWB, P.preWBM, P.postWBM, P.camCoef, P.wbMethod, P.lumPreserve, P.filmOn, P.lumaW, P.tempTint,
-    P.noiseReduction, P.noiseColour, P.deband, P.sharpen, P.clarity, P.dehaze, P.swapSpace, P.swapWiden, P.indexMode, P.hotspot, P.hotSize, P.caR, P.caB,
+    P.noiseReduction, P.noiseColour, P.deband, P.sharpen, P.clarity, P.dehaze, P.orton, P.ortonSoft, P.swapSpace, P.swapWiden, P.indexMode, P.hotspot, P.hotSize, P.caR, P.caB,
     P.calRH, P.calGH, P.calBH, P.calRS, P.calGS, P.calBS, P.calST, P.bands, P.hueSpace,
     $('epdEdge') ? $('epdEdge').value : '', $('epdScale') ? $('epdScale').value : '',
     // raising exposure above what the base was measured at may clip more; lowering it never does
@@ -733,6 +733,8 @@ function currentParams() {
     sharpenMask: +$('sharpenMask').value,
     clarity: +$('clarity').value || 0,
     dehaze:    +($('dehaze')    ? $('dehaze').value    : 0) || 0,
+    orton:     ($('orton') ? +$('orton').value : 0) / 100,                       // build 184
+    ortonSoft: ($('ortonSoft') ? +$('ortonSoft').value : 50) / 100,
     calRH:     +($('calRH')    ? $('calRH').value    : 0) || 0,
     calGH:     +($('calGH')    ? $('calGH').value    : 0) || 0,
     calBH:     +($('calBH')    ? $('calBH').value    : 0) || 0,
@@ -915,7 +917,7 @@ function updateImplicitStamp() {
 function fmtSliderValue(id, v) {
   return id === 'sharpenRadius' ? (v / 10).toFixed(1) : v;
 }
-['hotR','hotG','hotB','hotSize','caR','caB','swapWiden','bright','hue','sat','vibrance','filmToneAmt','blackPt','whitePt','noiseReduction','clarity','dehaze','sharpen','sharpenRadius','sharpenMask','noiseColour','temp','tint','satPreserve','contrast','highlights','shadows','vigAmt','vigFall','vigSpread','lumaR','lumaG','lumaB','brightness','calRH','calGH','calBH','calRS','calGS','calBS','calST','hiRange','shRange','rawNrL','rawNrC','hslH0','hslH1','hslH2','hslH3','hslH4','hslH5','hslH6','hslH7','hslS0','hslS1','hslS2','hslS3','hslS4','hslS5','hslS6','hslS7','hslL0','hslL1','hslL2','hslL3','hslL4','hslL5','hslL6','hslL7'].forEach(id => {
+['orton','ortonSoft','hotR','hotG','hotB','hotSize','caR','caB','swapWiden','bright','hue','sat','vibrance','filmToneAmt','blackPt','whitePt','noiseReduction','clarity','dehaze','sharpen','sharpenRadius','sharpenMask','noiseColour','temp','tint','satPreserve','contrast','highlights','shadows','vigAmt','vigFall','vigSpread','lumaR','lumaG','lumaB','brightness','calRH','calGH','calBH','calRS','calGS','calBS','calST','hiRange','shRange','rawNrL','rawNrC','hslH0','hslH1','hslH2','hslH3','hslH4','hslH5','hslH6','hslH7','hslS0','hslS1','hslS2','hslS3','hslS4','hslS5','hslS6','hslS7','hslL0','hslL1','hslL2','hslL3','hslL4','hslL5','hslL6','hslL7'].forEach(id => {
   $(id).addEventListener('input', () => { const el = $(id); $('v_' + id).textContent = fmtSliderValue(id, el.value); syncSliderFill(el); render(true); });
 });
 MCELLS.forEach(id => $(id).addEventListener('input', () => { render(); mxSync(); }));

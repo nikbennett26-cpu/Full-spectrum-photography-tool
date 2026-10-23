@@ -1007,5 +1007,9 @@ irlabTr.add('zh', {
 "MidOpt TB550/660/850 triple bandpass + Lee 192 Flesh Pink + GRB3: a digital Aerochrome stack that needs no infrared subtraction after the swap": "MidOpt TB550/660/850 三带通 + Lee 192 Flesh Pink + GRB3：一种数字 Aerochrome 组合，交换通道后无需扣除红外",
 "Tell it which filters are on your lens. It works out what each colour channel of your photo really recorded (UV, visible light or infrared), checks that against the photo, and suggests a swap. Nothing changes on your photo until you use the buttons at the end.": "告诉它你镜头上装了哪些滤镜。它会算出照片每个颜色通道实际记录的是什么（紫外、可见光或红外），与照片核对，并建议一种通道交换。在你使用最后的按钮之前，照片不会改变。",
 "Add the filters on your lens to see what each channel records and which swap to use.": "添加镜头上的滤镜，看看每个通道记录了什么、该用哪种交换。",
-"Search filters: R72, ZWB2…": "搜索滤镜：R72、ZWB2…"
+"Search filters: R72, ZWB2…": "搜索滤镜：R72、ZWB2…",
+"Orton glow": "Orton 柔光",
+"dreamy soft glow": "梦幻般的柔光",
+"Softness": "柔和度",
+"A blurred, brightened copy laid over the sharp photo. Lovely on IR foliage; it deepens shadows too.": "在清晰的照片上叠加一层模糊、提亮的副本。用在红外植物上很好看，也会加深阴影。"
 });

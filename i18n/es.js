@@ -1007,5 +1007,9 @@ irlabTr.add('es', {
 "MidOpt TB550/660/850 triple bandpass + Lee 192 Flesh Pink + GRB3: a digital Aerochrome stack that needs no infrared subtraction after the swap": "Triple paso banda MidOpt TB550/660/850 + Lee 192 Flesh Pink + GRB3: una pila Aerochrome digital que no necesita restar infrarrojo tras el intercambio",
 "Tell it which filters are on your lens. It works out what each colour channel of your photo really recorded (UV, visible light or infrared), checks that against the photo, and suggests a swap. Nothing changes on your photo until you use the buttons at the end.": "Indica qué filtros llevas en el objetivo. Calcula qué registró realmente cada canal de color de tu foto (UV, luz visible o infrarrojo), lo comprueba con la foto y sugiere un intercambio. Tu foto no cambia hasta que uses los botones del final.",
 "Add the filters on your lens to see what each channel records and which swap to use.": "Añade los filtros de tu objetivo para ver qué registra cada canal y qué intercambio usar.",
-"Search filters: R72, ZWB2…": "Buscar filtros: R72, ZWB2…"
+"Search filters: R72, ZWB2…": "Buscar filtros: R72, ZWB2…",
+"Orton glow": "Brillo Orton",
+"dreamy soft glow": "brillo suave y onírico",
+"Softness": "Suavidad",
+"A blurred, brightened copy laid over the sharp photo. Lovely on IR foliage; it deepens shadows too.": "Una copia desenfocada y aclarada sobre la foto nítida. Queda muy bien en el follaje IR; también oscurece las sombras."
 });
