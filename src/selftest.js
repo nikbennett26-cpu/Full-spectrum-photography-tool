@@ -103,7 +103,7 @@ function stApply(spec) {
   masks = (spec.masks || []).map(m => Object.assign(maskNew(m.type), m));
   maskSel = masks.length ? 0 : -1;
   if (spec.space !== undefined) { const ss = $('swapSpace'); ss.value = spec.space; ss.dispatchEvent(new Event('change', { bubbles: true })); }
-  for (const id in (spec.s || {})) { const el = $(id); if (el) { el.value = spec.s[id]; el.dispatchEvent(new Event('input', { bubbles: true })); } }
+  for (const id in (spec.s || {})) { const el = $(id); if (el) { el.value = WB_CURVE[id] ? wbPos(spec.s[id]) : spec.s[id]; el.dispatchEvent(new Event('input', { bubbles: true })); } }
 }
 function stPixels() {
   engine.render(Object.assign(currentParams(), { dither: false, clipView: false, gamutDrag: false, maskView: -1 }));

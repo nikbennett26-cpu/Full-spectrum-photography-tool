@@ -103,7 +103,7 @@ function lookDefault(id) {
   const el = $(id); return el ? +el.defaultValue || 0 : 0;
 }
 function packLook() {
-  const L = captureLookForUserPreset(), o = { v: 1 };
+  const L = captureLookForUserPreset(), o = { v: 1, u: 4 };   // u: slider-weight version (4 = Temperature/Tint on their curve, build 190)
   const ident = L.m.every((v, i) => v === ((i % 4 === 0) ? 100 : 0));
   if (!ident) o.m = L.m;
   if (L.mOff.some(v => v)) o.o = L.mOff;
@@ -121,7 +121,7 @@ function unpackLook(o) {
   const sliders = {};
   USER_PRESET_SLIDER_IDS.forEach(id => { if ($(id)) sliders[id] = (o.s && id in o.s) ? +o.s[id] : lookDefault(id); });
   return {
-    tv: 3,
+    tv: o.u >= 4 ? 4 : 3,   // a link made before build 190 holds Temperature/Tint as effects
     m: Array.isArray(o.m) ? o.m.map(Number) : MCELLS.map((_, i) => (i % 4 === 0) ? 100 : 0),
     mOff: Array.isArray(o.o) ? o.o.map(Number) : MOFFCELLS.map(() => 0),
     sliders,

@@ -1288,7 +1288,7 @@ function saveUserPresetsToStorage(obj) {
 
 function captureLookForUserPreset() {
   return {
-    tv: 3,
+    tv: 4,
     m: MCELLS.map(id => +($(id) && $(id).value) || 0),
     mOff: MOFFCELLS.map(id => +($(id) && $(id).value) || 0),
     sliders: Object.fromEntries(USER_PRESET_SLIDER_IDS.map(id => [id, +($(id) && $(id).value) || 0])),
@@ -1312,8 +1312,9 @@ function applyUserPreset(look) {
     let pv = look.sliders[id];
     if (!look.tv && LIGHT_TAPER[id]) pv = taperPos(id, pv);   // a preset saved before the weighted sliders
     if (look.tv === 2 && BW_TAPER_V2[id]) pv = bwFromV2(id, pv);
+    if (!(look.tv >= 4) && WB_CURVE[id]) pv = wbPos(pv);   // build 190
     el.value = pv;
-    const lbl = $('v_' + id); if (lbl) lbl.textContent = pv;
+    const lbl = $('v_' + id); if (lbl) lbl.textContent = fmtSliderValue(id, pv);
   });
 
   targetedBands = (look.targetedBands || []).map(b => ({...b}));

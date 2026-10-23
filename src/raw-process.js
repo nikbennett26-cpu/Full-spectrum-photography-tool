@@ -1470,7 +1470,11 @@ $('btnSocialPreset').onclick = applySocialPreset;
       b.tabIndex = -1;                      // keep tab order on the slider itself
       let timer = null, delay = null;
       const bump = () => {
-        const v = Math.max(+el.min, Math.min(+el.max, (+el.value || 0) + dir * step));
+        // build 190: Temperature and Tint sit on a curve; their buttons move the shown value by one, not the position
+        const curved = typeof WB_CURVE !== 'undefined' && WB_CURVE[el.id];
+        let v = curved ? wbPos(Math.round(wbEff(el.value)) + dir) : (+el.value || 0) + dir * step;
+        if (curved && v === +el.value) v += dir;
+        v = Math.max(+el.min, Math.min(+el.max, v));
         if (v === +el.value) return stop();
         el.value = v;
         el.dispatchEvent(new Event('input', { bubbles: true }));

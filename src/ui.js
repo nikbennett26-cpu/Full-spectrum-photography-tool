@@ -1292,7 +1292,7 @@ function setCurveChan(ch) {
 
 function captureState() {
   return {
-    tv: 3,   // slider-weight version: none = straight-line; 2 = weighted incl. Black/White point; 3 = weighted except Black/White point
+    tv: 4,   // slider-weight version: none = straight-line; 2 = weighted incl. Black/White point; 3 = weighted except Black/White point; 4 = Temperature/Tint on their curve (build 190)
     curves: curveCopy(curveState),
     crop: cropCopy(cropRect),
     masks: JSON.parse(JSON.stringify(masks)),
@@ -1364,8 +1364,9 @@ function applyState(snap) {
     let sv = snap.s[i] !== undefined ? snap.s[i] : ((id in sliderDefaults) ? +sliderDefaults[id] : 0);
     if (!snap.tv && LIGHT_TAPER[id]) sv = taperPos(id, sv);   // an older session: its numbers were effects, so move them to where the thumb now sits
     if (snap.tv === 2 && BW_TAPER_V2[id]) sv = bwFromV2(id, sv);   // saved while Black/White point were weighted
+    if (!(snap.tv >= 4) && WB_CURVE[id]) sv = wbPos(sv);   // build 190: saved as an effect, now a position on the curve
     el.value = sv;
-    const lbl = $('v_' + id); if (lbl) lbl.textContent = el.value;
+    const lbl = $('v_' + id); if (lbl) lbl.textContent = fmtSliderValue(id, el.value);
   });
   targetedBands = (snap.bands || []).map(b => ({...b}));
   bandRenderList();

@@ -611,9 +611,10 @@ $('btnRotR').onclick = () => applyRotation(1);
       const prev = bEl.textContent;
       const inp = document.createElement('input');
       inp.type = 'number'; inp.className = 'vedit';
-      inp.min = range.min; inp.max = range.max;
-      inp.step = range.step || 'any';
-      inp.value = range.value;
+      const curved = typeof WB_CURVE !== 'undefined' && WB_CURVE[id];   // build 190: typed in the units shown
+      inp.min = curved ? -600 : range.min; inp.max = curved ? 600 : range.max;
+      inp.step = curved ? 1 : (range.step || 'any');
+      inp.value = curved ? Math.round(wbEff(range.value)) : range.value;
       bEl.textContent = '';
       bEl.appendChild(inp);
       inp.focus(); inp.select();
@@ -626,14 +627,14 @@ $('btnRotR').onclick = () => applyRotation(1);
         if (commit && inp.value !== '' && isFinite(+inp.value)) {
           // clamp to the slider's own limits so typing can't produce a state
           // dragging could never reach
-          const lo = +range.min, hi = +range.max;
+          const lo = curved ? -600 : +range.min, hi = curved ? 600 : +range.max;
           v = String(Math.min(hi, Math.max(lo, +inp.value)));
         }
         bEl.textContent = v;
         if (commit && v !== prev) {
           armUndoCapture();
-          range.value = v;
-          bEl.textContent = range.value;   // let the input re-snap it to its step
+          range.value = curved ? wbPos(v) : v;
+          bEl.textContent = curved ? fmtSliderValue(id, range.value) : range.value;   // let the input re-snap it to its step
               render();
           commitUndoCapture();
         }
@@ -1756,8 +1757,9 @@ function contrastStrength(v) {
 }
 function tempTintGains() {
   if (suppressTempTint) return [1, 1, 1];
-  const t = (+($('temp') && $('temp').value) || 0) / 100;
-  const m = (+($('tint') && $('tint').value) || 0) / 100;
+  const t = wbEff($('temp') ? $('temp').value : 0) / 100;   // build 190: the sliders hold a position on a curve
+  const m = wbEff($('tint') ? $('tint').value : 0) / 100;
+  ['temp', 'tint'].forEach(id => { const l = $('v_' + id), el = $(id); if (l && el && !l.dataset.editing) { const s = String(fmtSliderValue(id, el.value)); if (l.textContent !== s) l.textContent = s; } });
   if (t === 0 && m === 0) return [1, 1, 1];
   /* Exponential rather than linear. The old form subtracted from 1, so blue
      hit zero at slider 357 and went negative past it — which is why the range

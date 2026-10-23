@@ -915,7 +915,21 @@ function updateImplicitStamp() {
    step finely, but it reads as a radius in pixels -- 10 on the element means
    1.0 on screen, matching how every other tool labels this. Everything else
    displays its raw value. */
+/* Build 190: Temperature and Tint run on a curve. Both sliders reach +-600, but most real settings sit within +-100, which
+   was the middle sixth of the slider, a few millimetres of thumb on a phone. The slider now stores a POSITION
+   (-600..600) and the effect is a cubic of it: about 9 positions per unit near zero, half the travel covering +-100, the
+   outer half running on to +-600. The number shown, typed and used everywhere is the effect; saved sessions, presets and
+   share links from before (slider-weight version below 4) hold effects and are moved to the matching position on load. */
+const WB_CURVE = { temp: 1, tint: 1 };
+const WB_A = 0.1111;   // linear share: 600 * (0.5a + 0.125(1-a)) = 100 at half travel
+function wbEff(pos) { const u = Math.max(-1, Math.min(1, (+pos || 0) / 600)); return 600 * (WB_A * u + (1 - WB_A) * u * u * u); }
+function wbPos(eff) {
+  const e = Math.max(-600, Math.min(600, +eff || 0)) / 600; let u = e;
+  for (let k = 0; k < 30; k++) { const f = WB_A * u + (1 - WB_A) * u * u * u - e, d = WB_A + 3 * (1 - WB_A) * u * u; u -= f / d; }
+  return Math.round(600 * Math.max(-1, Math.min(1, u)));
+}
 function fmtSliderValue(id, v) {
+  if (WB_CURVE[id]) return Math.round(wbEff(v));
   return id === 'sharpenRadius' ? (v / 10).toFixed(1) : v;
 }
 ['orton','ortonSoft','hotR','hotG','hotB','hotSize','caR','caB','swapWiden','bright','hue','sat','vibrance','filmToneAmt','blackPt','whitePt','noiseReduction','clarity','dehaze','sharpen','sharpenRadius','sharpenMask','noiseColour','temp','tint','satPreserve','contrast','highlights','shadows','vigAmt','vigFall','vigSpread','lumaR','lumaG','lumaB','brightness','calRH','calGH','calBH','calRS','calGS','calBS','calST','hiRange','shRange','rawNrL','rawNrC','hslH0','hslH1','hslH2','hslH3','hslH4','hslH5','hslH6','hslH7','hslS0','hslS1','hslS2','hslS3','hslS4','hslS5','hslS6','hslS7','hslL0','hslL1','hslL2','hslL3','hslL4','hslL5','hslL6','hslL7'].forEach(id => {
