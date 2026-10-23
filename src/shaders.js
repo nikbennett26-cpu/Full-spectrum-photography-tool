@@ -1108,6 +1108,12 @@ uniform float u_skyL;          // the typical lightness of the sky; anything cle
     float lod = 4.0 + log2(max(u_nrScale, 1.0));
     vec2 st = exp2(lod) * u_guideTexel;
     vec2 uv = prepUV(v_texCoord);
+    /* Build 187: a block of the mipmap that straddles an edge is a MIX of both sides, and a mix of complementary colours
+       (a teal sky against pink fronds) is a much greyer colour. Averaged in, it pulled the sky beside every frond toward
+       grey, so the grey gate let that rim take only part of the band's change: a glowing outline when Aqua or Blue
+       Luminance was pulled down. The wide average still decides the hue (which is what keeps a noisy sky in one band),
+       but it may no longer come out greyer than the pixel's own small neighbourhood. Judging taps on lightness or
+       tightening the weight also removed the rim, but brought back the speckle this average exists to prevent. */
     vec2 accW = labLocal.yz * 0.05; float wW = 0.05;
     for (int j = -2; j <= 2; j++) {
       for (int i = -2; i <= 2; i++) {
@@ -1117,7 +1123,10 @@ uniform float u_skyL;          // the typical lightness of the sky; anything cle
         accW += t * w; wW += w;
       }
     }
-    return vec3(labLocal.x, accW / wW);
+    vec2 ab = accW / wW;
+    float cL = length(labLocal.yz), cW = length(ab);
+    if (cW < cL && cW > 1e-5) ab *= cL / cW;   // the direction (hue) from the wide average, never less colour than the pixel's own area
+    return vec3(labLocal.x, ab);
   }
   vec3 applyHslBands(vec3 lin, float useGuide) {
     vec3 lab = linearToOklab(lin);
