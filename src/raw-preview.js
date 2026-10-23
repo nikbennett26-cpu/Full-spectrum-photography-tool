@@ -1154,6 +1154,8 @@ const RAW_EXT = ['CR2','CR3','NEF','ARW','SR2','ORF','ORI','RW2','PEF','RAF','SR
    different, simpler decoder's known deficit would be correcting a problem
    that likely does not exist in the same shape here, unmeasured. */
 function camSwapKey(on, matrix, name) { return on ? (String(name || '') + '|' + JSON.stringify(matrix || null)) : 'off'; }
+// build 193: 0 below 90% of a channel's clip point, 1 from 98.5%, smooth between (the basic highlight rebuild)
+function hlNear(k) { let t = (k - 0.9) / 0.085; t = t < 0 ? 0 : t > 1 ? 1 : t; return t * t * (3 - 2 * t); }
 function rawEngineResultToCanvas(res, doCamSpaceSwap, doCamSpaceSwapMatrix, doCamSpaceSwapName, forceFullRes) {
   if (!forceFullRes && typeof rawEngine !== 'undefined') rawEngine.builtKey = camSwapKey(!!doCamSpaceSwap, doCamSpaceSwapMatrix, doCamSpaceSwapName);
   /* TODO(perf): this whole function re-runs on EVERY swap-preset dropdown
@@ -1376,20 +1378,19 @@ function rawEngineResultToCanvas(res, doCamSpaceSwap, doCamSpaceSwapMatrix, doCa
 
          It cannot help when ALL THREE channels pinned -- nothing survives to
          estimate from. That case falls through to the desaturation below. */
-      if (!res.__hlDone && rawMxPre > 0.96 && rawMnPre < 0.96) {   // the basic rebuild; skipped when inpaint opposed ran
-        let recon = (rawMxPre - 0.96) / 0.04;
-        recon = recon > 1 ? 1 : recon;
-        recon = recon * recon * (3 - 2 * recon);
+      /* build 193: one continuous rule. Each channel is pulled toward the pixel's brightest balanced value by
+         its OWN closeness to clip, faded in over 90-98.5% of it. The old version switched each channel between
+         "real" and "clipped" at a hard 96% and only ran while some channel was below that, so along the edge of
+         a blown cloud -- where the dimmest channel sits at 96-100% -- neither this nor the desaturation below
+         finished the job, and the camera matrix turned the half-balanced pixel into a one-pixel coloured line.
+         The level counts clipped channels too: a clipped value means "at least this bright". */
+      if (!res.__hlDone && rawMxPre > 0.9) {   // the basic rebuild; skipped when inpaint opposed ran
         const bR = srn * wb[0], bG = sgn * wb[1], bB = sbn * wb[2];
-        let lvl = -1;
-        if (kR < 0.96 && bR > lvl) lvl = bR;
-        if (kG < 0.96 && bG > lvl) lvl = bG;
-        if (kB < 0.96 && bB > lvl) lvl = bB;
-        if (lvl > 0) {
-          if (kR >= 0.96 && lvl > bR) srn += (lvl / wb[0] - srn) * recon;
-          if (kG >= 0.96 && lvl > bG) sgn += (lvl / wb[1] - sgn) * recon;
-          if (kB >= 0.96 && lvl > bB) sbn += (lvl / wb[2] - sbn) * recon;
-        }
+        const lvl = bR > bG ? (bR > bB ? bR : bB) : (bG > bB ? bG : bB);
+        const wR = hlNear(kR), wG = hlNear(kG), wB = hlNear(kB);
+        if (wR > 0) srn += (lvl / wb[0] - srn) * wR;
+        if (wG > 0) sgn += (lvl / wb[1] - sgn) * wG;
+        if (wB > 0) sbn += (lvl / wb[2] - sbn) * wB;
       }
 
       const cr = srn * wb[0], cg = sgn * wb[1], cb = sbn * wb[2];
@@ -1409,7 +1410,9 @@ function rawEngineResultToCanvas(res, doCamSpaceSwap, doCamSpaceSwapMatrix, doCa
         t = t < 0 ? 0 : t > 1 ? 1 : t;
         t = t * t * (3 - 2 * t);
         const mx = or_ > og ? (or_ > ob ? or_ : ob) : (og > ob ? og : ob);
-        const wht = mx > 1 ? 1 : mx;
+        // build 193: no cap at 1.0 -- a fully blown pixel is at least as bright as its part-clipped neighbours, so
+        // capping it made the middle of a blown cloud go darker and flatter than its edges once Exposure came down
+        const wht = mx;
         or_ += (wht - or_) * t;
         og  += (wht - og)  * t;
         ob  += (wht - ob)  * t;
