@@ -132,9 +132,10 @@ function wbkKelvinAt(tEff) {
 }
 function wbkFmt(T) {
   if (T == null) return '';
-  if (T < WBK_MIN) return '<' + WBK_MIN + ' K';
-  if (T > WBK_MAX) return '>' + WBK_MAX + ' K';
-  return (Math.round(T / 50) * 50) + ' K';
+  const r = Math.round(T / 50) * 50;   // round first, so the slider's very end reads 2000 rather than "<2000" for 1999.6
+  if (r < WBK_MIN) return '<' + WBK_MIN + ' K';
+  if (r > WBK_MAX) return '>' + WBK_MAX + ' K';
+  return r + ' K';
 }
 /* Slider effect value giving a Kelvin target (the readout rises with the slider, so bisection). */
 function wbkEffFor(K) {
@@ -148,9 +149,38 @@ function wbkEffFor(K) {
 }
 /* The readout clamped to Lightroom's range and rounded to 50 K: where the buttons and the typed box start from. */
 function wbkNowK(tEff) { const T = wbkKelvinAt(tEff); return Math.round(Math.min(WBK_MAX, Math.max(WBK_MIN, T == null ? 5000 : T)) / 50) * 50; }
-/* Shows the "not on the Kelvin scale" note: a RAW whose camera we know but whose light never reaches the scale. */
+/* Shows the "not on the Kelvin scale" note, and (build 196) fits the Temperature slider's ends to 2000 and 50000 K the
+   way Lightroom's are: the slider's full +/-600 reaches well past both on an ordinary RAW, so the first and last stretch
+   of travel read "<2000 K" / ">50000 K" and did nothing visible. Only the ends move -- a position still means the same
+   push, so saved edits, looks and links are unchanged -- and they never cut off a value already set past them. */
+let wbkRangeKey = '';
 function wbkSyncNote() {
-  const n = $('wbkNote'); if (!n) return;
-  const off = !!(wbkCamera(wbkRes()) && !wbkActive());
-  if (n.hidden === off) n.hidden = !off;
+  const n = $('wbkNote'), el = $('temp');
+  const res = wbkRes(), cam = wbkCamera(res);
+  let pre = ''; try { pre = (typeof preWB !== 'undefined' && Array.isArray(preWB)) ? preWB.join() : ''; } catch (e) {}
+  const key = (cam ? (res.__wb || []).join() : 'x') + '|' + pre + '|' + (typeof wbMethod !== 'undefined' ? wbMethod : '') + '|' + ($('tint') ? $('tint').value : '') + '|' + (typeof loadToken !== 'undefined' ? loadToken : '');
+  if (key === wbkRangeKey && el && (+el.value >= +el.min && +el.value <= +el.max)) return;
+  wbkRangeKey = key;
+  const active = !!cam && wbkActive();
+  if (n) { const off = !!cam && !active; if (n.hidden === off) n.hidden = !off; }
+  if (!el) return;
+  let lo = -600, hi = 600;
+  if (active) {
+    const eLo = wbkEffFor(WBK_MIN), eHi = wbkEffFor(WBK_MAX);
+    if (eLo != null && eHi != null && eHi > eLo) {
+      // wbPos rounds to a whole position, so step each end inward until it reads inside the range
+      const kAt = p => Math.round(wbkKelvinAt(wbEff(p)) / 50) * 50;
+      lo = wbPos(eLo); hi = wbPos(eHi);
+      while (lo < 600 && kAt(lo) < WBK_MIN) lo++;
+      while (hi > -600 && kAt(hi) > WBK_MAX) hi--;
+    }
+    const v = +el.value;
+    if (v < lo) lo = Math.floor(v);   // a value already past an end keeps its place
+    if (v > hi) hi = Math.ceil(v);
+  }
+  if (+el.min !== lo || +el.max !== hi) {
+    const v = el.value;
+    el.min = lo; el.max = hi; el.value = v;
+    if (typeof syncSliderFill === 'function') syncSliderFill(el);
+  }
 }
