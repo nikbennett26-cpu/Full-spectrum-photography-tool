@@ -25,7 +25,7 @@
 <meta name="twitter:image" content="https://irlab.uk/og-card.png?v=112">
 <link rel="canonical" href="https://irlab.uk/">
 <meta name="theme-color" content="#160f0a">
-<meta name="irlab-build" content="198">
+<meta name="irlab-build" content="199">
 <link rel="manifest" href="/manifest.json">
 <link rel="icon" href="/favicon.ico?v=2" sizes="any">
 <link rel="icon" href="/favicon.svg?v=2" type="image/svg+xml">
@@ -57,8 +57,8 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
 
-<script src="i18n/tr.js?b=198"></script>
-<link rel="stylesheet" href="css/main.css?b=198">
+<script src="i18n/tr.js?b=199"></script>
+<link rel="stylesheet" href="css/main.css?b=199">
 <script>
 /* Applied before anything renders so a light-mode user never sees a dark
    flash. Deliberately inline and synchronous. */
@@ -70,9 +70,9 @@
   }catch(e){}
 })();
 </script>
-<link rel="stylesheet" id="uxRefresh" href="css/refresh.css?b=198">
-<link rel="stylesheet" href="css/trichrome.css?b=198">
-<link rel="stylesheet" id="uxDock" href="css/dock.css?b=198">
+<link rel="stylesheet" id="uxRefresh" href="css/refresh.css?b=199">
+<link rel="stylesheet" href="css/trichrome.css?b=199">
+<link rel="stylesheet" id="uxDock" href="css/dock.css?b=199">
 </head>
 <body>
 
@@ -204,7 +204,12 @@
   <footer class="labFoot">
     <div id="whatsNew">
       <details>
-        <summary><span data-i18n="whatsNewLabel">What’s new</span><span class="wnLatest">RAW white balance from RawTherapee</span></summary>
+        <summary><span data-i18n="whatsNewLabel">What’s new</span><span class="wnLatest">White balance, in order</span></summary>
+        <p style="margin:0 0 3px"><b style="color:var(--phosphor-dim)">White balance, in order.</b> The card is now laid out the
+          way the picture is made: 1 Camera, the RAW&#x27;s own white balance (As shot, Auto or Pick, a large Kelvin readout with
+          &minus;50 / +50, and a slider marked with candle, tungsten, daylight and sky), 2 the channel swap, one tap away, and 3
+          the cast after the swap, renamed Cool &harr; warm and Green &harr; magenta. Pick now sets the camera white balance from a
+          grey in the photo, exactly, even on a filtered shot beyond the Kelvin scale. On a JPEG only the cast shows.</p>
         <p style="margin:0 0 3px"><b style="color:var(--phosphor-dim)">RAW white balance from RawTherapee.</b> A RAW now has its
           own Temperature (in Kelvin) and Green at the top of Temperature &amp; tint, using RawTherapee's model, ported in. They set
           the white balance the camera would have, before the swap, and open on the camera's as-shot setting; As shot puts it
@@ -480,7 +485,7 @@
       <path d="M20.317 4.37a19.79 19.79 0 0 0-4.885-1.515.074.074 0 0 0-.079.037c-.21.375-.444.864-.608 1.25a18.27 18.27 0 0 0-5.487 0 12.64 12.64 0 0 0-.617-1.25.077.077 0 0 0-.079-.037A19.736 19.736 0 0 0 3.677 4.37a.07.07 0 0 0-.032.027C.533 9.046-.32 13.58.099 18.057a.082.082 0 0 0 .031.057 19.9 19.9 0 0 0 5.993 3.03.078.078 0 0 0 .084-.028 14.09 14.09 0 0 0 1.226-1.994.076.076 0 0 0-.041-.106 13.107 13.107 0 0 1-1.872-.892.077.077 0 0 1-.008-.128 10.2 10.2 0 0 0 .372-.292.074.074 0 0 1 .077-.01c3.928 1.793 8.18 1.793 12.062 0a.074.074 0 0 1 .078.01c.12.098.246.198.373.292a.077.077 0 0 1-.006.127 12.299 12.299 0 0 1-1.873.892.077.077 0 0 0-.041.107c.36.698.772 1.362 1.225 1.993a.076.076 0 0 0 .084.028 19.839 19.839 0 0 0 6.002-3.03.077.077 0 0 0 .032-.054c.5-5.177-.838-9.674-3.549-13.66a.061.061 0 0 0-.031-.03zM8.02 15.33c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.956-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.956 2.418-2.157 2.418zm7.975 0c-1.183 0-2.157-1.085-2.157-2.419 0-1.333.955-2.419 2.157-2.419 1.21 0 2.176 1.096 2.157 2.42 0 1.333-.946 2.418-2.157 2.418z"/>
     </svg> Discord</span><span class="dcGo">Join →</span>
     </a>
-    <div id="buildStampHome">Version 2026-10-23 · build 198</div>
+    <div id="buildStampHome">Version 2026-10-24 · build 199</div>
   </footer>
 </div>
 
@@ -928,20 +933,51 @@
       </details>
       </div>
       <details class="dGrp" id="wbTempGrp">
-        <summary><span class="dT" data-i18n="cTT">Temperature &amp; tint</span><span class="dS" data-i18n="cTTS">a deliberate cast on top</span><span class="dDot" aria-hidden="true"></span></summary>
+        <summary><span class="dT" data-i18n="cTT">White balance</span><span class="dS" data-i18n="cTTS">camera, swap, cast</span><span class="dDot" aria-hidden="true"></span></summary>
         <div class="dBody">
-      <!-- Build 197: the RAW's own white balance, RawTherapee's Temperature + Green (src/raw-wb.js); only for a RAW whose camera is known -->
-      <div id="rawWbBox" hidden>
-      <p class="note" style="margin:0 0 6px"><b>Camera white balance (RAW)</b> &middot; set before the swap, like the camera's own setting</p>
-      <div class="sl wb"><label>Temperature <b id="v_rawTemp">5000 K</b></label><input type="range" id="rawTemp" aria-label="RAW white balance temperature" min="0" max="1000" value="700"></div>
-      <div class="sl wb" style="margin-top:8px"><label>Green <b id="v_rawGreen">1.000</b></label><input type="range" id="rawGreen" aria-label="RAW white balance green" min="-1000" max="1000" value="0"></div>
-      <div style="display:flex;align-items:center;gap:8px;margin-top:6px"><button type="button" id="rawWbShot" class="btnGhostSmall" disabled>As shot</button><span class="note" style="margin:0">1500&ndash;60000 K</span></div>
-      <p class="note" id="rawWbOff" hidden style="margin:6px 0 0">This shot&#x27;s own white balance is beyond this scale (filtered shots often are), so the sliders show the nearest point. Moving them leaves it; As shot brings it back.</p>
-      <p class="note" style="margin:12px 0 6px"><b>Cast after the swap</b></p>
+      <!-- Build 199: white balance in the order the pipeline applies it (src/raw-wb.js). 1 Camera: the RAW's own white
+           balance, Temperature (K) + Green, only for a RAW whose camera is known. 2 the channel swap, as a link to it.
+           3 the cast after the swap (the old Temperature & Tint). On a JPEG only 3 shows, without the numbering. -->
+      <div id="rawWbBox" class="wbStep" hidden>
+        <div class="wbStepRail" aria-hidden="true"><span class="wbStepNum on">1</span><span class="wbStepLine"></span></div>
+        <div class="wbStepCard">
+          <div class="wbStepHd"><span class="wbStepT">Camera</span><span class="wbStepS">before the swap</span></div>
+          <div class="wbModeRow" role="group" aria-label="Camera white balance">
+            <button type="button" id="rawWbShot" class="wbModeBtn">As shot</button>
+            <button type="button" id="rawWbAuto" class="wbModeBtn">Auto</button>
+            <button type="button" id="rawWbPick" class="wbModeBtn" title="Tap something grey in the photo"><svg viewBox="0 0 24 24" width="15" height="15" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m2 22 1-1h3l9-9"/><path d="M3 21v-3l9-9"/><path d="m15 6 3.4-3.4a2.1 2.1 0 1 1 3 3L18 9l.4.4a2.1 2.1 0 1 1-3 3l-3.8-3.8a2.1 2.1 0 1 1 3-3l.4.4Z"/></svg><span>Pick</span></button>
+          </div>
+          <p class="note" id="rawWbOff" hidden style="margin:0">This shot&#x27;s own white balance is beyond the Kelvin scale (filtered shots often are), so the readout shows the nearest point. Moving it leaves the setting; As shot brings it back.</p>
+          <div class="wbBigRow">
+            <button type="button" id="rawWbCool" class="wbNudge cool" aria-label="50 K cooler">&minus;50</button>
+            <div class="wbBig">
+              <div class="wbBigNum"><span id="v_rawTemp" tabindex="0" title="Long-press to type">5000</span><span class="u">K</span></div>
+              <div class="wbBigHint">long-press to type</div>
+            </div>
+            <button type="button" id="rawWbWarm" class="wbNudge warm" aria-label="50 K warmer">+50</button>
+          </div>
+          <div>
+            <input type="range" id="rawTemp" class="wbBigSl" aria-label="Temperature" min="0" max="1000" value="700">
+            <!-- where these lights fall on the slider's mired scale (rtwbTempToPos): 1900, 2850, 5500 and 12000 K -->
+            <div class="wbTicks" aria-hidden="true"><span style="left:21.6%">Candle</span><span style="left:48.6%">Tungsten</span><span style="left:74.6%">Daylight</span><span style="left:89.7%">Sky</span></div>
+          </div>
+          <div class="sl wb"><label>Green <b id="v_rawGreen">1.000</b></label><input type="range" id="rawGreen" aria-label="Green" min="-1000" max="1000" value="0"></div>
+        </div>
       </div>
-      <div class="sl wb"><label>Temperature <b id="v_temp">0</b></label><input type="range" id="temp" aria-label="Temperature" min="-600" max="600" value="0"></div>
-      <div class="sl wb" style="margin-top:8px"><label>Tint <b id="v_tint">0</b></label><input type="range" id="tint" aria-label="Tint" min="-600" max="600" value="0"></div>
-      <p class="note" title="Temperature: cool ← → warm · Tint: green ← → magenta. Applied after the picker, so use these to push a deliberate cast on top of a neutral result. The range runs to ±600 — beyond ±100 is already further than most converters allow; the extra room past ±300 is for infrared files where even a picker plus that much push still isn&#x27;t enough to land on neutral.">Cool ← → warm · green ← → magenta. Applied after the picker, for pushing a deliberate cast on top of neutral.</p>
+      <div id="wbSwapStep" class="wbStep" hidden>
+        <div class="wbStepRail" aria-hidden="true"><span class="wbStepNum">2</span><span class="wbStepLine"></span></div>
+        <button type="button" id="wbSwapRow" class="wbSwapRow"><span>Channel swap</span><span id="wbSwapSum" class="wbSwapSum">&mdash; &rsaquo;</span></button>
+        <span id="wbSwapWords" hidden><span data-k="none">None</span><span data-k="mix">Custom mix</span></span>
+      </div>
+      <div id="wbCastStep" class="wbStep">
+        <div class="wbStepRail" aria-hidden="true"><span class="wbStepNum">3</span></div>
+        <div class="wbStepCard">
+          <div class="wbStepHd"><span class="wbStepT">Cast</span><span class="wbStepS">after the swap</span></div>
+          <div class="sl wb"><label>Cool ↔ warm <b id="v_temp">0</b></label><input type="range" id="temp" aria-label="Cool to warm" min="-600" max="600" value="0"></div>
+          <div class="sl wb"><label>Green ↔ magenta <b id="v_tint">0</b></label><input type="range" id="tint" aria-label="Green to magenta" min="-600" max="600" value="0"></div>
+          <p class="note" style="margin:0" title="Applied after the picker, so use these to push a deliberate cast on top of a neutral result. The range runs to ±600 — beyond ±100 is already further than most converters allow; the extra room past ±300 is for infrared files where even a picker plus that much push still isn&#x27;t enough to land on neutral.">Applied after the picker, for pushing a deliberate cast on top of neutral.</p>
+        </div>
+      </div>
         </div>
       </details>
     </details>
@@ -960,15 +996,7 @@
           <input type="checkbox" id="rawHlChk" style="margin:0"><span>Rebuild clipped highlights from the colours around them</span><span id="rawHlStatus" style="margin-left:auto;color:var(--safelight);font-size:11.5px"></span>
         </label>
         <input type="range" id="rawHl" min="0" max="1" step="1" value="0" hidden aria-hidden="true" tabindex="-1">
-        <!-- Build 192: which white balance a RAW opens with (rawWbMode in src/raw-process.js) -->
-        <label class="ctl" style="display:flex;align-items:center;gap:10px;margin:10px 0 0">
-          <span>White balance</span>
-          <select id="rawWbMode" style="flex:1;min-width:0" aria-label="RAW white balance">
-            <option value="camera">As shot (the camera&rsquo;s setting)</option>
-            <option value="auto">Estimated from the picture</option>
-          </select>
-        </label>
-        <p class="note" style="margin:4px 0 0">As shot matches the camera&rsquo;s own JPEG. The before-swap grey picker overrides either.</p>
+
       </div>
       </details>
       <details class="dGrp" id="lightExp" open>
@@ -1549,7 +1577,7 @@
       <br><a href="#" id="consentReopen" style="color:var(--muted);text-decoration:underline">Cookie notice</a>
       <br><a href="LICENSE.md" target="_blank" rel="noopener" style="color:var(--muted);text-decoration:underline">Source: AGPL-3.0</a>
       <br><a href="THIRD_PARTY_NOTICES.md" target="_blank" rel="noopener" style="color:var(--muted);text-decoration:underline">Third-party notices (LibRaw, RawTherapee)</a>
-<br><span id="buildStamp" style="color:var(--muted)" title="Which version of the app this is. Tap the arrow to check for a newer one and update.">Version 2026-10-23 · build 198</span>
+<br><span id="buildStamp" style="color:var(--muted)" title="Which version of the app this is. Tap the arrow to check for a newer one and update.">Version 2026-10-24 · build 199</span>
       <br><button id="btnInstall" type="button">Install as an app</button>
       <span id="kbHint">Ctrl+Z undo &middot; Ctrl+Shift+Z redo &middot; [ ] cycle presets &middot; F full quality view &middot; Space hold to compare</span>
     </footer>
@@ -1645,6 +1673,6 @@
 <!-- The editor's code: editor.js, BUILT from src/*.js by tools/build.py (see the README's Code layout). One script, so
      it all runs in one go, as the single inline block it came from did. ?b=<build> keeps the service worker's cached
      copy of an older editor.js from ever running under a newer page; tools/bump_build.py sets it. -->
-<script src="editor.js?b=198"></script>
+<script src="editor.js?b=199"></script>
 </body>
 </html>

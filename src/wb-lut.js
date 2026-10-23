@@ -420,6 +420,7 @@ function doPick(clientX, clientY) {
   if (pickMode === 'index') { indexDoPick(clientX, clientY); return; }
   if (pickMode === 'vignette') { vigDoPick(clientX, clientY); return; }
   if (pickMode === 'maskColor') { maskColorDoPick(clientX, clientY); return; }
+  if (pickMode === 'rawWb') { rtwbDoPick(clientX, clientY); return; }   // build 199: the RAW's own white balance (src/raw-wb.js)
   const mode = pickMode;
   // A fresh tap starts from IDENTITY, not from the current correction —
   // otherwise each new tap multiplies on top of the last one, so moving the
@@ -500,6 +501,7 @@ function enterPick(m) {
   $('preview').classList.add('pick');
   $('wbPre').classList.toggle('armed', m === 'pre');
   $('wbPost').classList.toggle('armed', m === 'post');
+  if ($('rawWbPick')) $('rawWbPick').classList.toggle('armed', m === 'rawWb');
   if ($('btnAddBand')) $('btnAddBand').classList.toggle('armed', m === 'targeted');
   if ($('btnIdxSample')) $('btnIdxSample').classList.toggle('armed', m === 'index');
   if ($('btnVigPick')) $('btnVigPick').classList.toggle('armed', m === 'vignette');
@@ -531,6 +533,7 @@ function exitPick() {
   $('preview').classList.remove('pick');
   $('wbPre').classList.remove('armed');
   $('wbPost').classList.remove('armed');
+  if ($('rawWbPick')) $('rawWbPick').classList.remove('armed');
   if ($('btnAddBand')) $('btnAddBand').classList.remove('armed');
   ['btnMaskPick'].forEach(id => { if ($(id)) $(id).classList.remove('armed'); });
 }

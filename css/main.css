@@ -1234,3 +1234,50 @@ html.simpleMode .adv{display:none !important}
 #modeNote{flex:1 1 160px;min-width:0;text-align:left;background:none;border:0;padding:4px 0;color:var(--phosphor);font:500 11.5px var(--font-mono);cursor:pointer;text-decoration:underline;text-underline-offset:3px}
 html.dockOn body.has-image #reorderZone > #modeBar{display:flex !important;order:-10}
 html.studioOn body.has-image #reorderZone > #modeBar{display:flex !important;order:-10}
+
+/* Build 199: white balance in pipeline order -- 1 Camera, 2 the swap, 3 the cast (src/raw-wb.js). */
+.wbStep{display:grid;grid-template-columns:28px minmax(0,1fr);column-gap:10px}
+.wbStep[hidden]{display:none}
+.wbStepRail{display:flex;flex-direction:column;align-items:center}
+.wbStepNum{width:26px;height:26px;border-radius:13px;flex:none;display:flex;align-items:center;justify-content:center;
+  background:var(--surface2);border:1px solid var(--line2);color:var(--paper-dim);font-family:var(--font-mono);font-size:12px}
+.wbStepNum.on{background:var(--safelight);border-color:var(--safelight);color:#fff}
+.wbStepLine{flex:1;width:2px;background:var(--line2);margin-top:4px;min-height:10px}
+.wbStepCard{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:12px;margin-bottom:10px;
+  display:flex;flex-direction:column;gap:10px;min-width:0}
+.wbStepCard .sl{margin:0}
+.wbStepHd{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
+.wbStepT{font-weight:600;font-size:15px}
+.wbStepS{font-size:11.5px;color:var(--muted)}
+.wbModeRow{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}
+.wbModeBtn{min-height:40px;border-radius:6px;border:1px solid var(--line2);background:transparent;color:var(--paper);
+  font:inherit;font-size:13px;display:flex;align-items:center;justify-content:center;gap:6px;cursor:pointer;padding:0 6px}
+.wbModeBtn.on,.wbModeBtn.armed{border-color:var(--safelight);background:color-mix(in srgb,var(--safelight) 16%,transparent)}
+.wbBigRow{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.wbNudge{width:48px;height:48px;border-radius:24px;flex:none;border:1px solid var(--line2);background:var(--surface2);
+  color:var(--paper);font-family:var(--font-mono);font-size:12px;cursor:pointer;touch-action:manipulation}
+.wbNudge.cool{color:var(--blue)}
+.wbNudge.warm{color:var(--safelight)}
+.wbBig{text-align:center;min-width:0}
+.wbBigNum{font-family:var(--font-display);font-weight:500;font-size:52px;line-height:1;letter-spacing:1px;white-space:nowrap}
+.wbBigNum #v_rawTemp{cursor:text;-webkit-user-select:none;user-select:none;touch-action:manipulation;border-radius:4px}
+.wbBigNum #v_rawTemp:focus-visible{outline:2px solid var(--safelight);outline-offset:2px}
+.wbBigNum .u{font-size:24px;color:var(--paper-dim);margin-left:4px}
+.wbBigNum .vedit{font:inherit;width:4.2ch;background:var(--surface2);color:var(--paper);border:1px solid var(--line2);border-radius:4px;text-align:center}
+.wbBigHint{font-size:11.5px;color:var(--muted);margin-top:3px}
+#wbTempGrp input[type=range].wbBigSl{display:block;width:100%;height:28px;margin:0}
+#wbTempGrp input[type=range].wbBigSl::-webkit-slider-runnable-track{height:10px;border-radius:5px;background:var(--wbGrad)}
+#wbTempGrp input[type=range].wbBigSl::-moz-range-track{height:10px;border-radius:5px;background:var(--wbGrad)}
+#wbTempGrp input[type=range].wbBigSl::-moz-range-progress{background:none}
+#wbTempGrp input[type=range].wbBigSl::-webkit-slider-thumb{width:8px;height:28px;margin-top:-9px;border-radius:3px;background:linear-gradient(#ffffff,#e4d9c6);border:1px solid #000}
+#wbTempGrp input[type=range].wbBigSl::-moz-range-thumb{width:8px;height:28px;border-radius:3px;background:linear-gradient(#ffffff,#e4d9c6);border:1px solid #000}
+.wbTicks{position:relative;height:30px;font-size:10.5px;color:var(--muted)}
+.wbTicks span{position:absolute;top:0;transform:translateX(-50%);padding-top:9px;white-space:nowrap;line-height:1.2}
+.wbTicks span::before{content:'';position:absolute;top:0;left:50%;width:1px;height:6px;background:var(--line2)}
+.wbSwapRow{width:100%;min-height:48px;margin:0 0 10px;padding:0 12px;border-radius:8px;border:1px solid var(--line);
+  background:var(--surface);color:var(--paper);font:inherit;font-size:14px;display:flex;align-items:center;justify-content:space-between;gap:8px;cursor:pointer}
+.wbSwapSum{font-family:var(--font-mono);font-size:12px;color:var(--paper-dim);white-space:nowrap}
+/* a JPEG has no camera step: the cast stands alone, as the old Temperature & tint did */
+#wbTempGrp:not(.wbRaw) #wbCastStep{display:block}
+#wbTempGrp:not(.wbRaw) #wbCastStep .wbStepRail,#wbTempGrp:not(.wbRaw) #wbCastStep .wbStepHd{display:none}
+#wbTempGrp:not(.wbRaw) #wbCastStep .wbStepCard{background:none;border:none;padding:0;margin:0}

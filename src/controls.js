@@ -94,17 +94,6 @@ function syncRangeToggle() {
     syncRawHlButtons(); reapplyCamSpaceSwap();
   });
 })();
-(function wireRawWb() {   // build 192
-  const sel = $('rawWbMode'); if (!sel) return;
-  sel.value = rawWbMode();
-  sel.addEventListener('change', () => {
-    try { localStorage.setItem('irlab.rawWb', sel.value === 'auto' ? 'auto' : 'camera'); } catch (e) {}
-    const res = rawEngine.lastResult;
-    if (!res || rawEngine.lastGen !== loadToken) return;
-    res.__wb = null; res.__wbSrc = null; rawEngine.nrPrev = null; rawEngine.builtKey = null;   // decide again, then rebuild the preview
-    reapplyCamSpaceSwap();
-  });
-})();
 function syncRawHlButtons() {   // keeps the tick box in step with the saved value (undo, redo, presets, reset, a restored session)
   const h = $('rawHl'), v = h ? h.value : '0', c = $('rawHlChk');
   if (c) c.checked = v === '1';

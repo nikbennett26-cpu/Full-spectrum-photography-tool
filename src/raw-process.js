@@ -475,7 +475,7 @@ function rawClipFor(res) {
 function rawWbMode() { try { return localStorage.getItem('irlab.rawWb') === 'auto' ? 'auto' : 'camera'; } catch (e) { return 'camera'; } }
 function rawWbCompute(res) {
   if (typeof rawWbCustom !== 'undefined' && rawWbCustom) {   // build 197: Temperature + Green set on the RAW (src/raw-wb.js)
-    const g = rtwbGains(res, rawWbCustom.t, rawWbCustom.g);
+    const g = rawWbCustom.wb ? rawWbCustom.wb.slice() : rtwbGains(res, rawWbCustom.t, rawWbCustom.g);   // a pick keeps its exact multipliers
     if (g) return { wb: g, source: 'custom' };
   }
   const cam = pp_wbGain(res.camMul), camOk = res.camMul && res.camMul.length >= 3 && res.camMul[0] > 0 && res.camMul[1] > 0 && res.camMul[2] > 0;

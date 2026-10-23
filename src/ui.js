@@ -1310,7 +1310,7 @@ function captureState() {
     // variable rather than an <input>, so it is not covered by the
     // HASH_SLIDERS sweep above and has to be captured explicitly
     vigCentre: [...vigCentre],
-    rawWb: rawWbCustom ? { t: rawWbCustom.t, g: rawWbCustom.g } : null,   // build 197: RAW Temperature + Green (src/raw-wb.js)
+    rawWb: rawWbCustom ? Object.assign({ t: rawWbCustom.t, g: rawWbCustom.g }, rawWbCustom.wb ? { wb: rawWbCustom.wb.slice() } : {}) : null,   // build 197: RAW Temperature + Green (src/raw-wb.js)
     indexMode: indexMode,
     lumPreserve: lumPreserve,
     filmOn: filmOn,
@@ -1458,6 +1458,7 @@ function applyState(snap) {
   if ($('camSpaceSwapPreset')) $('camSpaceSwapPreset').value = snap.camSpaceSwapPreset || '';
   if ($('camSpaceSwapPresetEditor')) $('camSpaceSwapPresetEditor').value = snap.camSpaceSwapPreset || '';
   rawWbCustom = snap.rawWb && snap.rawWb.t > 0 && snap.rawWb.g > 0 ? { t: +snap.rawWb.t, g: +snap.rawWb.g } : null;   // build 197
+  if (rawWbCustom && Array.isArray(snap.rawWb.wb) && snap.rawWb.wb.length === 3 && snap.rawWb.wb.every(v => v > 0)) rawWbCustom.wb = snap.rawWb.wb.map(Number);   // build 199: a pick
   if (typeof reapplyCamSpaceSwap === 'function') reapplyCamSpaceSwap();
   if (typeof syncRangeToggle === 'function') syncRangeToggle();
   if (typeof syncEpdLabels === 'function') syncEpdLabels();
