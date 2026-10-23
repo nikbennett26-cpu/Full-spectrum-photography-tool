@@ -5,7 +5,6 @@ irlabTr.add('zh', {
 "Camera white balance (RAW)": "相机白平衡（RAW）",
 "· set before the swap, like the camera's own setting": "· 在通道交换之前应用，与相机自身的设置相同",
 "As shot": "拍摄时",
-"RawTherapee's model, 1500–60000 K.": "RawTherapee 的模型，1500–60000 K。",
 "Cast after the swap": "交换后的色偏",
 "Save look for camera (.IRL)": "保存为相机用风格 (.IRL)",
 "Saves this look as an .IRL file for a Canon camera running Magic Lantern with the irlut module: copy it to ML/LUTS on the card and the camera shows the look in LiveView, image review and playback. Only the preview changes; the camera still records normal RAW and JPEG files. Like a .cube it holds colour only.": "将此风格保存为 .IRL 文件，供装有 Magic Lantern 和 irlut 模块的佳能相机使用：复制到存储卡的 ML/LUTS 文件夹后，相机会在实时取景、拍摄回看和回放中显示此风格。只改变预览；相机仍记录普通的 RAW 和 JPEG 文件。与 .cube 一样，只包含色彩。",
