@@ -1022,5 +1022,9 @@ irlabTr.add('de', {
 "Show dust": "Staub zeigen",
 "Spot size": "Fleckgröße",
 "Clear all spots": "Alle Flecken entfernen",
-"Tap Add spots, then tap each speck. Show dust makes them easy to find.": "Tippe auf Flecken hinzufügen, dann auf jedes Staubkorn. Staub zeigen macht sie leicht sichtbar."
+"Tap Add spots, then tap each speck. Show dust makes them easy to find.": "Tippe auf Flecken hinzufügen, dann auf jedes Staubkorn. Staub zeigen macht sie leicht sichtbar.",
+"White balance": "Weißabgleich",
+"As shot (the camera’s setting)": "Wie aufgenommen (Kameraeinstellung)",
+"Estimated from the picture": "Aus dem Bild geschätzt",
+"As shot matches the camera’s own JPEG. The before-swap grey picker overrides either.": "Wie aufgenommen entspricht dem JPEG der Kamera. Die Graupipette vor dem Tausch überschreibt beides."
 });

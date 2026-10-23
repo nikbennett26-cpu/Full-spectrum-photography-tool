@@ -1257,10 +1257,11 @@ function rawEngineResultToCanvas(res, doCamSpaceSwap, doCamSpaceSwapMatrix, doCa
      falls back to camMul rather than being taken at face value \u2014 a
      silently-accepted identity here would look like "confirmed already
      neutral" when it actually means "gave up". */
-  let wb = res.__wb || chengPCAGains(res.R, res.G, res.B);
-  let wbSource = 'eigenvector';
-  if (!res.__wb && wb[0] === 1 && wb[1] === 1 && wb[2] === 1) { wb = pp_wbGain(res.camMul); wbSource = 'camera meter'; }
-  if (!res.__wb) res.__wb = wb;   // the same numbers every time for this decode, including the noise-reduced preview
+  // build 192: the camera's own white balance by default, the estimate on request (rawWbCompute in raw-process.js)
+  const wb = rawWbFor(res);   // the same numbers every time for this decode, including the noise-reduced preview
+  const wbSource = res.__wbSrc || 'camera';
+  // build 192: where each channel really clips in this file (rawClipFor); Infinity when it never does
+  const clipL = res.__clip || rawClipFor(res), icR = 1 / clipL[0], icG = 1 / clipL[1], icB = 1 / clipL[2];
   const hasCameraCal = !!(res.rgbCam && res.rgbCam.length >= 12 &&
     res.rgbCam.reduce((a,b) => a + Math.abs(b), 0) > 1e-6);
   /* Experimental wide-gamut swap (see the intro-screen checkbox comment).
@@ -1352,8 +1353,10 @@ function rawEngineResultToCanvas(res, doCamSpaceSwap, doCamSpaceSwapMatrix, doCa
       }
       const q = (y * w + x) * 4;
       let srn = sr / n, sgn = sg / n, sbn = sb / n;
-      const rawMxPre = srn > sgn ? (srn > sbn ? srn : sbn) : (sgn > sbn ? sgn : sbn);
-      const rawMnPre = srn < sgn ? (srn < sbn ? srn : sbn) : (sgn < sbn ? sgn : sbn);
+      // how close each channel is to ITS OWN clip point (build 192), so the tests below mean "clipped" on every camera
+      const kR = srn * icR, kG = sgn * icG, kB = sbn * icB;
+      const rawMxPre = kR > kG ? (kR > kB ? kR : kB) : (kG > kB ? kG : kB);
+      const rawMnPre = kR < kG ? (kR < kB ? kR : kB) : (kG < kB ? kG : kB);
 
       /* HIGHLIGHT RECONSTRUCTION, on the sensor values before any gain.
 
@@ -1379,13 +1382,13 @@ function rawEngineResultToCanvas(res, doCamSpaceSwap, doCamSpaceSwapMatrix, doCa
         recon = recon * recon * (3 - 2 * recon);
         const bR = srn * wb[0], bG = sgn * wb[1], bB = sbn * wb[2];
         let lvl = -1;
-        if (srn < 0.96 && bR > lvl) lvl = bR;
-        if (sgn < 0.96 && bG > lvl) lvl = bG;
-        if (sbn < 0.96 && bB > lvl) lvl = bB;
+        if (kR < 0.96 && bR > lvl) lvl = bR;
+        if (kG < 0.96 && bG > lvl) lvl = bG;
+        if (kB < 0.96 && bB > lvl) lvl = bB;
         if (lvl > 0) {
-          if (srn >= 0.96 && lvl > bR) srn += (lvl / wb[0] - srn) * recon;
-          if (sgn >= 0.96 && lvl > bG) sgn += (lvl / wb[1] - sgn) * recon;
-          if (sbn >= 0.96 && lvl > bB) sbn += (lvl / wb[2] - sbn) * recon;
+          if (kR >= 0.96 && lvl > bR) srn += (lvl / wb[0] - srn) * recon;
+          if (kG >= 0.96 && lvl > bG) sgn += (lvl / wb[1] - sgn) * recon;
+          if (kB >= 0.96 && lvl > bB) sbn += (lvl / wb[2] - sbn) * recon;
         }
       }
 

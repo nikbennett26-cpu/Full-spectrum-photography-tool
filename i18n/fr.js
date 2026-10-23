@@ -1022,5 +1022,9 @@ irlabTr.add('fr', {
 "Show dust": "Afficher la poussière",
 "Spot size": "Taille de la tache",
 "Clear all spots": "Retirer toutes les taches",
-"Tap Add spots, then tap each speck. Show dust makes them easy to find.": "Touche Ajouter des taches, puis chaque poussière. Afficher la poussière les rend faciles à repérer."
+"Tap Add spots, then tap each speck. Show dust makes them easy to find.": "Touche Ajouter des taches, puis chaque poussière. Afficher la poussière les rend faciles à repérer.",
+"White balance": "Balance des blancs",
+"As shot (the camera’s setting)": "Tel que pris (réglage de l’appareil)",
+"Estimated from the picture": "Estimée d’après l’image",
+"As shot matches the camera’s own JPEG. The before-swap grey picker overrides either.": "Tel que pris correspond au JPEG de l’appareil. La pipette de gris avant l’échange remplace l’un comme l’autre."
 });

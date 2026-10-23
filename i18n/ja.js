@@ -1022,5 +1022,9 @@ irlabTr.add('ja', {
 "Show dust": "ゴミを表示",
 "Spot size": "スポットの大きさ",
 "Clear all spots": "すべてのスポットを消去",
-"Tap Add spots, then tap each speck. Show dust makes them easy to find.": "「スポットを追加」をタップしてから、各ゴミをタップします。「ゴミを表示」で見つけやすくなります。"
+"Tap Add spots, then tap each speck. Show dust makes them easy to find.": "「スポットを追加」をタップしてから、各ゴミをタップします。「ゴミを表示」で見つけやすくなります。",
+"White balance": "ホワイトバランス",
+"As shot (the camera’s setting)": "撮影時の設定（カメラの設定）",
+"Estimated from the picture": "画像から推定",
+"As shot matches the camera’s own JPEG. The before-swap grey picker overrides either.": "「撮影時の設定」はカメラのJPEGと一致します。入れ替え前のグレーピッカーはどちらも上書きします。"
 });

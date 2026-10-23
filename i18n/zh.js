@@ -1022,5 +1022,9 @@ irlabTr.add('zh', {
 "Show dust": "显示灰尘",
 "Spot size": "污点大小",
 "Clear all spots": "清除所有污点",
-"Tap Add spots, then tap each speck. Show dust makes them easy to find.": "点“添加污点”，再点每个灰尘点。“显示灰尘”能让它们更容易找到。"
+"Tap Add spots, then tap each speck. Show dust makes them easy to find.": "点“添加污点”，再点每个灰尘点。“显示灰尘”能让它们更容易找到。",
+"White balance": "白平衡",
+"As shot (the camera’s setting)": "拍摄时设置（相机的设置）",
+"Estimated from the picture": "根据画面估算",
+"As shot matches the camera’s own JPEG. The before-swap grey picker overrides either.": "“拍摄时设置”与相机自身的 JPEG 一致。交换前的灰点吸管可覆盖两者。"
 });

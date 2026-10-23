@@ -930,14 +930,14 @@ async function rebuildRawPreview() {
       const ds = rawWorkingPlanes(base), wb = rawWbFor(base);
       let out;
       try {
-        out = await runRawNr(ds.R, ds.G, ds.B, ds.width, ds.height, { luma: v.L, chroma: v.C, hl: v.HL, wb: wb },
+        out = await runRawNr(ds.R, ds.G, ds.B, ds.width, ds.height, { luma: v.L, chroma: v.C, hl: v.HL, wb: wb, clip: rawClipFor(rawEngine.lastResult) },
           p => { if (my === rawNrRun) setRawNrBusy(true, 'Reducing noise\u2026 ' + Math.round(p * 100) + '%'); });
       } catch (e) {
         if (my === rawNrRun) { setRawNrBusy(false, ''); toast('RAW noise reduction failed (' + (e && e.message || e) + ')', true); }
         return;
       }
       if (my !== rawNrRun || token !== loadToken || rawEngine.lastResult !== base) return;   // superseded
-      rawEngine.nrPrev = { key: key, gen: token, res: Object.assign({}, base, { R: out.R, G: out.G, B: out.B, width: ds.width, height: ds.height, __wb: wb, __ds: null, __hlDone: !!out.hlDone }) };
+      rawEngine.nrPrev = { key: key, gen: token, res: Object.assign({}, base, { R: out.R, G: out.G, B: out.B, width: ds.width, height: ds.height, __wb: wb, __ds: null, __hlDone: !!out.hlDone, __clip: rawClipFor(base) }) };
     }
     res = rawEngine.nrPrev.res;
   }

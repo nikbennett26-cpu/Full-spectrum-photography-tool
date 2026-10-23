@@ -329,12 +329,13 @@ function rtDenoisePlanes(R, G, B, W, H, opts, onProgress) {
    default threshold (0.987 / 1.2 of the sensor's white). One deliberate difference from RawTherapee's port: its
    colour-correction sum compares each unclipped pixel with itself, so it is always zero; darktable's original, which
    this follows, compares it with the opposed estimate for that pixel, as the method describes. */
-function rtHlOpposed(R, G, B, W, H, wb) {
-  const clipRaw = 0.987 / 1.2, P = [R, G, B];
-  const clips = [clipRaw * wb[0], clipRaw * wb[1], clipRaw * wb[2]];
+function rtHlOpposed(R, G, B, W, H, wb, clipLv) {
+  // build 192: each channel's measured clip point (rawClipFor); the fixed level assumed every camera clips at 1.0
+  const cl = clipLv || [1, 1, 1], clipRaw = 0.987 / 1.2, P = [R, G, B];
+  const clips = [clipRaw * cl[0] * wb[0], clipRaw * cl[1] * wb[1], clipRaw * cl[2] * wb[2]];
   const clipdark = [0.03 * clips[0], 0.125 * clips[1], 0.03 * clips[2]];
   let x1 = W, y1 = H, x2 = -1, y2 = -1;
-  for (let y = 0; y < H; y++) { const b = y * W; for (let x = 0; x < W; x++) { const i = b + x; if (R[i] >= clipRaw || G[i] >= clipRaw || B[i] >= clipRaw) { if (x < x1) x1 = x; if (x > x2) x2 = x; if (y < y1) y1 = y; if (y > y2) y2 = y; } } }
+  for (let y = 0; y < H; y++) { const b = y * W; for (let x = 0; x < W; x++) { const i = b + x; if (R[i] >= clipRaw * cl[0] || G[i] >= clipRaw * cl[1] || B[i] >= clipRaw * cl[2]) { if (x < x1) x1 = x; if (x > x2) x2 = x; if (y < y1) y1 = y; if (y > y2) y2 = y; } } }
   if (x2 < 0) return false;
   x1 = Math.max(x1 - 4, 0); x2 = Math.min(x2 + 4, W - 1); y1 = Math.max(y1 - 4, 0); y2 = Math.min(y2 + 4, H - 1);
   const cW = x2 - x1 + 1, cH = y2 - y1 + 1, cN = cW * cH, BD = 8, pw = cW + 2 * BD, ph = cH + 2 * BD, pN = pw * ph;
@@ -384,7 +385,7 @@ function rtHlOpposed(R, G, B, W, H, wb) {
 /* The RAW steps the worker runs, in RawTherapee's order: highlights first, then noise reduction. */
 function rtProcessPlanes(R, G, B, W, H, opts, onProgress) {
   let hlDone = false;
-  if (opts.hl === 1) { R = R.slice(); G = G.slice(); B = B.slice(); rtHlOpposed(R, G, B, W, H, opts.wb || [1, 1, 1]); hlDone = true; }
+  if (opts.hl === 1) { R = R.slice(); G = G.slice(); B = B.slice(); rtHlOpposed(R, G, B, W, H, opts.wb || [1, 1, 1], opts.clip); hlDone = true; }
   if ((+opts.luma || 0) > 0 || (+opts.chroma || 0) > 0) { const o = rtDenoisePlanes(R, G, B, W, H, opts, onProgress); return { R: o.R, G: o.G, B: o.B, hlDone: hlDone }; }
   if (onProgress) onProgress(1);
   return { R: R, G: G, B: B, hlDone: hlDone };
@@ -445,12 +446,42 @@ function rawWorkingPlanes(res) {
   res.__ds = { R: oR, G: oG, B: oB, width: w, height: h };
   return res.__ds;
 }
+/* Build 192: where each channel really clips, measured from the file. The decoder scales the data by the white level the
+   camera's metadata gives, but some bodies record good data well above it: a Canon 1200D file states 14274 and fills to
+   16383, so its highlights ran to about 1.17 on this scale and everything from 0.96 up was being treated as clipped,
+   while the real clip, where values pile up on a plateau, sat higher. A channel that never piles up is not clipped and
+   gets Infinity. Measured once per decode, on a sample of the full planes. */
+function rawClipFor(res) {
+  if (res.__clip) return res.__clip;
+  const n = res.R.length, stride = Math.max(1, Math.floor(n / 400000)), BIN = 0.0025, LO = 0.5, NB = Math.ceil(2.5 / BIN);
+  res.__clip = [res.R, res.G, res.B].map(P => {
+    const h = new Uint32Array(NB); let cnt = 0;
+    for (let i = 0; i < n; i += stride) { cnt++; const v = P[i]; if (v >= LO && v < LO + NB * BIN) h[((v - LO) / BIN) | 0]++; }
+    let best = -1, bc = 0;
+    for (let b = Math.ceil((0.9 - LO) / BIN); b < NB; b++) if (h[b] > bc) { bc = h[b]; best = b; }
+    if (best < 0 || bc < Math.max(20, cnt * 0.002)) return Infinity;
+    let below = 0, nb = 0; for (let b = best - 40; b < best - 8; b++) if (b >= 0) { below += h[b]; nb++; }
+    if (nb && bc < 5 * (below / nb)) return Infinity;   // no plateau: a smooth falloff of bright pixels, not a clip
+    return LO + best * BIN;
+  });
+  return res.__clip;
+}
+/* Build 192: which white balance a RAW opens with. 'camera' (the default) is the one set in the camera, the same one its
+   JPEG uses; on a converted body that is usually a custom white balance taken through the filter, and it is what the
+   photographer expects to see. 'auto' is the estimate from the picture (Cheng, Prasad and Brown's eigenvector method),
+   which is made for daylight colour photos: on a UV or IR frame it can land far from anything sensible (red x1.58, blue
+   x0.29 on a UV frame whose camera setting was red x0.93, blue x0.33), which tinted the frame and pushed its sky past
+   white. Either way the before-swap grey picker still overrides it. */
+function rawWbMode() { try { return localStorage.getItem('irlab.rawWb') === 'auto' ? 'auto' : 'camera'; } catch (e) { return 'camera'; } }
+function rawWbCompute(res) {
+  const cam = pp_wbGain(res.camMul), camOk = res.camMul && res.camMul.length >= 3 && res.camMul[0] > 0 && res.camMul[1] > 0 && res.camMul[2] > 0;
+  if (rawWbMode() === 'camera' && camOk) return { wb: cam, source: 'camera' };
+  const e = chengPCAGains(res.R, res.G, res.B);
+  if (e[0] === 1 && e[1] === 1 && e[2] === 1) return { wb: cam, source: 'camera meter' };
+  return { wb: e, source: 'eigenvector' };
+}
 function rawWbFor(res) {   // the white balance rawEngineResultToCanvas applies, computed once per decode
-  if (!res.__wb) {
-    let wb = chengPCAGains(res.R, res.G, res.B);
-    if (wb[0] === 1 && wb[1] === 1 && wb[2] === 1) wb = pp_wbGain(res.camMul);
-    res.__wb = wb;
-  }
+  if (!res.__wb) { const w = rawWbCompute(res); res.__wb = w.wb; res.__wbSrc = w.source; }
   return res.__wb;
 }
 
@@ -1213,8 +1244,8 @@ async function loadFileInner(file) {
     if (source && source.__hasCameraWB && source.__wbGains) {
       preWBM = IDENTITY3;
       if ($('wbPreStatus')) $('wbPreStatus').textContent = source.__wbSource === 'eigenvector'
-        ? 'Auto \u2714 (eigenvector) \u2014 pick a neutral to override it'
-        : 'Auto \u2714 (camera meter) \u2014 pick a neutral to override it';
+        ? 'Auto \u2714 (estimated) \u2014 pick a neutral to override it'
+        : 'Camera \u2714 (as shot) \u2014 pick a neutral to override it';
       /* No automatic Vibrance push on load, deliberately -- an earlier
          flat 20% default oversaturated ordinary, well-separated RAW
          files; a later adaptive version (measuring each photo's actual

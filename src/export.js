@@ -197,9 +197,9 @@ async function rawFullResSource() {
     let src = rawEngine.lastResult;
     if (rawProcActive(nr)) {   // the same highlight rebuild and noise reduction, at full resolution this time
       const wb = rawWbFor(src), btn = $('bDl');
-      const out = await runRawNr(src.R, src.G, src.B, src.width, src.height, { luma: nr.L, chroma: nr.C, hl: nr.HL, wb: wb },
+      const out = await runRawNr(src.R, src.G, src.B, src.width, src.height, { luma: nr.L, chroma: nr.C, hl: nr.HL, wb: wb, clip: rawClipFor(src) },
         p => { if (btn && btn.disabled) btn.textContent = 'Reducing noise ' + Math.round(p * 100) + '%\u2026'; });
-      src = Object.assign({}, src, { R: out.R, G: out.G, B: out.B, __wb: wb, __ds: null, __hlDone: !!out.hlDone });
+      src = Object.assign({}, src, { R: out.R, G: out.G, B: out.B, __wb: wb, __ds: null, __hlDone: !!out.hlDone, __clip: rawClipFor(src) });
     }
     const keep = LAST_LINEAR_FLOAT, keepKey = rawEngine.builtKey;
     const cv = rawEngineResultToCanvas(src, checked, getCamSpaceSwapMatrix(), getCamSpaceSwapName(), true);
