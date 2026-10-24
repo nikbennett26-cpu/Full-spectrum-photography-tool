@@ -307,3 +307,5 @@ html.dockOn body.has-image #dock button{border:0!important;outline-offset:-2px}
 /* build 207 fix: the layout above forces the home page to show, which beat the inline display:none the code sets when a
    photo opens -- the home page stayed above the editor. Hidden means hidden. */
 #emptyStateGroup.lab[style*="display: none"],#emptyStateGroup.lab[style*="display:none"],body.has-image #emptyStateGroup.lab{display:none!important}
+/* build 210: the filter database button is one curve in the visible spectrum, violet to red (gradient in index.html) */
+#filterDbBtn svg path.fdbCurve{stroke:url(#fdbSpec)!important;stroke-width:2.2!important}

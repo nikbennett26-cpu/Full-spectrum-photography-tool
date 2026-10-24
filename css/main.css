@@ -1281,17 +1281,21 @@ html.studioOn body.has-image #reorderZone > #modeBar{display:flex !important;ord
 #wbTempGrp:not(.wbRaw) #wbCastStep{display:block}
 #wbTempGrp:not(.wbRaw) #wbCastStep .wbStepRail,#wbTempGrp:not(.wbRaw) #wbCastStep .wbStepHd{display:none}
 #wbTempGrp:not(.wbRaw) #wbCastStep .wbStepCard{background:none;border:none;padding:0;margin:0}
-/* build 209: the decode tip that appears when a RAW opens before any decode option was picked (src/decode-tip.js) */
-#decodeTip{position:fixed;left:50%;bottom:calc(84px + env(safe-area-inset-bottom));transform:translateX(-50%);z-index:9000;
-  width:min(380px,calc(100vw - 32px));box-sizing:border-box;padding:16px 16px 12px;background:var(--surface,#000);color:var(--paper,#ece8e1);
+/* builds 209-210: the decode choice shown before the first RAW is decoded (src/decode-tip.js) */
+#decodeTipVeil{position:fixed;inset:0;z-index:8999;background:rgba(0,0,0,.55)}
+#decodeTip{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);z-index:9000;max-height:calc(100vh - 32px);overflow:auto;
+  width:min(400px,calc(100vw - 32px));box-sizing:border-box;padding:18px 18px 14px;background:var(--surface,#000);color:var(--paper,#ece8e1);
   border:1px solid var(--line2,#333);border-top:2px solid var(--safelight,#d63a3a);box-shadow:0 10px 30px rgba(0,0,0,.45);font-size:13px;line-height:1.45}
 #decodeTip p{margin:0}
-#decodeTip #decodeTipT{font-size:14px}
-#decodeTip #decodeTipT span{color:var(--paper-dim,#a19d97)}
-#decodeTip #decodeTipT b{font-weight:500}
-#decodeTip .dtBody{margin-top:6px;color:var(--paper-dim,#a19d97)}
-#decodeTip .dtBtns{display:flex;justify-content:flex-end;gap:8px;margin-top:12px}
-#decodeTip button{min-height:40px;padding:0 14px;background:none;border:1px solid var(--line2,#333);color:var(--paper,#ece8e1);font:inherit;cursor:pointer}
-#decodeTip button.dtOk{border-color:var(--safelight,#d63a3a)}
+#decodeTip #decodeTipT{font-size:15px}
+#decodeTip .dtFile{margin-top:2px;font-size:12px;color:var(--paper-dim,#a19d97);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#decodeTip .dtRow{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:14px}
+#decodeTip .dtLbl{font-size:13px}
+#decodeTip .dtSeg{display:inline-flex;border:1px solid var(--line2,#333)}
+#decodeTip .dtSeg button{min-height:36px;padding:0 12px;border:0;background:none;color:var(--paper-dim,#a19d97);font:inherit;font-size:12.5px;cursor:pointer}
+#decodeTip .dtSeg button[aria-pressed="true"]{color:var(--paper,#ece8e1);box-shadow:inset 0 0 0 1px var(--safelight,#d63a3a)}
+#decodeTip .dtHint{margin-top:6px;font-size:12px;color:var(--paper-dim,#a19d97)}
+#decodeTip .dtBtns{display:flex;justify-content:flex-end;gap:8px;margin-top:16px}
+#decodeTip .dtBtns button{min-height:42px;padding:0 18px;background:none;border:1px solid var(--line2,#333);color:var(--paper,#ece8e1);font:inherit;cursor:pointer}
+#decodeTip .dtBtns button.dtOk{border-color:var(--safelight,#d63a3a)}
 #decodeTip button:focus-visible{outline:2px solid var(--safelight,#d63a3a);outline-offset:2px}
-@media (min-width:900px){#decodeTip{bottom:24px}}

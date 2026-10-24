@@ -2,51 +2,74 @@
 /* irlab editor: js/decode-tip.js. One of the editor's scripts, loaded in order by index.html as plain
    (non-module) scripts that share one global scope. Order matters: see the list in index.html. */
 
-/* ---------- Decode tip (build 209) ----------
-   The decode choices (colour rebuild, quick preview, wide-gamut swap) are read the moment a RAW opens, and they sit
-   on the start page where they are easy to miss. So the first time a RAW opens while none of them has been picked,
-   a short card says what the photo was decoded with and where to change it. It stops appearing once any decode
-   option is changed, or once "Got it" is tapped. Only RAW files: decode settings do nothing for a JPEG or PNG. */
-(function decodeTip() {
-  const KEY = 'irlab.decodeTipDone';
-  const done = () => { try { return localStorage.getItem(KEY) === '1'; } catch (e) { return false; } };
-  const markDone = () => { try { localStorage.setItem(KEY, '1'); } catch (e) {} };
-  ['cr2PreferPreview', 'camSpaceSwap', 'demosaicSel', 'cr2PreferPreviewEditor', 'camSpaceSwapEditor', 'demosaicSelEd']
-    .forEach(id => { const e = $(id); if (e) e.addEventListener('change', () => { markDone(); close(); }); });
+/* ---------- Decode choice before the first RAW (builds 209-210) ----------
+   The decode choices are read the moment a RAW is decoded, and they sit on the start page where they are easy to
+   miss. So when a RAW is opened while no decode option has been picked yet, loadFile() waits on decodeTipAsk(): a
+   short card shows the two choices that matter (colour rebuild, full sensor or quick preview) BEFORE anything is
+   decoded. Open decodes with what is shown; Cancel opens nothing. Once Open is tapped, or any decode option is
+   changed anywhere, it is not asked again. Only RAW files: decode settings do nothing for a JPEG or PNG. */
+const DECODE_TIP_KEY = 'irlab.decodeTipDone';
+function decodeTipDone() { try { return localStorage.getItem(DECODE_TIP_KEY) === '1'; } catch (e) { return false; } }
+function decodeTipMarkDone() { try { localStorage.setItem(DECODE_TIP_KEY, '1'); } catch (e) {} }
+['cr2PreferPreview', 'camSpaceSwap', 'demosaicSel', 'cr2PreferPreviewEditor', 'camSpaceSwapEditor', 'demosaicSelEd']
+  .forEach(id => { const e = $(id); if (e) e.addEventListener('change', e2 => { if (e2.isTrusted) decodeTipMarkDone(); }); });
 
-  let box = null;
-  function close() { if (box) { box.remove(); box = null; } }
-  function openSettings() {
-    if (typeof setEditorMode === 'function') setEditorMode('advanced', true);
-    const t = document.querySelector('#dock button[data-tab="export"], button[data-tab="export"]');
-    if (t && t.getAttribute('aria-pressed') !== 'true') t.click();
-    const g = $('decodeGrp');
-    if (g) { g.open = true; setTimeout(() => g.scrollIntoView({ block: 'start', behavior: 'smooth' }), 80); }
-  }
-  function show() {
-    if (box || done()) return;
-    const sum = ($('labDecSumTxt') && $('labDecSumTxt').textContent.trim()) || 'AMaZE · full sensor';
-    box = document.createElement('div');
-    box.id = 'decodeTip'; box.setAttribute('role', 'dialog'); box.setAttribute('aria-labelledby', 'decodeTipT');
-    box.innerHTML = '<p id="decodeTipT"><span>Decoded with</span> <b class="noTr"></b></p>'
-      + '<p class="dtBody">Decode settings change how a RAW is turned into a picture. Set them on the start page before you open a photo, or under Export, Decode settings, in Advanced.</p>'
-      + '<div class="dtBtns"><button type="button" class="dtChange">Change settings</button><button type="button" class="dtOk">Got it</button></div>';
-    box.querySelector('b').textContent = sum;
-    box.querySelector('.dtOk').addEventListener('click', () => { markDone(); close(); });
-    box.querySelector('.dtChange').addEventListener('click', () => { markDone(); close(); openSettings(); });
-    document.body.appendChild(box);
+let decodeTipOpen = null;   // the pending card's resolver, so a second file picked while it is up replaces it
+function decodeTipAsk(file) {
+  const ext = ((file && file.name || '').split('.').pop() || '').toUpperCase();
+  if (!RAW_EXT.includes(ext) || decodeTipDone()) return Promise.resolve(true);
+  if ((typeof sessionRestoring !== 'undefined' && sessionRestoring) || window.__keepEditsOnLoad || window.__selftestRunning) return Promise.resolve(true);
+  if (decodeTipOpen) decodeTipOpen(false);
+  return new Promise(resolve => {
+    const q = $('cr2PreferPreview');
+    let dm = typeof demosaicPref === 'function' ? demosaicPref() : 'amaze';
+    let quick = !!(q && q.checked);
+    const box = document.createElement('div');
+    box.id = 'decodeTip'; box.setAttribute('role', 'dialog'); box.setAttribute('aria-modal', 'true'); box.setAttribute('aria-labelledby', 'decodeTipT');
+    box.innerHTML =
+        '<p id="decodeTipT">How should this RAW be decoded?</p>'
+      + '<p class="dtFile noTr"></p>'
+      + '<div class="dtRow"><span class="dtLbl">Colour rebuild</span><div class="dtSeg" data-k="dm">'
+      +   '<button type="button" data-v="amaze">AMaZE</button><button type="button" data-v="rcd">RCD</button></div></div>'
+      + '<p class="dtHint">AMaZE keeps the finest detail. RCD is a little softer and cleaner on noisy files.</p>'
+      + '<div class="dtRow"><span class="dtLbl">Decode</span><div class="dtSeg" data-k="q">'
+      +   '<button type="button" data-v="0">Full sensor</button><button type="button" data-v="1">Quick preview</button></div></div>'
+      + '<p class="dtHint">Full sensor uses every pixel the camera recorded. Quick preview uses the small JPEG inside the file: faster, with fewer RAW-only tools.</p>'
+      + '<p class="dtHint">You can change these later on the start page, or under Export, Decode settings, in Advanced.</p>'
+      + '<div class="dtBtns"><button type="button" class="dtCancel">Cancel</button><button type="button" class="dtOk">Open</button></div>';
+    box.querySelector('.dtFile').textContent = file.name;
+    const paint = () => {
+      box.querySelectorAll('.dtSeg[data-k="dm"] button').forEach(b => b.setAttribute('aria-pressed', b.dataset.v === dm ? 'true' : 'false'));
+      box.querySelectorAll('.dtSeg[data-k="q"] button').forEach(b => b.setAttribute('aria-pressed', (b.dataset.v === '1') === quick ? 'true' : 'false'));
+    };
+    box.querySelectorAll('.dtSeg button').forEach(b => b.addEventListener('click', () => {
+      if (b.parentElement.dataset.k === 'dm') dm = b.dataset.v; else quick = b.dataset.v === '1';
+      paint();
+    }));
+    paint();
+    const veil = document.createElement('div'); veil.id = 'decodeTipVeil';
+    const finish = ok => {
+      if (decodeTipOpen !== done) return;
+      decodeTipOpen = null; box.remove(); veil.remove(); document.removeEventListener('keydown', onKey, true);
+      if (ok) {
+        decodeTipMarkDone();
+        // write the choices into the real controls without a change event on the demosaic selects, which would
+        // re-decode a photo that is already open
+        try { localStorage.setItem('irlab.demosaic', dm); } catch (e) {}
+        ['demosaicSel', 'demosaicSelEd'].forEach(id => { const s = $(id); if (s) s.value = dm; });
+        const ql = $('ltDecoder'); if (ql) ql.textContent = dm === 'rcd' ? 'RCD' : 'AMaZE';
+        if (q) { q.checked = quick; q.dispatchEvent(new Event('change')); }   // syncs the editor copy and the start-page summary
+      }
+      resolve(ok);
+    };
+    const done = ok => finish(ok);
+    const onKey = e => { if (e.key === 'Escape') { e.preventDefault(); finish(false); } };
+    box.querySelector('.dtOk').addEventListener('click', () => finish(true));
+    box.querySelector('.dtCancel').addEventListener('click', () => finish(false));
+    veil.addEventListener('click', () => finish(false));
+    document.addEventListener('keydown', onKey, true);
+    decodeTipOpen = done;
+    document.body.appendChild(veil); document.body.appendChild(box);
     box.querySelector('.dtOk').focus({ preventScroll: true });
-  }
-  document.addEventListener('keydown', e => { if (box && e.key === 'Escape') close(); });
-  // a RAW has opened when body gains .rawOpen; a reload restoring the last photo or a re-decode does not count
-  let was = document.body.classList.contains('rawOpen');
-  new MutationObserver(() => {
-    const now = document.body.classList.contains('rawOpen');
-    if (now && !was) {
-      const quiet = (typeof sessionRestoring !== 'undefined' && sessionRestoring) || window.__keepEditsOnLoad;
-      if (!quiet) setTimeout(show, 400);
-    }
-    if (!now) close();
-    was = now;
-  }).observe(document.body, { attributes: true, attributeFilter: ['class'] });
-})();
+  });
+}
