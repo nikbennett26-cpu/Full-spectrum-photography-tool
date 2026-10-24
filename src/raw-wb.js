@@ -155,6 +155,7 @@ function rtwbSet(next) {
     $('rawWbOff').hidden = true;
     rawWbDrag = rtwbGains(res, v.t, v.g);
     render(true);
+    rtwbLiveBuild();
   };
   [ts, gs].forEach(el => {
     el.addEventListener('input', live);
@@ -175,6 +176,7 @@ function rtwbSet(next) {
       ts.value = rtwbTempToPos(hold.t);
       rawWbDrag = rtwbGains(res, hold.t, hold.g);
       render(true);
+      rtwbLiveBuild();
     };
     b.addEventListener('pointerdown', e => {
       if (!rtwbRes()) return;
@@ -277,4 +279,38 @@ function rtwbTypeOpen(id, bEl) {
     else if (ev.key === 'Escape') { ev.preventDefault(); close(false); }
   });
   inp.addEventListener('blur', () => close(true));
+}
+
+/* Build 200: while a slider is dragged (or -50/+50 held), the picture is really rebuilt with the white balance being set,
+   as often as the device manages, from the working-size sensor planes cached for the decode -- the same downscale the
+   normal build uses, so the result is the one letting go gives. The matrix preview above only bridges the gap between
+   two builds. It used to be all there was, and on a filtered shot it could not be right: a UV frame going from its
+   as-shot balance to 3000 K multiplies red about 5x and blue about 12x, and the built picture had already lost what
+   that needs (channels pushed below zero were stored as zero, blown areas were repaired for the old balance), so the
+   colour jumped when the rebuild landed. */
+let rtwbLiveBusy = false, rtwbLiveAgain = false;
+function rtwbLiveBuild() {
+  if (!rawWbDrag) return;
+  if (rtwbLiveBusy) { rtwbLiveAgain = true; return; }
+  rtwbLiveBusy = true;
+  setTimeout(() => {
+    try {
+      const base = rawEngine.lastResult, wb = rawWbDrag;
+      if (base && wb && rawEngine.lastGen === loadToken) {
+        // noise reduction on: its cached planes, else the plain working-size ones
+        const nr = rawEngine.nrPrev && rawEngine.nrPrev.gen === loadToken ? rawEngine.nrPrev.res : null;
+        const ds = nr ? { R: nr.R, G: nr.G, B: nr.B, width: nr.width, height: nr.height } : rawWorkingPlanes(base);
+        const res = Object.assign({}, base, { R: ds.R, G: ds.G, B: ds.B, width: ds.width, height: ds.height, __wb: wb.slice(), __ds: null,
+          __hlDone: nr ? !!nr.__hlDone : false, __clip: rawClipFor(base) });
+        const checked = !!($('camSpaceSwap') && $('camSpaceSwap').checked);
+        const keepKey = rawEngine.builtKey;
+        const cv = rawEngineResultToCanvas(res, checked, getCamSpaceSwapMatrix(), getCamSpaceSwapName());
+        rawEngine.builtKey = keepKey;
+        rawEngine.builtWbKey = 'drag';   // whatever is let go of, the real build still runs
+        installRawPreview(cv, false);
+      }
+    } catch (e) { console.warn('live white balance build', e); }
+    rtwbLiveBusy = false;
+    if (rtwbLiveAgain && rawWbDrag) { rtwbLiveAgain = false; rtwbLiveBuild(); } else rtwbLiveAgain = false;
+  }, 0);
 }

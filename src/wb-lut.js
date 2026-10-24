@@ -884,7 +884,12 @@ function reapplyCamSpaceSwap() {
   if (!wbSame) rawEngine.nrPrev = null;
   if (rawNrKey() !== '0|0|0') { rebuildRawPreview(); return; }   // the noise-reduced path, which handles the swap too
   rawNrRun++;   // cancels any noise reduction still running: it is off now
-  const cv2 = rawEngineResultToCanvas(rawEngine.lastResult, checked, getCamSpaceSwapMatrix(), getCamSpaceSwapName());
+  /* Build 200: from the working-size planes cached for this decode rather than the full sensor: the same downscale, so
+     the same picture, without reading every sensor pixel again on each swap or white balance change. */
+  const base = rawEngine.lastResult, ds = rawWorkingPlanes(base);
+  const wres = Object.assign({}, base, { R: ds.R, G: ds.G, B: ds.B, width: ds.width, height: ds.height, __wb: rawWbFor(base).slice(), __ds: null, __clip: rawClipFor(base) });
+  const cv2 = rawEngineResultToCanvas(wres, checked, getCamSpaceSwapMatrix(), getCamSpaceSwapName());
+  base.__M = wres.__M;   // the IR leak correction reads it from the decode (src/ir-leak.js)
   rawEngine.builtNr = '0|0|0';
   installRawPreview(cv2, !swapSame);
   if (typeof setRawNrBusy === 'function') setRawNrBusy(false, '');
