@@ -340,6 +340,96 @@ class WebGLEngine {
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
   }
 
+  /* Build 204: the RAW white balance on the GPU, for dragging. The camera planes (working size, before white balance,
+     the same box-averaged values rawEngineResultToCanvas reads) go up once as a float texture; each call then runs the
+     per-pixel part of that build -- the highlight rebuild, white balance, the camera matrix (with the camera-space swap
+     folded in), the desaturation of fully blown pixels, the orientation -- straight into the picture's own texture. A
+     few milliseconds against a JavaScript loop over every pixel. Letting go still runs the full build on the CPU, which
+     is the reference; this is its line-for-line port. False when the device can't (no WebGL2 float target), so the
+     caller falls back to the CPU drag preview. */
+  rawDevelop(o) {
+    const gl = this.gl;
+    if (!this.isWebGL2 || !this.hiPrec || this._rdFail || !this.texture || !this.inputIsLinear || !o || !o.planes) return false;
+    const sw = o.orient >= 5 && o.orient <= 8, W = sw ? o.h : o.w, H = sw ? o.w : o.h;
+    if (this.canvas.width !== W || this.canvas.height !== H) return false;
+    try {
+      if (!this._rd) {
+        const mk = (type, src) => { const sh = gl.createShader(type); gl.shaderSource(sh, src); gl.compileShader(sh);
+          if (!gl.getShaderParameter(sh, gl.COMPILE_STATUS)) throw new Error(gl.getShaderInfoLog(sh)); return sh; };
+        const prog = gl.createProgram();
+        gl.attachShader(prog, mk(gl.VERTEX_SHADER, '#version 300 es\nvoid main(){vec2 q=vec2(float(gl_VertexID&1)*2.0-1.0,float(gl_VertexID>>1)*2.0-1.0);gl_Position=vec4(q,0.0,1.0);}'));
+        gl.attachShader(prog, mk(gl.FRAGMENT_SHADER, `#version 300 es
+precision highp float;
+uniform highp sampler2D u_planes; uniform ivec2 u_size; uniform int u_orient;
+uniform vec3 u_wb; uniform vec3 u_iclip; uniform mat3 u_M; uniform float u_hlDone;
+out vec4 o;
+float hlNear(float k){ float t = clamp((k - 0.9) / 0.085, 0.0, 1.0); return t * t * (3.0 - 2.0 * t); }
+void main(){
+  ivec2 d = ivec2(gl_FragCoord.xy); int w = u_size.x, h = u_size.y; ivec2 s;
+  if (u_orient == 2) s = ivec2(w - 1 - d.x, d.y);
+  else if (u_orient == 3) s = ivec2(w - 1 - d.x, h - 1 - d.y);
+  else if (u_orient == 4) s = ivec2(d.x, h - 1 - d.y);
+  else if (u_orient == 5) s = ivec2(d.y, d.x);
+  else if (u_orient == 6) s = ivec2(d.y, h - 1 - d.x);
+  else if (u_orient == 7) s = ivec2(w - 1 - d.y, h - 1 - d.x);
+  else if (u_orient == 8) s = ivec2(w - 1 - d.y, d.x);
+  else s = d;
+  vec3 c = texelFetch(u_planes, s, 0).rgb;
+  vec3 k = c * u_iclip;
+  float mx = max(k.r, max(k.g, k.b)), mn = min(k.r, min(k.g, k.b));
+  if (u_hlDone < 0.5 && mx > 0.9) {
+    vec3 b = c * u_wb; float lvl = max(b.r, max(b.g, b.b));
+    vec3 wgt = vec3(hlNear(k.r), hlNear(k.g), hlNear(k.b));
+    c += (vec3(lvl) / u_wb - c) * wgt;
+  }
+  vec3 r = u_M * (c * u_wb);
+  if (mn >= 0.96) { float t = clamp((mn - 0.96) / 0.04, 0.0, 1.0); t = t * t * (3.0 - 2.0 * t); float m = max(r.r, max(r.g, r.b)); r += (vec3(m) - r) * t; }
+  o = vec4(clamp(r, 0.0, 8.0), 1.0);
+}`));
+        gl.linkProgram(prog);
+        if (!gl.getProgramParameter(prog, gl.LINK_STATUS)) throw new Error(gl.getProgramInfoLog(prog));
+        const L = n => gl.getUniformLocation(prog, n);
+        this._rd = { prog, planes: L('u_planes'), size: L('u_size'), orient: L('u_orient'), wb: L('u_wb'), iclip: L('u_iclip'), M: L('u_M'), hl: L('u_hlDone'), tex: null, src: null, fb: gl.createFramebuffer() };
+      }
+      const rd = this._rd;
+      if (o.prepareOnly && rd.src === o.planes && rd.tex) return true;
+      if (rd.src !== o.planes || !rd.tex) {   // once per set of planes
+        const n = o.w * o.h, buf = new Float32Array(n * 4), P = o.planes;
+        for (let i = 0; i < n; i++) { buf[i * 4] = P.R[i]; buf[i * 4 + 1] = P.G[i]; buf[i * 4 + 2] = P.B[i]; buf[i * 4 + 3] = 1; }
+        if (!rd.tex) rd.tex = gl.createTexture();
+        gl.activeTexture(gl.TEXTURE13); gl.bindTexture(gl.TEXTURE_2D, rd.tex);
+        gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA32F, o.w, o.h, 0, gl.RGBA, gl.FLOAT, buf);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST); gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+        gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE); gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+        gl.activeTexture(gl.TEXTURE0);
+        rd.src = o.planes;
+      }
+      if (o.prepareOnly) return true;   // build 204: compiled and uploaded ahead of the first drag
+      gl.bindFramebuffer(gl.FRAMEBUFFER, rd.fb);
+      gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, this.texture, 0);
+      if (gl.checkFramebufferStatus(gl.FRAMEBUFFER) !== gl.FRAMEBUFFER_COMPLETE) throw new Error('raw develop target incomplete');
+      gl.viewport(0, 0, W, H);
+      gl.useProgram(rd.prog);
+      gl.activeTexture(gl.TEXTURE0); gl.bindTexture(gl.TEXTURE_2D, null);   // never sample the target while drawing into it
+      gl.activeTexture(gl.TEXTURE13); gl.bindTexture(gl.TEXTURE_2D, rd.tex);
+      gl.uniform1i(rd.planes, 13); gl.uniform2i(rd.size, o.w, o.h); gl.uniform1i(rd.orient, o.orient || 1);
+      gl.uniform3fv(rd.wb, o.wb); gl.uniform3fv(rd.iclip, o.iclip); gl.uniform1f(rd.hl, o.hlDone ? 1 : 0);
+      const M = o.M;   // row-major 3x3 -> column-major for GL
+      gl.uniformMatrix3fv(rd.M, false, [M[0], M[3], M[6], M[1], M[4], M[7], M[2], M[5], M[8]]);
+      gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+      gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+      gl.useProgram(this.program);
+      gl.activeTexture(gl.TEXTURE0); gl.bindTexture(gl.TEXTURE_2D, this.texture);
+      gl.viewport(0, 0, this.canvas.width, this.canvas.height);
+      this._texGen = (this._texGen || 0) + 1;
+      return true;
+    } catch (err) {
+      this._rdFail = true; console.warn('GPU raw develop disabled:', err && err.message);
+      try { gl.bindFramebuffer(gl.FRAMEBUFFER, null); gl.useProgram(this.program); gl.activeTexture(gl.TEXTURE0); gl.bindTexture(gl.TEXTURE_2D, this.texture); } catch (e) {}
+      return false;
+    }
+  }
+
   /* Build 201: new linear data for the picture already on the GPU, same size -- the RAW white balance drag. Skips
      everything setImage does around the upload (canvas sizing, the 8-bit path). False when it can't, so the caller
      falls back to a full install. */

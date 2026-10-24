@@ -101,6 +101,7 @@ function rtwbSyncUi() {
   const sw = $('wbSwapStep'); if (sw && sw.hidden === !!res) sw.hidden = !res;
   const grp = $('wbTempGrp'); if (grp) grp.classList.toggle('wbRaw', !!res);
   if (!res) return;
+  rtwbGpuWarm();
   rtwbSyncSwap();
   if (rawWbDrag) return;
   const eff = rtwbFromGains(res, rawWbFor(res)) || { temp: 5000, green: 1 };
@@ -330,6 +331,7 @@ function rtwbTypeOpen(id, bEl) {
 let rtwbLiveBusy = false, rtwbLiveAgain = false;
 function rtwbLiveBuild() {
   if (!rawWbDrag) return;
+  if (rtwbGpuBuild()) return;   // build 204: on the GPU, in step with the finger
   if (rtwbLiveBusy) { rtwbLiveAgain = true; return; }
   rtwbLiveBusy = true;
   setTimeout(() => {
@@ -394,4 +396,33 @@ function rtwbDouble(src, w, h, W, H) {
     }
   }
   return out;
+}
+
+/* Build 204: the drag build on the GPU (engine.rawDevelop): the same planes, white balance, clip points and camera matrix
+   as the CPU build, run per pixel by the graphics chip straight into the picture's texture. */
+/* Compile the program and upload the planes while nothing is happening, so the first drag doesn't pay for it. */
+let rtwbWarmFor = null;
+function rtwbGpuWarm() {
+  const base = rawEngine.lastResult;
+  if (!engine || !base || rtwbWarmFor === base || rawEngine.lastGen !== loadToken) return;
+  rtwbWarmFor = base;
+  const go = () => { try { if (rawEngine.lastResult !== base) return; const full = rawWorkingPlanes(base);
+    engine.rawDevelop({ planes: full, w: full.width, h: full.height, orient: srcOrient || 1, prepareOnly: true }); } catch (e) {} };
+  if (typeof requestIdleCallback === 'function') requestIdleCallback(go, { timeout: 3000 }); else setTimeout(go, 800);
+}
+function rtwbGpuBuild() {
+  try {
+    const base = rawEngine.lastResult, wb = rawWbDrag;
+    if (!engine || !base || !wb || rawEngine.lastGen !== loadToken || !base.__M) return false;
+    const nr = rawEngine.nrPrev && rawEngine.nrPrev.gen === loadToken ? rawEngine.nrPrev.res : null;
+    const full = nr ? (nr.__planes || (nr.__planes = { R: nr.R, G: nr.G, B: nr.B, width: nr.width, height: nr.height })) : rawWorkingPlanes(base);
+    const clip = rawClipFor(base);
+    const ok = engine.rawDevelop({ planes: full, w: full.width, h: full.height, orient: srcOrient || 1, wb: wb,
+      iclip: clip.map(c => (isFinite(c) && c > 0) ? 1 / c : 0), M: base.__M, hlDone: nr ? !!nr.__hlDone : false });
+    if (!ok) return false;
+    rawWbBuilt = wb.slice();             // the texture now holds this balance, so the matrix preview stands down
+    rawEngine.builtWbKey = 'drag';       // letting go still runs the full build
+    render(true);
+    return true;
+  } catch (e) { return false; }
 }
