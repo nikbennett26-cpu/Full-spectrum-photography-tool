@@ -304,3 +304,6 @@ html.dockOn body.has-image #dock button{border:0!important;outline-offset:-2px}
 #emptyStateGroup.lab .labTerm label.labGo.ltPrompt{order:1}
 #emptyStateGroup.lab .labLoadRow{order:2}
 #emptyStateGroup.lab #triStart{order:3;margin-top:20px}
+/* build 207 fix: the layout above forces the home page to show, which beat the inline display:none the code sets when a
+   photo opens -- the home page stayed above the editor. Hidden means hidden. */
+#emptyStateGroup.lab[style*="display: none"],#emptyStateGroup.lab[style*="display:none"],body.has-image #emptyStateGroup.lab{display:none!important}
