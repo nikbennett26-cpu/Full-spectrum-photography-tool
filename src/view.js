@@ -142,7 +142,9 @@ function drawHistogram() {
   if (cv.width !== bw || cv.height !== bh) { cv.width = bw; cv.height = bh; }
   ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
   ctx.clearRect(0, 0, W, H);
-  ctx.fillStyle = '#0b0c0e'; ctx.fillRect(0, 0, W, H);
+  // build 205: the theme's own ground and lines (css/minimal.css), not a fixed near-black
+  const cs = getComputedStyle(cv), bgCol = (cs.getPropertyValue('--bg') || '').trim() || '#000', lnCol = (cs.getPropertyValue('--line') || '').trim() || '#1f1f1f';
+  ctx.fillStyle = bgCol; ctx.fillRect(0, 0, W, H);
   if (scopeMode === 'parade') { drawParade(ctx, d, W, H, hh); return; }
 
   // Ignore bin 0 and bin 255 when scaling. A large flat area of pure black or
@@ -152,23 +154,22 @@ function drawHistogram() {
   let peak = 1;
   for (let c = 0; c < 3; c++) for (let v = 1; v < 255; v++) if (bins[c][v] > peak) peak = bins[c][v];
 
-  ctx.strokeStyle = 'rgba(84,64,42,.5)'; ctx.lineWidth = 1;
+  ctx.strokeStyle = lnCol; ctx.lineWidth = 1;
   for (let q = 1; q < 4; q++) { const x = Math.round(W * q / 4) + .5; ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, H); ctx.stroke(); }
+  ctx.beginPath(); ctx.moveTo(0, H - .5); ctx.lineTo(W, H - .5); ctx.stroke();
 
-  const cols = ['#c2543a', '#6fab8a', '#5f8fa8'];
-  ctx.globalCompositeOperation = 'lighter';
+  // build 205: three thin lines, no fill, the way the rest of the minimal look draws curves
+  const cols = ['#d63a3a', '#6fae7f', '#6f9fc7'];
+  ctx.lineJoin = 'round';
   for (let c = 0; c < 3; c++) {
-    ctx.beginPath(); ctx.moveTo(0, H);
+    ctx.beginPath();
     for (let v = 0; v < 256; v++) {
       // sqrt keeps the long thin tails visible next to the tall midtone mass
-      const y = H - Math.min(1, Math.sqrt(bins[c][v] / peak)) * (H - 2);
-      ctx.lineTo(v / 255 * W, y);
+      const y = H - 1 - Math.min(1, Math.sqrt(bins[c][v] / peak)) * (H - 3);
+      if (v === 0) ctx.moveTo(0, y); else ctx.lineTo(v / 255 * W, y);
     }
-    ctx.lineTo(W, H); ctx.closePath();
-    ctx.fillStyle = cols[c] + '66'; ctx.fill();
-    ctx.strokeStyle = cols[c] + 'cc'; ctx.lineWidth = 1; ctx.stroke();
+    ctx.strokeStyle = cols[c]; ctx.lineWidth = 1.3; ctx.stroke();
   }
-  ctx.globalCompositeOperation = 'source-over';
 
   // Count only what's genuinely pinned at the ends, and report it as a
   // percentage — the number you actually act on.
@@ -185,8 +186,8 @@ function drawHistogram() {
   if (pct(anyHi) > 0.05 && pct(anyHi) - pct(allWhite) > 0.05)
     parts.push(pct(anyHi).toFixed(1) + '% one channel pinned');
   if (parts.length) {
-    ctx.font = '11px ui-monospace,Consolas,monospace';
-    ctx.fillStyle = '#a89372'; ctx.textAlign = 'right';
+    ctx.font = '11px Inter,system-ui,sans-serif';
+    ctx.fillStyle = (cs.getPropertyValue('--paper-dim') || '').trim() || '#a19d97'; ctx.textAlign = 'right';
     ctx.fillText(parts.join('  ·  '), W - 6, 14);
   }
 }
