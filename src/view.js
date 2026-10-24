@@ -1768,8 +1768,10 @@ function tempTintGains() {
   const t = wbEff($('temp') ? $('temp').value : 0) / 100;   // build 190: the sliders hold a position on a curve
   const m = wbEff($('tint') ? $('tint').value : 0) / 100;
   ['temp', 'tint'].forEach(id => { const l = $('v_' + id), el = $(id); if (l && el && !l.dataset.editing) { const s = String(fmtSliderValue(id, el.value)); if (l.textContent !== s) l.textContent = s; } });
-  if (typeof rtwbSyncUi === 'function') rtwbSyncUi();   // build 197: the RAW white balance readout
-  if (typeof wsTabsSync === 'function') wsTabsSync();   // build 207
+  /* Build 212: the RAW white balance card and the working-space words are no longer refreshed from here. This runs
+     inside currentParams() on every frame, and the card's track painter calls currentParams() itself, so every frame
+     of every slider on a RAW recursed until the stack ran out. They are scheduled instead, and refresh once things settle. */
+  if (typeof wbUiSoon === 'function') wbUiSoon();
   if (t === 0 && m === 0) return [1, 1, 1];
   /* Exponential rather than linear. The old form subtracted from 1, so blue
      hit zero at slider 357 and went negative past it — which is why the range

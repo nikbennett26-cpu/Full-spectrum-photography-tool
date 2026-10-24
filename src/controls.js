@@ -885,6 +885,20 @@ function renderNow() {
   saveSessionState();
   if ($('previewFullscreen').classList.contains('on')) scheduleFullscreenHQ();
 }
+/* Build 212: the white balance card (readout, buttons, tracks painted from the photo) and the working-space words are
+   refreshed a moment after the render parameters are built, and not at all while a slider is held: the tracks are worked out from the whole
+   colour pipeline, which is too much to redo on every frame of a drag. */
+let wbUiTimer = null, wbUiRunning = false;
+function wbUiSoon() {   // called from tempTintGains(), so every path that builds the render parameters schedules it
+  if (wbUiRunning || wbUiTimer) return;   // already due (the parameters are read often, so a reset timer never fired),
+  wbUiTimer = setTimeout(function run() {   // and the refresh itself reads the parameters without scheduling another
+    if (sliderDragging) { wbUiTimer = setTimeout(run, 150); return; }
+    wbUiTimer = null; wbUiRunning = true;
+    try { if (typeof rtwbSyncUi === 'function') rtwbSyncUi(); } catch (e) {}
+    try { if (typeof wsTabsSync === 'function') wsTabsSync(); } catch (e) {}
+    wbUiRunning = false;
+  }, 120);
+}
 
 // See the CSS comment on #implicitStamp for why this exists. wbPreStatus's
 // own text already distinguishes the three states this cares about ("Auto

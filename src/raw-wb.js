@@ -129,7 +129,13 @@ function rtwbSyncUi() {
    cast -- at a fixed brightness, so the track shows what landing there does to this picture. The fixed blue-to-orange
    strip it replaces is right for an ordinary photo but says nothing true about a swapped infrared one. */
 let rtwbTrackKey = '';
+let rtwbPainting = false;   // build 212: never re-entered (it used to recurse through currentParams on every frame)
 function rtwbPaintTracks(res, t, g) {
+  if (rtwbPainting) return;
+  rtwbPainting = true;
+  try { rtwbPaintTracksNow(res, t, g); } finally { rtwbPainting = false; }
+}
+function rtwbPaintTracksNow(res, t, g) {
   const ts = $('rawTemp'), gs = $('rawGreen'); if (!ts || !gs) return;
   // measured from the slider's own setting, so the thumb sits on grey and each side shows which way it pushes; on a
   // shot whose as-shot is beyond the scale, measuring from that made the whole track one solid colour
