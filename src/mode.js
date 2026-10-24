@@ -39,6 +39,7 @@ function updateModeNote() {
   const n = $('modeNote'); if (!n) return;
   const used = editorMode === 'simple' ? advancedInUse() : [];
   n.hidden = !used.length;
+  const bar = $('modeBar'); if (bar) bar.classList.toggle('empty', !used.length);   // build 217: the bar is only the note now
   if (used.length) {   // three nodes so the page translator handles the words; the tool names are fixed constants
     n.textContent = '';
     const a = document.createElement('span'); a.textContent = 'Also in use'; n.appendChild(a);
@@ -48,7 +49,7 @@ function updateModeNote() {
 }
 // build 209: in Simple the Advanced button says how many tools it adds, so the switch visibly does something
 function modeCountSync() {
-  const b = document.querySelector('#modeBar button[data-mode="advanced"]'); if (!b) return;
+  const b = document.querySelector('#homeMode button[data-mode="advanced"]'); if (!b) return;   // build 217: the switch lives on the home page
   let c = b.querySelector('.modeMore');
   if (!c) { c = document.createElement('span'); c.className = 'modeMore noTr'; b.appendChild(c); }
   const n = Object.keys(ADV_TOOLS).filter(id => id !== 'epdGrp' && $(id)).length;
