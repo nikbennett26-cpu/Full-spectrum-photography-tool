@@ -258,34 +258,7 @@ function stProperties() {
       resetAllControls();
       return { ok: steps === 1 && kept && inRange && back && !!a, detail: { undoSteps: steps, shadowsAndWhiteKept: kept, inRange: inRange, undoRestored: back } };
     } },
-    { name: 'tone mapping (RawTherapee EPD) gives the same answers as RawTherapee on a reference image', img: 'scene', run: () => {
-      const w = 24, h = 18, L = new Float32Array(w * h);
-      for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) { let v = 0.05 + 0.4 * (x / w) * (x / w); if (x >= 14 && y < 9) v = 0.85; if (Math.hypot(x - 7, y - 12) < 4) v = 0.03; L[y * w + x] = Math.min(1, Math.max(0.0005, v)); }
-      const o = rtEpdCompress(L, w, h, 1.0, 1.4, Math.exp(-0.5), 0.5, 5).out;
-      const want = [[2, 2, 0.070569], [20, 3, 0.900406], [7, 12, 0.044228], [12, 9, 0.200535], [3, 15, 0.084392], [18, 14, 0.35639]];
-      let mx = 0; want.forEach(([x, y, v]) => { mx = Math.max(mx, Math.abs(o[y * w + x] - v)); });
-      return { ok: mx < 2e-5, detail: { worstDifference: +mx.toExponential(2) } };
-    } },
-    { name: 'tone mapping changes the picture only when it is on, and the picture it makes is the one predicted from its own base layer', img: 'scene', run: () => {
-      const set = (id, v) => { const e = $(id); e.value = v; e.dispatchEvent(new Event('input', { bubbles: true })); };
-      resetAllControls(); epdState.base = null;
-      const cw = engine.canvas.width, ch = engine.canvas.height, n = cw * ch;
-      const lightness = px => { const L = new Float32Array(n), lin = c => { const x = c / 65535; return x <= 0.04045 ? x / 12.92 : Math.pow((x + 0.055) / 1.055, 2.4); }; for (let i = 0; i < n; i++) { const q = i * 4, r = lin(px[q]), g = lin(px[q + 1]), b = lin(px[q + 2]); L[i] = 0.2104542553 * Math.cbrt(0.4122214708 * r + 0.5363325363 * g + 0.0514459929 * b) + 0.7936177850 * Math.cbrt(0.2119034982 * r + 0.6806995451 * g + 0.1073969566 * b) - 0.0040720468 * Math.cbrt(0.0883024619 * r + 0.2817188376 * g + 0.6299787005 * b); } return L; };
-      const off = lightness(engine.renderHiPrec(currentParams()));
-      set('epdAmt', 0); const stillOff = lightness(engine.renderHiPrec(currentParams())); let d0 = 0; for (let i = 0; i < n; i++) d0 += Math.abs(off[i] - stillOff[i]);
-      if (!epdComputeSync()) return { ok: false, detail: { why: 'no base' } };
-      set('epdAmt', 80);
-      const on = lightness(engine.renderHiPrec(currentParams())), P = epdParams(), S = epdState.base, probe = epdProbePixels(), eps = 0.0001;
-      let dOn = 0, dPred = 0;
-      for (let y = 0; y < ch; y++) for (let x = 0; x < cw; x++) {
-        const fx = (x + 0.5) / cw * S.w - 0.5, fy = (y + 0.5) / ch * S.h - 0.5, x0 = Math.max(0, Math.min(S.w - 1, Math.floor(fx))), y0 = Math.max(0, Math.min(S.h - 1, Math.floor(fy))), x1 = Math.min(S.w - 1, x0 + 1), y1 = Math.min(S.h - 1, y0 + 1), ax = Math.max(0, Math.min(1, fx - x0)), ay = Math.max(0, Math.min(1, fy - y0));
-        const u = (S.data[y0 * S.w + x0] * (1 - ax) + S.data[y0 * S.w + x1] * ax) * (1 - ay) + (S.data[y1 * S.w + x0] * (1 - ax) + S.data[y1 * S.w + x1] * ax) * ay;
-        const Ln = probe.px[(y * cw + x) * 4] / 65535 * P.norm, ce = Math.exp(Math.log(Math.max(Ln, 0) + eps) + u * P.temp) - eps, ue = Math.exp(u) - eps, pred = Math.max(ce + P.boost * (Ln - ue), 0) / P.norm, i = y * cw + x;
-        dOn += Math.abs(on[i] - off[i]); dPred += Math.abs(on[i] - pred);
-      }
-      set('epdAmt', 0); epdState.base = null;
-      return { ok: d0 === 0 && dOn / n > 0.01 && dPred / n < 0.01, detail: { offIsUnchanged: d0 === 0, changedBy: +(dOn / n).toFixed(4), gpuVsPrediction: +(dPred / n).toFixed(4) } };
-    } },
+    // build 202: tone mapping removed from the app, and its two rules with it
     { name: 'the Encoded swap space applies the matrix to gamma-encoded values and clamps, as Photoshop does', img: 'scene', run: () => {
       resetAllControls(); const set = (id, v) => { const e = $(id); e.value = v; };
       $('swapSpace').value = '4';

@@ -497,7 +497,7 @@ function eirParams() {
 let epdImageGen = 0, epdSeq = 0, epdBusy = false, epdTimer = null, epdBaseId = 0;
 const epdState = { base: null, norm: 1, key: '', gen: -1, imgGen: -1, refEV: 0 };
 const EPD_ITERATES = 5, EPD_WORK_EDGE = 1024;
-function epdStrength() { const e = $('epdAmt'); return e ? (+e.value || 0) / 100 : 0; }
+function epdStrength() { return 0; }   // build 202: tone mapping removed (too slow on a phone); saved edits that used it now open without it
 function epdKey(P) {
   return JSON.stringify([P.matrix, P.mOffset, P.preWB, P.postWB, P.preWBM, P.postWBM, P.camCoef, P.wbMethod, P.lumPreserve, P.filmOn, P.lumaW, P.tempTint,
     P.noiseReduction, P.noiseColour, P.deband, P.sharpen, P.clarity, P.dehaze, (typeof dustSpots !== "undefined" ? JSON.stringify(dustSpots) : ""), P.swapSpace, P.swapWiden, P.indexMode, P.hotspot, P.hotSize, P.caR, P.caB,

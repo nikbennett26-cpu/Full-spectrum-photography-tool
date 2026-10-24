@@ -241,11 +241,6 @@ function rtwbSet(next) {
     b.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); const c = rtwbCur(); rtwbSet({ t: Math.round(c.t / 50) * 50 + dir * 50, g: c.g }); } });
   });
 
-  // the big number: long-press (or Enter) to type a value
-  const big = $('v_rawTemp'); let lp = null;
-  big.addEventListener('pointerdown', () => { clearTimeout(lp); lp = setTimeout(() => { if (typeof haptic === 'function') haptic('tick'); rtwbTypeOpen('rawTemp', big); }, 450); });
-  ['pointerup', 'pointercancel', 'pointerleave'].forEach(ev => big.addEventListener(ev, () => clearTimeout(lp)));
-  big.addEventListener('keydown', e => { if (e.key === 'Enter') { e.preventDefault(); rtwbTypeOpen('rawTemp', big); } });
 
   // step 2: open the swap where it lives (the Looks tab on a phone)
   $('wbSwapRow').addEventListener('click', () => {

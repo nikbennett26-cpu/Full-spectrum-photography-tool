@@ -1260,8 +1260,6 @@ html.studioOn body.has-image #reorderZone > #modeBar{display:flex !important;ord
 .wbNudge.warm{color:var(--safelight)}
 .wbBig{text-align:center;min-width:0}
 .wbBigNum{font-family:var(--font-display);font-weight:500;font-size:52px;line-height:1;letter-spacing:1px;white-space:nowrap}
-.wbBigNum #v_rawTemp{cursor:text;-webkit-user-select:none;user-select:none;touch-action:manipulation;border-radius:4px}
-.wbBigNum #v_rawTemp:focus-visible{outline:2px solid var(--safelight);outline-offset:2px}
 .wbBigNum .u{font-size:24px;color:var(--paper-dim);margin-left:4px}
 .wbBigNum .vedit{font:inherit;width:4.2ch;background:var(--surface2);color:var(--paper);border:1px solid var(--line2);border-radius:4px;text-align:center}
 .wbBigHint{font-size:11.5px;color:var(--muted);margin-top:3px}

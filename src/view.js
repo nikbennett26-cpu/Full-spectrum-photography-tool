@@ -647,19 +647,25 @@ $('btnRotR').onclick = () => applyRotation(1);
       inp.addEventListener('blur', () => close(true));
     };
 
-    const cancel = () => { if (timer) { clearTimeout(timer); timer = null; } };
+    /* Build 202: the box opens when the finger LIFTS after a long press, not while it is still down. A phone only counts
+       a touch as the person's own action at the lift, and it will not raise the keyboard for a box focused before
+       that, so on Android the box used to open with no keyboard and close again: long-press to type did nothing. */
+    let armed = false;
+    const cancel = () => { if (timer) { clearTimeout(timer); timer = null; } armed = false; };
     bEl.addEventListener('pointerdown', ev => {
       if (bEl.dataset.editing) return;
       startXY = [ev.clientX, ev.clientY];
       cancel();
-      timer = setTimeout(open, 500);
+      if (ev.pointerType === 'mouse') { timer = setTimeout(open, 500); return; }   // a mouse can focus straight away
+      timer = setTimeout(() => { timer = null; armed = true; haptic('tick'); }, 500);
     });
     // a press that turns into a drag or a scroll is not a long-press
     bEl.addEventListener('pointermove', ev => {
       if (!startXY) return;
       if (Math.hypot(ev.clientX - startXY[0], ev.clientY - startXY[1]) > 8) cancel();
     });
-    ['pointerup','pointercancel','pointerleave'].forEach(e => bEl.addEventListener(e, cancel));
+    bEl.addEventListener('pointerup', () => { const go = armed; cancel(); if (go) open(); });
+    ['pointercancel','pointerleave'].forEach(e => bEl.addEventListener(e, cancel));
     // stop the long-press turning into a text selection or context menu
     bEl.addEventListener('contextmenu', ev => { if (timer || bEl.dataset.editing) ev.preventDefault(); });
   });
