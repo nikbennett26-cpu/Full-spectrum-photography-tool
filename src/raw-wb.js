@@ -426,3 +426,18 @@ function rtwbGpuBuild() {
     return true;
   } catch (e) { return false; }
 }
+
+/* Build 207: the working-space words in the swap section (#wsTabs) drive the one #swapSpace select. */
+(function wireWsTabs() {
+  const box = $('wsTabs'), sel = $('swapSpace'); if (!box || !sel) return;
+  box.addEventListener('click', e => {
+    const b = e.target.closest('button[data-ws]'); if (!b || sel.value === b.dataset.ws) return;
+    sel.value = b.dataset.ws; sel.dispatchEvent(new Event('change', { bubbles: true }));
+    wsTabsSync();
+  });
+  wsTabsSync();
+})();
+function wsTabsSync() {
+  const box = $('wsTabs'), sel = $('swapSpace'); if (!box || !sel) return;
+  box.querySelectorAll('button[data-ws]').forEach(b => { const on = b.dataset.ws === sel.value; if (b.classList.contains('on') !== on) { b.classList.toggle('on', on); b.setAttribute('aria-pressed', on ? 'true' : 'false'); } });
+}

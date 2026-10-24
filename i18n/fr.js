@@ -1,6 +1,7 @@
 /* irlab interface text in fr, keyed by the English (spaces collapsed). Used by i18n/tr.js. A string missing here
    stays in English; tools/i18n_check.py lists them. */
 irlabTr.add('fr', {
+"Working space": "Espace de travail",
 "Tint, green to magenta": "Teinte, du vert au magenta",
 "before the swap": "avant l’échange",
 "after the swap": "après l’échange",

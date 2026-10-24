@@ -1769,6 +1769,7 @@ function tempTintGains() {
   const m = wbEff($('tint') ? $('tint').value : 0) / 100;
   ['temp', 'tint'].forEach(id => { const l = $('v_' + id), el = $(id); if (l && el && !l.dataset.editing) { const s = String(fmtSliderValue(id, el.value)); if (l.textContent !== s) l.textContent = s; } });
   if (typeof rtwbSyncUi === 'function') rtwbSyncUi();   // build 197: the RAW white balance readout
+  if (typeof wsTabsSync === 'function') wsTabsSync();   // build 207
   if (t === 0 && m === 0) return [1, 1, 1];
   /* Exponential rather than linear. The old form subtracted from 1, so blue
      hit zero at slider 357 and went negative past it — which is why the range

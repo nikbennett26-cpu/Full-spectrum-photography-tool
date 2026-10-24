@@ -1,6 +1,7 @@
 /* irlab interface text in zh, keyed by the English (spaces collapsed). Used by i18n/tr.js. A string missing here
    stays in English; tools/i18n_check.py lists them. */
 irlabTr.add('zh', {
+"Working space": "工作空间",
 "Tint, green to magenta": "色调，绿到品红",
 "before the swap": "交换前",
 "after the swap": "交换后",

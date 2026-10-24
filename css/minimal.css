@@ -219,3 +219,88 @@ html.dockOn body.has-image #dock button{border:0!important;outline-offset:-2px}
 .wbSwapRow{min-height:40px!important;font-size:13px!important;margin-bottom:8px!important}
 .wbNudge{width:40px!important;height:40px!important;padding:0!important}
 .wbStepCard,.wbSwapRow{border-radius:2px!important}
+
+/* ---- build 207: the channel swap section, as drawn ----
+   The six swaps as a grid of words in hairline cells, the current one underlined in red; the mix as a plain table of
+   numbers, zeros dimmed; the working space as four words; the before/after colours as two thin strips. */
+#matrixDetails .swapRow{display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr));gap:0!important;border-top:1px solid var(--line);border-left:1px solid var(--line);margin:4px 0 16px!important}
+#matrixDetails .swapRow .swapBtn{min-height:50px;margin:0!important;padding:0 4px!important;border:0!important;border-right:1px solid var(--line)!important;border-bottom:1px solid var(--line)!important;border-radius:0!important;
+  color:var(--paper-dim)!important;font-size:14px!important;font-weight:300!important;background:transparent!important;box-shadow:none!important}
+#matrixDetails .swapRow .swapBtn.on{color:var(--paper)!important;box-shadow:inset 0 -1px 0 var(--safelight)!important}
+#mx.mxGrid{gap:0!important;grid-template-columns:26px repeat(3,minmax(0,1fr)) 34px!important;align-items:stretch}
+#mx .hdr{font-family:var(--font-body)!important;font-weight:400!important;font-size:11px!important;color:var(--paper-dim)!important;text-align:center;padding:0 0 8px!important}
+#mx .rowlbl{font-family:var(--font-body)!important;font-weight:400!important;font-size:11px!important;color:var(--paper-dim)!important;display:flex;align-items:center;border-top:1px solid var(--line)}
+#mx input{height:48px!important;background:transparent!important;border:0!important;border-top:1px solid var(--line)!important;border-radius:0!important;
+  text-align:center;color:var(--paper)!important;font-family:var(--font-body)!important;font-size:15px!important;font-weight:300!important}
+#mx input.zero{color:var(--muted)!important;opacity:.55}
+#mx input.neg{color:var(--safelight)!important}
+#mx input.mdiag{border-color:var(--line)!important}
+#mx input:focus{outline:1px solid var(--safelight)!important;outline-offset:-1px}
+#mx #m20,#mx #m21,#mx #m22,#mx .rowlbl.rl-b{border-bottom:1px solid var(--line)!important}
+#mx [id^="mt"]{display:flex;align-items:center;justify-content:center;border-top:1px solid var(--line);font-size:11px;color:var(--muted)}
+#mx #mt2{border-bottom:1px solid var(--line)}
+.mxPrevLbl{font-size:11px!important;font-weight:400!important;letter-spacing:.12em;text-transform:uppercase;color:var(--paper-dim)!important;margin:18px 0 8px!important}
+.wsTabs{display:flex;flex-wrap:wrap;gap:4px 20px}
+.wsTabs button{min-height:36px;padding:0 0 4px;background:none;border:0;border-bottom:1px solid transparent;color:var(--paper-dim);font:inherit;font-size:13.5px;cursor:pointer}
+.wsTabs button.on{color:var(--paper);border-bottom-color:var(--safelight)}
+.mxPreview{gap:3px!important}
+.mxPreview div{height:20px!important;border-radius:0!important;background:transparent}
+.mxPreview i{inset:0 0 calc(50% + 1px) 0!important}
+.mxPreview b{inset:calc(50% + 1px) 0 0 0!important}
+.mxFine{border-top:0}
+#mxFine,.mxFine{border:0!important;border-radius:0!important;background:transparent!important;border-bottom:1px solid var(--line)!important}
+
+/* ---- build 207: home page, layout A -- one button ----
+   The same elements (so the file picker, stacking, decode settings, restore and install all work as before), re-ordered
+   and quietened: the title over a 1px spectrum line, one outlined Open photo button, Stack three shots and the filter
+   database as two quiet links, then the decoder, What's new and the rest in a small footer. Section numbers go. */
+#emptyStateGroup.lab,@media (min-width:900px){#emptyStateGroup.lab{}}
+#emptyStateGroup.lab{display:flex!important;flex-direction:column!important;max-width:440px!important;min-height:100vh;min-height:100dvh;padding:0 24px 0!important;gap:0!important}
+#emptyStateGroup.lab .labHd{display:none!important}
+#emptyStateGroup.lab .labTop{order:0;min-height:56px;border:0!important}
+#emptyStateGroup.lab .labLang select,#emptyStateGroup.lab #uiLang{border:0!important;background:transparent!important;color:#8c8984!important;font-size:13px!important;padding:0 4px!important;height:44px}
+#emptyStateGroup.lab .labHero{order:1;margin-top:clamp(56px,18vh,170px);padding:0!important;border:0!important}
+#emptyStateGroup.lab .labHero h1{font-size:38px!important;line-height:1.12!important;letter-spacing:-.015em!important}
+#emptyStateGroup.lab .tagline{margin-top:14px!important;font-size:15px!important;color:#8c8984!important}
+#emptyStateGroup.lab #spectrumBar{height:1px!important;margin-top:26px!important;gap:0!important;
+  background:linear-gradient(to right,#6a3fd0,#2f7de0,#2bb58a,#e3c53a,#ec7a2c,#d63a3a,#3a0f0f)!important}
+#emptyStateGroup.lab #spectrumBar > *,#emptyStateGroup.lab #spectrumBar::after,#emptyStateGroup.lab #spectrumTicks{display:none!important}
+#emptyStateGroup.lab #dropzone{order:2;margin-top:44px;padding:0!important;border:0!important}
+#emptyStateGroup.lab .labTerm{padding:0!important;border:0!important;gap:0!important}
+#emptyStateGroup.lab .ltStatus,#emptyStateGroup.lab .ltHint,#emptyStateGroup.lab .ltCaret,#emptyStateGroup.lab .ltCursor,#emptyStateGroup.lab .triDots{display:none!important}
+#emptyStateGroup.lab label.labGo.ltPrompt{display:flex!important;align-items:center;justify-content:center;min-height:54px;border:1px solid #ece8e1;border-radius:0;
+  font-size:15px!important;letter-spacing:.04em;color:#ece8e1;cursor:pointer;text-decoration:none!important}
+#emptyStateGroup.lab label.labGo.ltPrompt:hover{border-color:#d63a3a}
+#emptyStateGroup.lab .ltCmd{display:inline-block;text-decoration:none!important}
+#emptyStateGroup.lab .ltCmd::first-letter{text-transform:uppercase}
+#emptyStateGroup.lab body.imgLoading .ltCmd{opacity:.5}
+#emptyStateGroup.lab .labLoadRow{flex-direction:column!important;align-items:stretch!important;gap:12px!important;margin-top:16px!important;border:0!important;padding:0!important}
+#emptyStateGroup.lab .labFmtChip{border:0!important;background:none!important;text-align:center;font-size:12px!important;color:#8c8984!important;padding:0!important}
+#emptyStateGroup.lab #triStart{order:3;display:flex!important;justify-content:center;min-height:44px;margin-top:28px;background:none!important;border:0!important;color:#a19d97!important;font-size:13px!important;cursor:pointer}
+#emptyStateGroup.lab #triStart > span:not(.ltCaret):not(.triDots)::first-letter{text-transform:uppercase}
+#emptyStateGroup.lab .labTerm{display:flex!important;flex-direction:column!important}
+/* the tools section becomes one quiet link */
+#emptyStateGroup.lab .labSec:has(#landingLinks){order:3;margin-top:0;padding:0!important;border:0!important}
+#emptyStateGroup.lab a.labTool{border:0!important;padding:0!important;min-height:44px;justify-content:center;align-items:center;background:none!important}
+#emptyStateGroup.lab a.labTool .labChart,#emptyStateGroup.lab a.labTool .flSub,#emptyStateGroup.lab a.labTool .flArrow{display:none!important}
+#emptyStateGroup.lab a.labTool .flTitle{justify-content:center!important;font-size:13px!important;font-weight:300!important;color:#a19d97!important}
+#emptyStateGroup.lab #btnInstallTop{display:block;margin:6px auto 0;background:none!important;border:0!important;color:#8c8984!important;font-size:12px!important;min-height:40px}
+/* decoder setting: a small row above the footer */
+#emptyStateGroup.lab .labDecSec{order:4;margin-top:auto;padding:14px 0 0!important;border:0!important;border-top:1px solid #1f1f1f!important}
+#emptyStateGroup.lab .labDecSum{font-size:12px!important;color:#8c8984!important;min-height:36px}
+#emptyStateGroup.lab .labFoot{order:5;margin-top:0!important;border-top:0!important;padding-bottom:18px}
+#emptyStateGroup.lab #whatsNew,#emptyStateGroup.lab #discordLink,#emptyStateGroup.lab #buildStampHome{font-size:12px!important;color:#8c8984!important}
+@media (min-width:900px){
+  #emptyStateGroup.lab{display:flex!important;max-width:440px!important;padding:0 24px!important}
+  #emptyStateGroup.lab .labHero h1{font-size:44px!important}
+}
+#emptyStateGroup.lab .labTerm label.labGo.ltPrompt{justify-content:center!important;min-height:54px!important;border:1px solid #ece8e1!important;
+  font:300 15px/1 var(--font-body)!important;letter-spacing:.04em!important;color:#ece8e1!important}
+#emptyStateGroup.lab .labTerm label.labGo.ltPrompt:hover{border-color:#d63a3a!important}
+#emptyStateGroup.lab .labTerm label.labGo.ltPrompt:hover .ltCmd{text-decoration:none!important}
+#emptyStateGroup.lab .labTerm label.labGo.ltPrompt:focus-within{outline:1px solid #d63a3a;outline-offset:3px}
+#emptyStateGroup.lab .labPanel{display:flex!important;flex-direction:column!important}
+#emptyStateGroup.lab .labTerm{display:contents!important}
+#emptyStateGroup.lab .labTerm label.labGo.ltPrompt{order:1}
+#emptyStateGroup.lab .labLoadRow{order:2}
+#emptyStateGroup.lab #triStart{order:3;margin-top:20px}
