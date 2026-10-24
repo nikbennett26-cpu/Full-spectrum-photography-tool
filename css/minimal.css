@@ -245,7 +245,20 @@ html.dockOn body.has-image #dock button{border:0!important;outline-offset:-2px}
 #emptyStateGroup.lab .tagline{margin-top:14px!important;font-size:15px!important;color:#8c8984!important}
 #emptyStateGroup.lab #spectrumBar{height:1px!important;margin-top:26px!important;gap:0!important;
   background:linear-gradient(to right,#6a3fd0,#2f7de0,#2bb58a,#e3c53a,#ec7a2c,#d63a3a,#3a0f0f)!important}
-#emptyStateGroup.lab #spectrumBar > *,#emptyStateGroup.lab #spectrumBar::after,#emptyStateGroup.lab #spectrumTicks{display:none!important}
+#emptyStateGroup.lab #spectrumBar > *,#emptyStateGroup.lab #spectrumTicks{display:none!important}
+/* build 216: the spectrum line draws itself in from the violet end, then a bright light runs along it (as before the
+   minimal theme), sized for a hairline: a soft glowing spot rather than a band */
+#emptyStateGroup.lab #spectrumBar{overflow:visible!important;opacity:0;transform:scaleX(0);transform-origin:left center;
+  animation:barFadeIn 1.4s cubic-bezier(.16,.8,.3,1) .2s forwards!important}
+#emptyStateGroup.lab #spectrumBar::after{display:block!important;content:''!important;position:absolute!important;right:auto!important;bottom:auto!important;
+  top:-3px!important;left:0;width:70px!important;height:7px!important;margin-left:-35px;border-radius:50%;opacity:0;transform:none!important;
+  background:radial-gradient(closest-side,rgba(255,255,255,.95),rgba(255,255,255,.35) 45%,transparent)!important;
+  filter:blur(1px);box-shadow:none!important;animation:specGlint 1.6s cubic-bezier(.45,0,.25,1) 1.5s forwards!important}
+@keyframes specGlint{0%{left:0;opacity:0}12%{opacity:1}85%{opacity:1}100%{left:100%;opacity:0}}
+@media (prefers-reduced-motion:reduce){
+  #emptyStateGroup.lab #spectrumBar{opacity:1;transform:none;animation:none!important}
+  #emptyStateGroup.lab #spectrumBar::after{display:none!important}
+}
 #emptyStateGroup.lab #dropzone{order:2;margin-top:44px;padding:0!important;border:0!important}
 #emptyStateGroup.lab .labTerm{padding:0!important;border:0!important;gap:0!important}
 #emptyStateGroup.lab .ltStatus,#emptyStateGroup.lab .ltHint,#emptyStateGroup.lab .ltCaret,#emptyStateGroup.lab .ltCursor,#emptyStateGroup.lab .triDots{display:none!important}
@@ -265,7 +278,7 @@ html.dockOn body.has-image #dock button{border:0!important;outline-offset:-2px}
 #emptyStateGroup.lab a.labTool{border:0!important;padding:0!important;min-height:44px;justify-content:center;align-items:center;background:none!important}
 #emptyStateGroup.lab a.labTool .labChart,#emptyStateGroup.lab a.labTool .flSub,#emptyStateGroup.lab a.labTool .flArrow{display:none!important}
 #emptyStateGroup.lab a.labTool .flTitle{justify-content:center!important;font-size:13px!important;font-weight:300!important;color:#a19d97!important}
-#emptyStateGroup.lab #btnInstallTop{display:block;margin:6px auto 0;background:none!important;border:0!important;color:#8c8984!important;font-size:12px!important;min-height:40px}
+#emptyStateGroup.lab #btnInstallTop{align-self:center;margin:6px auto 0;background:none!important;border:0!important;color:#8c8984!important;font-size:12px!important;min-height:40px}
 /* decoder setting: a small row above the footer */
 #emptyStateGroup.lab .labDecSec{order:4;margin-top:auto;padding:14px 0 0!important;border:0!important;border-top:1px solid #1f1f1f!important}
 #emptyStateGroup.lab .labDecSum{font-size:12px!important;color:#8c8984!important;min-height:36px}
@@ -295,3 +308,12 @@ html.dockOn body.has-image #dock button{border:0!important;outline-offset:-2px}
 #rawHlBox > .dBody{padding:6px 0 8px!important;margin:0!important}
 #rawHlBox #rawHlTick{min-height:40px;font-size:13px;cursor:pointer;padding:0 14px}
 #rawHlBox #rawHlTick .hlName{color:var(--paper)}
+/* build 216: Simple / Advanced on the home page, a row above the decoder line (src/mode.js keeps it in step with the
+   editor's own switch) */
+#emptyStateGroup.lab .labModeSec{order:4;margin-top:auto;display:flex!important;flex-direction:row!important;align-items:center!important;justify-content:space-between!important;gap:12px;text-align:left!important;
+  padding:10px 0!important;border-top:1px solid #1f1f1f}
+#emptyStateGroup.lab .labModeSec + .labDecSec{margin-top:0!important}
+#emptyStateGroup.lab .labModeLbl{font-size:12px;color:#8c8984}
+#emptyStateGroup.lab .labModeSeg{display:inline-flex;border:1px solid #333}
+#emptyStateGroup.lab .labModeSeg button{min-height:36px;padding:0 14px;border:0;background:none;color:#8c8984;font:inherit;font-size:12.5px;cursor:pointer}
+#emptyStateGroup.lab .labModeSeg button[aria-checked="true"]{color:#ece8e1;box-shadow:inset 0 0 0 1px #d63a3a}

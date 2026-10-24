@@ -891,6 +891,7 @@ async function updApply() {
               (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
   const alreadyInstalled = navigator.standalone === true ||
     (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches);
+  if (alreadyInstalled) show(false);   // build 216: opened as the installed app, so there is nothing to install
   const note = $('iosInstall');
   if (note && iOS && !alreadyInstalled) note.style.display = 'block';
 })();

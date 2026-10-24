@@ -1,6 +1,7 @@
 /* irlab interface text in es, keyed by the English (spaces collapsed). Used by i18n/tr.js. A string missing here
    stays in English; tools/i18n_check.py lists them. */
 irlabTr.add('es', {
+"Editor": "Editor",
 "Encoded — like a channel mixer": "Codificado — como un mezclador de canales",
 "Aerochrome trichrome tool": "Herramienta tricroma Aerochrome",
 "Filter database and stack calculator": "Base de datos de filtros y calculadora de combinaciones",

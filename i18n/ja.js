@@ -1,6 +1,7 @@
 /* irlab interface text in ja, keyed by the English (spaces collapsed). Used by i18n/tr.js. A string missing here
    stays in English; tools/i18n_check.py lists them. */
 irlabTr.add('ja', {
+"Editor": "エディター",
 "Encoded — like a channel mixer": "エンコード — チャンネルミキサーと同様",
 "Aerochrome trichrome tool": "Aerochrome トリクロームツール",
 "Filter database and stack calculator": "フィルターデータベースと重ね合わせ計算機",

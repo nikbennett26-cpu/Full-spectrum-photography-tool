@@ -57,7 +57,7 @@ function modeCountSync() {
 function setEditorMode(m, persist) {
   editorMode = m === 'advanced' ? 'advanced' : 'simple';
   document.documentElement.classList.toggle('simpleMode', editorMode === 'simple');
-  document.querySelectorAll('#modeBar button[data-mode]').forEach(b => b.setAttribute('aria-checked', b.dataset.mode === editorMode ? 'true' : 'false'));
+  document.querySelectorAll('#modeBar button[data-mode], #homeMode button[data-mode]').forEach(b => b.setAttribute('aria-checked', b.dataset.mode === editorMode ? 'true' : 'false'));
   if (persist) { try { localStorage.setItem(MODE_KEY, editorMode); } catch (e) {} }
   modeCountSync();
   // the curve's Points editor is an Advanced tool: Simple keeps the Regions sliders in view
@@ -68,7 +68,7 @@ function setEditorMode(m, persist) {
   Object.keys(ADV_TOOLS).forEach(id => { const d = $(id); if (d) d.classList.add('adv'); });
   const cm = $('curveModeRow'); if (cm) cm.classList.add('adv');
   document.querySelectorAll(ADV_PARTS).forEach(el => el.classList.add('adv'));
-  document.querySelectorAll('#modeBar button[data-mode]').forEach(b => b.addEventListener('click', () => { setEditorMode(b.dataset.mode, true); if (typeof haptic === 'function') haptic('select'); }));
+  document.querySelectorAll('#modeBar button[data-mode], #homeMode button[data-mode]').forEach(b => b.addEventListener('click', () => { setEditorMode(b.dataset.mode, true); if (typeof haptic === 'function') haptic('select'); }));
   const n = $('modeNote'); if (n) n.addEventListener('click', () => setEditorMode('advanced', true));
   setEditorMode(editorMode, false);
 })();
