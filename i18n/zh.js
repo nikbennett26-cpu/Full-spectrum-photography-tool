@@ -1,6 +1,7 @@
 /* irlab interface text in zh, keyed by the English (spaces collapsed). Used by i18n/tr.js. A string missing here
    stays in English; tools/i18n_check.py lists them. */
 irlabTr.add('zh', {
+"Encoded — like a channel mixer": "编码 — 类似通道混合器",
 "Aerochrome trichrome tool": "Aerochrome 三色合成工具",
 "Filter database and stack calculator": "滤镜数据库与叠加计算器",
 "Decoded with": "解码方式：",

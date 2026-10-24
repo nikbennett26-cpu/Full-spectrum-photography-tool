@@ -589,7 +589,7 @@ html.dockOn body.has-image .toolbar .keyBtn.keySm .kMore{display:none}
    Eight equal cells, each an icon in a small box with a word under it, so every control fits on one line at any
    phone width and New image keeps its orange chip. The rotate and full-size buttons sit in the rail directly
    (their wrapper is display:contents). Labels come from data-lbl; the buttons' own names stay for screen readers. */
-html.dockOn body.has-image .toolbar{display:grid!important;grid-template-columns:repeat(8,minmax(0,1fr))!important;gap:2px!important;align-items:stretch!important;overflow:visible!important;padding:2px 0 4px!important}
+html.dockOn body.has-image .toolbar{display:grid!important;grid-template-columns:none!important;grid-auto-flow:column!important;grid-auto-columns:minmax(0,1fr)!important;gap:2px!important;align-items:stretch!important;overflow:visible!important;padding:2px 0 4px!important}
 html.dockOn body.has-image .toolbar .ptTools{display:contents!important}
 html.dockOn body.has-image .toolbar > .toolbarDiv,html.dockOn body.has-image .toolbar > #lnkFilters{display:none!important}
 html.dockOn body.has-image .toolbar > :is(.filelabel,#bHome,#bReset,#filterDbBtn), html.dockOn body.has-image .toolbar .ptTools > button{position:relative!important;display:block!important;flex:none!important;width:auto!important;height:54px!important;min-height:0!important;min-width:0!important;margin:0!important;

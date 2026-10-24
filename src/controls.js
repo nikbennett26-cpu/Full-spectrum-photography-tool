@@ -593,7 +593,7 @@ function epdComputeSync() {
 /* ---------- per-panel reset ----------
    Each step panel has a "Reset panel" button at its top. It puts just that panel back to how it starts, as one
    undo step, and leaves every other panel alone. */
-const PANEL_STEPS = ['swap', 'targeted', 'wb', 'light', 'colour', 'detail'];
+const PANEL_STEPS = ['swap', 'wb', 'light', 'colour', 'detail'];   // build 215: targeted colour is a card in Colour
 const PANEL_NAMES = { swap: 'Channel swap', targeted: 'Targeted colour', wb: 'White balance', light: 'Light', colour: 'Colour', detail: 'Detail' };
 function panelEl(step) { return document.querySelector('details.stepPanel[data-step="' + step + '"]'); }
 function inPanel(el, step) { const P = panelEl(step); return !!(P && el && P.contains(el)); }

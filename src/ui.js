@@ -280,7 +280,6 @@ let preChangeSnapshot = null;
    started", which is the question being asked. */
 const STEP_DEFS = [
   ['swap',     '01', 'Swap'],
-  ['targeted', '02', 'Target'],
   ['wb',       '03', 'WB'],
   ['light',    '04', 'Light'],
   ['colour',   '05', 'Colour'],

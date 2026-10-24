@@ -290,3 +290,8 @@ html.dockOn body.has-image #dock button{border:0!important;outline-offset:-2px}
 #emptyStateGroup.lab[style*="display: none"],#emptyStateGroup.lab[style*="display:none"],body.has-image #emptyStateGroup.lab{display:none!important}
 /* build 210: the filter database button is one curve in the visible spectrum, violet to red (gradient in index.html) */
 #filterDbBtn svg path.fdbCurve{stroke:url(#fdbSpec)!important;stroke-width:2.2!important}
+/* build 215: Highlight recovery is one slim row at the top of Light -- its name and a tick box, no header card */
+#rawHlBox > summary{display:none!important}
+#rawHlBox > .dBody{padding:6px 0 8px!important;margin:0!important}
+#rawHlBox #rawHlTick{min-height:40px;font-size:13px;cursor:pointer;padding:0 14px}
+#rawHlBox #rawHlTick .hlName{color:var(--paper)}
