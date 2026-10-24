@@ -1,6 +1,10 @@
 /* irlab interface text in de, keyed by the English (spaces collapsed). Used by i18n/tr.js. A string missing here
    stays in English; tools/i18n_check.py lists them. */
 irlabTr.add('de', {
+"Decoded with": "Dekodiert mit",
+"Decode settings change how a RAW is turned into a picture. Set them on the start page before you open a photo, or under Export, Decode settings, in Advanced.": "Die Dekodier-Einstellungen bestimmen, wie aus einer RAW-Datei ein Bild wird. Stelle sie auf der Startseite ein, bevor du ein Foto öffnest, oder unter Export, Dekodier-Einstellungen, im Modus Erweitert.",
+"Change settings": "Einstellungen ändern",
+"Got it": "Verstanden",
 "Working space": "Arbeitsfarbraum",
 "Tint, green to magenta": "Tönung, Grün bis Magenta",
 "before the swap": "vor dem Tausch",

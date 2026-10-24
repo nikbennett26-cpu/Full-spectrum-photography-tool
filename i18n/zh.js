@@ -1,6 +1,10 @@
 /* irlab interface text in zh, keyed by the English (spaces collapsed). Used by i18n/tr.js. A string missing here
    stays in English; tools/i18n_check.py lists them. */
 irlabTr.add('zh', {
+"Decoded with": "解码方式：",
+"Decode settings change how a RAW is turned into a picture. Set them on the start page before you open a photo, or under Export, Decode settings, in Advanced.": "解码设置决定RAW文件如何转换成图像。请在打开照片前于首页设置，或在高级模式的“导出”→“解码设置”中更改。",
+"Change settings": "更改设置",
+"Got it": "知道了",
 "Working space": "工作空间",
 "Tint, green to magenta": "色调，绿到品红",
 "before the swap": "交换前",

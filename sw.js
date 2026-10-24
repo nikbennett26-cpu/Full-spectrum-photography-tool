@@ -17,7 +17,7 @@
    You do NOT need to bump it just to deploy a new index.html — network-first
    handles that on its own. */
 
-const CACHE_VERSION = 'irlab-v10';   // v10: favicons requested with ?v=2 on both pages, so cached copies of the old logo are dropped
+const CACHE_VERSION = 'irlab-v11';   // v11: new logo (red ring, thinner), icons requested as ?v=3 and -v3 files
 // transient hand-off storage for Web Share Target, deliberately not versioned
 const SHARE_CACHE = 'irlab-share';
 const SHARE_KEY = '/__shared-image';
@@ -28,9 +28,9 @@ const PRECACHE = [
   '/',
   '/index.html',
   '/filters.html',
-  '/icon-192-v2.png',
-  '/icon-512-v2.png',
-  '/icon-maskable-512-v2.png',
+  '/icon-192-v3.png',
+  '/icon-512-v3.png',
+  '/icon-maskable-512-v3.png',
   '/og-card.png',
   '/manifest.json'
 ];

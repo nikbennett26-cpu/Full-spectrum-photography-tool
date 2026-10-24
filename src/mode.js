@@ -11,11 +11,12 @@ const ADV_TOOLS = {
   channelDetails: 'Source channels',
   maskDetails: 'Local adjustments', hslDetails: 'Colour by band', colCal: 'Calibration', colSpace: 'Swap working space',
   lutDetails: 'LUT', lensDetails: 'Hotspot removal', epdGrp: 'Tone mapping', fringeDetails: 'Colour fringing',
-  decodeGrp: 'Decode settings', batchPanel: 'Batch'
+  decodeGrp: 'Decode settings', batchPanel: 'Batch',
+  irLeakDetails: 'IR leak removal', ortonGrp: 'Orton glow'   // build 209: Simple keeps only the everyday tools
 };
 // these change without the user touching them (a preset sets the mix), so they never count as "in use"
 // Swap & mix stays in Simple (the swap buttons are core), but its mix grid, fine bar, lift and brightness weighting are Advanced
-const ADV_PARTS = '#lumaWDetails, #mx, #mxFine, #matrixDetails .mxHint, #mxOff';
+const ADV_PARTS = '#lumaWDetails, #mx, #mxFine, #matrixDetails .mxHint, #mxOff, .wbGainsIn';
 const ADV_SILENT = ['channelDetails', 'decodeGrp', 'batchPanel'];
 let editorMode = 'simple';
 try {
@@ -45,11 +46,20 @@ function updateModeNote() {
     const c = document.createElement('span'); c.textContent = 'show'; n.appendChild(c);
   }
 }
+// build 209: in Simple the Advanced button says how many tools it adds, so the switch visibly does something
+function modeCountSync() {
+  const b = document.querySelector('#modeBar button[data-mode="advanced"]'); if (!b) return;
+  let c = b.querySelector('.modeMore');
+  if (!c) { c = document.createElement('span'); c.className = 'modeMore noTr'; b.appendChild(c); }
+  const n = Object.keys(ADV_TOOLS).filter(id => id !== 'epdGrp' && $(id)).length;
+  c.textContent = editorMode === 'simple' && n ? ' +' + n : '';
+}
 function setEditorMode(m, persist) {
   editorMode = m === 'advanced' ? 'advanced' : 'simple';
   document.documentElement.classList.toggle('simpleMode', editorMode === 'simple');
   document.querySelectorAll('#modeBar button[data-mode]').forEach(b => b.setAttribute('aria-checked', b.dataset.mode === editorMode ? 'true' : 'false'));
   if (persist) { try { localStorage.setItem(MODE_KEY, editorMode); } catch (e) {} }
+  modeCountSync();
   // the curve's Points editor is an Advanced tool: Simple keeps the Regions sliders in view
   if (editorMode === 'simple' && typeof setCurveMode === 'function' && typeof curveMode !== 'undefined' && curveMode === 'points') setCurveMode('regions');
   updateModeNote();

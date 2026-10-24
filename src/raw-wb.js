@@ -100,6 +100,8 @@ function rtwbSyncUi() {
   if (box.hidden === !!res) box.hidden = !res;
   const sw = $('wbSwapStep'); if (sw && sw.hidden === !!res) sw.hidden = !res;
   const grp = $('wbTempGrp'); if (grp) grp.classList.toggle('wbRaw', !!res);
+  // build 209: a RAW has its own Pick in the white balance card, so Simple hides the two grey pickers
+  const gp = document.querySelector('.wbSlim'); if (gp) gp.classList.toggle('advRaw', !!res);
   if (!res) return;
   rtwbGpuWarm();
   rtwbSyncSwap();

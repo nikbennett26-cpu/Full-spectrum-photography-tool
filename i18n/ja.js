@@ -1,6 +1,10 @@
 /* irlab interface text in ja, keyed by the English (spaces collapsed). Used by i18n/tr.js. A string missing here
    stays in English; tools/i18n_check.py lists them. */
 irlabTr.add('ja', {
+"Decoded with": "デコード：",
+"Decode settings change how a RAW is turned into a picture. Set them on the start page before you open a photo, or under Export, Decode settings, in Advanced.": "デコード設定は、RAWを画像にする方法を決めます。写真を開く前にホーム画面で設定するか、詳細モードの［書き出し］→［デコード設定］で変更できます。",
+"Change settings": "設定を変更",
+"Got it": "了解",
 "Working space": "作業色空間",
 "Tint, green to magenta": "色かぶり補正（グリーン〜マゼンタ）",
 "before the swap": "入れ替え前",
