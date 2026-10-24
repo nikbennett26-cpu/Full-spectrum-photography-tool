@@ -172,16 +172,27 @@ async function runBatch(fileList) {
         // ticked or AMaZE genuinely can't run in this browser.
         const preferPreview = $('cr2PreferPreview') && $('cr2PreferPreview').checked;
         if ((CR2_EXT.includes(fext) || RAW_EXT.includes(fext)) && !preferPreview && rawEngine.supported()) {
+          /* Build 218: decoding a RAW sets the engine's state for "the photo that is open" (its sensor data, the white
+             balance it was built with, its float twin, body.rawOpen). Batch used to leave the LAST batch file there, so
+             the next full-size export or rebuild of the open photo used a different picture. Saved and put back. The
+             grey-world auto white balance that used to run here wrote the open photo's preWBM and never reached the
+             batch output (params are read once above), so it is gone. */
+          const keep = { lr: rawEngine.lastResult, lg: rawEngine.lastGen, nr: rawEngine.nrPrev, bk: rawEngine.builtKey,
+            bwk: rawEngine.builtWbKey, aw: rawEngine.autoWb, built: rawWbBuilt, llf: LAST_LINEAR_FLOAT,
+            rawOpen: document.body.classList.contains('rawOpen') };
           try {
             const res = await rawEngine.demosaic(demosaicPref(), f);
-            const cv2 = rawEngineResultToCanvas(res, false, null, null);
-            if (!cv2.__hasCameraWB) autoWhiteBalanceRaw(cv2);
+            const cv2 = rawEngineResultToCanvas(res, false, null, null, true);   // build 218: full size, as a single export is
             src = await new Promise(r => cv2.toBlob(r, 'image/png'));
           } catch (e) {
             console.warn('Batch: AMaZE decode failed for ' + f.name + ', using embedded preview:', e);
             const found = await extractPreview(f);
             if (!found) throw new Error('no usable data in this file');
             src = found.blob;
+          } finally {
+            rawEngine.lastResult = keep.lr; rawEngine.lastGen = keep.lg; rawEngine.nrPrev = keep.nr; rawEngine.builtKey = keep.bk;
+            rawEngine.builtWbKey = keep.bwk; rawEngine.autoWb = keep.aw; rawWbBuilt = keep.built; LAST_LINEAR_FLOAT = keep.llf;
+            document.body.classList.toggle('rawOpen', keep.rawOpen);
           }
         } else if (CR2_EXT.includes(fext) || RAW_EXT.includes(fext)) {
           const found = await extractPreview(f);

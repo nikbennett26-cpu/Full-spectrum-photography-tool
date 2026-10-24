@@ -1584,5 +1584,6 @@ function backToLanding() {
   window.scrollTo(0, 0);
 }
 $('fi').onchange = e => pickedFile(e, loadFile);
-$('fiBatch').onchange = e => { const fs = e.target.files; e.target.value = ''; if (fs && fs.length) runBatch(fs); };
+// build 218: copy the list BEFORE clearing the input -- clearing it empties the same FileList, so batch saw no files
+$('fiBatch').onchange = e => { const fs = Array.from(e.target.files || []); e.target.value = ''; if (fs.length) runBatch(fs); };
 $('fi2').onchange = e => pickedFile(e, loadFile);
