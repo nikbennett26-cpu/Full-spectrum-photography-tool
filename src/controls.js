@@ -899,6 +899,27 @@ function wbUiSoon() {   // called from tempTintGains(), so every path that build
     wbUiRunning = false;
   }, 120);
 }
+/* Build 214: the Kelvin and Tint card used to appear because the card was refreshed on every frame. Now it is
+   refreshed when a RAW opens, and again every 300 ms (for up to 15 s) until the RAW's sensor data is ready, so it no
+   longer waits for something else to happen first. */
+(function wbUiOnRawOpen() {
+  let tries = 0, t = null;
+  const poll = () => {
+    t = null;
+    if (!document.body.classList.contains('rawOpen')) return;
+    let ready = false; try { ready = typeof rtwbRes === 'function' && !!rtwbRes(); } catch (e) {}
+    if (ready && !wbUiRunning) { wbUiRunning = true; try { rtwbSyncUi(); wsTabsSync(); } catch (e) {} wbUiRunning = false; }
+    const box = $('rawWbBox');
+    if (ready && box && !box.hidden) return;
+    if (++tries < 50) t = setTimeout(poll, 300);
+  };
+  let was = false;
+  new MutationObserver(() => {
+    const now = document.body.classList.contains('rawOpen');
+    if (now && !was) { tries = 0; if (t) clearTimeout(t); t = setTimeout(poll, 50); }
+    was = now;
+  }).observe(document.body, { attributes: true, attributeFilter: ['class'] });
+})();
 
 // See the CSS comment on #implicitStamp for why this exists. wbPreStatus's
 // own text already distinguishes the three states this cares about ("Auto
