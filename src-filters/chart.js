@@ -253,7 +253,7 @@ function _drawChartInner(dprOverride){
     // the individual curves, since this is the headline combined result,
     // not a supporting reference line.
     const stackColor=fs.length>1?'#c2431b':fs[0].c;
-    cx.strokeStyle=stackColor;cx.lineWidth=2.2*dpr;cx.stroke();
+    cx.strokeStyle=stackColor;cx.lineWidth=1.6*dpr;cx.stroke();
     cx.restore();
   }else{
     cx.fillStyle='#7a6a52';cx.textAlign='center';cx.textBaseline='middle';
@@ -377,30 +377,28 @@ function themeCurveColor(hex){
   return '#'+to(out[0])+to(out[1])+to(out[2]);
 }
 function chartTheme(){
+  /* Build 203: the minimal theme -- a flat ground, a faint grid, no tinted UV / visible / NIR bands; the curves carry it. */
   const light=document.documentElement.getAttribute('data-theme')==='light';
   return light?{
-    /* Matched to the dimmer paper. Grid and tints are strengthened slightly:
-       on a bright white they were already faint, and on a warmer, darker
-       ground they would disappear entirely at the old opacities. */
-    bg:'#ece5d9',
-    gridMajor:'rgba(96,80,58,.50)',
-    gridMinor:'rgba(96,80,58,.26)',
-    axisText:'rgba(58,46,32,.88)',
-    uvTint:'rgba(104,86,180,.09)',
-    visTint:'rgba(140,128,96,.10)',
-    nirTint:'rgba(170,58,22,.09)',
-    band:'rgba(26,99,80,.18)',
-    stackFill:'rgba(156,51,13,.20)'
+    bg:'#ffffff',
+    gridMajor:'rgba(0,0,0,.14)',
+    gridMinor:'rgba(0,0,0,.06)',
+    axisText:'rgba(85,85,85,.95)',
+    uvTint:'rgba(0,0,0,0)',
+    visTint:'rgba(0,0,0,0)',
+    nirTint:'rgba(0,0,0,0)',
+    band:'rgba(0,0,0,.06)',
+    stackFill:'rgba(198,40,40,.14)'
   }:{
-    bg:'#0b0c0e',
-    gridMajor:'rgba(70,74,82,.60)',
-    gridMinor:'rgba(70,74,82,.36)',
-    axisText:'rgba(163,160,151,.78)',
-    uvTint:'rgba(143,122,214,.06)',
-    visTint:'rgba(237,226,206,.04)',
-    nirTint:'rgba(194,67,27,.06)',
-    band:'rgba(111,171,150,.18)',
-    stackFill:'rgba(194,67,27,.22)'
+    bg:'#000000',
+    gridMajor:'rgba(255,255,255,.13)',
+    gridMinor:'rgba(255,255,255,.055)',
+    axisText:'rgba(161,157,151,.95)',
+    uvTint:'rgba(0,0,0,0)',
+    visTint:'rgba(0,0,0,0)',
+    nirTint:'rgba(0,0,0,0)',
+    band:'rgba(236,232,225,.08)',
+    stackFill:'rgba(214,58,58,.16)'
   };
 }
 let chartPainted=false,_chartRetry=0,_chartPending=false;

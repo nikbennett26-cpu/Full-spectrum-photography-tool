@@ -1,0 +1,182 @@
+/* Build 203: the minimal theme -- black, hairlines, light type, one red.
+
+   Loaded last on both pages (index.html, filters.html), so it restyles by resetting the design tokens every other sheet
+   already reads, plus a short list of components whose look isn't token-driven (sliders, buttons, tabs, cards). The
+   older sheets stay as they are underneath: delete this file's <link> and the previous look comes back.
+
+   Rules of the look: one ground (pure black; white in the light theme), warm off-white text, a grey for labels, red as
+   the only accent, 1px lines instead of filled panels and shadows, Inter at light weights, numbers in tabular figures. */
+
+:root{
+  --bg:#000;--surface:#000;--surface2:#0e0e0e;--line:#1f1f1f;--line2:#333;
+  --paper:#ece8e1;--paper-dim:#a19d97;--muted:#8c8984;
+  --safelight:#d63a3a;--safelight-dim:#8f2626;--accent:var(--safelight);--ember:var(--safelight);
+  --phosphor:#ece8e1;--phosphor-dim:#a19d97;
+  --red:#d63a3a;--green:#6fae7f;--blue:#6f9fc7;
+  --radius:2px;--radius-sm:2px;
+  --font-display:'Inter',system-ui,-apple-system,sans-serif;
+  --font-mono:'Inter',system-ui,-apple-system,sans-serif;
+  --font-body:'Inter',system-ui,-apple-system,sans-serif;
+  --shadow-rest:none;--shadow-lift:none;
+  --panel-bg:#000;--sunken:#000;--chart-bg:#000;--preview-mat:#000;
+  --overlay-bg:rgba(0,0,0,.82);--overlay-border:#333;--overlay-text:#ece8e1;
+}
+[data-theme="light"] body.has-image{
+  --bg:#fff;--surface:#fff;--surface2:#f3f3f3;--line:#e6e6e6;--line2:#cfcfcf;
+  --paper:#111;--paper-dim:#555;--muted:#6b6b6b;
+  --safelight:#c62828;--safelight-dim:#e57373;
+  --phosphor:#111;--phosphor-dim:#555;
+  --red:#c62828;--green:#2e7d4f;--blue:#2b5f8a;
+  --shadow-rest:none;--shadow-lift:none;
+  --panel-bg:#fff;--sunken:#fafafa;--chart-bg:#fff;--preview-mat:#f3f3f3;
+  --overlay-bg:rgba(255,255,255,.9);--overlay-border:#cfcfcf;--overlay-text:#111;
+}
+/* the editor's own palette (css/dock.css) */
+html.studioOn body.has-image,html.dockOn body.has-image{
+  --st-bg:#000;--st-stage:#000;--st-panel:#000;--st-raise:#000;--st-raise2:#0e0e0e;
+  --st-hair:#1f1f1f;--st-hair2:#333;--st-text:#ece8e1;--st-dim:#a19d97;--st-faint:#8c8984;
+  --st-glass:rgba(0,0,0,.8);--accent-glow:rgba(214,58,58,.28);
+}
+html[data-theme="light"].studioOn body.has-image,html[data-theme="light"].dockOn body.has-image{
+  --st-bg:#fff;--st-stage:#f3f3f3;--st-panel:#fff;--st-raise:#fff;--st-raise2:#f3f3f3;
+  --st-hair:#e6e6e6;--st-hair2:#cfcfcf;--st-text:#111;--st-dim:#555;--st-faint:#6b6b6b;
+  --st-glass:rgba(255,255,255,.85);--accent-glow:rgba(198,40,40,.22);
+}
+
+/* type */
+body{font-family:var(--font-body);font-weight:300;font-variant-numeric:tabular-nums;-webkit-font-smoothing:antialiased}
+b,strong,h1,h2,h3,h4,summary .dT{font-weight:500}
+h1,h2{font-weight:300;letter-spacing:-.01em}
+input,select,textarea,button{font-family:inherit}
+
+/* no shadows or glows anywhere they were decoration */
+.panel,.dGrp,details,.card,.toolbar,#dock,#previewSticky,.wbStepCard{box-shadow:none!important}
+
+/* sliders: a 1px line, the set part a shade lighter, a ring for the handle */
+input[type=range]::-webkit-slider-runnable-track{height:1px!important;border-radius:0!important;
+  background:linear-gradient(to right,var(--paper-dim) 0,var(--paper-dim) calc(var(--val,50) * 1%),var(--line2) calc(var(--val,50) * 1%),var(--line2) 100%)!important}
+input[type=range]::-moz-range-track{height:1px!important;border-radius:0!important;background:var(--line2)!important}
+input[type=range]::-moz-range-progress{height:1px;background:var(--paper-dim)}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none!important;width:15px!important;height:15px!important;margin-top:-7px!important;
+  border-radius:50%!important;background:var(--bg)!important;border:1px solid var(--paper)!important;box-shadow:none!important;transform:none!important}
+input[type=range]::-moz-range-thumb{width:14px!important;height:14px!important;border-radius:50%!important;background:var(--bg)!important;
+  border:1px solid var(--paper)!important;box-shadow:none!important}
+input[type=range]:active::-webkit-slider-thumb{background:var(--paper)!important}
+/* white balance tracks keep their colour, as a 2px line */
+.sl.wb input[type=range]::-webkit-slider-runnable-track,#wbTempGrp input[type=range].wbBigSl::-webkit-slider-runnable-track{height:2px!important;background:var(--wbGrad)!important}
+.sl.wb input[type=range]::-moz-range-track,#wbTempGrp input[type=range].wbBigSl::-moz-range-track{height:2px!important;background:var(--wbGrad)!important}
+.sl.wb input[type=range]::-webkit-slider-thumb,#wbTempGrp input[type=range].wbBigSl::-webkit-slider-thumb{margin-top:-6.5px!important}
+
+/* buttons: flat, a hairline edge, selection shown by colour and a red edge rather than a fill */
+.btnGhostSmall,.btnGhost,.swapBtn,.stepBtn,.wbModeBtn,.wbNudge,.ptIconBtn,.wbIco{
+  background:transparent!important;border:1px solid var(--line2)!important;border-radius:2px!important;box-shadow:none!important;
+  color:var(--paper)!important;font-family:var(--font-body)!important;font-weight:400!important}
+.btnGhostSmall.on,.btnGhost.on,.swapBtn.on,.wbModeBtn.on,.wbModeBtn.armed,.btnGhostSmall[aria-pressed="true"]{
+  border-color:var(--safelight)!important;color:var(--paper)!important;background:transparent!important}
+.stepBtn{color:var(--paper-dim)!important}
+.wbNudge{border-radius:50%!important;color:var(--paper-dim)!important}
+
+/* cards become ruled sections */
+.dGrp{background:transparent!important;border:0!important;border-bottom:1px solid var(--line)!important;border-radius:0!important}
+.wbStepCard{background:transparent;border-color:var(--line);border-radius:2px}
+.wbStepNum{background:transparent;border-color:var(--line2);font-weight:400}
+.wbStepNum.on{background:transparent;border-color:var(--safelight);color:var(--paper)}
+.wbBigNum{font-weight:300}
+select,input[type=text],input[type=search],input[type=number]{background:transparent;border:1px solid var(--line2);border-radius:2px;color:var(--paper)}
+
+/* the editor's glass and spectrum glow (css/dock.css): flat black, nothing blurred */
+html.studioOn body.has-image,html.dockOn body.has-image{
+  --gl-fill:var(--st-bg);--gl-strong:var(--st-bg);--gl-chip:transparent;--gl-chip-hover:var(--st-raise2);--gl-edge:var(--st-hair);--gl-hi:transparent;
+  --gl-blur:none;--gl-scroll:var(--st-hair2);--gl-glow-a:transparent;--gl-glow-b:transparent;--gl-glow-c:transparent;
+  background:var(--st-bg)!important}
+html.studioOn body.has-image .toolbar,html.dockOn body.has-image .toolbar{box-shadow:none!important;-webkit-backdrop-filter:none!important;backdrop-filter:none!important}
+html.studioOn body.has-image #previewSticky{background:transparent!important}
+html.studioOn body.has-image #reorderZone,html.dockOn body.has-image #reorderZone{background:var(--st-bg)}
+
+/* square corners */
+.dGrp,.dCard,details[data-step="wb"] .wbSlim,details[data-step="wb"] .wbGains,#histogram,#previewWrap,#preview,#previewOrig,
+html.studioOn body.has-image #histogram,html.studioOn body.has-image #previewWrap,html.studioOn body.has-image #preview{border-radius:0!important}
+html.dockOn body.has-image #dockSheet,html.dockOn body.has-image .dockSheet{border-radius:0!important}
+#histogram{background:var(--st-bg,#000)!important}
+.dCard,details[data-step="wb"] .wbSlim,details[data-step="wb"] .wbGains{background:transparent!important;border-color:var(--line)!important}
+
+/* top bar: plain icons, no boxes */
+html.studioOn body.has-image .toolbar .ptIconBtn,html.dockOn body.has-image .toolbar .ptIconBtn,.toolbar .ptIconBtn{border-color:transparent!important;background:transparent!important}
+/* primary buttons (New, Export): a hairline outline, the chip just its icon */
+.keyBtn{background:transparent!important;border:1px solid var(--line2)!important;color:var(--paper)!important;font-family:var(--font-body)!important;font-weight:400!important;border-radius:2px!important}
+.keyBtn:hover{background:transparent!important;border-color:var(--paper-dim)!important}
+.keyBtn::before{background-color:transparent!important;border-radius:0!important}
+html:not([data-theme="light"]) .keyBtn::before{filter:invert(1)}
+#bDl.keyBtn{border-color:var(--paper)!important;letter-spacing:.06em}
+
+/* phone top bar: the icon outlines go */
+html.dockOn body.has-image .toolbar > :is(#bHome,#bReset,#themeBtn,#filterDbBtn)::before,html.dockOn body.has-image .toolbar .ptTools > button::before{border:0!important;background:transparent!important;box-shadow:none!important}
+html.dockOn body.has-image .toolbar > :is(.filelabel,#bHome,#bReset,#themeBtn,#filterDbBtn),html.dockOn body.has-image .toolbar .ptTools > button{border-radius:0!important}
+html.dockOn body.has-image .toolbar{border-bottom:1px solid var(--line)!important}
+/* the controls sheet: square, a hairline on top, no shadow */
+html.dockOn body.has-image #reorderZone{border-radius:0!important;box-shadow:none!important;border-top:1px solid var(--line)!important}
+#sheetGrip span{background:var(--line2)!important}
+/* compare bar and scopes button */
+#cmpBar,html.dockOn body.has-image #previewSticky > #cmpBar,html.studioOn body.has-image #cw > #cmpBar{background:transparent!important;border:0!important;border-bottom:1px solid var(--line)!important;border-radius:0!important;box-shadow:none!important;-webkit-backdrop-filter:none!important;backdrop-filter:none!important}
+html.dockOn body.has-image #btnScopesToggle{border:0!important;border-radius:0!important;color:var(--paper-dim)!important}
+/* headings: lighter */
+html.dockOn body.has-image #reorderZone .stepPanel > summary.stepHdr,html.studioOn body.has-image #reorderZone summary.stepHdr{font-weight:400!important;font-size:17px!important;letter-spacing:.01em!important}
+.dGrp .dT,details[data-step="wb"] .wbSlimT,details[data-step="wb"] .wbRowTx b{font-weight:500!important}
+html.studioOn body.has-image #studioBrand{font-weight:400!important;letter-spacing:.08em}
+#studioBrand .sbWord b{font-weight:400!important}
+
+/* ---- home page (css/dock.css "lab layout"): same rules ---- */
+body:not(.has-image){background:#000!important}
+#emptyStateGroup.lab{font-family:var(--font-body);font-weight:300}
+#emptyStateGroup.lab .labHero h1{font-family:var(--font-body)!important;font-weight:300!important;letter-spacing:-.02em!important;line-height:1.08!important}
+#emptyStateGroup.lab .labMark b{font-weight:400}
+#emptyStateGroup.lab .labBadge circle{stroke:#d63a3a}
+#emptyStateGroup.lab .labHd{font-family:var(--font-body);font-weight:400;color:#8c8984}
+#emptyStateGroup.lab .labNo{color:#d63a3a}
+#emptyStateGroup.lab .labPanel{background:transparent!important;box-shadow:none!important;border-radius:0!important;border-color:#1f1f1f!important}
+#emptyStateGroup.lab .labTerm{background:transparent!important;border-radius:0!important;border-color:#1f1f1f!important}
+#emptyStateGroup.lab a.labTool{border-radius:0!important;border-color:#1f1f1f!important}
+#emptyStateGroup.lab .labMini,#emptyStateGroup.lab .labSelect,#emptyStateGroup.lab #restoreSlot #btnRestore,#emptyStateGroup.lab .labLang select{background:transparent!important;border-radius:2px!important;border-color:#333!important}
+#emptyStateGroup.lab .labRow input[type=checkbox]{accent-color:#d63a3a}
+#emptyStateGroup.lab #whatsNew .wnLatest::after{color:#d63a3a}
+#emptyStateGroup.lab .flArrow,#emptyStateGroup.lab .ltCmd + *, #emptyStateGroup.lab .ltPrompt::before{color:#d63a3a}
+#emptyStateGroup.lab #dropzone.dragover .labTerm,#emptyStateGroup.lab a.labTool:hover,#emptyStateGroup.lab #btnRestore:hover{border-color:#d63a3a!important}
+#emptyStateGroup.lab .flTitle,#emptyStateGroup.lab .flSub,#emptyStateGroup.lab .labDecSum,#emptyStateGroup.lab .ltStatus,#emptyStateGroup.lab .labNote,#emptyStateGroup.lab #buildStampHome{font-family:var(--font-body)!important}
+#emptyStateGroup.lab .flTitle{font-weight:400!important}
+/* the consent bar */
+#consentBar{background:var(--bg)!important;border-top:1px solid var(--line)!important;box-shadow:none!important;border-radius:0!important}
+#emptyStateGroup.lab .labPanel{border:0!important;padding:0!important}
+#emptyStateGroup.lab #dropzone,#emptyStateGroup.lab .labFmtBox,#emptyStateGroup.lab .labFmt{border-radius:0!important}
+
+/* ---- filters page (css/filters.css) ---- */
+body.fltPage{background:#000!important}
+html[data-theme="light"] body.fltPage{
+  background:#fff!important;
+  --bg:#fff;--surface:#fff;--surface2:#f3f3f3;--line:#e6e6e6;--line2:#cfcfcf;
+  --paper:#111;--paper-dim:#555;--muted:#6b6b6b;
+  --safelight:#c62828;--safelight-dim:#e57373;--phosphor:#111;--phosphor-dim:#555;
+  --sunken:#fafafa;--sticky-bg:rgba(255,255,255,.97);--chart-bg:#fff}
+body.fltPage{--sunken:#000;--sticky-bg:rgba(0,0,0,.96);--chart-bg:#000;--radius:2px;--warn:#d8a13a}
+body.fltPage :is(.backlink,.panel,#chart,#specStrip,.grpHead,.grp details[open] .grpHead,.grp .fgrid,.fb,.advice,.dh-bar,.chip,.fbcurve,.fbadd,.fbclear,button,.ro,.warnbox,.bh,.rk,#fChart,#fChart .readout .ro,#fTabs,#fTabs button,#filterSearch,#filterList,#fLang,input,select){border-radius:2px!important;box-shadow:none!important}
+body.fltPage .panel,body.fltPage #fChart,body.fltPage #filterList,body.fltPage #fTabs{background:transparent!important;border-color:var(--line)!important;-webkit-backdrop-filter:none!important;backdrop-filter:none!important}
+body.fltPage :is(header h1,.pt,.grpHead .gname,.fbconf,#stickyStack b,.fb b,#behaviour h4,.bh .bn,#stackSummary,.provLine b){font-weight:500!important}
+body.fltPage header h1{font-weight:300!important;font-family:var(--font-body)!important}
+body.fltPage .backlink,body.fltPage button,body.fltPage .chip{background:transparent!important;border:1px solid var(--line2)!important;color:var(--paper)!important}
+body.fltPage .backlink{color:var(--safelight)!important;border-color:var(--safelight)!important}
+body.fltPage .chip.on,body.fltPage button.on,body.fltPage #fTabs button.on,body.fltPage #fTabs button[aria-selected="true"]{border-color:var(--safelight)!important;color:var(--paper)!important}
+body.fltPage #fTabs button{border:0!important}
+body.fltPage .grpHead .gcount{border-radius:2px!important}
+/* the filters page's top rail: plain icons, like the editor's */
+body.fltPage .rk{border:0!important;background:transparent!important}
+body.fltPage .rkI{border:0!important;background:transparent!important;border-radius:0!important}
+body.fltPage .rkKey .rkI{background:transparent!important;color:var(--safelight)!important}
+body.fltPage .rk[aria-pressed="true"] .rkI{background:transparent!important;color:var(--safelight)!important}
+
+/* desktop: no rainbow rule under the top bar, the selected rail tab marked by its colour and the red edge only */
+html.studioOn body.has-image .toolbar::after{display:none!important}
+html.studioOn body.has-image #dock button{border-radius:0!important;font-family:var(--font-body)!important;font-weight:400!important}
+html.studioOn body.has-image #dock button svg{stroke-width:1.3!important}
+html.studioOn body.has-image #dock button.on,html.studioOn body.has-image #dock button:hover{background:transparent!important;box-shadow:none!important}
+html.studioOn body.has-image #dock button.on::before{border-radius:0!important;width:1px!important;left:0!important}
+/* the IR mark: red ring */
+svg circle[stroke="#ee6a2c"]{stroke:var(--safelight)}
