@@ -154,55 +154,8 @@ const BAND_MAX = 5;
 const MAX_CHROMA_MULT = 1.6;
 let currentLUT = null; // {size,domainMin,domainMax,data:Float32Array}
 let origFile = null, origW = 0, origH = 0, exifSegment = null;
-/* ---------- theme switching ----------
-
-   Shares the storage key with the filter page, so the choice carries across
-   the two tools rather than each remembering separately.
-
-   The scopes (histogram, channel strips) are canvases: they hold pixels, not
-   styles, so CSS cannot restyle them and they have to be redrawn. The image
-   preview is deliberately NOT redrawn or retinted — it is a photograph, and
-   its surround stays dark in both themes for the same reason a darkroom easel
-   is not white. */
-function applyTheme(mode,persist){
-  const el=document.documentElement;
-  if(mode==='light')el.setAttribute('data-theme','light');
-  else el.removeAttribute('data-theme');
-  if(persist){ try{ localStorage.setItem('irlabTheme',mode); }catch(e){} }
-  const b=document.getElementById('themeBtn');
-  if(b){
-    /* Shows the theme the button will switch you TO. */
-    b.textContent = mode==='light' ? '\u263e' : '\u2600';
-    b.title = 'Switch to '+(mode==='light'?'dark':'light')+' mode';
-    b.setAttribute('aria-label','Switch to '+(mode==='light'?'dark':'light')+' mode');
-  }
-  try{ if(typeof drawHistogram==='function')drawHistogram(); }catch(e){}
-  try{ if(typeof drawChannelStrip==='function')drawChannelStrip(); }catch(e){}
-  try{ if(typeof render==='function')render(); }catch(e){}
-}
-function currentTheme(){
-  return document.documentElement.getAttribute('data-theme')==='light'?'light':'dark';
-}
-(function initTheme(){
-  const wire=()=>{
-    const b=document.getElementById('themeBtn');
-    if(!b)return;
-    applyTheme(currentTheme(),false);
-    b.addEventListener('click',()=>applyTheme(currentTheme()==='light'?'dark':'light',true));
-  };
-  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',wire);
-  else wire();
-  if(window.matchMedia){
-    const mq=window.matchMedia('(prefers-color-scheme: light)');
-    const onChange=e=>{
-      let stored=null;
-      try{ stored=localStorage.getItem('irlabTheme'); }catch(_){}
-      if(!stored)applyTheme(e.matches?'light':'dark',false);
-    };
-    if(mq.addEventListener)mq.addEventListener('change',onChange);
-    else if(mq.addListener)mq.addListener(onChange);
-  }
-})();
+/* Build 211: light mode was removed; irlab is dark only. A theme saved by an older build is cleared. */
+try { localStorage.removeItem('irlabTheme'); } catch (e) {}
 
 const WORKING_MAX_DIM = 2048;
 const LE=(()=>{const b=new ArrayBuffer(2);new Uint16Array(b)[0]=1;return new Uint8Array(b)[0]===1;})();

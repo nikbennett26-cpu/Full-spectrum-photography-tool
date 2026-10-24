@@ -272,53 +272,7 @@ function _drawChartInner(dprOverride){
 /* The canvas cannot inherit CSS variables, so the chart's palette is defined
    here and switched with the page theme. Read fresh on every draw so toggling
    the theme repaints correctly without any cache to invalidate. */
-/* Theme switching.
-
-   Applied to <html> before first paint via the inline script in <head>, so a
-   light-mode user never sees a dark flash. The choice is remembered; with no
-   stored choice the system preference is followed, and it keeps following the
-   system until the button is pressed, after which the explicit choice wins. */
-function applyTheme(mode,persist){
-  const el=document.documentElement;
-  if(mode==='light')el.setAttribute('data-theme','light');
-  else el.removeAttribute('data-theme');
-  if(persist){ try{ localStorage.setItem('irlabTheme',mode); }catch(e){} }
-  const b=document.getElementById('themeBtn');
-  if(b){
-    b.textContent = mode==='light' ? '\u263e' : '\u2600';
-    b.title = 'Switch to '+(mode==='light'?'dark':'light')+' mode';
-    b.setAttribute('aria-label','Switch to '+(mode==='light'?'dark':'light')+' mode');
-  }
-  /* The canvas holds pixels, not styles, so it must be repainted rather than
-     restyled — the one part of the page CSS cannot reach. */
-  try{ if(typeof draw==='function'){_forceChartRealloc=true;draw();} }catch(e){}
-  try{ if(typeof drawStrip==='function')drawStrip(); }catch(e){}
-  try{ if(typeof refreshCrgb==='function')refreshCrgb(); }catch(e){}
-}
-function currentTheme(){
-  return document.documentElement.getAttribute('data-theme')==='light'?'light':'dark';
-}
-(function initTheme(){
-  const wire=()=>{
-    const b=document.getElementById('themeBtn');
-    if(!b)return;
-    applyTheme(currentTheme(),false);
-    b.addEventListener('click',()=>applyTheme(currentTheme()==='light'?'dark':'light',true));
-  };
-  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',wire);
-  else wire();
-  // follow the system only while the user has not chosen explicitly
-  if(window.matchMedia){
-    const mq=window.matchMedia('(prefers-color-scheme: light)');
-    const onChange=e=>{
-      let stored=null;
-      try{ stored=localStorage.getItem('irlabTheme'); }catch(_){}
-      if(!stored)applyTheme(e.matches?'light':'dark',false);
-    };
-    if(mq.addEventListener)mq.addEventListener('change',onChange);
-    else if(mq.addListener)mq.addListener(onChange);
-  }
-})();
+/* Build 211: light mode was removed; irlab is dark only. */
 /* Filter colours are picked to glow against the dark chart. On a light
    background the pale ones — cream, pale yellow, light violet — sit at
    almost the same lightness as the paper and effectively disappear, which
@@ -330,66 +284,10 @@ function currentTheme(){
    its swatch in the list; only lightness is capped, to a level that holds
    contrast against #faf7f2. Saturation is nudged up slightly because
    darkening alone tends to read as grey. */
-function themeCurveColor(hex){
-  if(document.documentElement.getAttribute('data-theme')!=='light')return hex;
-  if(typeof hex!=='string')return hex;
-  const m=/^#([0-9a-f]{6})$/i.exec(hex.trim());
-  if(!m)return hex;
-  const n=parseInt(m[1],16);
-  let r=(n>>16&255)/255, g=(n>>8&255)/255, b=(n&255)/255;
-  const mx=Math.max(r,g,b), mn=Math.min(r,g,b), d=mx-mn;
-  let h=0, l=(mx+mn)/2, sat=0;
-  if(d>0){
-    sat=l>0.5?d/(2-mx-mn):d/(mx+mn);
-    if(mx===r)h=((g-b)/d+(g<b?6:0));
-    else if(mx===g)h=(b-r)/d+2;
-    else h=(r-g)/d+4;
-    h/=6;
-  }
-  sat=Math.min(1,sat*1.15+0.05);      // keep it from reading as grey
-  const hue2rgb=(p,q,t)=>{
-    if(t<0)t+=1; if(t>1)t-=1;
-    if(t<1/6)return p+(q-p)*6*t;
-    if(t<1/2)return q;
-    if(t<2/3)return p+(q-p)*(2/3-t)*6;
-    return p;
-  };
-  const toRGB=(L)=>{
-    const q=L<0.5?L*(1+sat):L+sat-L*sat, p=2*L-q;
-    return [hue2rgb(p,q,h+1/3),hue2rgb(p,q,h),hue2rgb(p,q,h-1/3)];
-  };
-  /* Darken until the contrast target is met, rather than capping lightness at
-     a fixed value. A single cap cannot work across hues: at the same HSL
-     lightness a yellow is far brighter than a blue, so 0.42 gave violet a
-     contrast of 9.4 and yellow only 2.2 — still invisible, which was the
-     original complaint. Measuring the actual relative luminance and stepping
-     down until it clears 3.5:1 treats every hue on its own terms. */
-  const rel=(v)=>v<=0.03928?v/12.92:Math.pow((v+0.055)/1.055,2.4);
-  const lumOf=(c)=>0.2126*rel(c[0])+0.7152*rel(c[1])+0.0722*rel(c[2]);
-  const paper=lumOf([0.925,0.898,0.851]);   // #ece5d9, the light chart background
-  let L=Math.min(l,0.5), out=toRGB(L);
-  for(let i=0;i<24;i++){
-    const ratio=(paper+0.05)/(lumOf(out)+0.05);
-    if(ratio>=3.5||L<=0.08)break;
-    L-=0.02; out=toRGB(L);
-  }
-  const to=(v)=>('0'+Math.round(Math.max(0,Math.min(1,v))*255).toString(16)).slice(-2);
-  return '#'+to(out[0])+to(out[1])+to(out[2]);
-}
+function themeCurveColor(hex){ return hex; }   // build 211: curves were only darkened for the light theme
 function chartTheme(){
   /* Build 203: the minimal theme -- a flat ground, a faint grid, no tinted UV / visible / NIR bands; the curves carry it. */
-  const light=document.documentElement.getAttribute('data-theme')==='light';
-  return light?{
-    bg:'#ffffff',
-    gridMajor:'rgba(0,0,0,.14)',
-    gridMinor:'rgba(0,0,0,.06)',
-    axisText:'rgba(85,85,85,.95)',
-    uvTint:'rgba(0,0,0,0)',
-    visTint:'rgba(0,0,0,0)',
-    nirTint:'rgba(0,0,0,0)',
-    band:'rgba(0,0,0,.06)',
-    stackFill:'rgba(198,40,40,.14)'
-  }:{
+  return {
     bg:'#000000',
     gridMajor:'rgba(255,255,255,.13)',
     gridMinor:'rgba(255,255,255,.055)',

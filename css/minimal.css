@@ -4,7 +4,7 @@
    already reads, plus a short list of components whose look isn't token-driven (sliders, buttons, tabs, cards). The
    older sheets stay as they are underneath: delete this file's <link> and the previous look comes back.
 
-   Rules of the look: one ground (pure black; white in the light theme), warm off-white text, a grey for labels, red as
+   Rules of the look: one ground (pure black; irlab is dark only since build 211), warm off-white text, a grey for labels, red as
    the only accent, 1px lines instead of filled panels and shadows, Inter at light weights, numbers in tabular figures. */
 
 :root{
@@ -21,26 +21,12 @@
   --panel-bg:#000;--sunken:#000;--chart-bg:#000;--preview-mat:#000;
   --overlay-bg:rgba(0,0,0,.82);--overlay-border:#333;--overlay-text:#ece8e1;
 }
-[data-theme="light"] body.has-image{
-  --bg:#fff;--surface:#fff;--surface2:#f3f3f3;--line:#e6e6e6;--line2:#cfcfcf;
-  --paper:#111;--paper-dim:#555;--muted:#6b6b6b;
-  --safelight:#c62828;--safelight-dim:#e57373;
-  --phosphor:#111;--phosphor-dim:#555;
-  --red:#c62828;--green:#2e7d4f;--blue:#2b5f8a;
-  --shadow-rest:none;--shadow-lift:none;
-  --panel-bg:#fff;--sunken:#fafafa;--chart-bg:#fff;--preview-mat:#f3f3f3;
-  --overlay-bg:rgba(255,255,255,.9);--overlay-border:#cfcfcf;--overlay-text:#111;
-}
+
 /* the editor's own palette (css/dock.css) */
 html.studioOn body.has-image,html.dockOn body.has-image{
   --st-bg:#000;--st-stage:#000;--st-panel:#000;--st-raise:#000;--st-raise2:#0e0e0e;
   --st-hair:#1f1f1f;--st-hair2:#333;--st-text:#ece8e1;--st-dim:#a19d97;--st-faint:#8c8984;
   --st-glass:rgba(0,0,0,.8);--accent-glow:rgba(214,58,58,.28);
-}
-html[data-theme="light"].studioOn body.has-image,html[data-theme="light"].dockOn body.has-image{
-  --st-bg:#fff;--st-stage:#f3f3f3;--st-panel:#fff;--st-raise:#fff;--st-raise2:#f3f3f3;
-  --st-hair:#e6e6e6;--st-hair2:#cfcfcf;--st-text:#111;--st-dim:#555;--st-faint:#6b6b6b;
-  --st-glass:rgba(255,255,255,.85);--accent-glow:rgba(198,40,40,.22);
 }
 
 /* type */
@@ -106,12 +92,12 @@ html.studioOn body.has-image .toolbar .ptIconBtn,html.dockOn body.has-image .too
 .keyBtn{background:transparent!important;border:1px solid var(--line2)!important;color:var(--paper)!important;font-family:var(--font-body)!important;font-weight:400!important;border-radius:2px!important}
 .keyBtn:hover{background:transparent!important;border-color:var(--paper-dim)!important}
 .keyBtn::before{background-color:transparent!important;border-radius:0!important}
-html:not([data-theme="light"]) .keyBtn::before{filter:invert(1)}
+html .keyBtn::before{filter:invert(1)}
 #bDl.keyBtn{border-color:var(--paper)!important;letter-spacing:.06em}
 
 /* phone top bar: the icon outlines go */
-html.dockOn body.has-image .toolbar > :is(#bHome,#bReset,#themeBtn,#filterDbBtn)::before,html.dockOn body.has-image .toolbar .ptTools > button::before{border:0!important;background:transparent!important;box-shadow:none!important}
-html.dockOn body.has-image .toolbar > :is(.filelabel,#bHome,#bReset,#themeBtn,#filterDbBtn),html.dockOn body.has-image .toolbar .ptTools > button{border-radius:0!important}
+html.dockOn body.has-image .toolbar > :is(#bHome,#bReset,#filterDbBtn)::before,html.dockOn body.has-image .toolbar .ptTools > button::before{border:0!important;background:transparent!important;box-shadow:none!important}
+html.dockOn body.has-image .toolbar > :is(.filelabel,#bHome,#bReset,#filterDbBtn),html.dockOn body.has-image .toolbar .ptTools > button{border-radius:0!important}
 html.dockOn body.has-image .toolbar{border-bottom:1px solid var(--line)!important}
 /* the controls sheet: square, a hairline on top, no shadow */
 html.dockOn body.has-image #reorderZone{border-radius:0!important;box-shadow:none!important;border-top:1px solid var(--line)!important}
@@ -150,12 +136,7 @@ body:not(.has-image){background:#000!important}
 
 /* ---- filters page (css/filters.css) ---- */
 body.fltPage{background:#000!important}
-html[data-theme="light"] body.fltPage{
-  background:#fff!important;
-  --bg:#fff;--surface:#fff;--surface2:#f3f3f3;--line:#e6e6e6;--line2:#cfcfcf;
-  --paper:#111;--paper-dim:#555;--muted:#6b6b6b;
-  --safelight:#c62828;--safelight-dim:#e57373;--phosphor:#111;--phosphor-dim:#555;
-  --sunken:#fafafa;--sticky-bg:rgba(255,255,255,.97);--chart-bg:#fff}
+
 body.fltPage{--sunken:#000;--sticky-bg:rgba(0,0,0,.96);--chart-bg:#000;--radius:2px;--warn:#d8a13a}
 body.fltPage :is(.backlink,.panel,#chart,#specStrip,.grpHead,.grp details[open] .grpHead,.grp .fgrid,.fb,.advice,.dh-bar,.chip,.fbcurve,.fbadd,.fbclear,button,.ro,.warnbox,.bh,.rk,#fChart,#fChart .readout .ro,#fTabs,#fTabs button,#filterSearch,#filterList,#fLang,input,select){border-radius:2px!important;box-shadow:none!important}
 body.fltPage .panel,body.fltPage #fChart,body.fltPage #filterList,body.fltPage #fTabs{background:transparent!important;border-color:var(--line)!important;-webkit-backdrop-filter:none!important;backdrop-filter:none!important}

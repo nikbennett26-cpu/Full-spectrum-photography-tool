@@ -121,7 +121,7 @@
   let scopesWereOpen = false;
   function quiet(fn) { window.__dockSwitching = true; fn(); setTimeout(() => { window.__dockSwitching = false; }, 120); }
   function toDock() {
-    const tb = document.querySelector('.toolbar'), tools = document.querySelector('#previewTools .ptTools'), theme = $('themeBtn');
+    const tb = document.querySelector('.toolbar'), tools = document.querySelector('#previewTools .ptTools'), theme = $('filterDbBtn');
     if (tb && tools && !moved.tools) { moved.tools = true; tb.insertBefore(tools, theme || null); }
     const stamps = document.querySelector('#previewTools .ptStamps'), psx = $('previewSticky');
     if (stamps && psx && !moved.stamps) { moved.stamps = true; psx.appendChild(stamps); }
@@ -327,7 +327,16 @@
   window.addEventListener('orientationchange', () => setTimeout(() => { updateUiZoom(); sync(); }, 250));
   window.addEventListener('resize', () => { if (updateUiZoom() && root.classList.contains('dockOn')) { layout(); setTimeout(layout, 200); } });
   if ($('scopeDetails')) $('scopeDetails').addEventListener('toggle', () => setTimeout(layout, 0));
-  new MutationObserver(() => setTimeout(layout, 60)).observe(document.body, { attributes: true, attributeFilter: ['class'] });
+  /* Build 211: when a photo opens (body gains has-image) the layout is measured at once, before the first frame of the
+     photo is drawn. It used to wait on a 60 ms timer, and on a phone the decode that follows keeps the main thread busy
+     for seconds, so the photo sat squeezed into the size measured on the home page until the timer finally ran. */
+  let hadImage = document.body.classList.contains('has-image');
+  new MutationObserver(() => {
+    const has = document.body.classList.contains('has-image');
+    if (has && !hadImage) layout();
+    hadImage = has;
+    setTimeout(layout, 60);
+  }).observe(document.body, { attributes: true, attributeFilter: ['class'] });
   window.addEventListener('load', () => setTimeout(layout, 300));
 
   /* ---------- desktop studio ----------
@@ -347,7 +356,7 @@
     if (hist.width !== 512 || hist.height !== hh) { hist.width = 512; hist.height = hh; setTimeout(() => { if (typeof drawHistogram === 'function') drawHistogram(); }, 30); }
   }
   function toStudio() {
-    const tb = document.querySelector('.toolbar'), theme = $('themeBtn');
+    const tb = document.querySelector('.toolbar'), theme = $('filterDbBtn');
     if (tb && !$('studioBrand')) { const b = document.createElement('div'); b.id = 'studioBrand'; b.innerHTML = BRAND; tb.insertBefore(b, tb.firstChild); }
     if (tb && !$('btnStudioExport')) {
       const e = document.createElement('button'); e.type = 'button'; e.id = 'btnStudioExport'; e.className = 'keyBtn keyDown keySm'; e.textContent = 'Export';

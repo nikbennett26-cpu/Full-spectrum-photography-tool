@@ -23,48 +23,7 @@
   --ember:var(--safelight);
 }
 
-/* ---------- light theme ----------
-   The dark palette is built on warm near-blacks with the safelight orange as
-   the only saturated colour. Inverting it directly turns the warm greys muddy
-   and leaves the orange vibrating against white, so the hues are kept and the
-   lightness relationships rebuilt.
-
-   Shadows change character rather than just value: on a dark page the resting
-   shadow is what lifts a panel off the background, but on paper the same
-   shadow reads as grime, so light mode leans on borders and a much softer,
-   cooler shadow. */
-/* Scoped to the editor. The landing page is designed dark — the spectrum
-   banner, the region tints and the whole first impression depend on it —
-   so the theme applies only once an image is loaded and body.has-image is
-   set. Declaring the variables on that element rather than on :root means
-   they cascade into the editor and nowhere else. */
-[data-theme="light"] body.has-image{
-  --bg:#f3f0e9;--surface:#ebe7dd;--surface2:#ded9cc;--line:rgba(35,27,19,.10);--line2:rgba(35,27,19,.20);
-  --paper:#231b13;--paper-dim:#5e5442;--muted:#6f6552;
-  --safelight:#9c330d;--safelight-dim:#b85c38;
-  --phosphor:#1a6350;--phosphor-dim:#37806b;
-  --red:#9c3520;--green:#2b6f50;--blue:#295b75;
-  --shadow-rest:0 1px 2px rgba(60,45,30,.12), 0 4px 12px -8px rgba(60,45,30,.20);
-  --shadow-lift:0 2px 6px rgba(60,45,30,.16), 0 12px 28px -14px rgba(60,45,30,.30);
-  --panel-bg:#f3f0e9;--sunken:#e7e3da;--chart-bg:#ece7dd;--preview-mat:#d3cec2;
-  --overlay-bg:rgba(243,240,233,.88);--overlay-border:rgba(80,60,35,.35);--overlay-text:#231b13;
-  color-scheme:light;
-}
 :root{--panel-bg:var(--surface);--sunken:#0f1012;--chart-bg:#0b0c0e;--preview-mat:#0d0e10;--overlay-bg:rgba(11,12,14,.82);--overlay-border:rgba(205,191,168,.45);--overlay-text:#f0e6d6;color-scheme:dark}
-/* Pinned to the toolbar's top-right corner rather than sitting in the flex
-   row. As a labelled button it changed width between "Dark" and "Light",
-   which reflowed the whole toolbar and bounced it onto a second line every
-   time you pressed it — the control moved as a result of using it. Taking it
-   out of the flow fixes the layout, and a single glyph needs no width at all.
-   The glyph shows the theme you will GET, not the one you are in, which is
-   the convention people already read on other apps. */
-#themeBtn{display:none;position:absolute;top:0;right:0;z-index:5;
-  width:34px;height:34px;padding:0;line-height:1;
-  align-items:center;justify-content:center;font-size:15px;
-  border:1px solid var(--line2);border-radius:var(--radius-sm);background:var(--surface);
-  color:var(--paper-dim);cursor:pointer;transition:border-color .15s,color .15s}
-#themeBtn:hover{color:var(--paper);border-color:var(--safelight)}
-body.has-image #themeBtn{display:flex}
 /* The toolbar becomes the positioning context; padding keeps the wrapping
    buttons clear of the corner the icon now occupies. */
 body.has-image .toolbar{position:relative;padding-right:42px}
@@ -75,7 +34,6 @@ body.has-image{overflow-y:auto;height:auto}
 @media (min-width:1600px){body{max-width:92vw;padding:32px 4vw}}
 
 /* Desktop vs Mobile Layout */
-
 
 /* Sticky Preview & Compare Features */
 #previewSticky{position:relative;z-index:40;background:var(--bg);padding:8px 12px 10px;margin:0 -12px}
@@ -254,7 +212,6 @@ header .tagline{font-size:11.5px;color:var(--paper-dim);margin-top:4px;display:b
    margins of the page. */
 #spectrumTicks span:first-child{margin-left:1px}
 #spectrumTicks span:last-child{margin-right:1px;color:var(--safelight-dim)}
-
 
 /* ---------- structure, second pass ----------
 
@@ -486,7 +443,6 @@ header .tagline{font-size:11.5px;color:var(--paper-dim);margin-top:4px;display:b
 /* Secondary actions share one rhythm instead of each having its own gap,
    which had spacing growing as importance fell. */
 #landingLinks #btnInstallTop{margin-top:10px}
-
 
 /* Filter Reference Details Table Styling */
 details summary{list-style:none}
