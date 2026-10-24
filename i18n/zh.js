@@ -1,6 +1,8 @@
 /* irlab interface text in zh, keyed by the English (spaces collapsed). Used by i18n/tr.js. A string missing here
    stays in English; tools/i18n_check.py lists them. */
 irlabTr.add('zh', {
+"Aerochrome trichrome tool": "Aerochrome 三色合成工具",
+"Filter database and stack calculator": "滤镜数据库与叠加计算器",
 "Decoded with": "解码方式：",
 "Decode settings change how a RAW is turned into a picture. Set them on the start page before you open a photo, or under Export, Decode settings, in Advanced.": "解码设置决定RAW文件如何转换成图像。请在打开照片前于首页设置，或在高级模式的“导出”→“解码设置”中更改。",
 "Change settings": "更改设置",

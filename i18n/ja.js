@@ -1,6 +1,8 @@
 /* irlab interface text in ja, keyed by the English (spaces collapsed). Used by i18n/tr.js. A string missing here
    stays in English; tools/i18n_check.py lists them. */
 irlabTr.add('ja', {
+"Aerochrome trichrome tool": "Aerochrome トリクロームツール",
+"Filter database and stack calculator": "フィルターデータベースと重ね合わせ計算機",
 "Decoded with": "デコード：",
 "Decode settings change how a RAW is turned into a picture. Set them on the start page before you open a photo, or under Export, Decode settings, in Advanced.": "デコード設定は、RAWを画像にする方法を決めます。写真を開く前にホーム画面で設定するか、詳細モードの［書き出し］→［デコード設定］で変更できます。",
 "Change settings": "設定を変更",
