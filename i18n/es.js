@@ -1,6 +1,7 @@
 /* irlab interface text in es, keyed by the English (spaces collapsed). Used by i18n/tr.js. A string missing here
    stays in English; tools/i18n_check.py lists them. */
 irlabTr.add('es', {
+"Tint, green to magenta": "Matiz, de verde a magenta",
 "before the swap": "antes del intercambio",
 "after the swap": "después del intercambio",
 "Auto": "Auto",

@@ -340,6 +340,19 @@ class WebGLEngine {
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
   }
 
+  /* Build 201: new linear data for the picture already on the GPU, same size -- the RAW white balance drag. Skips
+     everything setImage does around the upload (canvas sizing, the 8-bit path). False when it can't, so the caller
+     falls back to a full install. */
+  updateLinearFloat(buf, w, h) {
+    const gl = this.gl;
+    if (!this.isWebGL2 || !this.inputIsLinear || !this.texture || this.canvas.width !== w || this.canvas.height !== h || !buf || buf.length !== w * h * 4) return false;
+    gl.activeTexture(gl.TEXTURE0);
+    gl.bindTexture(gl.TEXTURE_2D, this.texture);
+    gl.texSubImage2D(gl.TEXTURE_2D, 0, 0, 0, w, h, gl.RGBA, gl.FLOAT, buf);
+    this._texGen = (this._texGen || 0) + 1;
+    return true;
+  }
+
   /* Upload a parsed .cube as an N*N by N tile atlas (see lutLookup in the
      shader for the layout). Source indexing matches parseCubeLUT's ordering:
      red varies fastest, then green, then blue, i.e. ((z*N+y)*N+x)*3.

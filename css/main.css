@@ -936,7 +936,7 @@ input[type=range]::-moz-range-progress{
 #temp{--wbGrad:linear-gradient(to right,#5782be,#6482a8,#728294,#808080,#8e7d6e,#9d795d,#aa744e)}
 #tint{--wbGrad:linear-gradient(to right,#5e8b5e,#698869,#748474,#808080,#8c7b8c,#977597,#a36ea3)}
 #rawTemp{--wbGrad:linear-gradient(to right,#5782be,#6482a8,#728294,#808080,#8e7d6e,#9d795d,#aa744e)}   /* build 197 */
-#rawGreen{--wbGrad:linear-gradient(to right,#a36ea3,#977597,#8c7b8c,#808080,#748474,#698869,#5e8b5e)}
+#rawGreen{--wbGrad:linear-gradient(to right,#5e8b5e,#698869,#748474,#808080,#8c7b8c,#977597,#a36ea3)}   /* build 201: green left, magenta right; replaced from the photo */
 /* Paper thumb, not safelight: the orange one vanished against the warm half
    of the temperature strip. A neutral cap with a dark edge reads against
    every part of both gradients. */

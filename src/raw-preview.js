@@ -1156,8 +1156,9 @@ const RAW_EXT = ['CR2','CR3','NEF','ARW','SR2','ORF','ORI','RW2','PEF','RAF','SR
 function camSwapKey(on, matrix, name) { return on ? (String(name || '') + '|' + JSON.stringify(matrix || null)) : 'off'; }
 // build 193: 0 below 90% of a channel's clip point, 1 from 98.5%, smooth between (the basic highlight rebuild)
 function hlNear(k) { let t = (k - 0.9) / 0.085; t = t < 0 ? 0 : t > 1 ? 1 : t; return t * t * (3 - 2 * t); }
-function rawEngineResultToCanvas(res, doCamSpaceSwap, doCamSpaceSwapMatrix, doCamSpaceSwapName, forceFullRes) {
-  if (!forceFullRes && typeof rawEngine !== 'undefined') rawEngine.builtKey = camSwapKey(!!doCamSpaceSwap, doCamSpaceSwapMatrix, doCamSpaceSwapName);
+function rawEngineResultToCanvas(res, doCamSpaceSwap, doCamSpaceSwapMatrix, doCamSpaceSwapName, forceFullRes, floatOnly) {
+  // floatOnly (build 201): just the linear float buffer, no 8-bit canvas -- the white balance drag's fast path (src/raw-wb.js)
+  if (!forceFullRes && !floatOnly && typeof rawEngine !== 'undefined') rawEngine.builtKey = camSwapKey(!!doCamSpaceSwap, doCamSpaceSwapMatrix, doCamSpaceSwapName);
   /* TODO(perf): this whole function re-runs on EVERY swap-preset dropdown
      change and checkbox toggle (see reapplyCamSpaceSwap), and most of what
      it does doesn't actually depend on which swap preset was picked:
@@ -1211,11 +1212,11 @@ function rawEngineResultToCanvas(res, doCamSpaceSwap, doCamSpaceSwapMatrix, doCa
   const scale = forceFullRes ? 1 : Math.min(1, WORKING_MAX_DIM / Math.max(srcW, srcH));
   const w = Math.max(1, Math.round(srcW * scale));
   const h = Math.max(1, Math.round(srcH * scale));
-  const cv = document.createElement('canvas');
-  cv.width = w; cv.height = h;
-  const ctx = cv.getContext('2d');
-  const img = ctx.createImageData(w, h);
-  const d8 = img.data;
+  const cv = floatOnly ? null : document.createElement('canvas');
+  if (cv) { cv.width = w; cv.height = h; }
+  const ctx = cv ? cv.getContext('2d') : null;
+  const img = ctx ? ctx.createImageData(w, h) : null;
+  const d8 = img ? img.data : null;
   const LUTN = 4096;
   const enc = v => v <= 0.0031308 ? v * 12.92 : 1.055 * Math.pow(v, 1 / 2.4) - 0.055;
   const encLut = new Float32Array(LUTN + 1);
@@ -1261,7 +1262,7 @@ function rawEngineResultToCanvas(res, doCamSpaceSwap, doCamSpaceSwapMatrix, doCa
      neutral" when it actually means "gave up". */
   // build 192: the camera's own white balance by default, the estimate on request (rawWbCompute in raw-process.js)
   const wb = rawWbFor(res);   // the same numbers every time for this decode, including the noise-reduced preview
-  if (!forceFullRes && typeof rawEngine !== 'undefined') { rawWbBuilt = wb.slice(); rawEngine.builtWbKey = rawWbKey(); }   // build 197: what the drag preview measures from
+  if (!forceFullRes && typeof rawEngine !== 'undefined') { rawWbBuilt = wb.slice(); if (!floatOnly) rawEngine.builtWbKey = rawWbKey(); }   // build 197: what the drag preview measures from
   const wbSource = res.__wbSrc || 'camera';
   // build 192: where each channel really clips in this file (rawClipFor); Infinity when it never does
   const clipL = res.__clip || rawClipFor(res), icR = 1 / clipL[0], icG = 1 / clipL[1], icB = 1 / clipL[2];
@@ -1418,11 +1419,12 @@ function rawEngineResultToCanvas(res, doCamSpaceSwap, doCamSpaceSwapMatrix, doCa
         og  += (wht - og)  * t;
         ob  += (wht - ob)  * t;
       }
-      const er = encAt(or_), eg = encAt(og), eb = encAt(ob);
-      d8[q]   = er * 255;
-      d8[q+1] = eg * 255;
-      d8[q+2] = eb * 255;
-      d8[q+3] = 255;
+      if (d8) {
+        d8[q]   = encAt(or_) * 255;
+        d8[q+1] = encAt(og) * 255;
+        d8[q+2] = encAt(ob) * 255;
+        d8[q+3] = 255;
+      }
       /* The float twin stores LINEAR, SCENE-REFERRED values, with everything
          above the white point kept.
 
@@ -1446,6 +1448,7 @@ function rawEngineResultToCanvas(res, doCamSpaceSwap, doCamSpaceSwapMatrix, doCa
       floatBuf[q+3] = 1;
     }
   }
+  if (floatOnly) return { floatBuf, w, h };
   ctx.putImageData(img, 0, 0);
   cv.__linearFloat = floatBuf;   // linear scene-referred twin, headroom intact -- see setImage
   /* Also parked module-level, keyed by size.

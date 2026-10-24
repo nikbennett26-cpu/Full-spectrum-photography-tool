@@ -55,10 +55,15 @@ function rawWbKey() {
 const RTWB_POS = 1000;
 function rtwbTempToPos(t) { const m = 1e6 / t, m0 = 1e6 / RTWB_MIN, m1 = 1e6 / RTWB_MAX; return Math.round(RTWB_POS * (m0 - m) / (m0 - m1)); }
 function rtwbPosToTemp(p) { const m0 = 1e6 / RTWB_MIN, m1 = 1e6 / RTWB_MAX; return 1e6 / (m0 - (p / RTWB_POS) * (m0 - m1)); }
-function rtwbGreenToPos(g) { return Math.round(1000 * Math.log(Math.min(10, Math.max(0.1, g))) / Math.log(10)); }
-function rtwbPosToGreen(p) { return Math.pow(10, p / 1000); }
+/* Green is shown as Tint, the way Lightroom does: green on the left, magenta on the right, 0 = Green 1. RawTherapee's
+   Green multiplier runs the other way (below 1 is more magenta), which made "Green 0.100" sit at the magenta end.
+   Tint = -100 x log10(Green): +100 is Green 0.1, -100 is Green 10. */
+function rtwbGreenToTint(g) { return -100 * Math.log10(g); }
+function rtwbTintToGreen(t) { return Math.pow(10, -t / 100); }
+function rtwbGreenToPos(g) { return Math.round(Math.max(-1000, Math.min(1000, 10 * rtwbGreenToTint(g)))); }
+function rtwbPosToGreen(p) { return rtwbTintToGreen(p / 10); }
 function rtwbFmtT(t) { return String(Math.round(t)); }   // the big readout; its K is a separate span
-function rtwbFmtG(g) { return g.toFixed(3); }
+function rtwbFmtG(g) { const t = Math.round(rtwbGreenToTint(g)); return (t > 0 ? '+' : '') + t; }
 
 /* The RAW on screen, if it is one and its camera is known. */
 function rtwbRes() {
@@ -113,6 +118,45 @@ function rtwbSyncUi() {
   on('rawWbAuto', !rawWbCustom && mode === 'auto');
   on('rawWbPick', !!(rawWbCustom && rawWbCustom.wb));
   const off = $('rawWbOff'); if (off) { const o = approx; if (off.hidden === o) off.hidden = !o; }
+  rtwbPaintTracks(res, t, g);
+}
+
+/* Build 201: the two tracks drawn from the photo. Each stop is the colour that what is grey at the slider's setting
+   would become with the slider there, carried through the rest of the colour work -- the picker, the channel swap in its working space, the
+   cast -- at a fixed brightness, so the track shows what landing there does to this picture. The fixed blue-to-orange
+   strip it replaces is right for an ordinary photo but says nothing true about a swapped infrared one. */
+let rtwbTrackKey = '';
+function rtwbPaintTracks(res, t, g) {
+  const ts = $('rawTemp'), gs = $('rawGreen'); if (!ts || !gs) return;
+  // measured from the slider's own setting, so the thumb sits on grey and each side shows which way it pushes; on a
+  // shot whose as-shot is beyond the scale, measuring from that made the whole track one solid colour
+  const now = rtwbGains(res, t, g) || rawWbFor(res);
+  let P = null; try { P = currentParams(); } catch (e) { return; }
+  const key = [now.map(v => v.toFixed(4)), Math.round(t), g.toFixed(3), P.matrix, P.swapSpace, P.preWBM, P.postWBM, P.tempTint].join('|');
+  if (key === rtwbTrackKey) return;
+  rtwbTrackKey = key;
+  const M = (typeof pp_camToSrgbLin === 'function') ? pp_camToSrgbLin(pp_rgbCam3x3(res.rgbCam)) : pp_rgbCam3x3(res.rgbCam);
+  const mul = (m, v) => wbkMulV(m, v);
+  const wide = [1, 2, 3].includes(+P.swapSpace) && typeof SRGB_LIN_TO_PROPHOTO_LIN !== 'undefined';
+  const enc = v => v <= 0.0031308 ? 12.92 * v : 1.055 * Math.pow(v, 1 / 2.4) - 0.055;
+  const colourFor = wb => {
+    if (!wb) return null;
+    let c = mul(M, [wb[0] / now[0], wb[1] / now[1], wb[2] / now[2]]);   // a grey now, balanced with wb instead
+    if (P.preWBM && P.preWBM.length === 9) c = mul(P.preWBM, c);
+    if (P.matrix && P.matrix.length === 9) c = wide ? mul(PROPHOTO_LIN_TO_SRGB_LIN, mul(P.matrix, mul(SRGB_LIN_TO_PROPHOTO_LIN, c))) : mul(P.matrix, c);
+    if (P.postWBM && P.postWBM.length === 9) c = mul(P.postWBM, c);
+    if (P.tempTint) c = c.map((v, i) => v * P.tempTint[i]);
+    c = c.map(v => Math.max(0, v));
+    const mx = Math.max(c[0], c[1], c[2]); if (!(mx > 0)) return '#808080';
+    const y = 0.2126 * c[0] + 0.7152 * c[1] + 0.0722 * c[2];
+    const k = Math.min(0.32 / Math.max(y, 1e-6), 0.92 / mx);   // a mid brightness, without clipping the strongest channel
+    return '#' + c.map(v => Math.round(255 * Math.min(1, enc(v * k)))).map(v => v.toString(16).padStart(2, '0')).join('');
+  };
+  const stops = (n, f) => { const out = []; for (let i = 0; i <= n; i++) { const col = f(i / n); if (col) out.push(col + ' ' + (100 * i / n).toFixed(1) + '%'); } return out.length > 1 ? 'linear-gradient(to right,' + out.join(',') + ')' : ''; };
+  const tg = stops(24, f => colourFor(rtwbGains(res, rtwbPosToTemp(f * RTWB_POS), g)));
+  const gg = stops(16, f => colourFor(rtwbGains(res, t, rtwbPosToGreen(-1000 + 2000 * f))));
+  if (tg) ts.style.setProperty('--wbGrad', tg);
+  if (gg) gs.style.setProperty('--wbGrad', gg);
 }
 
 /* Step 2: what the swap is doing, in a word, as a link to it. */
@@ -261,17 +305,17 @@ function rtwbTypeOpen(id, bEl) {
   const prev = bEl.textContent;
   const inp = document.createElement('input');
   inp.type = 'number'; inp.className = 'vedit';
-  inp.min = isT ? RTWB_MIN : RTWB_GMIN; inp.max = isT ? RTWB_MAX : RTWB_GMAX; inp.step = isT ? 10 : 0.001;
-  inp.value = isT ? Math.round(a.temp) : a.green.toFixed(3);
+  inp.min = isT ? RTWB_MIN : Math.round(rtwbGreenToTint(RTWB_GMAX)); inp.max = isT ? RTWB_MAX : Math.round(rtwbGreenToTint(RTWB_GMIN)); inp.step = 1;
+  inp.value = isT ? Math.round(a.temp) : Math.round(rtwbGreenToTint(a.green));
   bEl.textContent = ''; bEl.appendChild(inp); inp.focus(); inp.select();
   let done = false;
   const close = commit => {
     if (done) return; done = true;
     delete bEl.dataset.editing;
     bEl.textContent = prev;
-    if (commit && inp.value !== '' && isFinite(+inp.value) && +inp.value > 0) {
+    if (commit && inp.value !== '' && isFinite(+inp.value) && (!isT || +inp.value > 0)) {
       const v = +inp.value;
-      rtwbSet(isT ? { t: v, g: a.green } : { t: a.temp, g: v });
+      rtwbSet(isT ? { t: v, g: a.green } : { t: a.temp, g: rtwbTintToGreen(v) });
     }
   };
   inp.addEventListener('keydown', ev => {
@@ -299,18 +343,60 @@ function rtwbLiveBuild() {
       if (base && wb && rawEngine.lastGen === loadToken) {
         // noise reduction on: its cached planes, else the plain working-size ones
         const nr = rawEngine.nrPrev && rawEngine.nrPrev.gen === loadToken ? rawEngine.nrPrev.res : null;
-        const ds = nr ? { R: nr.R, G: nr.G, B: nr.B, width: nr.width, height: nr.height } : rawWorkingPlanes(base);
+        const full = nr ? { R: nr.R, G: nr.G, B: nr.B, width: nr.width, height: nr.height } : rawWorkingPlanes(base);
+        const ds = rtwbHalf(full);   // build 201: half size each way while dragging, a quarter of the work
         const res = Object.assign({}, base, { R: ds.R, G: ds.G, B: ds.B, width: ds.width, height: ds.height, __wb: wb.slice(), __ds: null,
           __hlDone: nr ? !!nr.__hlDone : false, __clip: rawClipFor(base) });
         const checked = !!($('camSpaceSwap') && $('camSpaceSwap').checked);
-        const keepKey = rawEngine.builtKey;
-        const cv = rawEngineResultToCanvas(res, checked, getCamSpaceSwapMatrix(), getCamSpaceSwapName());
-        rawEngine.builtKey = keepKey;
         rawEngine.builtWbKey = 'drag';   // whatever is let go of, the real build still runs
-        installRawPreview(cv, false);
+        // build 201: only the float data the shader reads, oriented and put straight into the texture
+        const out = rawEngineResultToCanvas(res, checked, getCamSpaceSwapMatrix(), getCamSpaceSwapName(), false, true);
+        const up = rtwbDouble(out.floatBuf, out.w, out.h, full.width, full.height);
+        const buf = orientLinearFloat(up, full.width, full.height, srcOrient);
+        const sw = srcOrient >= 5 && srcOrient <= 8, W = sw ? full.height : full.width, H = sw ? full.width : full.height;
+        if (engine && engine.updateLinearFloat(buf, W, H)) render(true);
+        else {   // a size or path it can't take: the full install
+          const keepKey = rawEngine.builtKey;
+          const cv = rawEngineResultToCanvas(res, checked, getCamSpaceSwapMatrix(), getCamSpaceSwapName());
+          rawEngine.builtKey = keepKey; rawEngine.builtWbKey = 'drag';
+          installRawPreview(cv, false);
+        }
       }
     } catch (e) { console.warn('live white balance build', e); }
     rtwbLiveBusy = false;
     if (rtwbLiveAgain && rawWbDrag) { rtwbLiveAgain = false; rtwbLiveBuild(); } else rtwbLiveAgain = false;
   }, 0);
+}
+
+/* Half-size planes (2x2 averages), cached on the planes they came from, and the float result doubled back up to the
+   working size (each value into its 2x2 block): the drag preview at a quarter of the work. A phone shows the 2048-pixel
+   picture a fifth of that size across, so the difference does not show; letting go builds at full size. */
+function rtwbHalf(ds) {
+  if (ds.__half) return ds.__half;
+  const W = ds.width, H = ds.height, w = Math.max(1, W >> 1), h = Math.max(1, H >> 1);
+  const R = new Float32Array(w * h), G = new Float32Array(w * h), B = new Float32Array(w * h);
+  for (let y = 0; y < h; y++) {
+    const a = (2 * y) * W, b = Math.min(H - 1, 2 * y + 1) * W;
+    for (let x = 0; x < w; x++) {
+      const x0 = 2 * x, x1 = Math.min(W - 1, x0 + 1), q = y * w + x;
+      R[q] = (ds.R[a + x0] + ds.R[a + x1] + ds.R[b + x0] + ds.R[b + x1]) * 0.25;
+      G[q] = (ds.G[a + x0] + ds.G[a + x1] + ds.G[b + x0] + ds.G[b + x1]) * 0.25;
+      B[q] = (ds.B[a + x0] + ds.B[a + x1] + ds.B[b + x0] + ds.B[b + x1]) * 0.25;
+    }
+  }
+  ds.__half = { R, G, B, width: w, height: h };
+  return ds.__half;
+}
+let rtwbUpBuf = null;
+function rtwbDouble(src, w, h, W, H) {
+  if (!rtwbUpBuf || rtwbUpBuf.length !== W * H * 4) rtwbUpBuf = new Float32Array(W * H * 4);
+  const out = rtwbUpBuf;
+  for (let Y = 0; Y < H; Y++) {
+    const sy = Math.min(h - 1, Y >> 1), sr = sy * w, dr = Y * W;
+    for (let X = 0; X < W; X++) {
+      const s4 = (sr + Math.min(w - 1, X >> 1)) * 4, d4 = (dr + X) * 4;
+      out[d4] = src[s4]; out[d4 + 1] = src[s4 + 1]; out[d4 + 2] = src[s4 + 2]; out[d4 + 3] = 1;
+    }
+  }
+  return out;
 }
