@@ -600,6 +600,9 @@ function updatePrecisionNote() {
   el.textContent = engine.hiPrec
     ? 'This device supports high-precision rendering: TIFF export carries true 16-bit tone, and PNG/JPEG are dithered down from it.'
     : 'This device lacks a renderable half-float buffer (needs WebGL2), so export is 8-bit; TIFF will still be written as a 16-bit file, but padded from 8-bit values.';
+  el.textContent += engine.tenBit
+    ? ' On-screen preview: 10-bit.'
+    : ' On-screen preview: 8-bit (this browser does not offer a 10-bit canvas; the preview is dithered instead).';
 }
 
 function bytesPerPixelFor(fmt){return fmt==='tiff16'?6:fmt==='png'?3:0.3;}

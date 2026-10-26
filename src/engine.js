@@ -316,6 +316,7 @@ class WebGLEngine {
       this.canvas.width = this.canvas.width;   // reset to a plain 8-bit buffer
     }
     try { document.documentElement.dataset.canvasBits = this.tenBit ? '10' : '8'; } catch (e) {}
+    try { if (typeof updatePrecisionNote === 'function') updatePrecisionNote(); } catch (e) {}
   }
 
   setImage(img) {
