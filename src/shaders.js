@@ -3160,12 +3160,12 @@ uniform float u_skyL;          // the typical lightness of the sky; anything cle
        noise samples make the triangular distribution. Channels already at
        0 or 255 are left exact, so the "at black / at white" readouts still
        mean what they say. */
-    if (u_dither > 0.5) {
+    if (u_dither > 0.0) {
       vec2 fc = gl_FragCoord.xy;
       float dn1 = fract(52.9829189 * fract(dot(fc, vec2(0.06711056, 0.00583715))));
       float dn2 = fract(52.9829189 * fract(dot(fc + vec2(17.0, 31.0), vec2(0.06711056, 0.00583715))));
       vec3 dm = step(vec3(1.5 / 255.0), srgb) * step(srgb, vec3(1.0 - 1.5 / 255.0));
-      srgb += dm * ((dn1 + dn2 - 1.0) / 255.0);
+      srgb += dm * ((dn1 + dn2 - 1.0) / 255.0) * u_dither;   // u_dither = 1 on an 8-bit buffer, 0.25 on a 10-bit one
     }
 
     gl_FragColor = vec4(srgb, texColor.a);

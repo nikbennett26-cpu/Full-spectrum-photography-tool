@@ -298,10 +298,31 @@ class WebGLEngine {
     gl.vertexAttribPointer(aTex, 2, gl.FLOAT, false, 0, 0);
   }
 
+  /* 10-bit on-screen canvas (build 219). The pipeline is float all the way to the last shader line; the only 8-bit
+     step on screen was the canvas itself, which shows as banding in smooth RAW skies once colour is stretched.
+     gl.drawingBufferStorage(RGB10_A2) gives the page a 10-bit back buffer (4x the levels per channel) where the
+     browser has the API. Setting canvas.width/height resets the buffer, so this runs after every resize. Any
+     failure leaves the normal 8-bit buffer, and the shader dither follows whichever depth is live. */
+  _tenBitApply() {
+    const gl = this.gl;
+    this.tenBit = false;
+    if (!this.isWebGL2 || this._tenBitOff || typeof gl.drawingBufferStorage !== 'function') return;
+    try {
+      gl.drawingBufferStorage(gl.RGB10_A2, this.canvas.width, this.canvas.height);
+      this.tenBit = gl.getError() === gl.NO_ERROR;
+    } catch (e) { this.tenBit = false; }
+    if (!this.tenBit) {
+      this._tenBitOff = true;
+      this.canvas.width = this.canvas.width;   // reset to a plain 8-bit buffer
+    }
+    try { document.documentElement.dataset.canvasBits = this.tenBit ? '10' : '8'; } catch (e) {}
+  }
+
   setImage(img) {
     const gl = this.gl;
     this.canvas.width = img.width;
     this.canvas.height = img.height;
+    this._tenBitApply();
     gl.viewport(0, 0, img.width, img.height);
 
     if (!this.texture) this.texture = gl.createTexture();
@@ -963,7 +984,7 @@ void main(){
     gl.uniform1f(this.uLocs.clipView, p.clipView ? 1 : 0);
     gl.uniform1f(this.uLocs.cmykWarn, p.cmykWarn ? 1 : 0);
     gl.uniform1f(this.uLocs.gamutDrag, p.gamutDrag ? 1 : 0);
-    gl.uniform1f(this.uLocs.dither, (p.dither === false || this._noDither) ? 0 : 1);
+    gl.uniform1f(this.uLocs.dither, (p.dither === false || this._noDither) ? 0 : (this.tenBit ? 0.25 : 1));   // amplitude: one step of the live depth
     gl.uniform1f(this.uLocs.dustView, p.dustView && !p.__srcProbe && !p.__ortonProbe && !this._noDither ? 1 : 0);
     gl.uniform1f(this.uLocs.caR, p.caR || 0);
     gl.uniform1f(this.uLocs.caB, p.caB || 0);
