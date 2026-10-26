@@ -1966,21 +1966,32 @@ uniform float u_skyL;          // the typical lightness of the sky; anything cle
        is within a small threshold of the pixel on that channel, so a step one or two levels tall is melted into the ramp
        while a real edge, being much taller than the threshold, is left alone. The taps are rotated per pixel by noise so
        the result has no pattern. Only for 8-bit sources: a RAW's linear float texture has no steps to melt. */
-    if (u_deband > 0.0 && u_inputLinear < 0.5) {
-      vec3 c0 = texColor.rgb;
+    if (u_deband > 0.0) {
+      /* A RAW's texture is linear float, so it has no 8-bit steps of its own, but a hard channel swap or white-balance
+         gain on a smooth sky stretches the sensor's own levels until they step too. The comparison is made in encoded
+         (sRGB) values so the threshold means the same thing in shadows as in highlights; pixels with highlight
+         headroom above 1.0 are left alone. */
+      bool dbLin = u_inputLinear > 0.5;
+      vec3 src0 = texColor.rgb;
+      vec3 c0 = dbLin ? linearToSrgb(clamp(src0, 0.0, 1.0)) : src0;
       float thr = u_deband * 0.030;
       float ang0 = 6.2831853 * fract(52.9829189 * fract(dot(gl_FragCoord.xy, vec2(0.06711056, 0.00583715))));
       for (int di = 1; di <= 3; di++) {
         float dist = u_debandRad * u_deband * float(di) / 3.0;
         float ang = ang0 + float(di) * 2.3999632;
         vec2 o1 = vec2(cos(ang), sin(ang)) * dist * u_texelSize;
-        vec2 o2 = vec2(-o1.y, o1.x) * (u_texelSize.x > 0.0 ? 1.0 : 1.0);
-        vec3 avg = 0.25 * (texture2D(u_image, v_texCoord + o1).rgb + texture2D(u_image, v_texCoord - o1).rgb +
-                           texture2D(u_image, v_texCoord + o2).rgb + texture2D(u_image, v_texCoord - o2).rgb);
+        vec2 o2 = vec2(-o1.y, o1.x);
+        vec3 t1 = texture2D(u_image, v_texCoord + o1).rgb, t2 = texture2D(u_image, v_texCoord - o1).rgb;
+        vec3 t3 = texture2D(u_image, v_texCoord + o2).rgb, t4 = texture2D(u_image, v_texCoord - o2).rgb;
+        if (dbLin) { t1 = linearToSrgb(clamp(t1, 0.0, 1.0)); t2 = linearToSrgb(clamp(t2, 0.0, 1.0)); t3 = linearToSrgb(clamp(t3, 0.0, 1.0)); t4 = linearToSrgb(clamp(t4, 0.0, 1.0)); }
+        vec3 avg = 0.25 * (t1 + t2 + t3 + t4);
         vec3 w = 1.0 - smoothstep(vec3(thr * 0.5), vec3(thr), abs(avg - c0));
         c0 = mix(c0, avg, w);
       }
-      texColor.rgb = c0;
+      if (dbLin) {
+        float headroom = step(max(src0.r, max(src0.g, src0.b)), 1.0);
+        texColor.rgb = mix(src0, srgbToLinear(c0), headroom);
+      } else texColor.rgb = c0;
     }
     /* Exact sRGB decode. This was pow(x, 2.2), but the value is re-encoded below with the exact sRGB curve, and the
        two do not cancel: at default settings a JPEG's level 13 came out as 4 and 26 as 18, so every 8-bit photo lost
