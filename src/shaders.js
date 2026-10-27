@@ -229,6 +229,7 @@ uniform float u_debandRad;  // reach, in source texels, at full strength
   uniform float u_contrast;
   uniform float u_exposure;
 uniform float u_epdOn;     // 1 = edge-preserving tone mapping is applied
+uniform float u_tbOn;      // 1 = Highlights/Shadows read the edge-aware base layer (tone-base.js); it rides in the u_epdBase sampler, unused while tone mapping is off
 uniform float u_epdProbe;  // 1 = write the lightness the tone mapping would see, instead of the picture (how its base is measured)
 uniform float u_epdTemp, u_epdBoost, u_epdS, u_epdNorm;
 uniform float u_epdRef;    // the (linear) exposure the base was measured at
@@ -1486,10 +1487,27 @@ uniform float u_skyL;          // the typical lightness of the sky; anything cle
      Recovery is a real limit, not a bug: a channel already at 1.0 has no
      information left to bring back. This pulls near-white down to reveal
      what is still there, and cannot invent what clipped in camera. */
+  /* Edge-aware base for Highlights and Shadows (build 222). A small, smooth picture of the scene's brightness that stops at
+     edges (guided filter of log luminance, tone-base.js; the idea and the constants are from LightCraft's tone base,
+     MIT OR Apache-2.0), so a sky is treated as one region and a bright edge against dark does not leave a halo. It is
+     measured on the source, so it is carried to this pixel's current level by the ratio of the base to the source's own
+     pixel here (the same trick the neighbour taps use); capped at two stops so a swap that moves one area far from
+     another cannot send it somewhere silly. Returns the base's luminance at this pixel's current level. */
+  float toneBaseLum(float lum) {
+    vec3 t0 = texture2D(u_src, v_texCoord).rgb;
+    vec3 raw = u_inputLinear > 0.5 ? max(t0, vec3(0.0)) : srgbToLinear(clamp(t0, 0.0, 1.0));
+    float s0 = max(dot(raw, LUMW), 1e-4);
+    float bl = exp2(texture2D(u_epdBase, v_texCoord).r);
+    return max(lum * clamp(bl / s0, 0.25, 4.0), 1e-4);
+  }
+
   vec3 applyToneRegions(vec3 c, float hi, float sh) {
     if (hi == 0.0 && sh == 0.0) return c;
     float lum = dot(c, LUMW);
     if (lum <= 0.00001) return c;
+    float lum0 = lum;
+    float tbL = u_tbOn > 0.5 ? toneBaseLum(lum) : -1.0;   // < 0: no base, the neighbour taps below do the work as before
+    bool tb = tbL > 0.0;
 
     float p = linearToSrgb(vec3(lum)).x;
     const float PIVOT = 0.50;
@@ -1502,7 +1520,8 @@ uniform float u_skyL;          // the typical lightness of the sky; anything cle
        is soft-clipped and used to restore micro-contrast after compression
        or to gently exaggerate it during a boost.
        Blend fades in with smoothstep so the l_pivot region is seamless. */
-    if (lum > u_hiPivot && hi != 0.0) {
+    float hGate = tb ? tbL : lum;   // with a base the region decides, not this one pixel
+    if (hGate > u_hiPivot && hi != 0.0) {
       float L_PIVOT = u_hiPivot;   // Highlights range: 0.10 at the standard setting
 
       /* 12-tap ring filter — inner 4 at ~3.5px, outer 8 at ~7.5px/diag.
@@ -1515,6 +1534,7 @@ uniform float u_skyL;          // the typical lightness of the sky; anything cle
 
       float sumL = lum, sumW = 1.0;
       /* 12 taps fully inlined — no macros (safer on mobile GLSL ES drivers) */
+      if (!tb) {
       { vec3 _sa=srcLin(v_texCoord+vec2(3.5,0.0)*ts);
         float _sla=lum*(max(dot(_sa,LUMW),0.0)/center_tex_lum);
         float _da=_sla-lum;
@@ -1575,12 +1595,15 @@ uniform float u_skyL;          // the typical lightness of the sky; anything cle
         float _dl=_sll-lum;
         float _wl=exp(-(_dl*_dl)*inv2RangeSq)*0.5;
         sumL+=_sll*_wl; sumW+=_wl; }
+      }
 
-      float luma_base    = sumL / max(sumW, 1e-4);
+      float luma_base    = tb ? tbL : sumL / max(sumW, 1e-4);
       float detail_ratio = lum / max(luma_base, 1e-4);
-      float safe_detail  = clamp(detail_ratio, 0.65, 1.55);
+      float safe_detail  = tb ? clamp(detail_ratio, 0.125, 8.0) : clamp(detail_ratio, 0.65, 1.55);
       float log_det      = log2(safe_detail);
-      float soft_log     = log_det / (1.0 + (log_det < 0.0 ? -log_det : log_det) * 0.40);
+      /* Against a ring of neighbours the ratio is soft-clipped, it only ever means fine texture. Against the edge-aware base
+         it is everything the region contains (cloud structure, a branch), so it is carried across whole. */
+      float soft_log     = tb ? log_det : log_det / (1.0 + (log_det < 0.0 ? -log_det : log_det) * 0.40);
 
       float target_lum;
       if (hi < 0.0) {
@@ -1589,18 +1612,18 @@ uniform float u_skyL;          // the typical lightness of the sky; anything cle
         float comp_strength   = k * 2.2;
         float comp_delta      = delta_base / (1.0 + comp_strength * (delta_base / (1.0 + delta_base * 0.35)));
         float target_base     = L_PIVOT + comp_delta;
-        float restoration     = 1.0 + k * 0.55;
+        float restoration     = 1.0 + k * (tb ? 0.25 : 0.55);
         float recovered       = target_base * exp2(soft_log * restoration);
-        float blend           = smoothstep(L_PIVOT, L_PIVOT + 0.35, lum);
+        float blend           = smoothstep(L_PIVOT, L_PIVOT + 0.35, hGate);
         target_lum            = mix(lum, recovered, blend);
       } else {
         float boost           = hi * 0.70;
         float delta_base      = max(luma_base - L_PIVOT, 0.0);
         float boost_delta     = delta_base * (1.0 + boost / (1.0 + delta_base * 0.25));
         float target_base     = L_PIVOT + boost_delta;
-        float det_boost       = exp2(soft_log * (1.0 + hi * 0.20));
+        float det_boost       = exp2(soft_log * (1.0 + hi * (tb ? 0.10 : 0.20)));
         float boosted         = target_base * det_boost;
-        float blend           = smoothstep(L_PIVOT, L_PIVOT + 0.35, lum);
+        float blend           = smoothstep(L_PIVOT, L_PIVOT + 0.35, hGate);
         target_lum            = mix(lum, boosted, blend);
       }
 
@@ -1629,7 +1652,12 @@ uniform float u_skyL;          // the typical lightness of the sky; anything cle
        smoothstep(0, 0.08, t_blurred) so very dark noisy regions don't
        get their grain boosted instead of their detail. */
     float SHP = min(PIVOT * u_shW, 0.95);   // Shadows range: mid-grey at the standard setting
-    if (p < SHP && sh != 0.0) {
+    /* With a base, the tone curve below is read at the REGION's level and applied to the pixel as a gain, so a shadowed area
+       lifts as one and the texture inside it keeps its own contrast (and a dark twig against a bright sky is not lifted
+       as if it were shadow). Without one it reads this pixel, as before. */
+    float lumS = tb ? max(lum * (tbL / lum0), 1e-4) : lum;
+    float pS = tb ? linearToSrgb(vec3(lumS)).x : p;
+    if (pS < SHP && sh != 0.0) {
       /* Approximate a blurred luma from 4 neighbours at radius 2 pixels.
          This is the single-pass approximation of RapidRAW's separate blur
          pass. Four taps at ±2 texels in each axis gives a reasonable
@@ -1646,7 +1674,7 @@ uniform float u_skyL;          // the typical lightness of the sky; anything cle
       float srcCentre = max(dot(srcLin(v_texCoord), LUMW), 1e-4);
       blurred_lum = lum * (dot((n0 + n1 + n2 + n3) * 0.25, LUMW) / srcCentre);
 
-      float safe_lum         = max(lum, 0.0001);
+      float safe_lum         = max(lumS, 0.0001);
       float safe_blurred_lum = max(blurred_lum, 0.0001);
 
       /* Encode to perceptual space for the lift calculation (matches
@@ -1679,7 +1707,7 @@ uniform float u_skyL;          // the typical lightness of the sky; anything cle
         luma_ratio = new_lum / safe_lum;
         out_rgb = c * luma_ratio;
 
-        float detail         = t_pixel / max(t_blurred, 0.0001);
+        float detail         = tb ? 1.0 : t_pixel / max(t_blurred, 0.0001);   // against a base the gain already carries the texture
         float safe_detail    = clamp(detail, 0.8, 1.25);
         float noise_protect  = smoothstep(0.0, 0.08, t_blurred);
         float detail_amp     = 1.0 + (lift_amount * 1.2 * noise_protect);
@@ -1718,7 +1746,7 @@ uniform float u_skyL;          // the typical lightness of the sky; anything cle
       /* The lift side used to stop dead at mid-grey with its effect still non-zero there (a jump of several levels at
          +100). This fades it to exactly nothing between 0.30 and 0.50, and leaves everything darker untouched. The
          crush side already fades by its own mask. */
-      float fadeLift = (sh >= 0.0) ? 1.0 - smoothstep(0.30 * SHP / PIVOT, SHP, p) : 1.0;
+      float fadeLift = (sh >= 0.0) ? 1.0 - smoothstep(0.30 * SHP / PIVOT, SHP, pS) : 1.0;
       return clamp(mix(c, out_rgb, fadeLift), 0.0, 1.0);
     }
 

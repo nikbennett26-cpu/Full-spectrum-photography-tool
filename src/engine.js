@@ -188,7 +188,7 @@ class WebGLEngine {
       epdOn: gl.getUniformLocation(this.program, 'u_epdOn'), epdProbe: gl.getUniformLocation(this.program, 'u_epdProbe'),
       epdTemp: gl.getUniformLocation(this.program, 'u_epdTemp'), epdBoost: gl.getUniformLocation(this.program, 'u_epdBoost'),
       epdS: gl.getUniformLocation(this.program, 'u_epdS'), epdNorm: gl.getUniformLocation(this.program, 'u_epdNorm'),
-      epdBase: gl.getUniformLocation(this.program, 'u_epdBase'), epdRef: gl.getUniformLocation(this.program, 'u_epdRef'),
+      epdBase: gl.getUniformLocation(this.program, 'u_epdBase'), tbOn: gl.getUniformLocation(this.program, 'u_tbOn'), epdRef: gl.getUniformLocation(this.program, 'u_epdRef'),
       maskN: gl.getUniformLocation(this.program, 'u_maskN'),
       maskProbe: gl.getUniformLocation(this.program, 'u_maskProbe'), maskGuideOn: gl.getUniformLocation(this.program, 'u_maskGuideOn'),
       maskGuide: gl.getUniformLocation(this.program, 'u_maskGuide'), mGuideTexel: gl.getUniformLocation(this.program, 'u_mGuideTexel'),
@@ -303,6 +303,31 @@ class WebGLEngine {
      gl.drawingBufferStorage(RGB10_A2) gives the page a 10-bit back buffer (4x the levels per channel) where the
      browser has the API. Setting canvas.width/height resets the buffer, so this runs after every resize. Any
      failure leaves the normal 8-bit buffer, and the shader dither follows whichever depth is live. */
+  /* Builds the Highlights/Shadows base for the current picture if it has not been (a few ms), and puts it in epdTex.
+     False when it cannot be had (WebGL1, or the helper is missing or fails): the shader then does what it always did. */
+  _toneBaseReady() {
+    const gl = this.gl;
+    if (!this.isWebGL2 || this._toneFail || typeof toneBaseCompute !== 'function' || !this._toneImg) return false;
+    if (this.toneBase) return true;
+    try {
+      const b = toneBaseCompute(this._toneImg);
+      if (!b) { this._toneFail = true; return false; }
+      if (!this.epdTex) this.epdTex = gl.createTexture();
+      gl.activeTexture(gl.TEXTURE5);
+      gl.bindTexture(gl.TEXTURE_2D, this.epdTex);
+      gl.pixelStorei(gl.UNPACK_ALIGNMENT, 4);
+      gl.texImage2D(gl.TEXTURE_2D, 0, gl.R16F, b.w, b.h, 0, gl.RED, gl.FLOAT, b.data);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+      gl.activeTexture(gl.TEXTURE0);
+      this._epdId = -1;   // the tone-mapping path must re-upload its own base if it is ever used again
+      this.toneBase = { w: b.w, h: b.h };
+      return true;
+    } catch (e) { this._toneFail = true; return false; }
+  }
+
   _tenBitApply() {
     const gl = this.gl;
     this.tenBit = false;
@@ -351,6 +376,7 @@ class WebGLEngine {
        instead. */
     this.inputIsLinear = !!(img.__linearFloat && this.isWebGL2);
     this._texGen = (this._texGen || 0) + 1;   // a new picture: the prepared copy (see _prepPass) is stale
+    this._toneImg = img; this.toneBase = null;   // and so is the Highlights/Shadows base (tone-base.js): rebuilt on first use
     if (img.__linearFloat && this.isWebGL2) {
       gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA16F, img.width, img.height, 0, gl.RGBA, gl.FLOAT, img.__linearFloat);
     } else {
@@ -1045,6 +1071,17 @@ void main(){
         gl.uniform1f(this.uLocs.epdS, e.s); gl.uniform1f(this.uLocs.epdNorm, e.norm);
         gl.activeTexture(gl.TEXTURE0);
       } else if (p.epdProbe) { gl.uniform1i(this.uLocs.epdBase, 5); }
+      /* Edge-aware base for Highlights/Shadows (tone-base.js). It rides in the tone-mapping base's sampler and texture unit,
+         which nothing else uses while tone mapping is off; the two are never wanted at once. Only built when one of the
+         two sliders is in use, and only once per picture. */
+      const wantTB = !ok && !p.epdProbe && !p.__noToneBase && ((p.highlights || 0) !== 0 || (p.shadows || 0) !== 0) && this._toneBaseReady();
+      gl.uniform1f(this.uLocs.tbOn, wantTB ? 1 : 0);
+      if (wantTB) {
+        gl.activeTexture(gl.TEXTURE5);
+        gl.bindTexture(gl.TEXTURE_2D, this.epdTex);
+        gl.uniform1i(this.uLocs.epdBase, 5);
+        gl.activeTexture(gl.TEXTURE0);
+      }
     }
     {
       const mk = p.masks;
