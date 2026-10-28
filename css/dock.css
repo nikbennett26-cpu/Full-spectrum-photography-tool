@@ -97,11 +97,11 @@
 #updateBar span{flex:none;white-space:nowrap}
 #updateBar .ubGo{flex:none;padding:9px 18px;border:0;border-radius:999px;background:var(--safelight,#e8742c);color:#fff;font:600 13px/1 ui-sans-serif,system-ui,sans-serif;cursor:pointer}
 #updateBar .ubClose{flex:none;width:32px;height:32px;border:0;border-radius:50%;background:transparent;color:var(--paper-dim,#aaa);font-size:19px;cursor:pointer}
-#rawNrBox,#rawHlBox{display:none}
+#rawNrBox,#rawHlBox,#rawDeconvBox{display:none}
 /* Deep sky, Crimson foliage and the sky-selection view are no longer shown; the EIR base preset still sets them (scaled by Preset strength) */
 #skyDeepRow,#crimsonRow,#skyShowRow{display:none !important}
 #epdBox .sl input[type=range]{width:100%}
-body.rawOpen #rawNrBox,body.rawOpen #rawHlBox{display:block}
+body.rawOpen #rawNrBox,body.rawOpen #rawHlBox,body.rawOpen #rawDeconvBox{display:block}
 #rawNrBox.busy input[type=range]{opacity:.5;pointer-events:none}
 #saveReady{position:fixed;left:50%;bottom:calc(16px + env(safe-area-inset-bottom,0px) + var(--dockH,0px));transform:translate(-50%,140%);z-index:9998;display:flex;align-items:center;gap:10px;
   max-width:min(560px,calc(100vw - 24px));padding:10px 10px 10px 16px;border-radius:14px;background:var(--surface2,#24272c);border:1px solid var(--line2);color:var(--paper);
@@ -821,3 +821,8 @@ b.fpMeas,span.fpMeas{background:var(--safelight)}
 #dustMarks .dSrc{border:1.5px dashed rgba(255,255,255,.85);box-shadow:0 0 0 1px rgba(0,0,0,.4)}
 .dustRow .btnGhostSmall{min-height:30px;padding:0 9px;font-size:11.5px}
 .dustRow .dustPick.armed{border-color:var(--safelight);color:var(--safelight)}
+
+.dGrp #rawDeconvBox{padding-bottom:6px;border-bottom:1px dashed var(--line2);margin-bottom:4px}
+#rawDeconvBox.busy input[type=range]{opacity:.5;pointer-events:none}
+#plainSharpenSub{display:none}
+body.rawOpen #plainSharpenSub{display:block}

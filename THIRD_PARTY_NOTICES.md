@@ -108,6 +108,10 @@ the bad-pixel and impulse-noise filters (`src/engine/badpixels.cc`, `impulse_den
 three demosaiced planes, because the decoder hands the page planes, not the mosaic. ART is GPL-3.0-or-later, compatible with
 this app's AGPL-3.0.
 
+**Deconvolution (build 227).** The RAW deconvolution sharpening and its automatic blur radius follow ART's approach
+(`src/engine/deconvautoradius.cc`, by Ingo Weyrich: the steepest edge between neighbouring green samples limits the blur). The
+code here is a fresh JavaScript implementation of Richardson-Lucy on the demosaiced planes.
+
 ## Licence-compatibility summary
 
 | Component    | Licence          | Compatible with the AGPL-3.0 whole app |

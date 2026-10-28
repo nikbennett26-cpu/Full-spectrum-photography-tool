@@ -382,19 +382,86 @@ function rtHlOpposed(R, G, B, W, H, wb, clipLv) {
   }
   return true;
 }
-/* The RAW steps the worker runs, in RawTherapee's order: highlights first, then noise reduction. */
+/* Richardson-Lucy deconvolution (build 227): sharpening that undoes the lens-and-demosaic blur, instead of boosting edges.
+   The blur is modelled as a Gaussian of `deconvSigma` pixels and RL's own iteration (est = est x (PSF-flipped * (data /
+   (PSF * est)))) works it backwards, which gives back real fine detail where unsharp masking only adds contrast at edges.
+   The idea and the automatic blur radius come from ART (GPL-3.0, src/engine/deconvautoradius.cc and RawTherapee's capture
+   sharpening). It runs on the brightness only (0.25 R + 0.5 G + 0.25 B, in camera space, before white balance) and carries
+   the result to the three channels as a gain, so no colour fringes appear. RL also amplifies noise, so the change is faded
+   in only where the local contrast stands clearly above the frame's own noise, and faded out toward clipped highlights, where
+   it would ring. A small offset (0.003) keeps the ratios steady in the dark. Returns new planes; the inputs are not changed. */
+function rtDeconvPlanes(R, G, B, W, H, opts, onProgress) {
+  const n = W * H, amt = Math.max(0, Math.min(1, (+opts.deconv || 0) / 100)), sigma = Math.max(0.3, +opts.deconvSigma || 0.8);
+  const iters = Math.max(4, Math.min(40, (opts.deconvIter | 0) || 12)), EPS = 0.003;
+  const rad = Math.max(1, Math.ceil(sigma * 3)), K = new Float32Array(2 * rad + 1); let ks = 0;
+  for (let i = -rad; i <= rad; i++) { K[i + rad] = Math.exp(-(i * i) / (2 * sigma * sigma)); ks += K[i + rad]; }
+  for (let i = 0; i < K.length; i++) K[i] /= ks;
+  const tmp = new Float32Array(n);
+  const blur = (src, dst) => {   // separable, edge pixels repeated
+    for (let y = 0; y < H; y++) {
+      const b = y * W;
+      for (let x = 0; x < W; x++) {
+        let a = 0;
+        if (x >= rad && x < W - rad) { for (let k = -rad; k <= rad; k++) a += K[k + rad] * src[b + x + k]; }
+        else { for (let k = -rad; k <= rad; k++) { let q = x + k; q = q < 0 ? 0 : q >= W ? W - 1 : q; a += K[k + rad] * src[b + q]; } }
+        tmp[b + x] = a;
+      }
+    }
+    for (let y = 0; y < H; y++) {
+      const interior = y >= rad && y < H - rad, b = y * W;
+      for (let x = 0; x < W; x++) {
+        let a = 0;
+        if (interior) { for (let k = -rad; k <= rad; k++) a += K[k + rad] * tmp[b + k * W + x]; }
+        else { for (let k = -rad; k <= rad; k++) { let q = y + k; q = q < 0 ? 0 : q >= H ? H - 1 : q; a += K[k + rad] * tmp[q * W + x]; } }
+        dst[b + x] = a;
+      }
+    }
+  };
+  const L = new Float32Array(n);
+  for (let i = 0; i < n; i++) L[i] = 0.25 * R[i] + 0.5 * G[i] + 0.25 * B[i] + EPS;
+  const est = Float32Array.from(L), bl = new Float32Array(n), q = new Float32Array(n);
+  for (let it = 0; it < iters; it++) {
+    blur(est, bl);
+    for (let i = 0; i < n; i++) q[i] = L[i] / (bl[i] > 1e-6 ? bl[i] : 1e-6);
+    blur(q, bl);
+    for (let i = 0; i < n; i++) { const v = est[i] * bl[i]; est[i] = v > 8 ? 8 : v; }
+    if (onProgress) onProgress((it + 1) / (iters + 1));
+  }
+  // where to apply it: local contrast against the frame's own noise
+  blur(L, bl);
+  const d = new Float32Array(n), step = Math.max(1, Math.floor(Math.sqrt(n / 30000))), sm = [];
+  for (let i = 0; i < n; i++) d[i] = Math.abs(L[i] - bl[i]);
+  for (let y = 2; y < H - 2; y += step) for (let x = 2; x < W - 2; x += step) sm.push(d[y * W + x]);
+  sm.sort((a, b) => a - b);
+  const sn = Math.max(1e-4, 1.4826 * sm[sm.length >> 1]);
+  blur(d, q);   // q = local contrast, d smoothed over the same radius
+  const iR = opts.clip && isFinite(1 / opts.clip[0]) ? 1 / opts.clip[0] : 1, iG = opts.clip && isFinite(1 / opts.clip[1]) ? 1 / opts.clip[1] : 1, iB = opts.clip && isFinite(1 / opts.clip[2]) ? 1 / opts.clip[2] : 1;
+  const oR = new Float32Array(n), oG = new Float32Array(n), oB = new Float32Array(n), ss = (a, b, x) => { const t = Math.max(0, Math.min(1, (x - a) / (b - a))); return t * t * (3 - 2 * t); };
+  for (let i = 0; i < n; i++) {
+    const w = ss(2.5 * sn, 8 * sn, q[i]) * (1 - ss(0.8, 0.97, Math.max(R[i] * iR, G[i] * iG, B[i] * iB)));
+    let g = 1 + amt * w * ((est[i] / L[i]) - 1);
+    g = g < 0.5 ? 0.5 : g > 2 ? 2 : g;
+    oR[i] = R[i] * g; oG[i] = G[i] * g; oB[i] = B[i] * g;
+  }
+  if (onProgress) onProgress(1);
+  return { R: oR, G: oG, B: oB };
+}
+/* The RAW steps the worker runs, in RawTherapee's order: highlights first, then noise reduction, then (build 227) deconvolution. */
 function rtProcessPlanes(R, G, B, W, H, opts, onProgress) {
   let hlDone = false;
+  const dec = (+opts.deconv || 0) > 0, part = dec ? 0.6 : 1;
   if (opts.hl === 1) { R = R.slice(); G = G.slice(); B = B.slice(); rtHlOpposed(R, G, B, W, H, opts.wb || [1, 1, 1], opts.clip); hlDone = true; }
-  if ((+opts.luma || 0) > 0 || (+opts.chroma || 0) > 0) { const o = rtDenoisePlanes(R, G, B, W, H, opts, onProgress); return { R: o.R, G: o.G, B: o.B, hlDone: hlDone }; }
-  if (onProgress) onProgress(1);
+  if ((+opts.luma || 0) > 0 || (+opts.chroma || 0) > 0) { const o = rtDenoisePlanes(R, G, B, W, H, opts, onProgress ? (p => onProgress(p * part)) : null); R = o.R; G = o.G; B = o.B; }
+  else if (onProgress) onProgress(part);
+  if (dec) { const o = rtDeconvPlanes(R, G, B, W, H, opts, onProgress ? (p => onProgress(0.6 + 0.4 * p)) : null); R = o.R; G = o.G; B = o.B; }
+  else if (onProgress) onProgress(1);
   return { R: R, G: G, B: B, hlDone: hlDone };
 }
 
 /* Runs the denoise in a Web Worker built from the functions above, so the page stays responsive; the input planes
    are copied (the originals stay intact for re-use) and the results transferred back. Falls back to running on the
    page if a worker cannot be made. */
-const RAWNR_FUNCS = [rtDnFilters, rtWavDecompose, rtWavReconstruct, rtMadRgb, rtBoxBlur, rtDenoiseTile, rtDenoisePlanes, rtHlOpposed, rtProcessPlanes];
+const RAWNR_FUNCS = [rtDnFilters, rtWavDecompose, rtWavReconstruct, rtMadRgb, rtBoxBlur, rtDenoiseTile, rtDenoisePlanes, rtHlOpposed, rtDeconvPlanes, rtProcessPlanes];
 let rawNrWorkerUrl = null;
 function runRawNr(R, G, B, W, H, opts, onProgress) {
   return new Promise((resolve, reject) => {
@@ -422,9 +489,13 @@ function runRawNr(R, G, B, W, H, opts, onProgress) {
     wk.postMessage({ R: r, G: g, B: b, W: W, H: H, opts: opts }, [r.buffer, g.buffer, b.buffer]);
   });
 }
-function rawNrValues() { const l = $('rawNrL'), c = $('rawNrC'), h = $('rawHl'); return { L: l ? +l.value || 0 : 0, C: c ? +c.value || 0 : 0, HL: h ? (+h.value === 1 ? 1 : 0) : 0 }; }
-function rawNrKey() { const v = rawNrValues(); return v.L + '|' + v.C + '|' + v.HL; }
-function rawProcActive(v) { return v.L > 0 || v.C > 0 || v.HL === 1; }
+function rawNrValues() {
+  const l = $('rawNrL'), c = $('rawNrC'), h = $('rawHl'), da = $('rawDeconv'), dr = $('rawDeconvR'), au = $('rawDeconvAuto');
+  return { L: l ? +l.value || 0 : 0, C: c ? +c.value || 0 : 0, HL: h ? (+h.value === 1 ? 1 : 0) : 0,
+    DA: da ? +da.value || 0 : 0, DR: dr ? +dr.value || 12 : 12, DAuto: au ? (+au.value === 1 ? 1 : 0) : 1 };
+}
+function rawNrKey() { const v = rawNrValues(); return v.L + '|' + v.C + '|' + v.HL + (v.DA > 0 ? '|d' + v.DA + '|' + (v.DAuto ? 'a' : v.DR) : ''); }
+function rawProcActive(v) { return v.L > 0 || v.C > 0 || v.HL === 1 || v.DA > 0; }
 /* The same box-filter downscale rawEngineResultToCanvas does to reach the working size, done once per decode and
    kept, so the denoise runs at preview size and the canvas built from its result is pixel-for-pixel the same size. */
 function rawWorkingPlanes(res) {

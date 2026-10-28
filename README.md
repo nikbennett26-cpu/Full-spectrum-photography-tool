@@ -24,7 +24,7 @@ editor) so it opens full screen and keeps working offline.
 
 Work that is best done on the sensor data is done there, before the channel swap stretches every fault:
 
-**Decode → Hot pixels & stripes → Highlight rebuild → Noise reduction → White balance → Camera colour → Channel swap & mix → Edit → Export**
+**Decode → Hot pixels & stripes → Highlight rebuild → Noise reduction → Deconvolution → White balance → Camera colour → Channel swap & mix → Edit → Export**
 
 - **Demosaicing:** AMaZE by default for Bayer sensors, with RCD one tap away (switching re-decodes the open photo and keeps
   your edits, so the two can be compared); Markesteijn for Fuji X-Trans.
@@ -95,6 +95,7 @@ Five tabs, in the order the picture is made: **Looks, Light, Colour, Detail, Exp
   for you; Sensitivity sets how faint a spot it takes, and Show dust helps you check.
 - **Noise:** RAW luminance and colour noise reduction and hot pixels & stripes (RAW files), regular luminance and colour
   noise reduction for any photo, and **Smooth banding**, which melts the steps in a smooth sky after a strong edit.
+- **RAW deconvolution (RAW):** real Richardson-Lucy deconvolution on the sensor data before the swap. It gives back fine detail that ordinary sharpening cannot. The blur radius is measured from the photo (the method of ART) or set by hand, and it fades out in noise and near clipped highlights. Amount 0 is off.
 - **Sharpening:** amount, radius and masking, in the style of RapidRAW. It does not bring back the noise that was removed.
 - **Clarity & dehaze:** clarity adds local contrast only, without brightening the picture. **Dehaze** measures haze across
   the whole picture (a dark-channel haze map), so a sky clears evenly right up to a dark building, with no halo.

@@ -113,6 +113,13 @@ function rawNrAuto() {
     syncRawHlButtons(); reapplyCamSpaceSwap();
   });
 })();
+(function wireRawDeconv() {
+  const a = $('rawDeconv'), r = $('rawDeconvR'), c = $('rawDeconvAutoChk'), f = $('rawDeconvAuto');
+  const sync = () => { const auto = !f || +f.value === 1; if (c) c.checked = auto; if (r) { r.disabled = auto; const row = r.closest('.sl'); if (row) row.style.opacity = auto ? '.45' : ''; } };
+  [a, r].forEach(e => { if (e) e.addEventListener('change', () => { if (typeof reapplyCamSpaceSwap === 'function' && document.body.classList.contains('rawOpen')) reapplyCamSpaceSwap(); }); });
+  if (c && f) c.addEventListener('change', () => { const v = c.checked ? '1' : '0'; if (f.value === v) return; armUndoCapture(); f.value = v; commitUndoCapture(); sync(); if (+(a && a.value) > 0) reapplyCamSpaceSwap(); });
+  window.syncRawDeconv = sync; sync();
+})();
 (function wireRawFix() {
   const chk = $('rawFixChk'), f = $('rawFix');
   if (!chk || !f) return;
@@ -1475,7 +1482,7 @@ function clearPreset() {
    space changes nothing. The RAW noise reduction settings are left at the preset's values: rebuilding the RAW on every
    step of a drag would be far too slow. */
 const PRESET_MIX = { base: null, target: null };
-const PRESET_MIX_FIXED = new Set(['rawNrL', 'rawNrC', 'rawHl', 'rawFix', 'epdEdge', 'epdScale']);
+const PRESET_MIX_FIXED = new Set(['rawNrL', 'rawNrC', 'rawHl', 'rawFix', 'rawDeconv', 'rawDeconvR', 'rawDeconvAuto', 'epdEdge', 'epdScale']);
 function presetMixSet(base, target) {
   PRESET_MIX.base = base; PRESET_MIX.target = target;
   const e = $('presetStrength'); if (e) { e.value = 100; } if ($('v_presetStrength')) $('v_presetStrength').textContent = 100;

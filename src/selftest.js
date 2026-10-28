@@ -317,6 +317,19 @@ function stProperties() {
       const busy = dustDetectPixels(tex, cw, ch, 50).length;
       return { ok: found.length === 3 && hit && busy <= 8, detail: { foundOnSky: found.length, allThree: hit, foundOnTexture: busy } };
     } },
+    { name: 'RAW deconvolution steepens a blurred edge, leaves a flat noisy area alone, and does nothing at amount 0', img: 'scene', run: () => {
+      const W = 120, H = 60, mk = () => [0, 1, 2].map(() => new Float32Array(W * H));
+      let seed = 9; const rnd = () => { seed = (seed * 1664525 + 1013904223) >>> 0; return seed / 4294967296; };
+      const P = mk(), Q = mk();
+      for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) { const e = 0.2 + 0.4 / (1 + Math.exp(-(x - 40) / 1.1)), n = x > 80 ? (rnd() - 0.5) * 0.01 : 0; for (let c = 0; c < 3; c++) { P[c][y * W + x] = e + n + 0.2; Q[c][y * W + x] = P[c][y * W + x]; } }
+      const slope = A => { let m = 0; for (let x = 30; x < 50; x++) m = Math.max(m, Math.abs(A[30 * W + x + 1] - A[30 * W + x])); return m; };
+      const before = slope(P[1]); let flatBefore = 0; for (let x = 90; x < 110; x++) flatBefore += Math.abs(P[1][30 * W + x] - 0.6);
+      const z = rtDeconvPlanes(P[0], P[1], P[2], W, H, { deconv: 0, deconvSigma: 1 }, null);
+      let same = true; for (let i = 0; i < W * H; i++) if (z.G[i] !== Q[1][i]) { same = false; break; }
+      const o = rtDeconvPlanes(P[0], P[1], P[2], W, H, { deconv: 80, deconvSigma: 1.1 }, null);
+      const after = slope(o.G); let flatAfter = 0; for (let x = 90; x < 110; x++) flatAfter += Math.abs(o.G[30 * W + x] - 0.6);
+      return { ok: same && after > before * 1.2 && flatAfter < flatBefore * 1.6 + 0.02, detail: { same, before, after, flatBefore, flatAfter } };
+    } },
     { name: 'RAW hot-pixel cleanup removes isolated hot pixels, keeps a real point of light, finds stripes only where they exist, and can be undone', img: 'scene', run: () => {
       const W = 200, H = 160, mk = () => [0, 1, 2].map(() => new Float32Array(W * H));
       let seed = 5; const rnd = () => { seed = (seed * 1664525 + 1013904223) >>> 0; return seed / 4294967296; };

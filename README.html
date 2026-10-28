@@ -164,6 +164,7 @@ footer p{margin:0 0 8px}
     <li class="raw">Hot pixels &amp; stripes</li>
     <li class="raw">Highlight rebuild</li>
     <li class="raw">Noise reduction</li>
+    <li class="raw">Deconvolution</li>
     <li class="raw">White balance</li>
     <li>Camera colour</li>
     <li>Channel swap &amp; mix</li>
@@ -375,8 +376,9 @@ footer p{margin:0 0 8px}
       </ul>
     </div>
     <div class="card">
-      <h3>Sharpening</h3>
+      <h3>Sharpening <span class="tag raw">RAW</span></h3>
       <ul>
+        <li><b>RAW deconvolution:</b> real Richardson-Lucy deconvolution on the sensor data before the swap, giving back fine detail. Blur radius is measured from the photo (the method of ART) or set by hand. Fades out in noise and near clipped highlights. Amount 0 is off.</li>
         <li>Amount, radius and masking, in the style of RapidRAW.</li>
         <li>Sharpening does not bring back the noise that was removed.</li>
       </ul>
@@ -539,7 +541,7 @@ footer p{margin:0 0 8px}
 <footer>
   <div class="wrap">
     <p><a href="https://irlab.uk">irlab.uk</a> &middot; <a href="https://irlab.uk/filters.html">Filter database</a> &middot; <a href="https://www.instagram.com/irlab.uk">Instagram</a></p>
-    <p>This page describes the app as of build 226.</p>
+    <p>This page describes the app as of build 227.</p>
   </div>
 </footer>
 </body>

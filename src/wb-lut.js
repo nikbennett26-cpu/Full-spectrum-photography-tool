@@ -879,6 +879,7 @@ function reapplyCamSpaceSwap() {
   const checked = !!($('camSpaceSwap') && $('camSpaceSwap').checked);
   const swapSame = camSwapKey(checked, getCamSpaceSwapMatrix(), getCamSpaceSwapName()) === rawEngine.builtKey;
   if (typeof syncRawHlButtons === 'function') syncRawHlButtons();
+  if (typeof syncRawDeconv === 'function') syncRawDeconv();
   if (typeof rawFixWanted === 'function') {   // build 225: hot pixels and line noise, fixed on the sensor data first
     syncRawFixTick();
     if (rawFixWanted() !== !!rawEngine.lastResult.__fixOn) { rawFixRun(); return; }
@@ -940,12 +941,12 @@ async function rebuildRawPreview() {
   let res = base;
   if (rawProcActive(v)) {
     if (!(rawEngine.nrPrev && rawEngine.nrPrev.key === key && rawEngine.nrPrev.gen === token && rawEngine.nrPrev.wbKey === rawWbKey())) {
-      setRawNrBusy(true, (v.L > 0 || v.C > 0) ? 'Reducing noise\u2026' : 'Rebuilding highlights\u2026');
+      setRawNrBusy(true, (v.L > 0 || v.C > 0) ? 'Reducing noise\u2026' : (v.DA > 0 && v.HL !== 1) ? 'Sharpening\u2026' : 'Rebuilding highlights\u2026');
       const ds = rawWorkingPlanes(base), wb = rawWbFor(base);
       let out;
       try {
-        out = await runRawNr(ds.R, ds.G, ds.B, ds.width, ds.height, { luma: v.L, chroma: v.C, hl: v.HL, wb: wb, clip: rawClipFor(rawEngine.lastResult) },
-          p => { if (my === rawNrRun) setRawNrBusy(true, 'Reducing noise\u2026 ' + Math.round(p * 100) + '%'); });
+        out = await runRawNr(ds.R, ds.G, ds.B, ds.width, ds.height, Object.assign({ luma: v.L, chroma: v.C, hl: v.HL, wb: wb, clip: rawClipFor(rawEngine.lastResult) }, rawDeconvOpts(rawEngine.lastResult, ds.width)),
+          p => { if (my === rawNrRun) setRawNrBusy(true, ((v.L > 0 || v.C > 0) ? 'Reducing noise\u2026 ' : 'Sharpening\u2026 ') + Math.round(p * 100) + '%'); });
       } catch (e) {
         if (my === rawNrRun) { setRawNrBusy(false, ''); toast('RAW noise reduction failed (' + (e && e.message || e) + ')', true); }
         return;

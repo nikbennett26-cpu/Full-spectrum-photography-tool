@@ -236,3 +236,46 @@ async function rawFixRun() {
   } finally { res.__fixBusy = false; }
   if (token === loadToken && typeof reapplyCamSpaceSwap === 'function') reapplyCamSpaceSwap();
 }
+
+/* ---------- Automatic blur radius for deconvolution (build 227) ----------
+   ART (src/engine/deconvautoradius.cc, by Ingo Weyrich) reads the lens-and-sensor blur off the RAW data itself: the sharper the
+   steepest edge in the frame, the smaller the blur. Between two neighbouring green samples the steepest edge has a brightness
+   ratio r, and a Gaussian blur of radius sigma allows at most r = exp(1 / sigma^2), so sigma = 1 / sqrt(ln r). Only true green
+   samples are compared (the demosaic keeps a sample's own value at its own site, but not at the others), the pair must be well
+   above the noise and below the clip point, and the 99.99th percentile of the ratios stands in for ART's single maximum so
+   that one hot pixel cannot decide the answer. The result is in full-size pixels and is cached on the decode. */
+function rcAutoRadius(res) {
+  if (res.__deconvR) return res.__deconvR;
+  const W = res.width, H = res.height, G = res.G, filt = (res.cfa && res.cfa[0]) | 0, bayer = filt !== 0 && filt !== 9;
+  const clipG = (typeof rawClipFor === 'function') ? rawClipFor(res)[1] : Infinity, hi = (isFinite(clipG) ? clipG : 1) * 0.92, lo = 0.0153, floorV = 0.003;
+  const NB = 700, hist = new Uint32Array(NB); let total = 0;
+  const isG = c => c === 1 || c === 3;
+  for (let y = 4; y < H - 4; y++) {
+    for (let x = 4; x < W - 4; x++) {
+      if (bayer && !isG((filt >> ((((y << 1) & 14) | (x & 1)) << 1)) & 3)) continue;
+      const a = G[y * W + x];
+      for (let d = -1; d <= 1; d += 2) {
+        const b = G[(y + 1) * W + x + d], mx = a > b ? a : b, mn = a > b ? b : a;
+        if (mx < lo || mn < floorV || mx >= hi) continue;
+        const l = Math.log(mx / mn), bin = Math.min(NB - 1, (l * 100) | 0);
+        hist[bin]++; total++;
+      }
+    }
+  }
+  let sigma = 1.0;
+  if (total > 1000) {
+    let cut = total * 0.0001, acc = 0, bin = NB - 1;
+    for (; bin > 0; bin--) { acc += hist[bin]; if (acc > cut) break; }
+    const lnr = Math.max(0.05, (bin + 0.5) / 100);
+    sigma = 1 / Math.sqrt(lnr);
+  }
+  res.__deconvR = Math.max(0.45, Math.min(2.2, sigma));
+  return res.__deconvR;
+}
+/* The options the RAW worker needs for deconvolution on planes `planeW` wide: the blur is given in full-size pixels, so it is
+   scaled to the plane (a working-size preview is a smaller picture of the same blur). */
+function rawDeconvOpts(res, planeW) {
+  const v = rawNrValues(); if (!(v.DA > 0)) return {};
+  const full = v.DAuto ? rcAutoRadius(res) : v.DR / 10, scale = Math.min(1, planeW / res.width);
+  return { deconv: v.DA, deconvSigma: Math.max(0.3, full * scale) };
+}
