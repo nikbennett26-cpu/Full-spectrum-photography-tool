@@ -36,8 +36,8 @@ Work that is best done on the sensor data is done there, before the channel swap
 - **Noise reduction (RAW):** RawTherapee's wavelet noise reduction, applied to the sensor data before the swap, where the
   noise is still as the sensor recorded it. **On by default** when you open a RAW (Colour 50, Luminance 0, so texture stays); whatever you
   set by hand, including off, is remembered.
-- **Hot pixels & stripes (RAW):** a tick box that finds stuck or hot pixels and faint row or column stripes at full size
-  and fixes them, reversibly. Real points of light such as stars are left alone, and stripes are only touched when they
+- **Hot pixels & stripes (RAW):** runs automatically on every RAW, with no control to set. It finds stuck or hot pixels and faint row or column stripes at full size
+  and fixes them. Real points of light such as stars are left alone, and stripes are only touched when they
   can actually be found.
 - **Wide-gamut swap and camera colour:** optionally do the swap in the camera's own wider colour space (or ProPhoto) so
   saturated colours survive it. The sensor decode can be fitted to the camera's own JPEG rendering of the same frame.

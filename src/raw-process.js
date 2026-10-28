@@ -858,7 +858,7 @@ async function loadFileInner(file) {
      re-applied the camera-space swap from it, replacing a JPEG opened afterwards with the previous RAW (in the new
      photo's orientation). A RAW decoded below caches its own. */
   rawEngine.lastResult = null; rawEngine.lastGen = -1; rawEngine.builtKey = null; rawWbCustom = null; rawWbDrag = null; rawWbBuilt = null; rawEngine.fullKey = null; rawEngine.nrPrev = null; rawEngine.builtNr = '0|0|0'; rawEngine.autoWb = false;
-  { const fx = $('rawFix'), fc = $('rawFixChk'); if (fx) fx.value = '0'; if (fc) fc.checked = false; if ($('rawFixStatus')) $('rawFixStatus').textContent = ''; }   // build 225: a new photo starts without the cleanup
+  { const fx = $('rawFix'), fc = $('rawFixChk'); if (fx) fx.value = '1'; if (fc) fc.checked = true; if ($('rawFixStatus')) $('rawFixStatus').textContent = ''; }   // build 225: a new photo starts without the cleanup
   document.body.classList.remove('rawOpen');
   LAST_LINEAR_FLOAT = null;   // belongs to the previous photo; a RAW decoded below parks its own
 

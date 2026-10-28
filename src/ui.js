@@ -110,11 +110,11 @@ function resetAllControls() {
   if (typeof dustSpots !== 'undefined' && dustSpots.length) { dustSpots = []; dustSel = -1; dustRefresh(); }   // build 185
   targetedBands = []; bandRenderList();
   ['hotR','hotG','hotB','caR','caB','bright','hue','brightness','blackPt','whitePt','noiseReduction','sharpen','noiseColour','temp','tint','satPreserve','contrast','highlights','shadows','vigAmt','vibrance',
-   'clarity','dehaze','calRH','calGH','calBH','calRS','calGS','calBS','calST','rawNrL','rawNrC','rawHl','rawFix','rawDeconv','epdAmt','debandAmt','skyDeep','crimsonFol','orton']
+   'clarity','dehaze','calRH','calGH','calBH','calRS','calGS','calBS','calST','rawNrL','rawNrC','rawHl','rawDeconv','epdAmt','debandAmt','skyDeep','crimsonFol','orton']
     .forEach(id => { const el = $(id); if (!el) return; el.value = 0; const lbl = $('v_' + id); if (lbl) lbl.textContent = 0; });
   HSL_IDS.forEach(id => { const el = $(id); if (!el) return; el.value = 0; const lbl = $('v_' + id); if (lbl) lbl.textContent = 0; });
   ['hiRange', 'shRange'].forEach(id => { const el = $(id); if (!el) return; el.value = 50; const lbl = $('v_' + id); if (lbl) lbl.textContent = 50; });
-  [['epdEdge', 140], ['epdScale', 100], ['ortonSoft', 50]].forEach(([id, v]) => { const el = $(id); if (el) el.value = v; const lbl = $('v_' + id); if (lbl && id === 'ortonSoft') lbl.textContent = v; });
+  [['rawFix', 1], ['rawDeconvR', 12], ['rawDeconvAuto', 1], ['epdEdge', 140], ['epdScale', 100], ['ortonSoft', 50]].forEach(([id, v]) => { const el = $(id); if (el) el.value = v; const lbl = $('v_' + id); if (lbl && id === 'ortonSoft') lbl.textContent = v; });
   if (typeof syncEpdLabels === 'function') syncEpdLabels();
   if (typeof syncRangeToggle === 'function') syncRangeToggle();
   /* Radius and Masking do not reset to zero, unlike every other slider here.
