@@ -1,55 +1,145 @@
 # irlab.uk: Infrared Colour Swap
 
 **[irlab.uk](https://irlab.uk)** is a free browser darkroom for full-spectrum, infrared and UV photography.
-Open a photo, swap and mix its channels, balance it, grade it and export it. Everything runs on your own device;
-nothing is uploaded.
+Open a photo or a RAW file, swap and mix its channels, balance it, grade it and export it. Everything runs on your own
+device; nothing is uploaded.
 
 It works on a phone, a tablet or a desktop, and can be installed as an app (Install as an app, at the bottom of the
 editor) so it opens full screen and keeps working offline.
 
-A page-by-page guide to every feature is in [README.html](README.html) (also at [irlab.uk/README.html](https://irlab.uk/README.html)).
+[Open irlab.uk](https://irlab.uk) · [Filter database](https://irlab.uk/filters.html) · [Self-test](https://irlab.uk/?selftest) · [Formatted version of this guide](https://irlab.uk/README.html)
 
-## What it does
+**Contents:** [Opening photos](#opening-photos) · [RAW pipeline](#the-raw-pipeline) · [The editor](#the-editor) · [Looks](#looks) · [Light](#light) · [Colour](#colour) · [Detail](#detail) · [Export](#export) · [Trichrome](#trichrome) · [Filter database](#filter-database) · [Everything else](#everything-else) · [Privacy](#privacy)
 
-**Opening photos**
-- JPEG, PNG, WebP, AVIF and TIFF, and RAW files from most cameras: CR2, CR3, NEF, ARW, SR2, DNG, ORF, RW2, PEF, RAF,
-  SRW, NRW, 3FR, IIQ, MRW, KDC, DCR and X3F.
-- RAW files are decoded from the sensor data in the browser by LibRaw compiled to WebAssembly, with a choice of
-  AMaZE or RCD demosaicing (Markesteijn for Fuji X-Trans). A quick-preview mode uses the camera's embedded JPEG instead.
-- Optional wider-gamut swap using the camera's own colour data, and rebuilding of clipped highlights from the colours
-  around them. RAW noise reduction is on by default (Colour 50, Luminance 30), and a tick box under Noise fixes hot pixels
-  and row or column stripes on the sensor data before the swap.
+## Opening photos
 
-**Trichrome:** stack three real shots into one, each feeding one colour, from the home page ("› stack three shots").
-Recipes for red Aerochrome (an infrared, a red-filter and a green-filter shot rebuilt as colour infrared film), classic
-RGB filter trichrome, three infrared bands, and plain shots with no filters. The shots are lined up automatically on the
-parts that did not move (shift and small rotation, with a hand nudge), balanced, and opened in the editor as a 16-bit
-TIFF. Code: `src/trichrome.js`.
+- **Ordinary images:** JPEG, PNG, WebP, AVIF and TIFF (16-bit TIFF in, 16-bit TIFF out).
+- **RAW files:** CR2, CR3, NEF, ARW, SR2, DNG, ORF, RW2, PEF, RAF, SRW, NRW, 3FR, IIQ, MRW, KDC, DCR and X3F, decoded from
+  the sensor data in the browser by LibRaw compiled to WebAssembly. A quick-preview mode reads the camera's embedded JPEG
+  instead.
+- **Pick up where you left off:** the photo and your edits are saved in the browser. Come back within 30 minutes and it
+  reopens by itself; later, a Restore button offers it. Undo, redo and Reset all are always there.
 
-**Sharing.** Under Export Image, *Share* hands a full-quality JPEG to the phone's share sheet (Instagram, Facebook,
-WhatsApp...) with the Web Share API, and saves the file where a browser cannot share files. *Before | after* puts the
-original and the edit in one picture (side by side for an upright photo, stacked for a wide one). *Look link* packs the
-current look (the same things a saved preset keeps) into `#look=` on the page address, deflated and base64url-encoded;
-opening it saves the look to My presets and applies it to the next photo. Code: `src/share.js`.
+## The RAW pipeline
 
-**Editing**, in five tabs:
-- **Looks:** channel swaps (R↔B, G↔B, R↔G, cyclic rotations), a channel mix grid with offsets, UV and IR presets,
-  film stocks and recipes (including Fedia's Triple Band Aerochrome), your own saved presets, NDVI and NGB index views,
-  and a readout of which source channel carries your signal.
-- **Light:** exposure, brightness, contrast, highlights and shadows, black and white point, a tone curve (RGB and per
-  channel) and up to four local adjustments (linear, radial, luminosity or colour masks).
-- **Colour:** targeted colour fixes before the swap, white balance before and after the swap (grey pickers and Auto
-  tone), hue, saturation and vibrance, colour by band, calibration, swap working space and .cube LUTs.
-- **Detail:** hotspot removal, RAW noise reduction, sharpening, clarity and dehaze, tone mapping and colour fringing.
-- **Export:** crop, 16-bit TIFF, PNG or JPEG at working or full size, optional ProPhoto RGB, a .cube LUT of your look,
-  and batch processing of many files into one .zip.
+Work that is best done on the sensor data is done there, before the channel swap stretches every fault:
 
-Undo and redo, before/after comparison, a histogram and RGB parade with clipping and print-gamut warnings, and six
-languages (English, Spanish, French, German, Japanese, Chinese).
+**Decode → Hot pixels & stripes → Highlight rebuild → Noise reduction → White balance → Camera colour → Channel swap & mix → Edit → Export**
 
-**[Filter database](https://irlab.uk/filters.html):** 500+ filters (Schott, B+W, Hoya, Wratten and more), most with
-digitised manufacturer transmission curves. Stack them to see the combined transmission, check for IR leaks, and
-export a report.
+- **Demosaicing:** AMaZE by default for Bayer sensors, with RCD one tap away (switching re-decodes the open photo and keeps
+  your edits, so the two can be compared); Markesteijn for Fuji X-Trans.
+- **White balance (RAW):** opens on the camera's own as-shot balance. Temperature in Kelvin and Green, using
+  RawTherapee's model, with As shot, Auto and Pick. Dragging runs on the graphics chip, so it follows your finger at full
+  resolution.
+- **Highlight recovery (RAW):** rebuilds clipped highlights from the colours around them (the inpaint-opposed method),
+  measured against where each channel really clips in your file.
+- **Noise reduction (RAW):** RawTherapee's wavelet noise reduction, applied to the sensor data before the swap, where the
+  noise is still as the sensor recorded it. **On by default** when you open a RAW (Colour 50, Luminance 30); whatever you
+  set by hand, including off, is remembered.
+- **Hot pixels & stripes (RAW):** a tick box that finds stuck or hot pixels and faint row or column stripes at full size
+  and fixes them, reversibly. Real points of light such as stars are left alone, and stripes are only touched when they
+  can actually be found.
+- **Wide-gamut swap and camera colour:** optionally do the swap in the camera's own wider colour space (or ProPhoto) so
+  saturated colours survive it. The sensor decode can be fitted to the camera's own JPEG rendering of the same frame.
+
+## The editor
+
+Five tabs, in the order the picture is made: **Looks, Light, Colour, Detail, Export.**
+
+- **Simple or Advanced**, chosen on the home page. Simple shows what most photos need. Advanced adds the channel mix grid,
+  IR leak removal, local adjustments, HSL, calibration, swap space, LUTs, Orton glow, channel gains and more.
+- **Seeing your photo:** before and after slider, or hold to compare; zoom and pan (mouse wheel on desktop, pinch on a
+  phone); full-screen view; a histogram and RGB parade; clipping and print-gamut warnings.
+- **Made for a phone:** a phone dock with controls under your thumb, long-press a slider value to type a number,
+  double-tap it to reset, haptic taps. On a desktop you get a tool rail and a large photo.
+- **Honest display:** where the browser allows it, the preview is 10-bit, to avoid colour banding while you edit.
+  Elsewhere it falls back to 8-bit with dither, and Export says which one you have.
+
+## Looks
+
+- **Swap & mix:** one-tap swaps (R↔B, G↔B, R↔G and the cyclic rotations), a full channel mix grid with offsets and a
+  compact fine-tune bar for each cell, hold brightness and keep saturation.
+- **Presets & film recipes:** UV and IR presets, and recipes including Fedia's Triple Band Aerochrome. Save your own
+  looks, with a strength control and an IR tone curve. NDVI and NGB index views.
+- **Source channels:** a readout of which source channel carries your signal. For filter stacks that block blue,
+  **IR leak removal** takes the infrared out of red and green before the swap, for cleaner Aerochrome-style colour.
+- **Temperature & tint:** camera white balance (RAW), then a balance before the swap and one after it, each with a grey
+  picker; Auto tone and channel gains. The sliders give finer control where real settings sit (half the travel covers ±100).
+
+## Light
+
+- **Exposure & tone:** exposure, brightness, contrast, highlights and shadows. Highlights and Shadows read an edge-aware
+  map of the picture's brightness, so a sky is lifted or recovered as one area, with no glow along its edge. Range controls
+  set where they start. One-tap **Auto levels** (RawTherapee's method).
+- **Black & white point:** set where black and white sit.
+- **Tone curve:** *Regions* (four sliders: Highlights, Lights, Darks, Shadows, bend the curve for you) and *Points* (drag
+  points on RGB or on each channel, over that channel's histogram, with presets).
+- **Local adjustments:** up to four, each with a linear, radial, luminosity, colour or **foliage (IR)** mask. The foliage
+  mask selects leaves by how they reflect near-infrared, so it follows them whatever colour you swap them to.
+
+## Colour
+
+- **Overall:** hue, saturation and vibrance. Hue shift keeps each pixel's brightness, so big turns on a noisy sky stay clean.
+- **Colour by band:** eight bands, each with hue, saturation and luminance. Bands are chosen from the colour of the area
+  around each pixel, not its own grainy colour, so a sky moves as one.
+- **Targeted colour** (Advanced): pick a colour on the photo and shift its hue, saturation or lightness. Lightness works
+  like exposure, so the selection keeps its contrast. Applied to the original colours, before the swap.
+- **Calibration, working space, LUTs** (Advanced): primary and shadow-tint calibration; choose how wide the swap works
+  (standard sRGB, Rec2020, Wide ProPhoto as the default, or your own widening); apply a `.cube` LUT as a final grade.
+
+## Detail
+
+- **Hotspot removal:** takes out the bright centre patch some lenses throw on infrared, with a Set centre control.
+- **Dust removal:** tap each speck and it is healed the way darktable does it, by copying a matching patch from nearby and
+  blending its edge in. **Find dust** looks for small, soft, round, darker spots on smooth areas such as sky and adds them
+  for you; Sensitivity sets how faint a spot it takes, and Show dust helps you check.
+- **Noise:** RAW luminance and colour noise reduction and hot pixels & stripes (RAW files), regular luminance and colour
+  noise reduction for any photo, and **Smooth banding**, which melts the steps in a smooth sky after a strong edit.
+- **Sharpening:** amount, radius and masking, in the style of RapidRAW. It does not bring back the noise that was removed.
+- **Clarity & dehaze:** clarity adds local contrast only, without brightening the picture. **Dehaze** measures haze across
+  the whole picture (a dark-channel haze map), so a sky clears evenly right up to a dark building, with no halo.
+- **Orton glow:** a blurred, brightened copy over the sharp photo, with Amount and Softness.
+- **Colour fringing:** controls for coloured edges toward the corners.
+
+## Export
+
+- **Files:** crop to common aspect ratios; 16-bit TIFF, PNG or JPEG at working size or full size, with optional ProPhoto
+  RGB. Your EXIF and colour profile carry across.
+- **Batch:** apply the current look to many files at once and download them in one `.zip` (RAWs are exported at full size).
+- **Take your look with you:** *Save look as .cube*, made by the same code that draws the preview; *Save look for camera
+  (.IRL)* for a Canon running Magic Lantern with the irlut module, so you see the look in LiveView; and *Look link*, your
+  settings packed into a web address anyone can open (it saves the look to My presets and applies it to the next photo).
+- **Share:** send a full-quality JPEG to your phone's share sheet (Instagram, WhatsApp and the rest). *Before | after*
+  makes one picture of the original and your edit.
+
+## Trichrome
+
+**Stack three real shots into one, each feeding one colour,** from the home page ("› stack three shots"). Recipes for red
+Aerochrome (an infrared, a red-filter and a green-filter shot rebuilt as colour infrared film), classic RGB filter
+trichrome, three infrared bands, and plain shots with no filters. The shots are lined up automatically on the parts that
+did not move (shift and small rotation, with a hand nudge), balanced, and opened in the editor as a 16-bit TIFF.
+Code: `src/trichrome.js`.
+
+## Filter database
+
+**[irlab.uk/filters.html](https://irlab.uk/filters.html)**, a separate page for working out what your lens stack lets
+through.
+
+- **500+ filters:** Schott glass, B+W, Hoya, Wratten, Kodak colour-compensating, 221 Thorlabs and 90 Edmund Optics
+  filters, most with digitised or measured manufacturer curves. Search by name or by what you want it to do (UV-pass,
+  IR-pass, IR blocker, colour).
+- **Stack and predict:** stack several filters to see the combined transmission, see the predicted RGB response, and
+  check a stack for infrared leaks. *Suggest a recipe*: describe the look you want and get filter combinations.
+- **Data you can trust:** every filter names its source and how the curve was taken from it, with a badge (maker data,
+  measured, chart, fit or estimate). A data self-test checks every curve, and you can switch to real data only.
+- **Bring and take:** import your own filter data; export CSV, JSON or a PNG report of your stack.
+
+## Everything else
+
+- **Install as an app** from the bottom of the editor: opens full screen and keeps working offline.
+- **Six languages:** English, Spanish, French, German, Japanese and Chinese, chosen on the home page (the filter page
+  follows).
+- **Updates:** the editor footer shows your build number, and the app checks for a newer one. A change log is inside the app.
 
 ## Privacy
 
