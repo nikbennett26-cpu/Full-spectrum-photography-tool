@@ -1305,6 +1305,9 @@ async function loadFileInner(file) {
      safe rather than a special case. */
   async function finishLoad(source, natW, natH, orientHint, sessionBlob, sessionName) {
     if (stale()) return;
+    /* A new photo starts with every tool folded shut (build 229). The dock layouts open a panel with its tab, so there only the groups inside are folded. */
+    try { const dock = document.documentElement.classList.contains('dockOn') || document.documentElement.classList.contains('studioOn');
+      document.querySelectorAll(dock ? 'details.dGrp' : 'details.stepPanel, details.dGrp').forEach(d => { if (d.id !== 'resPanel' && d.id !== 'fmtGrp' && d.id !== 'exportSection') d.open = false; }); } catch (e) {}
     undoStack = []; redoStack = []; preChangeSnapshot = null; undoBmps = []; redoBmps = []; preChangeBmp = null; refSource = undefined;
     if (typeof updateUndoButton === 'function') updateUndoButton();
     /* The interactive WB panel's own state (preWBM) is otherwise completely
