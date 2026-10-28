@@ -1068,6 +1068,7 @@ async function loadFileInner(file) {
          21 MP PNG, which was the slowest single step and lossy in nothing but time: restoring re-decodes it. */
       saveSessionImage(file, file.name);   // so a discarded tab can be recovered
       await finishLoad(cv, cv.width, cv.height, rawFlipToExif(res && res.flip), null, savedName);   // upright, as the camera recorded it
+      if (typeof rawNrAuto === 'function' && !stale()) rawNrAuto();   // build 226: RAW noise reduction starts on (src/controls.js)
       // full-size copy first (export at original size and Expand wait on it), then the camera-colour fit
       setTimeout(async () => { if (stale()) return; await buildFull(); if (stale()) return; await camFit(); }, 60);
       return;
@@ -1183,6 +1184,7 @@ async function loadFileInner(file) {
         };
         saveSessionImage(file, file.name);   // build 152: the original RAW, not a full-size PNG (see the CR2 branch)
         await finishLoad(cv, cv.width, cv.height, rawFlipToExif(res && res.flip), null, savedName);   // upright, as the camera recorded it
+      if (typeof rawNrAuto === 'function' && !stale()) rawNrAuto();   // build 226: RAW noise reduction starts on (src/controls.js)
         setTimeout(() => { if (!stale()) buildFull(); }, 60);
         return;
       } catch (e) {

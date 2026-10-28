@@ -7,6 +7,8 @@ nothing is uploaded.
 It works on a phone, a tablet or a desktop, and can be installed as an app (Install as an app, at the bottom of the
 editor) so it opens full screen and keeps working offline.
 
+A page-by-page guide to every feature is in [README.html](README.html) (also at [irlab.uk/README.html](https://irlab.uk/README.html)).
+
 ## What it does
 
 **Opening photos**
@@ -15,7 +17,8 @@ editor) so it opens full screen and keeps working offline.
 - RAW files are decoded from the sensor data in the browser by LibRaw compiled to WebAssembly, with a choice of
   AMaZE or RCD demosaicing (Markesteijn for Fuji X-Trans). A quick-preview mode uses the camera's embedded JPEG instead.
 - Optional wider-gamut swap using the camera's own colour data, and rebuilding of clipped highlights from the colours
-  around them.
+  around them. RAW noise reduction is on by default (Colour 50, Luminance 30), and a tick box under Noise fixes hot pixels
+  and row or column stripes on the sensor data before the swap.
 
 **Trichrome:** stack three real shots into one, each feeding one colour, from the home page ("› stack three shots").
 Recipes for red Aerochrome (an infrared, a red-filter and a green-filter shot rebuilt as colour infrared film), classic

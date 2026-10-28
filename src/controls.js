@@ -84,8 +84,27 @@ function syncRangeToggle() {
   b.setAttribute('aria-expanded', open ? 'true' : 'false');
   b.textContent = (open ? '\u25be ' : '\u25b8 ') + 'Range controls' + (changed && !rangesOpen ? ' (in use)' : '');
 }
+/* Build 226: a RAW opens with RAW noise reduction already on. A channel swap puts the sensor's weakest, noisiest channel into a
+   bright slot, and the general Noise sliders (which work after decoding) take out two to four times less of it than these do,
+   so the useful setting is nearly always wanted. Colour 50 / Luminance 30 is what the tests settled on: it clears the coloured
+   blotching and most of the grain and keeps fine detail. Whatever the person sets by hand is remembered and used instead,
+   including 0 to switch it off. */
+const RAWNR_DEFAULT = { L: 30, C: 50 };
+function rawNrPref() {
+  try { const a = (localStorage.getItem('irlab.rawNr') || '').split('|').map(Number); if (a.length === 2 && a.every(v => isFinite(v) && v >= 0 && v <= 100)) return { L: a[0], C: a[1] }; } catch (e) {}
+  return RAWNR_DEFAULT;
+}
+function rawNrRemember() { try { localStorage.setItem('irlab.rawNr', (+$('rawNrL').value || 0) + '|' + (+$('rawNrC').value || 0)); } catch (e) {} }
+function rawNrAuto() {
+  if (!rawEngine.lastResult || rawEngine.lastGen !== loadToken) return;
+  const p = rawNrPref(), l = $('rawNrL'), c = $('rawNrC'); if (!l || !c) return;
+  l.value = p.L; c.value = p.C;
+  if ($('v_rawNrL')) $('v_rawNrL').textContent = p.L;
+  if ($('v_rawNrC')) $('v_rawNrC').textContent = p.C;
+  if (p.L > 0 || p.C > 0) reapplyCamSpaceSwap();
+}
 (function wireRawNr() {
-  ['rawNrL', 'rawNrC'].forEach(id => { const e = $(id); if (e) e.addEventListener('change', () => reapplyCamSpaceSwap()); });
+  ['rawNrL', 'rawNrC'].forEach(id => { const e = $(id); if (e) e.addEventListener('change', () => { rawNrRemember(); reapplyCamSpaceSwap(); }); });
   const chk = $('rawHlChk');
   if (chk) chk.addEventListener('change', () => {
     const h = $('rawHl'); if (!h) return; const v = chk.checked ? '1' : '0'; if (h.value === v) return;
