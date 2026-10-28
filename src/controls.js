@@ -94,6 +94,15 @@ function syncRangeToggle() {
     syncRawHlButtons(); reapplyCamSpaceSwap();
   });
 })();
+(function wireRawFix() {
+  const chk = $('rawFixChk'), f = $('rawFix');
+  if (!chk || !f) return;
+  chk.addEventListener('change', () => {
+    const v = chk.checked ? '1' : '0'; if (f.value === v) return;
+    armUndoCapture(); f.value = v; commitUndoCapture();
+    reapplyCamSpaceSwap();
+  });
+})();
 function syncRawHlButtons() {   // keeps the tick box in step with the saved value (undo, redo, presets, reset, a restored session)
   const h = $('rawHl'), v = h ? h.value : '0', c = $('rawHlChk');
   if (c) c.checked = v === '1';
@@ -1447,7 +1456,7 @@ function clearPreset() {
    space changes nothing. The RAW noise reduction settings are left at the preset's values: rebuilding the RAW on every
    step of a drag would be far too slow. */
 const PRESET_MIX = { base: null, target: null };
-const PRESET_MIX_FIXED = new Set(['rawNrL', 'rawNrC', 'rawHl', 'epdEdge', 'epdScale']);
+const PRESET_MIX_FIXED = new Set(['rawNrL', 'rawNrC', 'rawHl', 'rawFix', 'epdEdge', 'epdScale']);
 function presetMixSet(base, target) {
   PRESET_MIX.base = base; PRESET_MIX.target = target;
   const e = $('presetStrength'); if (e) { e.value = 100; } if ($('v_presetStrength')) $('v_presetStrength').textContent = 100;

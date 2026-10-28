@@ -100,6 +100,14 @@ this app's AGPL-3.0.
 
 - Upstream: https://github.com/storytold/lightcraft
 
+## ART (hot pixels and line noise, build 225)
+
+`src/raw-clean.js` takes its approach from ART (Adaptive Raw Therapee, GPL-3.0-or-later, https://github.com/artraweditor/ART):
+the bad-pixel and impulse-noise filters (`src/engine/badpixels.cc`, `impulse_denoise.cc`) and the CFA line-noise filter
+(`cfa_linedn_RT.cc`, by Emil Martinec). Those work on the sensor mosaic; this is a fresh implementation in JavaScript on the
+three demosaiced planes, because the decoder hands the page planes, not the mosaic. ART is GPL-3.0-or-later, compatible with
+this app's AGPL-3.0.
+
 ## Licence-compatibility summary
 
 | Component    | Licence          | Compatible with the AGPL-3.0 whole app |
@@ -111,6 +119,7 @@ this app's AGPL-3.0.
 | DHT (LibRaw) | LGPL             | yes                                     |
 | LightCraft   | MIT OR Apache-2.0| yes                                     |
 | PhotoCraft   | MIT OR Apache-2.0| yes                                     |
+| ART          | GPL-3.0-or-later | yes                                     |
 
 Because the RAW decoder links GPL-3 RawTherapee code, the combined decoder
 artifact — and this app, since it loads and uses that artifact — is GPL-3

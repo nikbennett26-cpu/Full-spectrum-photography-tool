@@ -317,6 +317,28 @@ function stProperties() {
       const busy = dustDetectPixels(tex, cw, ch, 50).length;
       return { ok: found.length === 3 && hit && busy <= 8, detail: { foundOnSky: found.length, allThree: hit, foundOnTexture: busy } };
     } },
+    { name: 'RAW hot-pixel cleanup removes isolated hot pixels, keeps a real point of light, finds stripes only where they exist, and can be undone', img: 'scene', run: () => {
+      const W = 200, H = 160, mk = () => [0, 1, 2].map(() => new Float32Array(W * H));
+      let seed = 5; const rnd = () => { seed = (seed * 1664525 + 1013904223) >>> 0; return seed / 4294967296; };
+      const base = mk(); base.forEach((P, c) => { for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) P[y * W + x] = 0.12 + 0.1 * (y / H) + 0.02 * (rnd() - 0.5) + 0.01 * c; });
+      const P = base.map(a => Float32Array.from(a)), hotAt = [[40, 40, 0], [120, 70, 1], [60, 120, 2]];
+      hotAt.forEach(([x, y, c]) => { P[c][y * W + x] += 0.4; P[c][y * W + x + 1] += 0.04; P[c][y * W + x - 1] += 0.04; });
+      const sx = 150, sy = 110;   // a star: spread over its neighbours by the lens
+      for (let dy = -3; dy <= 3; dy++) for (let dx = -3; dx <= 3; dx++) { const g = 0.4 * Math.exp(-(dx * dx + dy * dy) / 3.4); for (let c = 0; c < 3; c++) P[c][(sy + dy) * W + sx + dx] += g; }
+      const star0 = P[1][sy * W + sx];
+      const hot = rcFindHot(P, W, H);
+      rcApply(P, W, H, { hot: hot, line: null }, 1);
+      const fixed = hotAt.every(([x, y, c]) => Math.abs(P[c][y * W + x] - base[c][y * W + x]) < 0.03);
+      const starKept = Math.abs(P[1][sy * W + sx] - star0) < 1e-6;
+      rcApply(P, W, H, { hot: hot, line: null }, -1);
+      let back = 0; for (let c = 0; c < 3; c++) for (let i = 0; i < W * H; i++) back = Math.max(back, Math.abs(P[c][i] - (base[c][i] + 0)) > 0 && !(hotAt.some(([x, y, cc]) => cc === c && Math.abs(i - (y * W + x)) <= 1)) && !(Math.abs((i % W) - sx) <= 3 && Math.abs(((i / W) | 0) - sy) <= 3) ? 1 : 0);
+      // stripes: none in a clean frame, found when added
+      const sn = rcPlaneSigma(base[1], W, H), clean = rcLineOffsets(base[1], W, H, true, sn), D = Float32Array.from(base[1]), ro = new Float32Array(H);
+      for (let y = 0; y < H; y++) { ro[y] = 0.02 * (rnd() - 0.5) * 2; for (let x = 0; x < W; x++) D[y * W + x] += ro[y]; }
+      const found = rcLineOffsets(D, W, H, true, sn); let num = 0, den = 0, m = 0; for (let y = 0; y < H; y++) m += ro[y]; m /= H;
+      for (let y = 5; y < H - 5; y++) { num += (ro[y] - m - found[y]) ** 2; den += (ro[y] - m) ** 2; }
+      return { ok: hot.found === 3 && fixed && starKept && back === 0 && clean.every(v => v === 0) && num < den * 0.6, detail: { hotFound: hot.found, fixed: fixed, starKept: starKept, reverted: back === 0, cleanHasNoStripes: clean.every(v => v === 0), stripeResidual: +(num / den).toFixed(3) } };
+    } },
     { name: 'Smooth banding melts the steps of an 8-bit sky after a strong edit', img: 'sky', run: () => {
       const set = (id, v) => { const e = $(id); e.value = v; e.dispatchEvent(new Event('input', { bubbles: true })); };
       const cw = engine.canvas.width, ch = engine.canvas.height;

@@ -879,6 +879,10 @@ function reapplyCamSpaceSwap() {
   const checked = !!($('camSpaceSwap') && $('camSpaceSwap').checked);
   const swapSame = camSwapKey(checked, getCamSpaceSwapMatrix(), getCamSpaceSwapName()) === rawEngine.builtKey;
   if (typeof syncRawHlButtons === 'function') syncRawHlButtons();
+  if (typeof rawFixWanted === 'function') {   // build 225: hot pixels and line noise, fixed on the sensor data first
+    syncRawFixTick();
+    if (rawFixWanted() !== !!rawEngine.lastResult.__fixOn) { rawFixRun(); return; }
+  }
   const wbSame = rawWbKey() === rawEngine.builtWbKey;   // build 197: the RAW white balance is baked in too
   if (swapSame && wbSame && rawNrKey() === (rawEngine.builtNr || '0|0|0')) return;
   if (!wbSame) rawEngine.nrPrev = null;
