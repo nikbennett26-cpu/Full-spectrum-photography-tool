@@ -243,6 +243,78 @@ function dustEnsureSources() {
   dustSpots.forEach(sp => { sp.manual = false; dustPickSource(sp); });
 }
 
+/* ---- Find dust (build 223) ----
+   Sensor dust shows as small, soft, round, darker-than-their-surroundings spots on smooth areas (sky, walls), which is exactly
+   where full-spectrum and UV frames show it worst. Detection follows LightCraft's dust finder (crates/pipeline/src/dust.rs,
+   MIT OR Apache-2.0; see THIRD_PARTY_NOTICES.md): a blurred copy gives the surroundings, a pixel is a candidate when it is darker
+   than them by more than a threshold AND by more than three times the local texture (so real detail never triggers it), candidates
+   are grouped into 4-connected blobs, and a blob counts only if it is small and roughly round. The code here is a fresh
+   implementation. Works on a copy at most 1600 px on the long edge, so it takes a fraction of a second at any photo size.
+   px: RGBA bytes, W x H; sensitivity 0..100 (higher finds fainter spots). Returns spots in the same shape the tap tool makes
+   ({ x, y, r }: centre as 0..1 of the width and height, radius as a fraction of the SHORT edge), strongest first, at most 60. */
+function dustBlur(src, w, h, sigma) {
+  /* three passes of a box blur stand in for a Gaussian (the box helper is tone-base.js's) */
+  const r = Math.max(1, Math.round((Math.sqrt(12 * sigma * sigma / 3 + 1) - 1) / 2));
+  return toneBaseBox(toneBaseBox(toneBaseBox(src, w, h, r), w, h, r), w, h, r);
+}
+function dustDetectPixels(px, W, H, sensitivity) {
+  if (!px || W < 32 || H < 32) return [];
+  const k = Math.min(1, 1600 / Math.max(W, H)), w = Math.max(32, Math.round(W * k)), h = Math.max(32, Math.round(H * k)), n = w * h;
+  const l = new Float32Array(n);
+  for (let y = 0; y < h; y++) {
+    const y0 = Math.floor(y * H / h), y1 = Math.max(y0 + 1, Math.floor((y + 1) * H / h));
+    for (let x = 0; x < w; x++) {
+      const x0 = Math.floor(x * W / w), x1 = Math.max(x0 + 1, Math.floor((x + 1) * W / w));
+      let sum = 0, c = 0;
+      for (let yy = y0; yy < y1; yy++) { let i = (yy * W + x0) * 4; for (let xx = x0; xx < x1; xx++, i += 4) { sum += 0.2126 * px[i] + 0.7152 * px[i + 1] + 0.0722 * px[i + 2]; c++; } }
+      l[y * w + x] = sum / (c * 255);
+    }
+  }
+  const long = Math.max(w, h);
+  const around = dustBlur(l, w, h, Math.max(2, 0.012 * long));
+  const detail = new Float32Array(n); for (let i = 0; i < n; i++) detail[i] = Math.abs(l[i] - around[i]);
+  const texture = dustBlur(detail, w, h, Math.max(3, 0.02 * long));
+  const minDark = 0.03 - 0.022 * Math.max(0, Math.min(1, sensitivity / 100));
+  const dark = new Float32Array(n); for (let i = 0; i < n; i++) dark[i] = Math.max(around[i] - l[i], 0);
+  const cand = i => dark[i] > minDark && dark[i] > 3 * texture[i] && l[i] > 0.08;
+  const seen = new Uint8Array(n), out = [], rmin = 0.0015 * long, rmax = 0.02 * long, cap = Math.floor(rmax * rmax * 4);
+  for (let start = 0; start < n; start++) {
+    if (seen[start] || !cand(start)) continue;
+    const stack = [start]; seen[start] = 1;
+    let cnt = 0, sx = 0, sy = 0, peak = 0, x0 = w, x1 = 0, y0 = h, y1 = 0;
+    while (stack.length) {
+      const i = stack.pop(), x = i % w, y = (i / w) | 0;
+      cnt++; sx += x; sy += y; if (dark[i] > peak) peak = dark[i];
+      if (x < x0) x0 = x; if (x > x1) x1 = x; if (y < y0) y0 = y; if (y > y1) y1 = y;
+      if (cnt > cap) break;   // too big to be dust: stop growing
+      if (x > 0 && !seen[i - 1] && cand(i - 1)) { seen[i - 1] = 1; stack.push(i - 1); }
+      if (x < w - 1 && !seen[i + 1] && cand(i + 1)) { seen[i + 1] = 1; stack.push(i + 1); }
+      if (y > 0 && !seen[i - w] && cand(i - w)) { seen[i - w] = 1; stack.push(i - w); }
+      if (y < h - 1 && !seen[i + w] && cand(i + w)) { seen[i + w] = 1; stack.push(i + w); }
+    }
+    const bw = x1 - x0 + 1, bh = y1 - y0 + 1, r = Math.max(bw, bh) / 2;
+    const round = Math.max(bw, bh) / Math.min(bw, bh) <= 1.8 && cnt >= 0.45 * bw * bh;
+    if (r >= rmin && r <= rmax && round) out.push({ x: (sx / cnt + 0.5) / w, y: (sy / cnt + 0.5) / h, r: (r * 1.6 / long) * Math.max(w, h) / Math.min(w, h), strength: peak });
+  }
+  out.sort((a, b) => b.strength - a.strength);
+  return out.slice(0, 60);
+}
+function dustFind() {
+  if (!loadedImage || !rawCanvas || typeof rawPixels === 'undefined' || !rawPixels) { toast('Open a photo first.'); return; }
+  const sens = +($('dustSens') && $('dustSens').value) || 50;
+  const found = dustDetectPixels(rawPixels, rawCanvas.width, rawCanvas.height, sens), S = Math.min(rawCanvas.width, rawCanvas.height);
+  const fresh = found.filter(f => !dustSpots.some(o => Math.hypot((o.x - f.x) * rawCanvas.width, (o.y - f.y) * rawCanvas.height) < (o.r + f.r) * S));   // already have a spot there
+  if (!fresh.length) { toast(found.length ? 'No new dust: every spot found is already in the list.' : 'No dust found. Raise Sensitivity to look for fainter spots.'); return; }
+  armUndoCapture();
+  dustSrcToken = typeof loadToken !== 'undefined' ? loadToken : null;
+  fresh.forEach(f => { const sp = { x: f.x, y: f.y, r: f.r, sx: f.x, sy: f.y, k: 0 }; dustSpots.push(sp); dustPickSource(sp); });
+  dustSel = -1;
+  commitUndoCapture();
+  if (typeof haptic === 'function') haptic('select');
+  dustRefresh();
+  toast('Found ' + fresh.length + (fresh.length === 1 ? ' spot' : ' spots') + '. Check them with Show dust; remove any that are not dust.');
+}
+
 /* ---- UI ---- */
 function dustRefresh() {
   if (typeof engine !== 'undefined' && engine && typeof rawCanvas !== 'undefined' && rawCanvas) { engine.setImage(dustPrepare(rawCanvas)); }
@@ -302,6 +374,8 @@ function dustSetArmed(on) {
 (function dustInit() {
   if (!$('dustDetails')) return;
   $('dustAdd').addEventListener('click', () => dustSetArmed(!dustArmed));
+  if ($('dustFind')) $('dustFind').addEventListener('click', dustFind);
+  if ($('dustSens')) $('dustSens').addEventListener('input', () => { $('v_dustSens').textContent = $('dustSens').value; });
   const pv = $('preview');
   // capture phase, so a tap while adding spots never reaches the other pickers or the before/after drag
   pv.addEventListener('click', ev => { if (!dustArmed && dustSrcFor < 0) return; ev.stopImmediatePropagation(); dustTap(ev.clientX, ev.clientY); }, true);

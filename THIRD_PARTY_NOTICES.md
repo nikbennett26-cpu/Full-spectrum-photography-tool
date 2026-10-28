@@ -75,14 +75,16 @@ modes of darktable's retouch module. The automatic source search and the rest of
 - Licence: GPL-3.0-or-later.
 - Upstream: https://github.com/darktable-org/darktable
 
-## LightCraft (edge-aware base for Highlights and Shadows, build 222)
+## LightCraft (edge-aware base for Highlights and Shadows, build 222; Find dust, build 223)
 
 `src/tone-base.js` and the base-driven path in `applyToneRegions` (`src/shaders.js`) follow the way LightCraft
 (`crates/pipeline/src/local.rs` and `finish.rs`, (C) 2026 ArtCraft Team and the LightCraft contributors) drives its
 Highlights and Shadows: a smooth, edge-stopping base layer of log2 luminance (self-guided filter, He, Sun and Tang, 2010;
 radius about 1.5% of the long edge, epsilon 0.35 EV^2) decides how much of the tone curve a region gets, and each pixel keeps
 its own ratio to the base. The constants come from LightCraft; the code is a fresh implementation in JavaScript and GLSL
-and is irlab's own. LightCraft is licensed MIT OR Apache-2.0, both compatible with this app's AGPL-3.0.
+and is irlab's own. `dustDetectPixels` in `src/dust.js` (the Find dust button) follows LightCraft's dust finder
+(`crates/pipeline/src/dust.rs`): darker than a blurred copy of its surroundings and than three times the local texture,
+grouped into small, roughly round blobs. Again a fresh implementation with the same method and thresholds. LightCraft is licensed MIT OR Apache-2.0, both compatible with this app's AGPL-3.0.
 
 - Upstream: https://github.com/storytold/lightcraft
 

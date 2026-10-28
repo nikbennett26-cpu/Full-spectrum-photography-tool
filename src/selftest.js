@@ -292,6 +292,21 @@ function stProperties() {
       resetAllControls();
       return { ok: same && built && diff > 0, detail: { neutralUnchanged: same, baseBuilt: built, differsFromTaps: diff > 0 } };
     } },
+    { name: 'Find dust finds soft dark spots on a smooth sky, and almost nothing on a textured scene', img: 'scene', run: () => {
+      const W = 600, H = 400, px = new Uint8ClampedArray(W * H * 4), spots = [[120, 90, 4], [400, 200, 6], [500, 330, 3]];
+      for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) {
+        let v = 0.55 + 0.25 * (y / H) + 0.05 * (x / W);
+        spots.forEach(([cx, cy, r]) => { v -= 0.06 * Math.exp(-((x - cx) ** 2 + (y - cy) ** 2) / (2 * r * r)); });
+        const i = (y * W + x) * 4, b = Math.round(v * 255); px[i] = b; px[i + 1] = b; px[i + 2] = Math.min(255, Math.round(b * 1.1)); px[i + 3] = 255;
+      }
+      const found = dustDetectPixels(px, W, H, 50);
+      const hit = spots.every(([cx, cy]) => found.some(f => Math.abs(f.x * W - cx) < 3 && Math.abs(f.y * H - cy) < 3));
+      // a busy picture: the current fixture's own pixels, which are full of edges and texture
+      const cw = engine.canvas.width, ch = engine.canvas.height;
+      engine.render(Object.assign(currentParams(), { dither: false })); const tex = engine.readPixels();
+      const busy = dustDetectPixels(tex, cw, ch, 50).length;
+      return { ok: found.length === 3 && hit && busy <= 8, detail: { foundOnSky: found.length, allThree: hit, foundOnTexture: busy } };
+    } },
     { name: 'Smooth banding melts the steps of an 8-bit sky after a strong edit', img: 'sky', run: () => {
       const set = (id, v) => { const e = $(id); e.value = v; e.dispatchEvent(new Event('input', { bubbles: true })); };
       const cw = engine.canvas.width, ch = engine.canvas.height;
