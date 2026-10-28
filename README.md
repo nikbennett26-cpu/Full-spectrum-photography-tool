@@ -34,7 +34,7 @@ Work that is best done on the sensor data is done there, before the channel swap
 - **Highlight recovery (RAW):** rebuilds clipped highlights from the colours around them (the inpaint-opposed method),
   measured against where each channel really clips in your file.
 - **Noise reduction (RAW):** RawTherapee's wavelet noise reduction, applied to the sensor data before the swap, where the
-  noise is still as the sensor recorded it. **On by default** when you open a RAW (Colour 50, Luminance 30); whatever you
+  noise is still as the sensor recorded it. **On by default** when you open a RAW (Colour 50, Luminance 0, so texture stays); whatever you
   set by hand, including off, is remembered.
 - **Hot pixels & stripes (RAW):** a tick box that finds stuck or hot pixels and faint row or column stripes at full size
   and fixes them, reversibly. Real points of light such as stars are left alone, and stripes are only touched when they

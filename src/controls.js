@@ -86,10 +86,10 @@ function syncRangeToggle() {
 }
 /* Build 226: a RAW opens with RAW noise reduction already on. A channel swap puts the sensor's weakest, noisiest channel into a
    bright slot, and the general Noise sliders (which work after decoding) take out two to four times less of it than these do,
-   so the useful setting is nearly always wanted. Colour 50 / Luminance 30 is what the tests settled on: it clears the coloured
+   so the useful setting is nearly always wanted. Colour 50 / Luminance 0 is what the tests settled on: it clears the coloured
    blotching and most of the grain and keeps fine detail. Whatever the person sets by hand is remembered and used instead,
    including 0 to switch it off. */
-const RAWNR_DEFAULT = { L: 30, C: 50 };
+const RAWNR_DEFAULT = { L: 0, C: 50 };
 function rawNrPref() {
   try { const a = (localStorage.getItem('irlab.rawNr') || '').split('|').map(Number); if (a.length === 2 && a.every(v => isFinite(v) && v >= 0 && v <= 100)) return { L: a[0], C: a[1] }; } catch (e) {}
   return RAWNR_DEFAULT;
