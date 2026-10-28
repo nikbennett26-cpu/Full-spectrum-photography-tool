@@ -75,7 +75,7 @@ modes of darktable's retouch module. The automatic source search and the rest of
 - Licence: GPL-3.0-or-later.
 - Upstream: https://github.com/darktable-org/darktable
 
-## LightCraft (edge-aware base for Highlights and Shadows, build 222; Find dust, build 223)
+## LightCraft (edge-aware base for Highlights and Shadows, build 222; Find dust, build 223; Dehaze, build 224)
 
 `src/tone-base.js` and the base-driven path in `applyToneRegions` (`src/shaders.js`) follow the way LightCraft
 (`crates/pipeline/src/local.rs` and `finish.rs`, (C) 2026 ArtCraft Team and the LightCraft contributors) drives its
@@ -85,6 +85,18 @@ its own ratio to the base. The constants come from LightCraft; the code is a fre
 and is irlab's own. `dustDetectPixels` in `src/dust.js` (the Find dust button) follows LightCraft's dust finder
 (`crates/pipeline/src/dust.rs`): darker than a blurred copy of its surroundings and than three times the local texture,
 grouped into small, roughly round blobs. Again a fresh implementation with the same method and thresholds. LightCraft is licensed MIT OR Apache-2.0, both compatible with this app's AGPL-3.0.
+
+## PhotoCraft (haze map for Dehaze, build 224)
+
+`dehazeFromProxy` in `src/tone-base.js` follows the way PhotoCraft's Camera Raw filter does Dehaze
+(`crates/algo/src/camera_raw.rs`, `dehaze`, (C) 2026 ArtCraft Team and the PhotoCraft contributors): the dark channel prior of
+He, Sun and Tang (CVPR 2009) measured against an atmospheric light taken from the haziest 0.1% of the picture, the dark
+channel opened (a maximum filter after the minimum) so a dark object leaves no bright halo in the sky beside it, and the
+transmission refined with a guided filter on luminance (He, Sun and Tang, ECCV 2010). The code is a fresh implementation in
+JavaScript; the method and constants are PhotoCraft's. PhotoCraft is licensed MIT OR Apache-2.0, both compatible with
+this app's AGPL-3.0.
+
+- Upstream: https://github.com/storytold/photocraft
 
 - Upstream: https://github.com/storytold/lightcraft
 
@@ -98,6 +110,7 @@ grouped into small, roughly round blobs. Again a fresh implementation with the s
 | DCB (LibRaw) | BSD              | yes                                     |
 | DHT (LibRaw) | LGPL             | yes                                     |
 | LightCraft   | MIT OR Apache-2.0| yes                                     |
+| PhotoCraft   | MIT OR Apache-2.0| yes                                     |
 
 Because the RAW decoder links GPL-3 RawTherapee code, the combined decoder
 artifact — and this app, since it loads and uses that artifact — is GPL-3

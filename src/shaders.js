@@ -229,7 +229,8 @@ uniform float u_debandRad;  // reach, in source texels, at full strength
   uniform float u_contrast;
   uniform float u_exposure;
 uniform float u_epdOn;     // 1 = edge-preserving tone mapping is applied
-uniform float u_tbOn;      // 1 = Highlights/Shadows read the edge-aware base layer (tone-base.js); it rides in the u_epdBase sampler, unused while tone mapping is off
+uniform float u_tbOn;      // 1 = Highlights/Shadows read the edge-aware base layer (tone-base.js); it rides in the u_epdBase sampler (R), unused while tone mapping is off
+uniform float u_dhOn;      // 1 = Dehaze reads the haze transmission map from the same texture (G)
 uniform float u_epdProbe;  // 1 = write the lightness the tone mapping would see, instead of the picture (how its base is measured)
 uniform float u_epdTemp, u_epdBoost, u_epdS, u_epdNorm;
 uniform float u_epdRef;    // the (linear) exposure the base was measured at
@@ -2720,11 +2721,22 @@ uniform float u_skyL;          // the typical lightness of the sky; anything cle
     if (u_dehaze != 0.0) {
       /* Build 165: eight taps at 4px and 10px instead of four at 3px, so the regional haze estimate is not itself grainy
          (a grainy estimate turned into coloured speckle once divided out below). */
+      /* Build 223: with the transmission map (tone-base.js: dark channel prior with a guided-filter refinement, after
+         PhotoCraft's dehaze, MIT OR Apache-2.0) the haze comes from the map and these taps are not needed. */
+      /* The map is a true dark-channel haze estimate, which on an infrared frame (no channel is ever near zero, so everything
+         reads as hazy) is far stronger than the absolute dark channel this used to follow; the gain brings +60 to roughly one
+         and a half times the old strength on a test RAW. The spatial behaviour is the point: an even sky, no halos. */
+      const float DH_GAIN = 0.25;
+      bool dh = u_dhOn > 0.5;
+      float tmap = dh ? clamp(texture2D(u_epdBase, v_texCoord).g, 0.1, 1.0) : 1.0;
       vec2 dz = u_texelSize * 4.0, dz2 = u_texelSize * 10.0;
-      vec3 blurLin = (srcLin(v_texCoord + vec2( dz.x, 0.0)) + srcLin(v_texCoord + vec2(-dz.x, 0.0))
-                    + srcLin(v_texCoord + vec2(0.0,  dz.y)) + srcLin(v_texCoord + vec2(0.0, -dz.y))
-                    + srcLin(v_texCoord + vec2( dz2.x, dz2.y)) + srcLin(v_texCoord + vec2(-dz2.x, dz2.y))
-                    + srcLin(v_texCoord + vec2( dz2.x, -dz2.y)) + srcLin(v_texCoord + vec2(-dz2.x, -dz2.y))) * 0.125;
+      vec3 blurLin = vec3(0.0);
+      if (!dh) {
+        blurLin = (srcLin(v_texCoord + vec2( dz.x, 0.0)) + srcLin(v_texCoord + vec2(-dz.x, 0.0))
+                 + srcLin(v_texCoord + vec2(0.0,  dz.y)) + srcLin(v_texCoord + vec2(0.0, -dz.y))
+                 + srcLin(v_texCoord + vec2( dz2.x, dz2.y)) + srcLin(v_texCoord + vec2(-dz2.x, dz2.y))
+                 + srcLin(v_texCoord + vec2( dz2.x, -dz2.y)) + srcLin(v_texCoord + vec2(-dz2.x, -dz2.y))) * 0.125;
+      }
       /* Atmospheric light — slight blue bias matches natural haze colour */
       const vec3 ATMOS = vec3(0.95, 0.97, 1.0);
       /* Haze is judged on the source, centre and surroundings alike, and the removal applied to the edited pixel. */
@@ -2745,7 +2757,7 @@ uniform float u_skyL;          // the typical lightness of the sky; anything cle
            and brighter tones survived: the tone response went down and back up. And the transmission is never allowed
            below what this pixel's own darkest channel can take (1 - 0.9 x min channel / A), so the recovery can deepen
            a colour but can no longer push a pixel through zero into black. */
-        float t            = max(1.0 - u_dehaze * safe_dark * 0.85, 0.15);
+        float t            = dh ? max(1.0 - u_dehaze * DH_GAIN * (1.0 - tmap), 0.15) : max(1.0 - u_dehaze * safe_dark * 0.85, 0.15);   // the map already holds the dark channel's 0.95 weight
         float ownMin       = min(rgb.r / ATMOS.r, min(rgb.g / ATMOS.g, rgb.b / ATMOS.b));
         t = max(t, 1.0 - 0.9 * clamp(ownMin, 0.0, 1.0));
         vec3  recovered    = (rgb - ATMOS) / t + ATMOS;
@@ -2761,7 +2773,7 @@ uniform float u_skyL;          // the typical lightness of the sky; anything cle
       } else {
         float regional_dark = min(blurLin.r, min(blurLin.g, blurLin.b));
         float safe_dark     = max(regional_dark - 0.02, 0.0);
-        float mapped_depth  = safe_dark / (safe_dark + 0.2);
+        float mapped_depth  = dh ? clamp(0.4 * (1.0 - tmap) / 0.95, 0.0, 1.0) : safe_dark / (safe_dark + 0.2);
         float depth_factor  = mix(0.4, 1.0, mapped_depth);
         float strength      = -u_dehaze;
         rgb = mix(rgb, ATMOS, strength * 0.7 * depth_factor);
