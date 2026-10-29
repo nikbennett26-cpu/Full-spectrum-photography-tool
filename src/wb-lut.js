@@ -931,6 +931,7 @@ function setRawNrBusy(on, text) {
   const box = $('rawNrBox'), st = $('rawNrStatus');
   if (box) box.classList.toggle('busy', !!on);
   if (st) st.textContent = text || '';
+  const dn = $('rawDeconvNote'); if (dn) dn.textContent = on ? (text || 'Working\u2026') : '';   // build 231: shown beside the deconvolution slider too
 }
 async function rebuildRawPreview() {
   if (!rawEngine.lastResult || rawEngine.lastGen !== loadToken) return;

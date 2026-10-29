@@ -823,6 +823,6 @@ b.fpMeas,span.fpMeas{background:var(--safelight)}
 .dustRow .dustPick.armed{border-color:var(--safelight);color:var(--safelight)}
 
 .dGrp #rawDeconvBox{padding-bottom:6px;border-bottom:1px dashed var(--line2);margin-bottom:4px}
-#rawDeconvBox.busy input[type=range]{opacity:.5;pointer-events:none}
+
 #plainSharpenSub{display:none}
 body.rawOpen #plainSharpenSub{display:block}
