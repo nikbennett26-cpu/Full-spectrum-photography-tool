@@ -92,7 +92,7 @@ Five tabs, in the order the picture is made: **Looks, Light, Colour, Detail, Exp
 - **Hotspot removal:** takes out the bright centre patch some lenses throw on infrared, with a Set centre control.
 - **Dust removal:** tap each speck and it is healed the way darktable does it, by copying a matching patch from nearby and
   blending its edge in. **Find dust** looks for small, soft, round, darker spots on smooth areas such as sky and adds them
-  for you; Sensitivity sets how faint a spot it takes, and Show dust helps you check.
+  for you, keeping only spots that darken red, green and blue alike and sit on calm ground (not leaves, coloured objects or edges); Sensitivity sets how faint a spot it takes, and Show dust helps you check.
 - **Noise:** RAW luminance and colour noise reduction and hot pixels & stripes (RAW files), regular luminance and colour
   noise reduction for any photo, and **Smooth banding**, which melts the steps in a smooth sky after a strong edit.
 - **RAW deconvolution (RAW):** real Richardson-Lucy deconvolution on the sensor data before the swap. It gives back fine detail that ordinary sharpening cannot. The blur radius is measured from the photo (the method of ART) or set by hand, and it fades out in noise and near clipped highlights. Amount 0 is off.

@@ -293,8 +293,29 @@ function dustDetectPixels(px, W, H, sensitivity) {
       if (y < h - 1 && !seen[i + w] && cand(i + w)) { seen[i + w] = 1; stack.push(i + w); }
     }
     const bw = x1 - x0 + 1, bh = y1 - y0 + 1, r = Math.max(bw, bh) / 2;
-    const round = Math.max(bw, bh) / Math.min(bw, bh) <= 1.8 && cnt >= 0.45 * bw * bh;
-    if (r >= rmin && r <= rmax && round) out.push({ x: (sx / cnt + 0.5) / w, y: (sy / cnt + 0.5) / h, r: (r * 1.6 / long) * Math.max(w, h) / Math.min(w, h), strength: peak });
+    const round = Math.max(bw, bh) / Math.min(bw, bh) <= 1.5 && cnt >= 0.58 * bw * bh;
+    if (!(r >= rmin && r <= rmax && round)) continue;
+    /* build 232: a spot has to stand out from a calm ring of surroundings. Sample a ring at 2.4 radii: nearly all of it must be
+       brighter than the spot, it must be even (a real spot sits on smooth ground), and the spot has to be the same sort of
+       darker in red, green and blue (dust dims all three, a dark leaf or a coloured object does not). */
+    const cx = sx / cnt, cy = sy / cnt, ringR = Math.max(r * 2.4, r + 3);
+    let ringN = 0, ringSum = 0, ringSq = 0, ringAbove = 0, bad = false;
+    const lm = l[Math.round(cy) * w + Math.round(cx)], floorV = lm + peak * 0.35;
+    for (let a = 0; a < 24; a++) {
+      const px2 = Math.round(cx + ringR * Math.cos(a * Math.PI / 12)), py2 = Math.round(cy + ringR * Math.sin(a * Math.PI / 12));
+      if (px2 < 0 || px2 >= w || py2 < 0 || py2 >= h) continue;
+      const v = l[py2 * w + px2]; ringN++; ringSum += v; ringSq += v * v; if (v > floorV) ringAbove++;
+    }
+    if (ringN < 16) continue;
+    const rm = ringSum / ringN, rsd = Math.sqrt(Math.max(0, ringSq / ringN - rm * rm));
+    if (ringAbove < 0.85 * ringN || rsd > 0.45 * peak + 0.004) continue;
+    { const ch = [0, 0, 0], cr = [0, 0, 0]; let nb = 0;
+      const sxp = W / w, syp = H / h, ix = Math.round(cx * sxp), iy = Math.round(cy * syp), rr = Math.max(1, Math.round(r * 0.5 * sxp)), R2 = Math.max(rr + 2, Math.round(ringR * sxp));
+      for (let a = 0; a < 12; a++) { const qx = Math.round(ix + R2 * Math.cos(a * Math.PI / 6)), qy = Math.round(iy + R2 * Math.sin(a * Math.PI / 6)); if (qx < 0 || qx >= W || qy < 0 || qy >= H) continue; const q = (qy * W + qx) * 4; cr[0] += px[q]; cr[1] += px[q + 1]; cr[2] += px[q + 2]; nb++; }
+      let nc = 0; for (let yy = -rr; yy <= rr; yy++) for (let xx = -rr; xx <= rr; xx++) { const qx = ix + xx, qy = iy + yy; if (qx < 0 || qx >= W || qy < 0 || qy >= H) continue; const q = (qy * W + qx) * 4; ch[0] += px[q]; ch[1] += px[q + 1]; ch[2] += px[q + 2]; nc++; }
+      if (nb >= 6 && nc) { const f = [0, 1, 2].map(c => (ch[c] / nc) / Math.max(1, cr[c] / nb)); const mx = Math.max(f[0], f[1], f[2]), mn = Math.min(f[0], f[1], f[2]); if (mx - mn > 0.22) bad = true; } }
+    if (bad) continue;
+    if (true) out.push({ x: (sx / cnt + 0.5) / w, y: (sy / cnt + 0.5) / h, r: (r * 1.6 / long) * Math.max(w, h) / Math.min(w, h), strength: peak });
   }
   out.sort((a, b) => b.strength - a.strength);
   return out.slice(0, 60);

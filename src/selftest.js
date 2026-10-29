@@ -317,6 +317,19 @@ function stProperties() {
       const busy = dustDetectPixels(tex, cw, ch, 50).length;
       return { ok: found.length === 3 && hit && busy <= 8, detail: { foundOnSky: found.length, allThree: hit, foundOnTexture: busy } };
     } },
+    { name: 'Find dust skips coloured dark spots and dark bits on the edge of something, but keeps neutral soft spots', img: 'scene', run: () => {
+      const W = 600, H = 400, px = new Uint8ClampedArray(W * H * 4), dust = [[120, 90, 4]], colour = [[300, 90, 4]], edge = [[460, 200, 4]];
+      for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) {
+        let v = 0.6 + 0.1 * (y / H), r = v, g = v, b = v;
+        if (x > 456 && y > 150 && y < 260) { v *= 0.55; r = g = b = v; }   // a darker object whose edge passes through the spot
+        dust.forEach(([cx, cy, q]) => { const d = 0.07 * Math.exp(-((x - cx) ** 2 + (y - cy) ** 2) / (2 * q * q)); r -= d; g -= d; b -= d; });
+        colour.forEach(([cx, cy, q]) => { const d = 0.09 * Math.exp(-((x - cx) ** 2 + (y - cy) ** 2) / (2 * q * q)); b -= d; });
+        edge.forEach(([cx, cy, q]) => { const d = 0.07 * Math.exp(-((x - cx) ** 2 + (y - cy) ** 2) / (2 * q * q)); r -= d; g -= d; b -= d; });
+        const i = (y * W + x) * 4; px[i] = Math.round(Math.max(0, r) * 255); px[i + 1] = Math.round(Math.max(0, g) * 255); px[i + 2] = Math.round(Math.max(0, b) * 255); px[i + 3] = 255;
+      }
+      const found = dustDetectPixels(px, W, H, 60), at = ([cx, cy]) => found.some(f => Math.abs(f.x * W - cx) < 4 && Math.abs(f.y * H - cy) < 4);
+      return { ok: at(dust[0]) && !at(colour[0]) && !at(edge[0]), detail: { dust: at(dust[0]), colour: at(colour[0]), edge: at(edge[0]), n: found.length } };
+    } },
     { name: 'RAW deconvolution steepens a blurred edge, leaves a flat noisy area alone, and does nothing at amount 0', img: 'scene', run: () => {
       const W = 120, H = 60, mk = () => [0, 1, 2].map(() => new Float32Array(W * H));
       let seed = 9; const rnd = () => { seed = (seed * 1664525 + 1013904223) >>> 0; return seed / 4294967296; };
