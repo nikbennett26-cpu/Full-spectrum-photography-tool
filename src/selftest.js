@@ -330,6 +330,11 @@ function stProperties() {
       const found = dustDetectPixels(px, W, H, 60), at = ([cx, cy]) => found.some(f => Math.abs(f.x * W - cx) < 4 && Math.abs(f.y * H - cy) < 4);
       return { ok: at(dust[0]) && !at(colour[0]) && !at(edge[0]), detail: { dust: at(dust[0]), colour: at(colour[0]), edge: at(edge[0]), n: found.length } };
     } },
+    { name: 'Classic IR looks are complete, and the mono ones really are greyscale', img: 'scene', run: () => {
+      const ok = CLASSIC_IR_LOOKS.length >= 8 && CLASSIC_IR_LOOKS.every(c => c.n && c.s && c.m.length === 9 && c.m.every(Number.isFinite));
+      const mono = CLASSIC_IR_LOOKS.filter(c => /^B&W/.test(c.n)).every(c => c.m.slice(0, 3).join() === c.m.slice(3, 6).join() && c.m.slice(3, 6).join() === c.m.slice(6, 9).join());
+      return { ok: ok && mono, detail: { n: CLASSIC_IR_LOOKS.length, ok, mono } };
+    } },
     { name: 'RAW deconvolution steepens a blurred edge, leaves a flat noisy area alone, and does nothing at amount 0', img: 'scene', run: () => {
       const W = 120, H = 60, mk = () => [0, 1, 2].map(() => new Float32Array(W * H));
       let seed = 9; const rnd = () => { seed = (seed * 1664525 + 1013904223) >>> 0; return seed / 4294967296; };
