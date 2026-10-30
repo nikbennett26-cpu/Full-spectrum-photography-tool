@@ -59,7 +59,7 @@ Five tabs, in the order the picture is made: **Looks, Light, Colour, Detail, Exp
 
 - **Swap & mix:** one-tap swaps (R↔B, G↔B, R↔G and the cyclic rotations), a full channel mix grid with offsets and a
   compact fine-tune bar for each cell, hold brightness and keep saturation.
-- **Classic IR looks:** ten finished one-tap looks for ordinary infrared, each setting the channel mix and tone together and naming the filter it suits: B&W infrared (plain, dramatic, glow), warm-toned B&W, Goldie, Pink & teal, Faux colour IR film and Full-spectrum natural. They are starting points, fully editable.
+- **Classic IR looks:** ten finished one-tap looks for ordinary infrared, each setting the channel mix and tone together and naming the filter it suits: B&W infrared (plain, dramatic, glow), warm-toned B&W, Goldie, Pink & teal, Faux colour IR film and Full-spectrum natural (which balances its own colour to neutral). They are starting points, fully editable.
 - **Presets & film recipes:** UV and IR presets, and recipes including Fedia's Triple Band Aerochrome. Save your own
   looks, with a strength control and an IR tone curve. NDVI and NGB index views.
 - **Source channels:** a readout of which source channel carries your signal. For filter stacks that block blue,

@@ -13,7 +13,7 @@ const CLASSIC_IR_LOOKS = [
   { n: 'Goldie', s: '590 to 665nm \u00b7 warm gold foliage, rose sky', m: [0, 0, 100, 100, 0, 0, 0, 100, 0], sliders: { hue: 42, contrast: 10, sat: 110 } },
   { n: 'Pink & teal', s: '665nm \u00b7 magenta foliage, teal sky', m: [0, 0, 100, 100, 0, -20, 0, 100, -20], sliders: { contrast: 8, sat: 105 } },
   { n: 'Faux colour IR film', s: '665 to 720nm \u00b7 Aerochrome-style red foliage', m: [0, 0, 100, 100, 0, -30, 0, 100, -30], sliders: { contrast: 18, sat: 120 } },
-  { n: 'Full-spectrum natural', s: 'no filter or a clear one · daylight-style colour', m: [100, 0, 0, 0, 100, 0, 0, 0, 100], sliders: { contrast: 6, vibrance: 20 } }
+  { n: 'Full-spectrum natural', s: 'no filter or a clear one · balanced to neutral', m: [100, 0, 0, 0, 100, 0, 0, 0, 100], sliders: { contrast: 6, vibrance: 20 }, autoWB: true }
 ];
 function classicLookToUserPreset(c) {
   const base = { orton: 0, ortonSoft: 50 };
@@ -27,7 +27,37 @@ function classicLookToUserPreset(c) {
     const esc = t => t.replace(/[<>&]/g, ch => ({ '<': '&lt;', '>': '&gt;', '&': '&amp;' }[ch]));
     b.innerHTML = '<b>' + esc(c.n) + '</b><small>' + esc(c.s) + '</small>';
     b.title = c.s + '. A starting point fitted by eye, not measured on your filter.';
-    b.onclick = () => { applyUserPreset(classicLookToUserPreset(c)); document.querySelectorAll('#pgClassic .pb.on').forEach(x => x.classList.remove('on')); b.classList.add('on'); };
+    b.onclick = () => { applyUserPreset(classicLookToUserPreset(c)); if (c.autoWB) classicAutoWB(); document.querySelectorAll('#pgClassic .pb.on').forEach(x => x.classList.remove('on')); b.classList.add('on'); };
     grid.appendChild(b);
   });
 })();
+
+/* Build 234: Full-spectrum natural balances itself. Without a filter the sensor sees visible light plus infrared, so a
+   straight mix comes out with a strong cast (teal or magenta, depending on the camera and the light). This takes the
+   rendered picture, averages the mid-tones (leaving out shadows and clipped highlights) in linear light, and sets the
+   after-swap white balance so that average comes out neutral: the grey-world method. Run twice, because the tone stages
+   bend the colour a little after the white balance. It goes in as the ordinary after-swap white balance, so the WB
+   panel shows it and its reset clears it. */
+function classicAutoWB() {
+  try {
+    if (!engine || !loadedImage) return;
+    const lin = v => { v /= 255; return v <= 0.04045 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4); };
+    for (let pass = 0; pass < 2; pass++) {
+      engine.render(Object.assign(currentParams(), { dither: false }));
+      const px = engine.readPixels(), n = px.length / 4, step = Math.max(1, Math.floor(n / 60000));
+      let r = 0, g = 0, b = 0, c = 0;
+      for (let i = 0; i < n; i += step) {
+        const q = i * 4, R = lin(px[q]), G = lin(px[q + 1]), B = lin(px[q + 2]), L = 0.2126 * R + 0.7152 * G + 0.0722 * B;
+        if (L < 0.02 || L > 0.8 || Math.max(R, G, B) > 0.97) continue;
+        r += R; g += G; b += B; c++;
+      }
+      if (c < 500 || r <= 0 || g <= 0 || b <= 0) return;
+      const k = [g / r, 1, g / b].map(v => Math.max(0.25, Math.min(4, v)));
+      postWB = postWB.map((v, i) => v * k[i]);
+      postWBM = [postWB[0], 0, 0, 0, postWB[1], 0, 0, 0, postWB[2]];
+    }
+    if ($('wbPostStatus')) $('wbPostStatus').textContent = 'Set \u2714 (auto, grey world)';
+    render();
+    if (typeof saveSessionState === 'function') saveSessionState();
+  } catch (e) { console.warn('auto white balance', e); }
+}

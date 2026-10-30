@@ -1183,7 +1183,11 @@ async function loadFileInner(file) {
           });
           src = await new Promise(r => cvc.toBlob(r, 'image/png'));
           if (stale()) return;
-          exifOrient = 1;   // drawImage already applied the bitmap's orientation
+          /* Build 234: this used to set the orientation to "upright as drawn", on the belief that drawing the bitmap had
+             already turned it. It had not: a RAW's embedded preview is a bare JPEG with no orientation of its own (the
+             camera's lives in the RAW header, readTiffOrientation), so nothing rotated it and portrait or upside-down
+             frames opened turned. Only a preview that carries its own EXIF orientation is turned by the browser. */
+          if (await jpegOwnOrientation(found.blob) > 1) exifOrient = 1;
         } catch (e) {
           console.warn('Chroma reconstruction failed, using the preview as-is:', e);
         }
@@ -1664,3 +1668,20 @@ $('fi').onchange = e => pickedFile(e, loadFile);
 // build 218: copy the list BEFORE clearing the input -- clearing it empties the same FileList, so batch saw no files
 $('fiBatch').onchange = e => { const fs = Array.from(e.target.files || []); e.target.value = ''; if (fs.length) runBatch(fs); };
 $('fi2').onchange = e => pickedFile(e, loadFile);
+
+/* The orientation tag inside a JPEG's own EXIF block (APP1), or 1 when it has none. Browsers turn a JPEG by this tag when
+   they decode it, so a preview carrying one needs no further turn. */
+async function jpegOwnOrientation(blob) {
+  try {
+    const buf = await blob.slice(0, 131072).arrayBuffer(), dv = new DataView(buf);
+    if (dv.getUint16(0) !== 0xFFD8) return 1;
+    let p = 2;
+    while (p + 4 < dv.byteLength) {
+      const m = dv.getUint16(p), len = dv.getUint16(p + 2);
+      if ((m & 0xFF00) !== 0xFF00 || m === 0xFFDA) break;
+      if (m === 0xFFE1 && p + 10 < dv.byteLength && dv.getUint32(p + 4) === 0x45786966) return readTiffOrientation(buf.slice(p + 10, p + 2 + len));
+      p += 2 + len;
+    }
+  } catch (e) {}
+  return 1;
+}

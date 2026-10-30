@@ -947,7 +947,7 @@ async function rebuildRawPreview() {
       let out;
       try {
         out = await runRawNr(ds.R, ds.G, ds.B, ds.width, ds.height, Object.assign({ luma: v.L, chroma: v.C, hl: v.HL, wb: wb, clip: rawClipFor(rawEngine.lastResult) }, rawDeconvOpts(rawEngine.lastResult, ds.width)),
-          p => { if (my === rawNrRun) setRawNrBusy(true, ((v.L > 0 || v.C > 0) ? 'Reducing noise\u2026 ' : 'Sharpening\u2026 ') + Math.round(p * 100) + '%'); });
+          p => { if (my === rawNrRun) setRawNrBusy(true, (!(v.DA > 0) || ((v.L > 0 || v.C > 0) && p < 0.6) ? 'Reducing noise\u2026 ' : 'Sharpening\u2026 ') + Math.round(p * 100) + '%'); });
       } catch (e) {
         if (my === rawNrRun) { setRawNrBusy(false, ''); toast('RAW noise reduction failed (' + (e && e.message || e) + ')', true); }
         return;
