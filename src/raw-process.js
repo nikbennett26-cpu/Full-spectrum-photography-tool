@@ -393,11 +393,12 @@ function rtHlOpposed(R, G, B, W, H, wb, clipLv) {
 function rtDeconvPlanes(R, G, B, W, H, opts, onProgress) {
   const n = W * H, amt = Math.max(0, Math.min(1, (+opts.deconv || 0) / 100)), sigma = Math.max(0.3, +opts.deconvSigma || 0.8);
   const iters = Math.max(4, Math.min(40, (opts.deconvIter | 0) || 12)), EPS = 0.003;
-  const rad = Math.max(1, Math.ceil(sigma * 3)), K = new Float32Array(2 * rad + 1); let ks = 0;
-  for (let i = -rad; i <= rad; i++) { K[i + rad] = Math.exp(-(i * i) / (2 * sigma * sigma)); ks += K[i + rad]; }
-  for (let i = 0; i < K.length; i++) K[i] /= ks;
+  const mkK = sg => { const r = Math.max(1, Math.ceil(sg * 3)), k = new Float32Array(2 * r + 1); let t = 0;
+    for (let i = -r; i <= r; i++) { k[i + r] = Math.exp(-(i * i) / (2 * sg * sg)); t += k[i + r]; }
+    for (let i = 0; i < k.length; i++) k[i] /= t; return { K: k, rad: r }; };
   const tmp = new Float32Array(n);
-  const blur = (src, dst) => {   // separable, edge pixels repeated
+  const blurK = (src, dst, kk) => {   // separable, edge pixels repeated
+    const K = kk.K, rad = kk.rad;
     for (let y = 0; y < H; y++) {
       const b = y * W;
       for (let x = 0; x < W; x++) {
@@ -417,6 +418,7 @@ function rtDeconvPlanes(R, G, B, W, H, opts, onProgress) {
       }
     }
   };
+  const PSF = mkK(sigma), blur = (src, dst) => blurK(src, dst, PSF);
   const L = new Float32Array(n);
   for (let i = 0; i < n; i++) L[i] = 0.25 * R[i] + 0.5 * G[i] + 0.25 * B[i] + EPS;
   const est = Float32Array.from(L), bl = new Float32Array(n), q = new Float32Array(n);
@@ -427,18 +429,21 @@ function rtDeconvPlanes(R, G, B, W, H, opts, onProgress) {
     for (let i = 0; i < n; i++) { const v = est[i] * bl[i]; est[i] = v > 8 ? 8 : v; }
     if (onProgress) onProgress((it + 1) / (iters + 1));
   }
-  // where to apply it: local contrast against the frame's own noise
-  blur(L, bl);
+  /* Where to apply it (build 235): detail measured at a broader scale than the blur itself, against the frame's own noise.
+     Build 227 measured it at the blur's own scale, which for a sharp lens (a blur under a pixel) is the scale of the noise:
+     real edges scored no higher than grain, and the mask let almost nothing through on real photos. */
+  const MS = mkK(Math.max(1.5, 2 * sigma)), MQ = mkK(Math.max(1.2, sigma));
+  blurK(L, bl, MS);
   const d = new Float32Array(n), step = Math.max(1, Math.floor(Math.sqrt(n / 30000))), sm = [];
   for (let i = 0; i < n; i++) d[i] = Math.abs(L[i] - bl[i]);
   for (let y = 2; y < H - 2; y += step) for (let x = 2; x < W - 2; x += step) sm.push(d[y * W + x]);
   sm.sort((a, b) => a - b);
   const sn = Math.max(1e-4, 1.4826 * sm[sm.length >> 1]);
-  blur(d, q);   // q = local contrast, d smoothed over the same radius
+  blurK(d, q, MQ);   // q = local contrast, smoothed so a single noisy pixel cannot switch it on
   const iR = opts.clip && isFinite(1 / opts.clip[0]) ? 1 / opts.clip[0] : 1, iG = opts.clip && isFinite(1 / opts.clip[1]) ? 1 / opts.clip[1] : 1, iB = opts.clip && isFinite(1 / opts.clip[2]) ? 1 / opts.clip[2] : 1;
   const oR = new Float32Array(n), oG = new Float32Array(n), oB = new Float32Array(n), ss = (a, b, x) => { const t = Math.max(0, Math.min(1, (x - a) / (b - a))); return t * t * (3 - 2 * t); };
   for (let i = 0; i < n; i++) {
-    const w = ss(2.5 * sn, 8 * sn, q[i]) * (1 - ss(0.8, 0.97, Math.max(R[i] * iR, G[i] * iG, B[i] * iB)));
+    const w = ss(1.1 * sn, 3.5 * sn, q[i]) * (1 - ss(0.8, 0.97, Math.max(R[i] * iR, G[i] * iG, B[i] * iB)));
     let g = 1 + amt * w * ((est[i] / L[i]) - 1);
     g = g < 0.5 ? 0.5 : g > 2 ? 2 : g;
     oR[i] = R[i] * g; oG[i] = G[i] * g; oB[i] = B[i] * g;
