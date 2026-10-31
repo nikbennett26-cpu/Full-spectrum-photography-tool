@@ -172,7 +172,7 @@ let pendingLook = null;
 function applyPendingLook() {
   if (!pendingLook || !engine || !loadedImage) return;
   const look = pendingLook; pendingLook = null;
-  try { applyUserPreset(look); toast('Look applied from the link'); } catch (e) { console.error(e); }
+  try { applyUserPreset(look, { fresh: true }); toast('Look applied from the link'); } catch (e) { console.error(e); }
 }
 (async function readLookLink() {
   const m = /[#&]look=([A-Za-z0-9_-]+)/.exec(location.hash || '');

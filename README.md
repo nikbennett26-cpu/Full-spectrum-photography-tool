@@ -59,9 +59,12 @@ Five tabs, in the order the picture is made: **Looks, Light, Colour, Detail, Exp
 
 - **Swap & mix:** one-tap swaps (R↔B, G↔B, R↔G and the cyclic rotations), a full channel mix grid with offsets and a
   compact fine-tune bar for each cell, hold brightness and keep saturation.
-- **Classic IR looks:** ten finished one-tap looks for ordinary infrared, each setting the channel mix and tone together and naming the filter it suits: B&W infrared (plain, dramatic, glow), warm-toned B&W, Goldie, Pink & teal, Faux colour IR film and Full-spectrum natural (which balances its own colour to neutral). They are starting points, fully editable.
+- **Classic IR looks:** eight finished one-tap looks for ordinary infrared, each setting the channel mix and tone together and naming the filter it suits: B&W infrared (plain, dramatic, glow), warm-toned B&W, Goldie, Pink & teal, Faux colour IR film and Full-spectrum natural (which balances its own colour to neutral). They are starting points, fully editable. Tap a look again to take it off.
 - **Presets & film recipes:** UV and IR presets, and recipes including Fedia's Triple Band Aerochrome. Save your own
   looks, with a strength control and an IR tone curve. NDVI and NGB index views.
+- **Presets go on top of your edit:** a preset or look sets only its own settings and leaves the rest of your edit alone,
+  whether you pick it first or last. Switching to another preset takes the first one's settings off before the next goes on,
+  and clearing it puts back exactly what was underneath, keeping anything you changed since. Undo and the saved session keep track.
 - **Source channels:** a readout of which source channel carries your signal. For filter stacks that block blue,
   **IR leak removal** takes the infrared out of red and green before the swap, for cleaner Aerochrome-style colour.
 - **Temperature & tint:** camera white balance (RAW), then a balance before the swap and one after it, each with a grey

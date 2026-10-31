@@ -1317,9 +1317,17 @@ function captureLookForUserPreset() {
   };
 }
 
-function applyUserPreset(look) {
+/* Build 236: goes on top of the edit, like the swap presets (presetLayerBegin in src/controls.js): a setting the look
+   carries is set, anything it does not carry is left as you had it. opts.fresh keeps the old clean start (a look opened
+   from a shared link, which should come out as it was sent); opts.extra runs a final step of the look's own (the auto
+   white balance of Full-spectrum natural) before it is recorded, so taking the look off takes that off too. */
+function applyUserPreset(look, opts) {
+  opts = opts || {};
   armUndoCapture();
-  resetLookBeforeRecipe();
+  if (typeof presetMixClear === 'function') presetMixClear();
+  let layerBase = null;
+  if (opts.fresh) { hhUndoExtras(); eirUndo(); resetLookBeforeRecipe(); PRESET_LAYER = null; }
+  else layerBase = presetLayerBegin();
   MCELLS.forEach((id, i) => { const el = $(id); if (el && look.m) el.value = look.m[i]; });
   MOFFCELLS.forEach((id, i) => { const el = $(id); if (el && look.mOff) el.value = look.mOff[i]; });
   mxSync();
@@ -1333,10 +1341,9 @@ function applyUserPreset(look) {
     const lbl = $('v_' + id); if (lbl) lbl.textContent = fmtSliderValue(id, pv);
   });
 
-  targetedBands = (look.targetedBands || []).map(b => ({...b}));
-  bandRenderList();
-  filmOn = !!look.filmOn; if ($('filmOn')) $('filmOn').checked = filmOn;
-  filmToneOn = !!look.filmToneOn;
+  if (look.targetedBands || opts.fresh) { targetedBands = (look.targetedBands || []).map(b => ({...b})); bandRenderList(); }
+  if ('filmOn' in look || opts.fresh) { filmOn = !!look.filmOn; if ($('filmOn')) $('filmOn').checked = filmOn; }
+  if ('filmToneOn' in look || opts.fresh) filmToneOn = !!look.filmToneOn;
   if ($('chkFilmTone')) {
     $('chkFilmTone').checked = filmToneOn;
     if ($('filmToneRow')) $('filmToneRow').style.display = filmToneOn ? '' : 'none';
@@ -1347,6 +1354,9 @@ function applyUserPreset(look) {
     const set = postWBM.some((v, i) => v !== IDENTITY3[i]);
     if ($('wbPostStatus')) $('wbPostStatus').textContent = set ? 'Set \u2714 (Bradford)' : 'Post-WB: Not set';
   }
+  if (opts.extra) opts.extra();
+  if (opts.mark) opts.mark();
+  if (layerBase) presetLayerEnd(layerBase);
   haptic('select');
   render();
   commitUndoCapture();

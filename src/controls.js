@@ -1372,6 +1372,57 @@ function eirUndo() {
   if (document.body.classList.contains('rawOpen') && typeof reapplyCamSpaceSwap === 'function') reapplyCamSpaceSwap();
 }
 
+/* ---------- presets on top of the edit (build 236) ----------
+   Picking a preset used to reset the whole look to neutral first, so exposure, contrast, sharpening, a LUT, targeted
+   colours or a curve you had set before choosing it were thrown away. Now two pictures are kept for the preset in force:
+   BASE, the state just before it went on (your own edit), and AFTER, the state just after. Taking the preset off (to
+   clear it, or to swap in another) rebuilds what was underneath setting by setting: anything you changed since the preset
+   went on (where the picture now differs from AFTER) is yours and stays as it is now; everything else goes back to BASE.
+   So presets never stack on each other, which is what the old reset was protecting against, but your work survives
+   either way round: preset first then edit, or edit first then preset. A preset still sets the settings it carries (a
+   swap its matrix, a classic look its tone sliders); it just leaves alone the ones it does not. Kept inside captureState,
+   so undo and the saved session carry it too. */
+var PRESET_LAYER = null;
+function layerStrip(st) { const o = Object.assign({}, st); delete o.presetLayer; o.activePreset = null; return o; }
+const LAYER_ELEMENTWISE = new Set(['m', 'mOff', 's', 'lumaW', 'preWB', 'postWB', 'preWBM', 'postWBM', 'vigCentre']);
+function presetLayerUnder() {
+  const cur = layerStrip(captureState()), L = PRESET_LAYER;
+  if (!L) return cur;
+  const out = layerStrip(L.base), A = L.after, js = v => JSON.stringify(v);
+  Object.keys(cur).forEach(k => {
+    if (k === 'activePreset' || k === 'lutStatusText' || k === 'tv') return;
+    const c = cur[k], a = A[k], b = out[k];
+    if (LAYER_ELEMENTWISE.has(k) && Array.isArray(c) && Array.isArray(a) && Array.isArray(b) && c.length === a.length && c.length === b.length) {
+      out[k] = c.map((v, i) => v !== a[i] ? v : b[i]);
+    } else if (k === 'curves' && c && a && b) {
+      const o = {}; Object.keys(c).forEach(ch => { o[ch] = js(c[ch]) !== js(a[ch]) ? c[ch] : (b[ch] || c[ch]); }); out[k] = o;
+    } else if (k === 'lut' || k === 'preLUT') {
+      if (c !== a) out[k] = c;   // the LUT is compared by identity: it is never edited in place
+    } else if (js(c) !== js(a)) out[k] = c;
+  });
+  out.lutStatusText = out.lut === cur.lut ? cur.lutStatusText : L.base.lutStatusText;
+  out.tv = cur.tv;
+  return out;
+}
+/* Puts the picture back to what is under the preset in force (or leaves it, when there is none) and returns that state,
+   for the preset about to go on to remember as its BASE. */
+function presetLayerBegin() {
+  if (!PRESET_LAYER && document.querySelector('.pb.on')) {
+    // a preset picked before this build (a restored session, an old undo step): there is no record of what was under
+    // it, so fall back to the old clean start rather than mixing it into the next one
+    hhUndoExtras(); eirUndo(); resetLookBeforeRecipe();
+    return layerStrip(captureState());
+  }
+  const base = presetLayerUnder();
+  if (!PRESET_LAYER) return base;   // nothing on yet: the picture as it is is the base, nothing to put back
+  window.__hhPrev = null; window.__eirOn = false;   // their settings are part of what was just taken off
+  applyState(base);   // also clears PRESET_LAYER, since the base carries none
+  PRESET_LAYER = null;
+  if (typeof activePresetName !== 'undefined') activePresetName = null;
+  return base;
+}
+function presetLayerEnd(base) { PRESET_LAYER = { base: base, after: layerStrip(captureState()) }; }
+
 function buildPresetButtons(list, containerId) {
   list.forEach(p => {
     const b = document.createElement('button');
@@ -1406,20 +1457,12 @@ function buildPresetButtons(list, containerId) {
       // way back out of a preset was Reset all, which also threw away every
       // slider and white balance you'd set on top of it.
       if (b.classList.contains('on')) { clearPreset(); commitUndoCapture(); return; }
-      /* Same reset every recipe function already calls before applying
-         itself (applyE4Recipe, applyAerochromeRecipe,
-         applyAeroRecipe) -- this plain swap preset handler was the one
-         place that never did, so switching FROM a recipe TO an ordinary
-         preset was the one direction that still leaked: sat, contrast,
-         vibrance, targeted bands, and the recipe's own post-swap white
-         balance all lingered, because this handler only ever reset its
-         own matrix and hue, never anything a RECIPE might have set.
-         Every preset click now starts from the same clean baseline,
-         recipe or not -- "a different preset should be its own, not a
-         preset of the previous preset." Sets matrix and hue AFTER this,
-         same as before, since resetLookBeforeRecipe zeroes both first. */
-      hhUndoExtras(); eirUndo();
-      resetLookBeforeRecipe();
+      /* Build 236: the preset goes on top of the edit. Rather than wiping the look back to neutral first, this puts the
+         picture back to how it was before any preset (keeping every change made since), then the preset sets only its own
+         settings. Switching from one preset to another still never mixes the two: the first one's settings are taken off
+         before the second goes on. See presetLayerBegin. */
+      presetMixClear();
+      const layerBase = presetLayerBegin();
       const mixBase = captureState();
       b.classList.add('on');
       MCELLS.forEach((id, i) => $(id).value = p.m[i]);
@@ -1430,13 +1473,13 @@ function buildPresetButtons(list, containerId) {
       // a preset may carry a hue offset — that's what distinguishes e.g. 550nm
       // from Aerochrome, which share the same matrix. Presets without one
       // explicitly reset hue to 0 so a previous preset's offset can't linger.
-      const hv = p.hue || 0;
-      $('hue').value = hv; $('v_hue').textContent = hv;
+      if (p.hue !== undefined) { $('hue').value = p.hue; $('v_hue').textContent = p.hue; }   // build 236: a preset with no hue offset leaves yours alone
       haptic('select');   // before render(), not after: a full-frame render can
                           // take tens of milliseconds on a large image, and a
                           // buzz that arrives after it feels like lag
       updateClearPresetBtn();
       presetMixSet(mixBase, captureState());
+      presetLayerEnd(layerBase);
       render();
       commitUndoCapture();
     };
@@ -1463,6 +1506,8 @@ buildPresetButtons(IR_PRESETS.filter(p => !p.hidden &&  FILM_NAMES.test(p.n)), '
    did on top of it. */
 function clearPreset() {
   presetMixClear();
+  // build 236: take off exactly what the preset set, and nothing you changed yourself, before or after it
+  if (PRESET_LAYER) { presetLayerBegin(); updateClearPresetBtn(); render(); return; }
   hhUndoExtras(); eirUndo();
   document.querySelectorAll('.pb').forEach(x => x.classList.remove('on'));
   const identity = [100, 0, 0, 0, 100, 0, 0, 0, 100];
@@ -1505,6 +1550,8 @@ function presetMixApply(pct) {
     });
   }
   applyState(st);
+  // the preset's own settings are now the blended ones, so taking the preset off later takes these off too
+  if (PRESET_LAYER) PRESET_LAYER = { base: PRESET_LAYER.base, after: layerStrip(captureState()) };
   if ($('v_presetStrength')) $('v_presetStrength').textContent = Math.round(pct);
 }
 (function wirePresetStrength() {

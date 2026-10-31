@@ -81,6 +81,7 @@ function resetAllControls() {
   MOFFCELLS.forEach(id => { const e = $(id); if (e) e.value = 0; });
   window.__hhPrev = null; window.__eirOn = false;   // no recipe is in force after a full reset (its other settings are reset below)
   if (typeof presetMixClear === 'function') presetMixClear();
+  if (typeof PRESET_LAYER !== 'undefined') PRESET_LAYER = null;   // build 236
   mxSync();
   preWB = [1, 1, 1]; postWB = [1, 1, 1]; preWBM = IDENTITY3; postWBM = IDENTITY3;
   resetAutoGainSliders();
@@ -1343,6 +1344,7 @@ function captureState() {
     lumaW: ['lumaR','lumaG','lumaB'].map(id => +($(id) && $(id).value) || 0),   // raw 0-100 slider values, not getLumaW()'s fractions -- applyState writes these straight back into the sliders
     lutStatusText: $('lutStatus').textContent,
     activePreset: (document.querySelector('.pb.on b') || {}).textContent || null,
+    presetLayer: (typeof PRESET_LAYER !== 'undefined') ? PRESET_LAYER : null,   // build 236: what is under the preset in force (src/controls.js)
   };
 }
 function applyState(snap) {
@@ -1443,6 +1445,7 @@ function applyState(snap) {
     p.classList.toggle('on', snap.activePreset && p.querySelector('b') && p.querySelector('b').textContent === snap.activePreset);
   });
   updateClearPresetBtn();
+  if (typeof PRESET_LAYER !== 'undefined') PRESET_LAYER = snap.presetLayer || null;   // build 236
   /* See captureState's comment on these two: baked in at decode time, not
      read live by the render pipeline, so setting .checked/.value back
      here (a plain property assignment, not a real click) does not by

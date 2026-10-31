@@ -15,9 +15,11 @@ const CLASSIC_IR_LOOKS = [
   { n: 'Faux colour IR film', s: '665 to 720nm \u00b7 Aerochrome-style red foliage', m: [0, 0, 100, 100, 0, -30, 0, 100, -30], sliders: { contrast: 18, sat: 120 } },
   { n: 'Full-spectrum natural', s: 'no filter or a clear one · balanced to neutral', m: [100, 0, 0, 0, 100, 0, 0, 0, 100], sliders: { contrast: 6, vibrance: 20 }, autoWB: true }
 ];
+/* Build 236: carries only the settings the look is made of, so the rest of your edit (Orton glow, targeted colours, film
+   grain, sharpening and so on) stays as it was. Changing from one look to another still never mixes them: the first one's
+   settings come off before the next goes on (presetLayerBegin in src/controls.js). */
 function classicLookToUserPreset(c) {
-  const base = { orton: 0, ortonSoft: 50 };
-  return { tv: 4, m: c.m.slice(), mOff: [0, 0, 0], sliders: Object.assign(base, c.sliders || {}), targetedBands: [], filmOn: false, filmToneOn: false };
+  return { tv: 4, m: c.m.slice(), mOff: [0, 0, 0], sliders: Object.assign({}, c.sliders || {}) };
 }
 (function buildClassicLooks() {
   const grid = $('pgClassic'); if (!grid) return;
@@ -27,7 +29,10 @@ function classicLookToUserPreset(c) {
     const esc = t => t.replace(/[<>&]/g, ch => ({ '<': '&lt;', '>': '&gt;', '&': '&amp;' }[ch]));
     b.innerHTML = '<b>' + esc(c.n) + '</b><small>' + esc(c.s) + '</small>';
     b.title = c.s + '. A starting point fitted by eye, not measured on your filter.';
-    b.onclick = () => { applyUserPreset(classicLookToUserPreset(c)); if (c.autoWB) classicAutoWB(); document.querySelectorAll('#pgClassic .pb.on').forEach(x => x.classList.remove('on')); b.classList.add('on'); };
+    b.onclick = () => {
+      if (b.classList.contains('on')) { armUndoCapture(); clearPreset(); commitUndoCapture(); haptic('select'); return; }   // a second press takes the look off, like the swap presets
+      applyUserPreset(classicLookToUserPreset(c), { extra: c.autoWB ? classicAutoWB : null, mark: () => { b.classList.add('on'); updateClearPresetBtn(); } });
+    };
     grid.appendChild(b);
   });
 })();

@@ -330,6 +330,33 @@ function stProperties() {
       const found = dustDetectPixels(px, W, H, 60), at = ([cx, cy]) => found.some(f => Math.abs(f.x * W - cx) < 4 && Math.abs(f.y * H - cy) < 4);
       return { ok: at(dust[0]) && !at(colour[0]) && !at(edge[0]), detail: { dust: at(dust[0]), colour: at(colour[0]), edge: at(edge[0]), n: found.length } };
     } },
+    { name: 'Presets go on top of the edit: your own settings survive picking, switching and clearing presets, and one preset never leaks into the next', img: 'scene', run: () => {
+      resetAllControls();
+      const v = id => +$(id).value, put = (id, x) => { const e = $(id); e.value = x; e.dispatchEvent(new Event('input', { bubbles: true })); };
+      const btn = (grid, re) => [...document.querySelectorAll('#' + grid + ' .pb')].find(b => re.test(b.querySelector('b').textContent));
+      put('contrast', 33); put('sharpen', 40); put('vigAmt', -20);
+      const plain = btn('pgIR', /./), eir = btn('pgClassic', /^Faux colour/), glow = btn('pgClassic', /glow/), bw = btn('pgClassic', /^B&W infrared$/);
+      plain.click();
+      const a = { contrast: v('contrast'), sharpen: v('sharpen'), on: plain.classList.contains('on'), m: MCELLS.map(id => v(id)).join() };
+      put('vibrance', 25);   // an edit made after the preset
+      eir.click();
+      const b = { contrast: v('contrast'), sat: v('sat'), vib: v('vibrance'), sharpen: v('sharpen') };
+      plain.click();
+      const c = { contrast: v('contrast'), sat: v('sat'), vib: v('vibrance'), vig: v('vigAmt') };
+      plain.click();   // a second press clears it
+      const d = { m: MCELLS.map(id => v(id)).join(), contrast: v('contrast'), vib: v('vibrance'), on: !!document.querySelector('.pb.on') };
+      glow.click(); const e1 = { orton: v('orton'), sharpen: v('sharpen') };
+      bw.click(); const e2 = { orton: v('orton'), contrast: v('contrast'), sharpen: v('sharpen') };
+      bw.click(); const e3 = { contrast: v('contrast'), m: MCELLS.map(id => v(id)).join() };
+      const ok = a.contrast === 33 && a.sharpen === 40 && a.on && a.m !== '100,0,0,0,100,0,0,0,100'
+        && b.contrast === 18 && b.sat === 120 && b.vib === 25 && b.sharpen === 40
+        && c.contrast === 33 && c.sat === 100 && c.vib === 25 && c.vig === -20
+        && d.m === '100,0,0,0,100,0,0,0,100' && d.contrast === 33 && d.vib === 25 && !d.on
+        && e1.orton === 35 && e1.sharpen === 40 && e2.orton === 0 && e2.contrast === 18 && e2.sharpen === 40
+        && e3.contrast === 33 && e3.m === '100,0,0,0,100,0,0,0,100';
+      resetAllControls();
+      return { ok, detail: { a, b, c, d, e1, e2, e3 } };
+    } },
     { name: 'Classic IR looks are complete, and the mono ones really are greyscale', img: 'scene', run: () => {
       const ok = CLASSIC_IR_LOOKS.length >= 8 && CLASSIC_IR_LOOKS.every(c => c.n && c.s && c.m.length === 9 && c.m.every(Number.isFinite));
       const mono = CLASSIC_IR_LOOKS.filter(c => /^B&W/.test(c.n)).every(c => c.m.slice(0, 3).join() === c.m.slice(3, 6).join() && c.m.slice(3, 6).join() === c.m.slice(6, 9).join());
