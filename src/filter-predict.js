@@ -31,6 +31,7 @@ function fpLoad() {
    export line can show them before the filter database has been fetched. */
 const FP_KEY = 'irlab.fpStack';
 function fpSave() {
+  if (typeof ffStale === 'function') setTimeout(ffStale, 0);   // build 240: the film fit was for the old stack
   try { localStorage.setItem(FP_KEY, JSON.stringify(fpStack.map(id => [id, fpData && fpData.byId[id] ? fpData.byId[id][1] : (fpNames[id] || id)]))); } catch (e) {}
   if (typeof stackMetaRefresh === 'function') stackMetaRefresh();
 }

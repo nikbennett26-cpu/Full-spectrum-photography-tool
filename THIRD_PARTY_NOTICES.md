@@ -162,3 +162,15 @@ Other manufacturer and third-party sources are named on each filter's card and i
   licensed CC BY 4.0. The Sony A7III multispectral channel responses (Figure 1f, 300-800nm) were traced from the
   published figure into `tools/sensors/crowther2022_a7iii.json`; the extension past 800nm is irlab's own model
   (see `tools/editor_filters.mjs`), not the author's data.
+
+## Film fit (editor, "Fit the film to your camera", build 240)
+
+- **Ektachrome Infrared Aero 8443 layer data**: NASA Interagency Report 146, "Predicting the Relative Dye Layer
+  Densities of Color Infrared Transparencies", Figure 2, constructed from Fritz, N. L. (1967), Photogrammetric
+  Engineering 33(10). A US Government work; the per-band fractions are reproduced as factual data in `src/film-fit.js`.
+- **Leaf and canopy spectra**: generated with the PROSPECT-D leaf model (Féret, J.-B. et al. (2017), *Remote Sensing of
+  Environment* 193, 204-215) and the SAIL canopy model (Verhoef, W. (1984)), through J. Gómez-Dans's `prosail` Python
+  package; bare-soil reflectance from that package's soil spectrum. Only the resulting spectra, sampled at 10nm, are
+  shipped. Asphalt, water, red paint, a yellow flower and clear sky are irlab's own simple models of their usual shapes.
+- The method follows Nick Spiker's approach to a digital Aerochrome (fitting a camera to the film's layer
+  sensitivities), described on his former blog; no code or data of his is used.

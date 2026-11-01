@@ -1256,3 +1256,14 @@ html.studioOn body.has-image #reorderZone > #modeBar{display:flex !important;ord
 #decodeTip .dtBtns button{min-height:42px;padding:0 18px;background:none;border:1px solid var(--line2,#333);color:var(--paper,#ece8e1);font:inherit;cursor:pointer}
 #decodeTip .dtBtns button.dtOk{border-color:var(--safelight,#d63a3a)}
 #decodeTip button:focus-visible{outline:2px solid var(--safelight,#d63a3a);outline-offset:2px}
+
+/* Build 240: Fit the film to your camera (src/film-fit.js) */
+.ffBox{margin-top:12px;padding:10px;border:1px solid var(--line2);border-radius:var(--radius-sm,6px)}
+.ffTitle{font-weight:600;font-size:12.5px}
+.ffRow{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-top:4px;font-size:12px}
+.ffRow select{flex:1;min-width:0;background:var(--surface2);color:var(--paper);border:1px solid var(--line2);border-radius:var(--radius-sm,6px);padding:4px 6px;font-size:11.5px}
+.ffGrid{display:grid;grid-template-columns:1fr 44px 44px 40px;gap:3px 6px;align-items:center;margin:6px 0 2px;font-size:11.5px}
+.ffH{font-size:10px;color:var(--muted);text-align:center}
+.ffSw{height:18px;border-radius:3px;border:1px solid rgba(127,127,127,.35)}
+.ffD{text-align:right;font-family:var(--font-mono);font-size:10.5px;color:var(--muted)}
+.ffWarn{color:var(--warn,#d9a441)}

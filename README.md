@@ -70,6 +70,11 @@ Five tabs, in the order the picture is made: **Looks, Light, Colour, Detail, Exp
 - **Presets go on top of your edit:** a preset or look sets only its own settings and leaves the rest of your edit alone,
   whether you pick it first or last. Switching to another preset takes the first one's settings off before the next goes on,
   and clearing it puts back exactly what was underneath, keeping anything you changed since. Undo and the saved session keep track.
+- **Fit the film to your camera:** under Film stocks, works out the channel mix that makes your camera, through the
+  filters you set, record what Kodak's Ektachrome Infrared Aero 8443 recorded (NASA's published layer data), fitted on
+  realistic surface spectra. It shows how close it gets, layer by layer, with film-vs-yours swatches for leaves,
+  conifers, soil, asphalt, water, red paint, a yellow flower and sky, and warns if the stack lets blue in or blocks the
+  infrared the film used. Apply puts it on as a look (RAW decoded camera native, then pick grey).
 - **Source channels:** a readout of which source channel carries your signal. For filter stacks that block blue,
   **IR leak removal** takes the infrared out of red and green before the swap, for cleaner Aerochrome-style colour.
 - **Temperature & tint:** camera white balance (RAW), then a balance before the swap and one after it, each with a grey
