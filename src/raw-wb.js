@@ -279,7 +279,8 @@ function rtwbDoPick(clientX, clientY) {
   const rad = Math.max(6, Math.round(cv.width * 0.02));
   const e = sampleAvgFrom(rawPixels, rawCanvas.width, rawCanvas.height, x, y, rad);
   const lin = e.map(v => { v /= 255; return v <= 0.04045 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4); });
-  const M = (typeof pp_camToSrgbLin === 'function') ? pp_camToSrgbLin(pp_rgbCam3x3(res.rgbCam)) : pp_rgbCam3x3(res.rgbCam);
+  // build 237: the matrix this decode really used (a decode-time swap or Camera native changes it), not the profile alone
+  const M = (res.__M && res.__M.length === 9) ? res.__M : (typeof pp_camToSrgbLin === 'function') ? pp_camToSrgbLin(pp_rgbCam3x3(res.rgbCam)) : pp_rgbCam3x3(res.rgbCam);
   const Mi = wbkInv3(M), c = Mi && wbkMulV(Mi, lin);
   exitPick();
   if (!c || !(c[0] > 1e-4 && c[1] > 1e-4 && c[2] > 1e-4)) { if (typeof toast === 'function') toast('That spot has a channel at black: pick a lighter grey', true); return; }

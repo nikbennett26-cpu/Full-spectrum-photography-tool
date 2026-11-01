@@ -497,11 +497,14 @@ function pipelineRGB(r,g,b,matrix,pre,post,exposure,hueFrac,satFactor,blackPt,lu
     sr=_toe(sr); sg=_toe(sg); sb=_toe(sb);
   }
   if(hueFrac!==0||satFactor!==1||vibrance!==0){
+    if(hueSpaceMode==='ps') [sr,sg,sb]=hsvRotateF(sr,sg,sb,hueFrac);   // build 237: mirrors the shader's Photoshop mode
     let lr2=srgbToLinearF(sr), lg2=srgbToLinearF(sg), lb2=srgbToLinearF(sb);
     // mirrors the shader: channel mode rotates in HSV first, then runs the
     // OKLab stage with no rotation of its own
     if(hueSpaceMode==='channel'){
       [lr2,lg2,lb2]=hsvRotateF(lr2,lg2,lb2,hueFrac);
+      [lr2,lg2,lb2]=hueSatF(lr2,lg2,lb2,0,satFactor,satPreserve,vibrance);
+    } else if(hueSpaceMode==='ps'){
       [lr2,lg2,lb2]=hueSatF(lr2,lg2,lb2,0,satFactor,satPreserve,vibrance);
     } else {
       [lr2,lg2,lb2]=hueSatF(lr2,lg2,lb2,hueFrac,satFactor,satPreserve,vibrance);

@@ -1459,6 +1459,7 @@ function applyState(snap) {
   if ($('camSpaceSwapEditor')) $('camSpaceSwapEditor').checked = !!snap.camSpaceSwap;
   if ($('camSpaceSwapPreset')) $('camSpaceSwapPreset').value = snap.camSpaceSwapPreset || '';
   if ($('camSpaceSwapPresetEditor')) $('camSpaceSwapPresetEditor').value = snap.camSpaceSwapPreset || '';
+  ['camSpaceSwapPreset', 'camSpaceSwapPresetEditor'].forEach(id => { const e = $(id); if (e) e.style.display = snap.camSpaceSwap ? 'block' : 'none'; });   // build 237: the dropdown shows only with its tick, as when ticked by hand
   rawWbCustom = snap.rawWb && snap.rawWb.t > 0 && snap.rawWb.g > 0 ? { t: +snap.rawWb.t, g: +snap.rawWb.g } : null;   // build 197
   if (rawWbCustom && Array.isArray(snap.rawWb.wb) && snap.rawWb.wb.length === 3 && snap.rawWb.wb.every(v => v > 0)) rawWbCustom.wb = snap.rawWb.wb.map(Number);   // build 199: a pick
   if (typeof reapplyCamSpaceSwap === 'function') reapplyCamSpaceSwap();

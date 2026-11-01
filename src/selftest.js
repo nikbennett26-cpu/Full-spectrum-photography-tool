@@ -330,6 +330,24 @@ function stProperties() {
       const found = dustDetectPixels(px, W, H, 60), at = ([cx, cy]) => found.some(f => Math.abs(f.x * W - cx) < 4 && Math.abs(f.y * H - cy) < 4);
       return { ok: at(dust[0]) && !at(colour[0]) && !at(edge[0]), detail: { dust: at(dust[0]), colour: at(colour[0]), edge: at(edge[0]), n: found.length } };
     } },
+    { name: 'Photoshop hue mode turns the display values the way Photoshop Hue/Saturation does, and the Infrared Ektachrome IE preset sets it and takes it off again', img: 'scene', run: () => {
+      resetAllControls();
+      const rd = () => { engine.render(Object.assign(currentParams(), { dither: false })); return engine.readPixels(); };
+      const rot = (r, g, b, deg) => { const mx = Math.max(r, g, b), mn = Math.min(r, g, b), d = mx - mn; if (d < 1e-7) return [r, g, b];
+        let h = mx === r ? ((g - b) / d) % 6 : mx === g ? (b - r) / d + 2 : (r - g) / d + 4; h = ((((h / 6 + deg / 360) % 1) + 1) % 1) * 6;
+        const f = x => { const k = (x + h) % 6; return mx - d * Math.max(0, Math.min(k, 4 - k, 1)); }; return [f(5), f(3), f(1)]; };
+      const a = rd(); hueSpace = 'ps'; $('hue').value = 143; const b = rd(); hueSpace = 'channel'; const c = rd();
+      let err = 0, gap = 0, n = 0;
+      for (let i = 0; i < a.length; i += 4 * 97) { const e = rot(a[i], a[i + 1], a[i + 2], 143); for (let k = 0; k < 3; k++) { err += Math.abs(e[k] - b[i + k]); gap += Math.abs(c[i + k] - b[i + k]); } n += 3; }
+      err /= n; gap /= n;
+      resetAllControls();
+      const ie = [...document.querySelectorAll('#pgFilm .pb')].find(x => /Ektachrome IE/.test(x.querySelector('b').textContent));
+      ie.click(); const on = { space: hueSpace, hue: +$('hue').value, m: MCELLS.map(id => +$(id).value).join(), on: ie.classList.contains('on') };
+      ie.click(); const off = { space: hueSpace, hue: +$('hue').value, on: ie.classList.contains('on') };
+      resetAllControls();
+      const ok = err < 3 && gap > 4 && on.space === 'ps' && on.hue === 143 && on.m === '100,0,0,0,100,0,0,0,100' && on.on && off.space === 'perceptual' && off.hue === 0 && !off.on;
+      return { ok, detail: { err, gap, on, off } };
+    } },
     { name: 'Presets go on top of the edit: your own settings survive picking, switching and clearing presets, and one preset never leaks into the next', img: 'scene', run: () => {
       resetAllControls();
       const v = id => +$(id).value, put = (id, x) => { const e = $(id); e.value = x; e.dispatchEvent(new Event('input', { bubbles: true })); };

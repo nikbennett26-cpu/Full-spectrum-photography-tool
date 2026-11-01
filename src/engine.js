@@ -917,7 +917,7 @@ void main(){
     gl.uniformMatrix3fv(this.uLocs.preWBM, false, toGLMat3(p.preWBM || IDENTITY3));
     gl.uniformMatrix3fv(this.uLocs.postWBM, false, toGLMat3(p.postWBM || IDENTITY3));
     gl.uniform1i(this.uLocs.wbMethod, p.wbMethod === 'bradford' ? 1 : 0);
-    gl.uniform1i(this.uLocs.hueSpace, p.hueSpace === 'channel' ? 1 : 0);
+    gl.uniform1i(this.uLocs.hueSpace, p.hueSpace === 'channel' ? 1 : p.hueSpace === 'ps' ? 2 : 0);
     gl.uniform1i(this.uLocs.lumPreserve, p.lumPreserve ? 1 : 0);
     gl.uniform3fv(this.uLocs.lumaW, new Float32Array(p.lumaW || [0.2126, 0.7152, 0.0722]));
     gl.uniform3fv(this.uLocs.postWB, new Float32Array(p.postWB));

@@ -926,7 +926,7 @@ uniform sampler2D u_epdBase;   // the smooth, edge-stopping base layer of the lo
      gamut need no drop and get none, which is what keeps this from
      darkening images that were never affected. keepSat is the existing
      "Keep saturation" control, and at 0 this is exactly the old behaviour. */
-  uniform int u_hueSpace;   // 0 = perceptual (OKLab), 1 = channel (HSV)
+  uniform int u_hueSpace;   // 0 = perceptual (OKLab), 1 = channel (HSV), 2 = Photoshop (HSV on display values, brightness free)
   uniform int u_lumPreserve;   // 0 = off, 1 = hold luminance across the swap
 
   /* A channel swap moves light between channels that carry very different
@@ -2969,6 +2969,11 @@ uniform float u_skyL;          // the typical lightness of the sky; anything cle
       // back to linear light for the OKLab round trip, then re-map: boosting
       // chroma can push a colour back out of gamut, and it has to be brought
       // in the same hue-preserving way rather than clipped at the last step
+      /* Build 237: Photoshop's Hue/Saturation turn, for recipes written for it. It rotates the display (gamma encoded)
+         values and keeps each pixel's largest and smallest channel, so brightness moves with the hue: 143 there is not
+         143 in the Channel mode, which works on linear light and holds luminance. Then the same OKLab stage as the
+         other modes, with no rotation of its own. */
+      if (u_hueSpace == 2) srgb = hsvRotate(srgb, u_hue);
       vec3 lin = srgbToLinear(srgb);
       /* In channel mode the rotation happens in HSV FIRST, then hueSat runs
          with no rotation of its own — so saturation, the cusp solve and the
@@ -2981,6 +2986,8 @@ uniform float u_skyL;          // the typical lightness of the sky; anything cle
            (120 deg is still the cyclic swap, at held brightness) and the noise as quiet as the perceptual mode's. */
         float yHue = dot(max(lin, vec3(0.0)), u_lumaW);
         lin = preserveLuma(hsvRotate(lin, u_hue), yHue);
+        lin = hueSat(lin, 0.0, u_sat, u_satPreserve, u_vibrance);
+      } else if (u_hueSpace == 2) {
         lin = hueSat(lin, 0.0, u_sat, u_satPreserve, u_vibrance);
       } else {
         lin = hueSat(lin, u_hue, u_sat, u_satPreserve, u_vibrance);

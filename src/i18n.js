@@ -407,7 +407,19 @@ const IR_PRESETS = [
     m: [48,0,53, 89,7,-17, -35,123,18], recipe: 'hh', hidden: true },
 
   { n: "EIR base (reference look)", s: "a starting point for RAW false-colour work: contrast, colour and RAW noise reduction \u00b7 tune it with Preset strength",
-    m: [100,0,0, 0,100,0, 0,0,100], recipe: 'eir', noCam: true, hidden: true }
+    m: [100,0,0, 0,100,0, 0,0,100], recipe: 'eir', noCam: true, hidden: true },
+
+  /* Build 237: Infrared Ektachrome IE (the original E-4 film, not the later EIR) through a MidOpt TB550/660/850 triple
+     bandpass on a full-spectrum camera, following the method nfoto (Birna) described on UltravioletPhotography.com in
+     October 2026: develop the RAW with NO camera colour profile, white balance by clicking something neutral (asphalt),
+     then rotate hue 143 degrees in Photoshop. No channel swap. Here: the RAW is decoded camera-native (recipe 'ie'),
+     the hue turn uses the Photoshop space (display values, brightness not held, so 143 means what it means there), and
+     the grey click is the RAW white balance picker. noCam keeps it out of the decode-time swap list, whose numbering
+     must not move. Not yet checked against a photo taken through this filter. */
+  { n: "Infrared Ektachrome IE · Triple Band",
+    s: "MidOpt TB550/660/850 · no swap, camera-native RAW, 143° hue (nfoto’s method) · then pick grey on asphalt",
+    t: "For a full-spectrum camera with the MidOpt 550/660/850nm triple band filter. Open the RAW, choose this, then use the RAW white balance Pick on something neutral such as asphalt or concrete. Untested on a real photo yet. Dichroic filter: expect colour shifts across the frame on wide-angle lenses.",
+    m: [100,0,0, 0,100,0, 0,0,100], hue: 143, hueSpace: 'ps', recipe: 'ie', noCam: true }
 ];
 
 // 1. Sticky Preview Setup

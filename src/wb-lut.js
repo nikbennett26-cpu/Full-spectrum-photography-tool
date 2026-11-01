@@ -812,6 +812,7 @@ $('camMatch').addEventListener('change', () => {
    retyped, so a choice here is genuinely identical to the same name there.
    Film-stock recipes that do more than a 3x3 (LUTs, curves) are deliberately
    excluded: this stage only ever had matrix-multiply scope. */
+const CAM_NATIVE_VALUE = 'native';   // build 237: see camNativeMatrix below
 const CAM_SPACE_SWAP_PRESETS = (typeof IR_PRESETS !== 'undefined' ? IR_PRESETS.filter(p => p.m && !p.src && !p.noCam) : [])
   .concat(typeof UV_PRESETS !== 'undefined' ? UV_PRESETS.filter(p => p.m) : []);
 (function () {
@@ -825,6 +826,9 @@ const CAM_SPACE_SWAP_PRESETS = (typeof IR_PRESETS !== 'undefined' ? IR_PRESETS.f
       opt.value = i; opt.textContent = p.n;
       s.appendChild(opt);
     });
+    const nat = document.createElement('option');   // build 237
+    nat.value = CAM_NATIVE_VALUE; nat.textContent = 'Camera native (no colour profile)';
+    s.appendChild(nat);
   });
   function showHide() {
     const on = swap.checked || swapEd.checked;
@@ -849,15 +853,26 @@ const CAM_SPACE_SWAP_PRESETS = (typeof IR_PRESETS !== 'undefined' ? IR_PRESETS.f
    kept in sync above, so either one reflects the true current choice.
    Values are 0-100 scale, same as the Channel Swap panel's own MCELLS, so
    /100 here matches exactly how getMatrixUI() converts them. */
+/* Build 237: "Camera native (no colour profile)". Not a swap: the matrix that, put through the swap's own route
+   (camera -> ProPhoto -> this -> sRGB), cancels the camera's colour matrix, so the picture carries the sensor's own white
+   balanced channels, the way a raw developer shows them with no camera profile. Worked out per file from that file's
+   rgb_cam, which is why it is not a row in CAM_SPACE_SWAP_PRESETS. Used by the Infrared Ektachrome IE preset. */
+function camNativeMatrix() {
+  const r = typeof rawEngine !== 'undefined' && rawEngine.lastResult;
+  const R = pp_rgbCam3x3(r && r.rgbCam);
+  return bfMat3mul(SRGB_LIN_TO_PROPHOTO_LIN, bfMat3mul(bfMat3inv(R), PROPHOTO_LIN_TO_SRGB_LIN));
+}
 function getCamSpaceSwapMatrix() {
   const sel = $('camSpaceSwapPreset') || $('camSpaceSwapPresetEditor');
   if (!sel || sel.value === '') return null;
+  if (sel.value === CAM_NATIVE_VALUE) return camNativeMatrix();
   const preset = CAM_SPACE_SWAP_PRESETS[+sel.value];
   return preset ? preset.m.map(v => v / 100) : null;
 }
 function getCamSpaceSwapName() {
   const sel = $('camSpaceSwapPreset') || $('camSpaceSwapPresetEditor');
   if (!sel || sel.value === '') return null;
+  if (sel.value === CAM_NATIVE_VALUE) return 'Camera native';
   const preset = CAM_SPACE_SWAP_PRESETS[+sel.value];
   return preset ? preset.n : null;
 }
@@ -959,6 +974,10 @@ async function rebuildRawPreview() {
   }
   if (my !== rawNrRun) return;
   const cv2 = rawEngineResultToCanvas(res, checked, getCamSpaceSwapMatrix(), getCamSpaceSwapName());
+  /* Build 237: the noise-reduced copy is what got the matrix, but the RAW white balance picker, its drag preview and the
+     IR leak correction all read it from the decode itself. Without this they went on using the matrix from before a
+     swap (or the camera-native option) was switched on, whenever RAW noise reduction was on, which it is by default. */
+  if (res !== base && base) base.__M = res.__M;
   rawEngine.builtNr = key;
   installRawPreview(cv2, !swapSame);
   setRawNrBusy(false, (v.L > 0 || v.C > 0) ? 'Applied' : '');

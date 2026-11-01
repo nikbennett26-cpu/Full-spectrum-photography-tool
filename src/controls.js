@@ -1423,6 +1423,24 @@ function presetLayerBegin() {
 }
 function presetLayerEnd(base) { PRESET_LAYER = { base: base, after: layerStrip(captureState()) }; }
 
+/* Build 237: the Infrared Ektachrome IE recipe's one extra step. nfoto develops the RAW with no camera colour profile,
+   so the white balance and the hue turn act on what the sensor recorded rather than on colours the camera matrix has
+   already bent (and, for an IR-heavy file, clipped). That is the decode's camera-native option (CAM_NATIVE_VALUE in
+   src/wb-lut.js), switched on through the same route as the decode-time swap so the preview, white balance, noise
+   reduction and export all follow it; taking the preset off puts the decode back. On a JPEG or TIFF there is no profile
+   left to take off, so it says so. */
+function ieApply() {
+  const raw = typeof rawEngine !== 'undefined' && rawEngine.lastResult && rawEngine.lastGen === loadToken;
+  if (raw) {
+    ['camSpaceSwap', 'camSpaceSwapEditor'].forEach(id => { const e = $(id); if (e) e.checked = true; });
+    ['camSpaceSwapPreset', 'camSpaceSwapPresetEditor'].forEach(id => { const e = $(id); if (e) { e.value = CAM_NATIVE_VALUE; e.style.display = 'block'; } });
+    if (typeof reapplyCamSpaceSwap === 'function') reapplyCamSpaceSwap();
+    toast('Now tap Pick under RAW white balance and tap something neutral, such as asphalt or concrete.');
+  } else {
+    toast('This look is meant for a RAW: on a JPEG or TIFF the camera profile is already baked in, so expect a rougher result.');
+  }
+}
+
 function buildPresetButtons(list, containerId) {
   list.forEach(p => {
     const b = document.createElement('button');
@@ -1470,10 +1488,12 @@ function buildPresetButtons(list, containerId) {
       mxSync();
       if (p.recipe === 'hh') hhApplyExtras();
       if (p.recipe === 'eir') eirApply();
+      if (p.recipe === 'ie') ieApply();
       // a preset may carry a hue offset — that's what distinguishes e.g. 550nm
       // from Aerochrome, which share the same matrix. Presets without one
       // explicitly reset hue to 0 so a previous preset's offset can't linger.
-      if (p.hue !== undefined) { $('hue').value = p.hue; $('v_hue').textContent = p.hue; }   // build 236: a preset with no hue offset leaves yours alone
+      if (p.hue !== undefined) { $('hue').value = p.hue; $('v_hue').textContent = p.hue; }
+      if (p.hueSpace) { hueSpace = p.hueSpace; syncHueSpaceButtons(); }   // build 237: a preset written for a particular hue space (taking it off puts yours back)   // build 236: a preset with no hue offset leaves yours alone
       haptic('select');   // before render(), not after: a full-frame render can
                           // take tens of milliseconds on a large image, and a
                           // buzz that arrives after it feels like lag
@@ -1495,7 +1515,7 @@ mxSync();
    stock, a named recipe or the reverse transform goes to the film group, the
    rest stay as everyday swaps. Keeping it a predicate means adding a preset
    above puts it in the right place on its own. */
-const FILM_NAMES = /Aerochrome|EIR|Colour IR|H\.H\.|CIR |Lomo/i;
+const FILM_NAMES = /Aerochrome|EIR|Colour IR|H\.H\.|CIR |Lomo|Ektachrome/i;
 buildPresetButtons(IR_PRESETS.filter(p => !p.hidden && !FILM_NAMES.test(p.n)), 'pgIR');
 buildPresetButtons(IR_PRESETS.filter(p => !p.hidden &&  FILM_NAMES.test(p.n)), 'pgFilm');
 
