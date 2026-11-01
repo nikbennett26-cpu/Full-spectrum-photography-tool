@@ -189,15 +189,24 @@ function ffRun() {
   $('ffRun').addEventListener('click', ffRun);
   if ($('ffSensor')) $('ffSensor').addEventListener('change', () => { if (ffLast) ffRun(); });
   if ($('ffBehind')) $('ffBehind').addEventListener('change', () => { ffBehindChosen = true; if (ffLast) ffRun(); });
-  if ($('ffEdit')) $('ffEdit').addEventListener('click', () => {
-    const pick = $('fpPick'); if (!pick) return;
-    // on the docked layouts the picker sits in another tab (Export): switch to it first, as tapping that tab would
-    const host = pick.closest('[data-dock]'), tb = host && document.querySelector('button[data-tab="' + host.dataset.dock + '"]');
-    if (tb && !tb.classList.contains('on')) tb.click();
-    for (let el = pick.parentElement; el; el = el.parentElement) if (el.tagName === 'DETAILS') el.open = true;
-    setTimeout(() => { pick.scrollIntoView({ block: 'center', behavior: 'smooth' }); }, 60);
-    setTimeout(() => { const s = $('fpSearch'); if (s) s.focus(); }, 400);
-  });
+  /* Build 243: Change opens the filter picker right here instead of sending you to the Export panel. There is one
+     picker (its stack is the same one export records and the IR leak estimate reads), so it is moved into this box while
+     you edit and goes back to its place in Export when you press Done, fold this group, or open the Export panel. */
+  const pick = $('fpPick'), slot = $('ffPickHere');
+  if ($('ffEdit') && pick && slot) {
+    const home = document.createComment('fpPick home'); pick.parentNode.insertBefore(home, pick);
+    const here = () => slot.contains(pick);
+    const putBack = () => { if (!here()) return; home.parentNode.insertBefore(pick, home.nextSibling); slot.hidden = true; $('ffEdit').textContent = 'Change'; };
+    $('ffEdit').addEventListener('click', () => {
+      if (here()) { putBack(); if (ffLast === null && fpStack.length) ffRun(); return; }
+      slot.appendChild(pick); slot.hidden = false; $('ffEdit').textContent = 'Done';
+      setTimeout(() => { const s = $('fpSearch'); if (s) s.focus(); }, 50);
+    });
+    if (fg0()) fg0().addEventListener('toggle', () => { if (!fg0().open) putBack(); });
+    document.querySelectorAll('button[data-tab="export"]').forEach(b => b.addEventListener('click', putBack));
+    const ex = $('exportSection'); if (ex) ex.addEventListener('toggle', () => { if (ex.open) putBack(); });
+  }
+  function fg0() { return $('filmPresetGroup'); }
   const fg = $('filmPresetGroup'); if (fg) fg.addEventListener('toggle', () => { ffRender(); if (fg.open && typeof fpLoad === 'function') fpLoad().then(ffSensors).catch(() => {}); });
   ffRender();
 })();
