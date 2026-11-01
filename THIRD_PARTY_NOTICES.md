@@ -173,14 +173,14 @@ Other manufacturer and third-party sources are named on each filter's card and i
   2017, USGS Spectral Library Version 7 Data: U.S. Geological Survey data release, https://doi.org/10.5066/F7RR1WDJ.
   Public domain (U.S. Government work). Used: fresh oak leaf, green lawn grass (GDS91), lodgepole pine needles, yellow
   aspen leaf, golden dry grass (GDS480), old asphalt road (GDS376), concrete road (GDS375), red building brick (GDS353),
-  open-ocean sea water (SW2), cadmium red (GDS778) and Hansa yellow (GDS785). **Modifications**, as the USGS asks to be
+  open-ocean sea water (SW2), melting snow (mSnw01a), dry marsh sediment as bare earth (DWV3-0511), cadmium red
+  (GDS778) and Hansa yellow (GDS785). **Modifications**, as the USGS asks to be
   described: averaged into 10nm steps from 300 to 1100nm, the first channel held below each instrument's range, and
-  clipped to 0-1. The USGS has not reviewed or endorsed irlab or this use. Bare-soil reflectance is the soil spectrum
-  shipped with J. Gómez-Dans's `prosail` Python package; the clear-sky and grey-card spectra are irlab's own models.
-- **Aerochrome III 1443 layer sensitivities** (build 245): digitised for irlab from Kodak's spectral sensitivity chart
-  (KODAK 2006, Aerial Data publication AS-77, density 1.0 END, process AR-5), from the copy reproduced in Lillesand,
-  Kiefer & Chipman, *Remote Sensing and Image Interpretation*, as posted by Andrea B. on UltravioletPhotography.com
-  ("Digital Aerochrome Filters and Stacks"). Factual data read off a published graph; the values are in `src/film-fit.js`.
+  clipped to 0-1. The USGS has not reviewed or endorsed irlab or this use. The clear-sky and grey-card spectra are irlab's own models.
+- **Aerochrome III 1443 layer sensitivities** (build 247): read from the vector spectral-sensitivity chart in Eastman
+  Kodak Company, *KODAK AEROCHROME III Infrared Film 1443*, publication AS-77 (TI2562, minor revision 11-05, ©2005),
+  against the chart's own gridlines. Factual data from a published graph; the values are in `src/film-fit.js`. (Build
+  245 had traced a screenshot of the same chart posted by Andrea B. on UltravioletPhotography.com.)
 - **Light**: midday sun is the filter database's AM1.5 global spectrum; low sun, overcast and open shade are irlab's
   own models built from it (Rayleigh and haze extinction, and sky-light fall-off), not measurements.
 - The method follows Nick Spiker's approach to a digital Aerochrome (fitting a camera to the film's layer
