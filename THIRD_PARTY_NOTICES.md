@@ -181,7 +181,11 @@ Other manufacturer and third-party sources are named on each filter's card and i
   Kodak Company, *KODAK AEROCHROME III Infrared Film 1443*, publication AS-77 (TI2562, minor revision 11-05, ©2005),
   against the chart's own gridlines. Factual data from a published graph; the values are in `src/film-fit.js`. (Build
   245 had traced a screenshot of the same chart posted by Andrea B. on UltravioletPhotography.com.)
-- **Light**: midday sun is the filter database's AM1.5 global spectrum; low sun, overcast and open shade are irlab's
-  own models built from it (Rayleigh and haze extinction, and sky-light fall-off), not measurements.
+- **Light** (build 248): midday sun is the filter database's AM1.5 global spectrum. Open shade, low sun and the
+  blue-sky swatch are derived from the ASTM G173-03 reference spectra (extraterrestrial, global tilt and direct +
+  circumsolar, from SMARTS v2.9.2) in the table published by NREL (National Renewable Energy Laboratory); only those
+  published numbers are used, nothing from the ASTM standard's text. Open shade = global minus direct; low sun = the
+  direct beam scaled from air mass 1.5 to 5 by its own transmission, plus half the sky light; blue sky = light scattered
+  out of the beam, power-law fitted over gas-free windows. Overcast remains irlab's own model.
 - The method follows Nick Spiker's approach to a digital Aerochrome (fitting a camera to the film's layer
   sensitivities), described on his former blog; no code or data of his is used.
