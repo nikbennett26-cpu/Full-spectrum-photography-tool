@@ -31,12 +31,18 @@ const FF_SURF_NAMES = { foliage: 'Healthy leaves', conifer: 'Conifers', grass: '
 function ffWl() { const [lo, hi, st] = fpData.wl, a = []; for (let w = lo; w <= hi + 1e-6; w += st) a.push(w); return a; }
 /* the film's three layers on the database's wavelength grid: rows cyan (out red), magenta (out green), yellow (out blue).
    Build 241: the film can be put behind a different yellow or orange filter. The table is for the film behind the
-   minus-blue filter Kodak specified, taken here as the Wratten 12; for a 15, 16 or 21 each band is reweighted by that
-   filter's average transmission over the Wratten 12's in the same band, then each layer is rescaled so a grey still
-   comes out grey (the cast a deeper filter gives is what the grey pick takes out on the camera side too). An
-   approximation at 50nm resolution, but it is what lets a Wratten 16 on the lens be judged against film shot through
-   a Wratten 16 rather than through a 12. */
-const FF_FILM_FILTERS = [['w12', 'Wratten 12 (Kodak\u2019s data)'], ['w15', 'Wratten 15'], ['w16', 'Wratten 16'], ['w21', 'Wratten 21']];
+   minus-blue filter Kodak specified, taken here as the Wratten 12; for any other filter each band is reweighted by that
+   filter's average transmission over the Wratten 12's in the same band. An approximation at 50nm resolution, but it is
+   what lets a Wratten 16 on the lens be judged against film shot through a Wratten 16 rather than through a 12.
+   Build 244: the layers are no longer each rescaled to keep grey grey. That threw away exactly what deeper filters did
+   to the film: behind a Wratten 25 the green-sensitive layer gets about 1% of its usual light, which is where the
+   cherry-red foliage and greenish skies film shooters describe came from. Now only overall exposure is evened out (the
+   infrared layer is kept at its Wratten 12 level, as the film would be metered), the cast stays, and the fit is asked
+   to reproduce it (its grey condition aims at the film's grey, not at neutral). Only filters that cut on at or above the
+   Wratten 12 are offered: below it blue reaches the film, and the table has no data for the film's blue sensitivity. */
+const FF_FILM_FILTERS = [['w12', 'Wratten 12 (Kodak\u2019s data)'], ['w16', 'Wratten 16'], ['w21', 'Wratten 21 (orange)'], ['w25', 'Wratten 25 (red)'],
+  ['bw023', 'B+W 023 (deep yellow)'], ['bw040', 'B+W 040 (yellow-orange)'], ['bw041', 'B+W 041 (orange)'], ['bw090', 'B+W 090 (red)'],
+  ['hyg_y52', 'Y52 glass (as Nikon Y52)'], ['hyg_o56', 'O56 glass (as Nikon O56)']];
 function ffFilm(wl, behind) {
   const F = [new Array(wl.length).fill(0), new Array(wl.length).fill(0), new Array(wl.length).fill(0)];
   const T = id => fpData && fpData.byId[id] ? fpData.byId[id][4] : null, Tx = behind && behind !== 'w12' ? T(behind) : null, T12 = T('w12');
@@ -46,7 +52,9 @@ function ffFilm(wl, behind) {
     const n = wl.filter(w => w >= b && w < b + 50).length || 1;
     wl.forEach((w, i) => { if (w >= b && w < b + 50) { F[0][i] += k * c / n; F[1][i] += k * m / n; F[2][i] += k * y / n; } });
   });
-  F.forEach(f => { const s = f.reduce((a, v) => a + v, 0); if (s > 0) f.forEach((v, i) => { f[i] = v / s; }); });
+  const ir = F[0].reduce((a, v) => a + v, 0) || 1;   // even out exposure on the infrared layer, keep the cast
+  F.forEach(f => f.forEach((v, i) => { f[i] = v / ir; }));
+  F.grey = F.map(f => f.reduce((a, v) => a + v, 0));   // what a flat grey gives on the film: 1, 1, 1 behind a Wratten 12
   return F;
 }
 /* which filter the film is imagined behind: the one in your stack when it is one of these, else Kodak's Wratten 12 */
@@ -91,7 +99,7 @@ function ffFit(stack, sensor, maxGain, behind) {
   const train = ffTrain(wl), X = train.map(r => Kn.map(k => ffDot(k, r))), Y = train.map(r => F.map(f => ffDot(f, r))), N = X.length;
   const XtX = [0, 0, 0, 0, 0, 0, 0, 0, 0]; X.forEach(x => { for (let i = 0; i < 3; i++) for (let j = 0; j < 3; j++) XtX[i * 3 + j] += x[i] * x[j]; });
   const Wt = 200;
-  const XtY = [0, 1, 2].map(l => [0, 1, 2].map(i => X.reduce((a, x, n) => a + x[i] * Y[n][l], 0) + Wt));
+  const XtY = [0, 1, 2].map(l => [0, 1, 2].map(i => X.reduce((a, x, n) => a + x[i] * Y[n][l], 0) + Wt * F.grey[l]));
   const solve = lam => [0, 1, 2].map(l => {
     const Mi = bfMat3inv(XtX.map((v, k) => v + Wt + ((k % 4 === 0) ? lam * N : 0))), rhs = XtY[l];
     return [0, 1, 2].map(i => Mi[i * 3] * rhs[0] + Mi[i * 3 + 1] * rhs[1] + Mi[i * 3 + 2] * rhs[2]);
@@ -116,7 +124,7 @@ function ffFit(stack, sensor, maxGain, behind) {
   // where the light it records comes from: blue the film never saw, and infrared past the film's reach
   const tot = g.reduce((a, b) => a + b, 0);
   const share = (lo, hi) => K.reduce((a, k) => a + k.reduce((s, v, i) => s + (wl[i] >= lo && wl[i] < hi ? v : 0), 0), 0) / tot;
-  return { A, r2, surfaces, meanDE, blue: share(0, 490), farIR: share(910, 2000), behind: behind || 'w12' };
+  return { A, r2, surfaces, meanDE, blue: share(0, 490), farIR: share(910, 2000), behind: behind || 'w12', filmGrey: F.grey.slice() };
 }
 
 function ffSwatch(rgb) {
@@ -137,6 +145,8 @@ function ffRender() {
   if (!fpStack.length) warn.push('No filters set. The film was always used behind a yellow filter; without one, blue light reaches every channel.');
   else if (f.blue > 0.03) warn.push('This stack lets blue through (' + Math.round(f.blue * 100) + '% of what the camera records), which the film never saw.');
   if (f.r2[0] < 0.9) warn.push('Much of the 700 to 900nm infrared the film’s red layer recorded is blocked, so infrared-bright things will not come out as strongly.');
+  const fg = f.filmGrey || [1, 1, 1];
+  if (Math.max(...fg.map(v => Math.abs(v - 1))) > 0.08) warn.push('Behind this filter the film itself came out tinted (see its grey card): ' + (fg[2] < 0.5 ? 'blue all but gone, so skies turn olive and foliage pure red' : 'warmer, with greener skies and redder foliage') + '. The fit keeps that, as the film showed it.');
   if (f.farIR > 0.25) warn.push('A lot of what the camera records is infrared beyond 900nm, past where the film could see.');
   const esc = s => String(s).replace(/[<>&]/g, c => ({ '<': '&lt;', '>': '&gt;', '&': '&amp;' }[c]));
   out.innerHTML =

@@ -74,8 +74,9 @@ Five tabs, in the order the picture is made: **Looks, Light, Colour, Detail, Exp
   filters you set, record what Kodak's Ektachrome Infrared Aero 8443 recorded (NASA's published layer data), fitted on
   realistic surface spectra. It shows how close it gets, layer by layer, with film-vs-yours swatches for leaves,
   conifers, soil, asphalt, water, red paint, a yellow flower and sky, and warns if the stack lets blue in or blocks the
-  infrared the film used. Change picks the filters right there (the same list Export records). The film can be put behind a Wratten 12, 15, 16 or 21 (it follows your stack when it has one),
-  so a Wratten 16 is judged against film shot through a 16. Apply puts it on as a look (RAW decoded camera native, then
+  infrared the film used. Change picks the filters right there (the same list Export records). The film can be put behind the classic filters (Wratten 12, 16, 21, 25; B+W 023, 040, 041, 090;
+  Y52 and O56 glass), following your stack when it has one, and keeps the tint each gave the film: deeper filters made
+  greys warmer, skies greener and foliage redder. Apply puts it on as a look (RAW decoded camera native, then
   pick grey).
 - **Source channels:** a readout of which source channel carries your signal. For filter stacks that block blue,
   **IR leak removal** takes the infrared out of red and green before the swap, for cleaner Aerochrome-style colour.
