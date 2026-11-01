@@ -78,7 +78,7 @@ Five tabs, in the order the picture is made: **Looks, Light, Colour, Detail, Exp
   infrared the film used. Change picks the filters right there (the same list Export records). The film can be put behind the classic filters (Wratten 12, 16, 21, 25; B+W 023, 040, 041, 090;
   Y52 and O56 glass), following your stack when it has one, and keeps the tint each gave the film: deeper filters made
   greys warmer, skies greener and foliage redder. Apply puts it on as a look (RAW decoded camera native, then
-  pick grey).
+  pick grey), with the film's own contrast as R, G and B tone curves unless you untick it.
 - **Measured sensors:** the filter tools can use a converted Sony A7 III (Crowther 2022, the default), and converted
   Canon 40D, Nikon D300, D200 and D700 bodies measured 375-1000nm by MaxMax (flagged: their channels do not converge
   past 840nm as direct measurements say they should), alongside the generic and astronomy curves.

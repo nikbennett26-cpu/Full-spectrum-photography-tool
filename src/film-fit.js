@@ -264,14 +264,29 @@ function ffRender() {
     f.surfaces.map(s => '<span class="ffN">' + esc(s.name) + '</span><span class="ffSw" style="background:' + ffSwatch(s.film) + '"></span><span class="ffSw" style="background:' + ffSwatch(s.cam) + '"></span><span class="ffD">' + s.de.toFixed(1) + '</span>').join('') +
     '</div>' +
     ((fpData && fpData.sensorNotes && f.sensor && fpData.sensorNotes[f.sensor]) ? '<p class="note" style="margin:4px 0 2px">Sensor: ' + esc(fpData.sensorNotes[f.sensor]) + '</p>' : '') +
-    '<p class="note" style="margin:4px 0 2px">Film swatches are the slide as printed: Kodak&rsquo;s characteristic curves and dyes. The fit matches its colours; the film&rsquo;s contrast is left to the tone sliders.</p>' +
+    '<p class="note" style="margin:4px 0 2px">Film swatches are the slide as printed: Kodak&rsquo;s characteristic curves and dyes. The fit matches its colours; tick the box below to take the film&rsquo;s contrast too.</p>' +
     '<p class="note" style="margin:4px 0 6px">Surfaces are measured (USGS Spectral Library; the sky from the ASTM G173 solar spectra; the grey card is flat). The sensor curve is a model unless your camera matches it, so take this as the shape of the answer.</p>' +
-    '<div style="display:flex;gap:6px;flex-wrap:wrap"><button type="button" id="ffApply" class="btnGhost">Apply to the photo</button>' +
+    '<label class="ffRow" title="Sets the tone curve (R, G and B) to the film&rsquo;s own characteristic curve, so the photo takes the slide&rsquo;s contrast as well as its colours. Edit or flatten it in Curves afterwards."><input type="checkbox" id="ffTone"' + (ffToneOn ? ' checked' : '') + '> Include the film&rsquo;s contrast</label>' +
+    '<div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:4px"><button type="button" id="ffApply" class="btnGhost">Apply to the photo</button>' +
     (ffApplied() ? '<button type="button" id="ffOff" class="btnGhost">Take it off</button>' : '') + '</div>';
   $('ffApply').onclick = ffApply;
+  if ($('ffTone')) $('ffTone').onchange = e => { ffToneOn = e.target.checked; };
   if ($('ffOff')) $('ffOff').onclick = () => { armUndoCapture(); clearPreset(); commitUndoCapture(); ffRender(); };
 }
 function ffStale() { ffLast = null; if (fpData) ffSensors(); ffRender(); }
+/* Build 251: the film's contrast, as irlab tone curves. The fit leaves the camera's output in the film's own linear terms
+   (an 18% grey at 0.18); the slide is that pushed through the film's characteristic curve and dyes. So each channel
+   gets a curve from display value in to display value out: decode, run through the film's grey-scale response for that
+   channel (the same one the swatches use), encode. The RGB curve stays straight. They are ordinary curve points, so the
+   curve editor shows and edits them, and taking the fit off puts your own curves back. */
+let ffToneOn = true;
+function ffToneCurves(film) {
+  const R = ffRenderer(film);
+  const dec = v => v <= 0.04045 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4), enc = v => { v = Math.max(0, Math.min(1, v)); return v <= 0.0031308 ? 12.92 * v : 1.055 * Math.pow(v, 1 / 2.4) - 0.055; };
+  const xs = [0, 0.06, 0.12, 0.19, 0.27, 0.36, 0.46, 0.57, 0.69, 0.81, 0.91, 1];
+  const ch = c => xs.map(x => [x, Math.round(enc(R.fwd(Math.max(1e-4, dec(x)), c)) * 1000) / 1000]);
+  return { master: [[0, 0], [1, 1]], r: ch(0), g: ch(1), b: ch(2) };
+}
 function ffApply() {
   if (!ffLast || ffLast.error) return;
   if (!loadedImage) { toast('Open a photo first'); return; }
@@ -280,6 +295,11 @@ function ffApply() {
     extra: () => {
       if ($('swapSpace')) { $('swapSpace').value = '0'; if (typeof syncWidenFromSelect === 'function') syncWidenFromSelect(); }
       setCamNativeDecode('Fitted. Now tap Pick under RAW white balance and tap something grey to finish.');
+      if (ffToneOn && typeof curveState !== 'undefined') {
+        const t = ffToneCurves(ffLast.film || '1443');
+        curveState = Object.assign(curveDefault(), t);
+        if (typeof curveChanged === 'function') curveChanged();
+      }
     }
   });
   ffMark = PRESET_LAYER;
