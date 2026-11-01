@@ -419,7 +419,7 @@ const IR_PRESETS = [
      bandpass on a full-spectrum camera, following the method nfoto (Birna) described on UltravioletPhotography.com in
      October 2026: develop the RAW with NO camera colour profile, white balance by clicking something neutral (asphalt),
      then rotate hue 143 degrees in Photoshop. No channel swap. Here: the RAW is decoded camera-native (recipe 'ie'),
-     the hue turn uses the Photoshop space (display values, brightness not held, so 143 means what it means there), and
+     the hue turn uses the Display space (display values, brightness not held, so 143 means what it means there), and
      the grey click is the RAW white balance picker. noCam keeps it out of the decode-time swap list, whose numbering
      must not move. Not yet checked against a photo taken through this filter. */
   { n: "Infrared Ektachrome IE · Triple Band",

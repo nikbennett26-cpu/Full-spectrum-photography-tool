@@ -340,7 +340,7 @@ function stProperties() {
       const ok = on.leak && on.amt === 1 && on.m === '0,0,100,100,0,0,0,100,0' && !off.leak && off.amt === 0.4 && off.m === '100,0,0,0,100,0,0,0,100';
       return { ok, detail: { on, off } };
     } },
-    { name: 'Photoshop hue mode turns the display values the way Photoshop Hue/Saturation does, and the Infrared Ektachrome IE preset sets it and takes it off again', img: 'scene', run: () => {
+    { name: 'Display hue mode turns the display values the way an editor Hue/Saturation tool does, and the Infrared Ektachrome IE preset sets it and takes it off again', img: 'scene', run: () => {
       resetAllControls();
       const rd = () => { engine.render(Object.assign(currentParams(), { dither: false })); return engine.readPixels(); };
       const rot = (r, g, b, deg) => { const mx = Math.max(r, g, b), mn = Math.min(r, g, b), d = mx - mn; if (d < 1e-7) return [r, g, b];

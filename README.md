@@ -65,7 +65,7 @@ Five tabs, in the order the picture is made: **Looks, Light, Colour, Detail, Exp
   looks, with a strength control and an IR tone curve. NDVI and NGB index views.
 - **Infrared Ektachrome IE · Triple Band:** for a full-spectrum camera with the MidOpt TB550/660/850 triple band filter,
   after nfoto's method on UltravioletPhotography.com: the RAW opened with no camera colour profile (camera native), no
-  channel swap, and a 143° Photoshop-style hue turn; then pick grey on asphalt with the RAW white balance picker. Aims at
+  channel swap, and a 143° hue turn in Display mode; then pick grey on asphalt with the RAW white balance picker. Aims at
   the original E-4 film (graded reds, darker conifers) rather than the later, harsher EIR. Not yet checked on a real photo.
 - **Presets go on top of your edit:** a preset or look sets only its own settings and leaves the rest of your edit alone,
   whether you pick it first or last. Switching to another preset takes the first one's settings off before the next goes on,
@@ -90,8 +90,8 @@ Five tabs, in the order the picture is made: **Looks, Light, Colour, Detail, Exp
 
 - **Overall:** hue, saturation and vibrance. Hue shift keeps each pixel's brightness, so big turns on a noisy sky stay clean.
   Three ways to measure the turn: Perceptual (even to the eye), Channel (120° is exactly a cyclic channel swap) and
-  Photoshop (the same as Photoshop's Hue/Saturation, brightness free to change), so an angle from a Photoshop recipe means
-  the same here.
+  Display (turns the display values like the usual editor Hue/Saturation tool, brightness free to change), so an angle from a
+  recipe written for one of those means the same here.
 - **Colour by band:** eight bands, each with hue, saturation and luminance. Bands are chosen from the colour of the area
   around each pixel, not its own grainy colour, so a sky moves as one.
 - **Targeted colour** (Advanced): pick a colour on the photo and shift its hue, saturation or lightness. Lightness works
