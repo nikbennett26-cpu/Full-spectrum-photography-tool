@@ -213,8 +213,14 @@ const IR_PRESETS = [
      that can only be said with a measured photo in hand. */
   { n: "R-G swap", s: "swaps red and green, blue untouched", t: "Not yet checked against a real IR or UV photo, so no claim is made about the colours it gives.",
     m: [0,100,0, 100,0,0, 0,0,100] },
-  { n: "Cyclic rotation", s: "Aerochrome-like \u00b7 magenta foliage, teal sky",
-    m: [0,0,100, 100,0,0, 0,100,0] },
+  /* Build 238: was "Cyclic rotation". Named for JW Wong (Infrachrome on Flickr), whose diagram lays out the single-image
+     method Kodak patented (US6292212) and built into its DCS 420/460 CIR cameras: block blue (Tiffen 12, optionally KG3),
+     so the blue channel records infrared alone; subtract it from red and green; white balance; then IR -> red, red ->
+     green, green -> blue. The subtraction is irlab's IR leak removal, switched on at full strength (recipe 'jww'),
+     which does it in the camera's own raw values before white balance, where the method needs it. */
+  { n: "JW Wong method", s: "Kodak\u2019s DCS CIR method \u00b7 IR taken out of red and green, then IR \u2192 red, red \u2192 green, green \u2192 blue",
+    t: "For a deep yellow filter such as a Tiffen 12 (a KG3 as well is optional). Turns on IR leak removal at full strength, then swaps. Set the white balance on something neutral afterwards.",
+    m: [0,0,100, 100,0,0, 0,100,0], recipe: 'jww' },
   { n: "Cyclic + IR sub", s: "deeper reds, darker overall",
     m: [0,0,100, 100,0,-30, 0,100,-30] },
   /* The other of the two possible 3-channel rotations \u2014 same idea as

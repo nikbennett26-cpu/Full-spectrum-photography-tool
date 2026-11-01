@@ -57,7 +57,8 @@ Five tabs, in the order the picture is made: **Looks, Light, Colour, Detail, Exp
 
 ## Looks
 
-- **Swap & mix:** one-tap swaps (R↔B, G↔B, R↔G and the cyclic rotations), a full channel mix grid with offsets and a
+- **Swap & mix:** one-tap swaps (R↔B, G↔B, R↔G, and the **JW Wong method**: Kodak's DCS CIR single-image method as laid out
+  by JW Wong, which takes the IR out of red and green with IR leak removal and then maps IR → red, red → green, green → blue), a full channel mix grid with offsets and a
   compact fine-tune bar for each cell, hold brightness and keep saturation.
 - **Classic IR looks:** eight finished one-tap looks for ordinary infrared, each setting the channel mix and tone together and naming the filter it suits: B&W infrared (plain, dramatic, glow), warm-toned B&W, Goldie, Pink & teal, Faux colour IR film and Full-spectrum natural (which balances its own colour to neutral). They are starting points, fully editable. Tap a look again to take it off.
 - **Presets & film recipes:** UV and IR presets, and recipes including Fedia's Triple Band Aerochrome. Save your own

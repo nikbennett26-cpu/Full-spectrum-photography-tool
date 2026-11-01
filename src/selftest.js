@@ -330,6 +330,16 @@ function stProperties() {
       const found = dustDetectPixels(px, W, H, 60), at = ([cx, cy]) => found.some(f => Math.abs(f.x * W - cx) < 4 && Math.abs(f.y * H - cy) < 4);
       return { ok: at(dust[0]) && !at(colour[0]) && !at(edge[0]), detail: { dust: at(dust[0]), colour: at(colour[0]), edge: at(edge[0]), n: found.length } };
     } },
+    { name: 'JW Wong method swaps IR to red, red to green, green to blue with IR leak removal on at full strength, and taking it off restores your own IR leak setting', img: 'scene', run: () => {
+      resetAllControls(); irLeakOn = false; irLeakAmt = 0.4; irlSync();
+      const b = [...document.querySelectorAll('#pgIR .pb')].find(x => x.querySelector('b').textContent === 'JW Wong method');
+      if (!b) return { ok: false, detail: 'no button' };
+      b.click(); const on = { leak: irLeakOn, amt: irLeakAmt, m: MCELLS.map(id => +$(id).value).join() };
+      b.click(); const off = { leak: irLeakOn, amt: irLeakAmt, m: MCELLS.map(id => +$(id).value).join() };
+      resetAllControls(); irLeakOn = false; irLeakAmt = 1; irlSync();
+      const ok = on.leak && on.amt === 1 && on.m === '0,0,100,100,0,0,0,100,0' && !off.leak && off.amt === 0.4 && off.m === '100,0,0,0,100,0,0,0,100';
+      return { ok, detail: { on, off } };
+    } },
     { name: 'Photoshop hue mode turns the display values the way Photoshop Hue/Saturation does, and the Infrared Ektachrome IE preset sets it and takes it off again', img: 'scene', run: () => {
       resetAllControls();
       const rd = () => { engine.render(Object.assign(currentParams(), { dither: false })); return engine.readPixels(); };
