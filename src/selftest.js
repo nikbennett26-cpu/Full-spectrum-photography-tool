@@ -330,15 +330,16 @@ function stProperties() {
       const found = dustDetectPixels(px, W, H, 60), at = ([cx, cy]) => found.some(f => Math.abs(f.x * W - cx) < 4 && Math.abs(f.y * H - cy) < 4);
       return { ok: at(dust[0]) && !at(colour[0]) && !at(edge[0]), detail: { dust: at(dust[0]), colour: at(colour[0]), edge: at(edge[0]), n: found.length } };
     } },
-    { name: 'Film fit: a grey stays grey, gains stay bounded, Wratten 12 and the triple band match the film closely, no filter is flagged for blue, and the film turns red paint yellow and leaves magenta-red foliage', img: 'scene', run: () => {
+    { name: 'Film fit: a grey stays grey, gains stay bounded, Wratten 12 and the triple band match the film closely, no filter is flagged for blue, and the film turns red paint yellow and leaves magenta-red foliage; a Wratten 16 is judged against film behind a Wratten 16', img: 'scene', run: () => {
       if (!fpData) { const x = new XMLHttpRequest(); x.open('GET', 'filter-data.json', false); x.send(); fpData = JSON.parse(x.responseText); fpData.byId = Object.fromEntries(fpData.filters.map(f => [f[0], f])); }
       const sensor = Object.keys(fpData.sensors)[0], w12 = ffFit(['w12'], sensor), tb = ffFit(['tb550'], sensor), none = ffFit([], sensor);
       const S = (f, k) => f.surfaces.find(s => s.key === k);
       const rowsum = w12.A.map(r => r[0] + r[1] + r[2]), gain = Math.max(...w12.A.map(r => Math.hypot(...r)));
       const leaf = S(w12, 'foliage').film, paint = S(w12, 'redpaint').film;
-      const ok = rowsum.every(v => Math.abs(v - 1) < 0.03) && gain <= 2.01 && S(w12, 'grey').de < 0.5 && w12.meanDE < 3.5 && tb.meanDE < 3 && none.blue > 0.03 && w12.blue < 0.01
+      const w16same = ffFit(['w16'], sensor, 0, 'w16').meanDE, w16vs12 = ffFit(['w16'], sensor, 0, 'w12').meanDE;
+      const ok = w16same < w16vs12 && ffFilmFilterDefault(['w16', 'grb3']) === 'w16' && ffFilmFilterDefault(['tb550']) === 'w12' && rowsum.every(v => Math.abs(v - 1) < 0.03) && gain <= 2.01 && S(w12, 'grey').de < 0.5 && w12.meanDE < 3.5 && tb.meanDE < 3 && none.blue > 0.03 && w12.blue < 0.01
         && leaf[0] > leaf[1] && leaf[0] > leaf[2] && paint[0] > paint[2] * 2 && paint[1] > paint[2] * 2;
-      return { ok, detail: { rowsum, gain, w12: w12.meanDE, tb: tb.meanDE, noneBlue: none.blue, leaf, paint } };
+      return { ok, detail: { w16same, w16vs12, rowsum, gain, w12: w12.meanDE, tb: tb.meanDE, noneBlue: none.blue, leaf, paint } };
     } },
     { name: 'JW Wong method swaps IR to red, red to green, green to blue with IR leak removal on at full strength, and taking it off restores your own IR leak setting', img: 'scene', run: () => {
       resetAllControls(); irLeakOn = false; irLeakAmt = 0.4; irlSync();

@@ -29,12 +29,28 @@ const FF_SURF = {"foliage":[0.023,0.023,0.023,0.023,0.023,0.023,0.023,0.023,0.02
 const FF_SURF_NAMES = { foliage: 'Healthy leaves', conifer: 'Conifers', grass: 'Grass', stressed: 'Stressed plants', autumn: 'Autumn leaves', soil: 'Bare soil', asphalt: 'Asphalt', water: 'Clear water', redpaint: 'Red paint', yellowflower: 'Yellow flower', sky: 'Blue sky', grey: 'Grey card' };
 
 function ffWl() { const [lo, hi, st] = fpData.wl, a = []; for (let w = lo; w <= hi + 1e-6; w += st) a.push(w); return a; }
-/* the film's three layers on the database's wavelength grid: rows cyan (out red), magenta (out green), yellow (out blue) */
-function ffFilm(wl) {
+/* the film's three layers on the database's wavelength grid: rows cyan (out red), magenta (out green), yellow (out blue).
+   Build 241: the film can be put behind a different yellow or orange filter. The table is for the film behind the
+   minus-blue filter Kodak specified, taken here as the Wratten 12; for a 15, 16 or 21 each band is reweighted by that
+   filter's average transmission over the Wratten 12's in the same band, then each layer is rescaled so a grey still
+   comes out grey (the cast a deeper filter gives is what the grey pick takes out on the camera side too). An
+   approximation at 50nm resolution, but it is what lets a Wratten 16 on the lens be judged against film shot through
+   a Wratten 16 rather than through a 12. */
+const FF_FILM_FILTERS = [['w12', 'Wratten 12 (Kodak\u2019s data)'], ['w15', 'Wratten 15'], ['w16', 'Wratten 16'], ['w21', 'Wratten 21']];
+function ffFilm(wl, behind) {
   const F = [new Array(wl.length).fill(0), new Array(wl.length).fill(0), new Array(wl.length).fill(0)];
-  FF_8443.forEach(([b, y, m, c]) => { const n = wl.filter(w => w >= b && w < b + 50).length || 1; wl.forEach((w, i) => { if (w >= b && w < b + 50) { F[0][i] += c / n; F[1][i] += m / n; F[2][i] += y / n; } }); });
+  const T = id => fpData && fpData.byId[id] ? fpData.byId[id][4] : null, Tx = behind && behind !== 'w12' ? T(behind) : null, T12 = T('w12');
+  const bandMean = (t, b) => { let s = 0, n = 0; wl.forEach((w, i) => { if (w >= b && w < b + 50) { s += t[i]; n++; } }); return n ? s / n : 0; };
+  FF_8443.forEach(([b, y, m, c]) => {
+    const k = (Tx && T12) ? bandMean(Tx, b) / Math.max(1e-6, bandMean(T12, b)) : 1;
+    const n = wl.filter(w => w >= b && w < b + 50).length || 1;
+    wl.forEach((w, i) => { if (w >= b && w < b + 50) { F[0][i] += k * c / n; F[1][i] += k * m / n; F[2][i] += k * y / n; } });
+  });
+  F.forEach(f => { const s = f.reduce((a, v) => a + v, 0); if (s > 0) f.forEach((v, i) => { f[i] = v / s; }); });
   return F;
 }
+/* which filter the film is imagined behind: the one in your stack when it is one of these, else Kodak's Wratten 12 */
+function ffFilmFilterDefault(stack) { const hit = FF_FILM_FILTERS.find(([id]) => stack.includes(id)); return hit ? hit[0] : 'w12'; }
 let ffTrainCache = null;
 function ffTrain(wl) {
   if (ffTrainCache && ffTrainCache.n === wl.length) return ffTrainCache.set;
@@ -66,9 +82,9 @@ function ffOklab(c) {
 }
 function ffDE(a, b) { const p = ffOklab(a), q = ffOklab(b); return Math.hypot(p[0] - q[0], p[1] - q[1], p[2] - q[2]) * 100; }
 
-function ffFit(stack, sensor, maxGain) {
+function ffFit(stack, sensor, maxGain, behind) {
   maxGain = maxGain || 2.0;
-  const wl = ffWl(), F = ffFilm(wl), K = ffKernel(stack, sensor);
+  const wl = ffWl(), F = ffFilm(wl, behind || 'w12'), K = ffKernel(stack, sensor);
   const g = K.map(k => k.reduce((a, b) => a + b, 0));
   if (g.some(v => !(v > 1e-9))) return { error: 'This stack lets almost nothing through to one of the channels.' };
   const Kn = K.map((k, c) => k.map(v => v / g[c]));   // white balanced: a flat grey gives 1, 1, 1
@@ -100,7 +116,7 @@ function ffFit(stack, sensor, maxGain) {
   // where the light it records comes from: blue the film never saw, and infrared past the film's reach
   const tot = g.reduce((a, b) => a + b, 0);
   const share = (lo, hi) => K.reduce((a, k) => a + k.reduce((s, v, i) => s + (wl[i] >= lo && wl[i] < hi ? v : 0), 0), 0) / tot;
-  return { A, r2, surfaces, meanDE, blue: share(0, 490), farIR: share(910, 2000) };
+  return { A, r2, surfaces, meanDE, blue: share(0, 490), farIR: share(910, 2000), behind: behind || 'w12' };
 }
 
 function ffSwatch(rgb) {
@@ -124,7 +140,7 @@ function ffRender() {
   if (f.farIR > 0.25) warn.push('A lot of what the camera records is infrared beyond 900nm, past where the film could see.');
   const esc = s => String(s).replace(/[<>&]/g, c => ({ '<': '&lt;', '>': '&gt;', '&': '&amp;' }[c]));
   out.innerHTML =
-    '<p style="margin:6px 0 2px"><b>' + verdict + '</b> · average difference ' + f.meanDE.toFixed(1) + ' over the test surfaces</p>' +
+    '<p style="margin:6px 0 2px"><b>' + verdict + '</b> · average difference ' + f.meanDE.toFixed(1) + ' over the test surfaces, against the film behind a ' + esc(((FF_FILM_FILTERS.find(x => x[0] === f.behind) || [, 'Wratten 12'])[1]).replace(/ \(.*\)/, '')) + '</p>' +
     '<p class="note" style="margin:0 0 4px">How well your camera can follow each film layer: infrared ' + pct(f.r2[0]) + ', red ' + pct(f.r2[1]) + ', green ' + pct(f.r2[2]) + '</p>' +
     warn.map(w => '<p class="note ffWarn" style="margin:0 0 4px">' + esc(w) + '</p>').join('') +
     '<div class="ffGrid"><span></span><span class="ffH">Film</span><span class="ffH">Yours</span><span class="ffH">Diff.</span>' +
@@ -136,7 +152,7 @@ function ffRender() {
   $('ffApply').onclick = ffApply;
   if ($('ffOff')) $('ffOff').onclick = () => { armUndoCapture(); clearPreset(); commitUndoCapture(); ffRender(); };
 }
-function ffStale() { ffLast = null; ffRender(); }
+function ffStale() { ffLast = null; if (fpData) ffSensors(); ffRender(); }
 function ffApply() {
   if (!ffLast || ffLast.error) return;
   if (!loadedImage) { toast('Open a photo first'); return; }
@@ -150,16 +166,21 @@ function ffApply() {
   ffMark = PRESET_LAYER;
   ffRender();
 }
+let ffBehindChosen = false;   // once the person picks the film's filter themselves, stop following the stack
 function ffSensors() {
   const sel = $('ffSensor');
   if (sel && fpData && !sel.options.length) Object.keys(fpData.sensors).forEach(k => { const o = document.createElement('option'); o.value = o.textContent = k; sel.appendChild(o); });
+  const fb = $('ffBehind');
+  if (fb && !fb.options.length) FF_FILM_FILTERS.forEach(([id, n]) => { const o = document.createElement('option'); o.value = id; o.textContent = n; fb.appendChild(o); });
+  if (fb && !ffBehindChosen) fb.value = ffFilmFilterDefault(fpStack);
   return sel;
 }
 function ffRun() {
   fpLoad().then(() => {
     const sel = ffSensors();
     const sensor = sel && sel.value ? sel.value : Object.keys(fpData.sensors)[0];
-    try { ffLast = ffFit(fpStack.slice(), sensor); } catch (e) { console.error(e); ffLast = { error: 'The fit failed: ' + (e && e.message || e) }; }
+    const behind = $('ffBehind') && $('ffBehind').value || ffFilmFilterDefault(fpStack);
+    try { ffLast = ffFit(fpStack.slice(), sensor, 0, behind); } catch (e) { console.error(e); ffLast = { error: 'The fit failed: ' + (e && e.message || e) }; }
     ffRender();
   }).catch(() => { ffLast = { error: 'Could not load the filter database.' }; ffRender(); });
 }
@@ -167,6 +188,7 @@ function ffRun() {
   if (!$('ffRun')) return;
   $('ffRun').addEventListener('click', ffRun);
   if ($('ffSensor')) $('ffSensor').addEventListener('change', () => { if (ffLast) ffRun(); });
+  if ($('ffBehind')) $('ffBehind').addEventListener('change', () => { ffBehindChosen = true; if (ffLast) ffRun(); });
   if ($('ffEdit')) $('ffEdit').addEventListener('click', () => {
     const pick = $('fpPick'); if (!pick) return;
     // on the docked layouts the picker sits in another tab (Export): switch to it first, as tapping that tab would
