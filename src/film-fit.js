@@ -43,18 +43,58 @@ function ffWl() { const [lo, hi, st] = fpData.wl, a = []; for (let w = lo; w <= 
 const FF_FILM_FILTERS = [['w12', 'Wratten 12 (Kodak\u2019s data)'], ['w16', 'Wratten 16'], ['w21', 'Wratten 21 (orange)'], ['w25', 'Wratten 25 (red)'],
   ['bw023', 'B+W 023 (deep yellow)'], ['bw040', 'B+W 040 (yellow-orange)'], ['bw041', 'B+W 041 (orange)'], ['bw090', 'B+W 090 (red)'],
   ['hyg_y52', 'Y52 glass (as Nikon Y52)'], ['hyg_o56', 'O56 glass (as Nikon O56)']];
-function ffFilm(wl, behind) {
-  const F = [new Array(wl.length).fill(0), new Array(wl.length).fill(0), new Array(wl.length).fill(0)];
-  const T = id => fpData && fpData.byId[id] ? fpData.byId[id][4] : null, Tx = behind && behind !== 'w12' ? T(behind) : null, T12 = T('w12');
-  const bandMean = (t, b) => { let s = 0, n = 0; wl.forEach((w, i) => { if (w >= b && w < b + 50) { s += t[i]; n++; } }); return n ? s / n : 0; };
-  FF_8443.forEach(([b, y, m, c]) => {
-    const k = (Tx && T12) ? bandMean(Tx, b) / Math.max(1e-6, bandMean(T12, b)) : 1;
-    const n = wl.filter(w => w >= b && w < b + 50).length || 1;
-    wl.forEach((w, i) => { if (w >= b && w < b + 50) { F[0][i] += k * c / n; F[1][i] += k * m / n; F[2][i] += k * y / n; } });
+/* Build 245: Aerochrome III 1443, the film most people mean by "Aerochrome": the three layer sensitivity curves from
+   Kodak's data sheet (KODAK 2006, Aerial Data AS-77, density 1.0 END, process AR-5), digitised for this from the copy
+   of the chart reproduced in Lillesand et al. and posted by Andrea B. on UltravioletPhotography.com. log10 sensitivity
+   every 10nm from 400 to 900nm; null where the curve is below the chart's -1.0 floor. Below about 560nm the magenta and
+   cyan curves cross and both sit near the floor, so those few values are the least certain; behind any yellow filter
+   that part of the spectrum barely reaches the film. Unlike the 8443 table, these curves have no filter or daylight in
+   them, so the chosen filter and light are applied exactly rather than by band. */
+const FF_1443 = {
+  Y: [1.27, 1.25, 1.22, 1.19, 1.15, 1.15, 1.09, 1.06, 1.0, 0.94, 0.96, 1.02, 1.12, 1.19, 1.21, 1.23, 1.23, 1.14, 0.88, 0.34, -0.33, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null],
+  M: [1.05, 1.08, 1.14, 1.16, 1.16, 1.04, 0.92, 0.79, 0.63, 0.39, 0.06, -0.14, -0.21, -0.25, -0.22, -0.13, 0.01, 0.24, 0.4, 0.55, 0.7, 0.82, 0.98, 1.14, 1.33, 1.43, 1.3, 0.86, 0.04, -0.59, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null],
+  C: [0.55, 0.57, 0.62, 0.66, 0.68, 0.67, 0.62, 0.54, 0.42, 0.23, -0.02, -0.14, -0.11, 0.09, 0.02, -0.22, -0.27, -0.23, -0.18, -0.15, -0.09, -0.04, 0.02, 0.06, 0.11, 0.15, 0.19, 0.23, 0.27, 0.32, 0.35, 0.36, 0.39, 0.4, 0.39, 0.36, 0.32, 0.28, 0.26, 0.23, 0.22, 0.22, 0.19, 0.18, 0.13, 0.08, 0.01, -0.1, -0.26, -0.51, null]
+};
+const FF_FILMS = [['1443', 'Aerochrome III 1443 (Kodak data sheet)'], ['8443', 'Ektachrome Infrared Aero 8443 (NASA data)']];
+/* Build 245: the light. The filter database's daylight is AM1.5 global, a sunny midday. The others are MODELLED from it
+   with the textbook physics, and labelled so: low sun puts the light through about five atmospheres instead of one and a
+   half (Rayleigh scattering, tau = 0.0088 lambda^-4.05 with lambda in micrometres, plus a light haze, 0.1 (lambda/0.55)^-1.3),
+   which strips blue and leaves infrared, the reason infrared glows at golden hour; open shade is lit by blue sky alone,
+   scattered light that falls off steeply into the red and infrared (taken as lambda^-3, between pure Rayleigh's -4 and
+   a hazy sky); overcast is cloud-scattered light, nearly neutral, with a slight lean to blue (lambda^-0.6). */
+const FF_LIGHTS = [['sun', 'Sun, midday'], ['low', 'Low sun (modelled)'], ['overcast', 'Overcast (modelled)'], ['shade', 'Open shade (modelled)']];
+function ffIll(wl, light) {
+  const base = fpData.ill;
+  return base.map((v, i) => {
+    const um = wl[i] / 1000, r = wl[i] / 550;
+    if (light === 'low') { const tau = 0.0088 * Math.pow(um, -4.05) + 0.1 * Math.pow(r, -1.3); return v * Math.exp(-tau * (5 - 1.5)); }
+    if (light === 'shade') return v * Math.pow(r, -3);
+    if (light === 'overcast') return v * Math.pow(r, -0.6);
+    return v;
   });
+}
+function ffFilm(wl, behind, film, light) {
+  const T = id => fpData && fpData.byId[id] ? fpData.byId[id][4] : null, T12 = T('w12'), Tx = T(behind || 'w12') || T12;
+  const I0 = fpData.ill, Ix = ffIll(wl, light || 'sun');
+  let F;
+  if (film === '8443') {
+    F = [new Array(wl.length).fill(0), new Array(wl.length).fill(0), new Array(wl.length).fill(0)];
+    const bandMean = (f, b) => { let s = 0, n = 0; wl.forEach((w, i) => { if (w >= b && w < b + 50) { s += f(i); n++; } }); return n ? s / n : 0; };
+    FF_8443.forEach(([b, y, m, c]) => {
+      // the table already holds the Wratten 12 and daylight; another filter or light reweights each band by the ratio
+      const k = (T12 ? bandMean(i => Tx[i] * Ix[i], b) / Math.max(1e-9, bandMean(i => T12[i] * I0[i], b)) : 1);
+      const n = wl.filter(w => w >= b && w < b + 50).length || 1;
+      wl.forEach((w, i) => { if (w >= b && w < b + 50) { F[0][i] += k * c / n; F[1][i] += k * m / n; F[2][i] += k * y / n; } });
+    });
+  } else {
+    const S = ['C', 'M', 'Y'].map(k => wl.map(w => { const j = Math.round((w - 400) / 10), v = (w >= 400 && w <= 900) ? FF_1443[k][j] : null; return v == null ? 0 : Math.pow(10, v); }));
+    // balanced as Kodak intended it, behind a Wratten 12 in sunlight: each layer scaled so a grey gives the same exposure
+    const g12 = S.map(s => s.reduce((a, v, i) => a + v * T12[i] * I0[i], 0) || 1);
+    F = S.map((s, l) => s.map((v, i) => v * Tx[i] * Ix[i] / g12[l]));
+  }
   const ir = F[0].reduce((a, v) => a + v, 0) || 1;   // even out exposure on the infrared layer, keep the cast
   F.forEach(f => f.forEach((v, i) => { f[i] = v / ir; }));
-  F.grey = F.map(f => f.reduce((a, v) => a + v, 0));   // what a flat grey gives on the film: 1, 1, 1 behind a Wratten 12
+  F.grey = F.map(f => f.reduce((a, v) => a + v, 0));   // what a flat grey gives on the film: 1, 1, 1 behind a Wratten 12 in sun
   return F;
 }
 /* which filter the film is imagined behind: the one in your stack when it is one of these, else Kodak's Wratten 12 */
@@ -77,10 +117,10 @@ function ffTrain(wl) {
   return set;
 }
 /* what each camera channel records per wavelength: filters x sensor x daylight */
-function ffKernel(stack, sensor) {
-  const d = fpData, s = d.sensors[sensor] || d.sensors[Object.keys(d.sensors)[0]], n = d.ill.length, T = new Array(n).fill(1);
+function ffKernel(stack, sensor, light) {
+  const d = fpData, s = d.sensors[sensor] || d.sensors[Object.keys(d.sensors)[0]], n = d.ill.length, T = new Array(n).fill(1), I = ffIll(ffWl(), light || 'sun');
   stack.forEach(id => { const f = d.byId[id]; if (f) f[4].forEach((t, i) => { T[i] *= t; }); });
-  return ['R', 'G', 'B'].map(c => s[c].map((v, i) => v * T[i] * d.ill[i]));
+  return ['R', 'G', 'B'].map(c => s[c].map((v, i) => v * T[i] * I[i]));
 }
 const ffDot = (a, b) => { let s = 0; for (let i = 0; i < a.length; i++) s += a[i] * b[i]; return s; };
 function ffOklab(c) {
@@ -90,9 +130,10 @@ function ffOklab(c) {
 }
 function ffDE(a, b) { const p = ffOklab(a), q = ffOklab(b); return Math.hypot(p[0] - q[0], p[1] - q[1], p[2] - q[2]) * 100; }
 
-function ffFit(stack, sensor, maxGain, behind) {
+function ffFit(stack, sensor, maxGain, behind, film, light) {
   maxGain = maxGain || 2.0;
-  const wl = ffWl(), F = ffFilm(wl, behind || 'w12'), K = ffKernel(stack, sensor);
+  film = film || '1443'; light = light || 'sun';
+  const wl = ffWl(), F = ffFilm(wl, behind || 'w12', film, light), K = ffKernel(stack, sensor, light);
   const g = K.map(k => k.reduce((a, b) => a + b, 0));
   if (g.some(v => !(v > 1e-9))) return { error: 'This stack lets almost nothing through to one of the channels.' };
   const Kn = K.map((k, c) => k.map(v => v / g[c]));   // white balanced: a flat grey gives 1, 1, 1
@@ -124,7 +165,7 @@ function ffFit(stack, sensor, maxGain, behind) {
   // where the light it records comes from: blue the film never saw, and infrared past the film's reach
   const tot = g.reduce((a, b) => a + b, 0);
   const share = (lo, hi) => K.reduce((a, k) => a + k.reduce((s, v, i) => s + (wl[i] >= lo && wl[i] < hi ? v : 0), 0), 0) / tot;
-  return { A, r2, surfaces, meanDE, blue: share(0, 490), farIR: share(910, 2000), behind: behind || 'w12', filmGrey: F.grey.slice() };
+  return { A, r2, surfaces, meanDE, blue: share(0, 490), farIR: share(910, 2000), behind: behind || 'w12', film, light, filmGrey: F.grey.slice() };
 }
 
 function ffSwatch(rgb) {
@@ -150,7 +191,7 @@ function ffRender() {
   if (f.farIR > 0.25) warn.push('A lot of what the camera records is infrared beyond 900nm, past where the film could see.');
   const esc = s => String(s).replace(/[<>&]/g, c => ({ '<': '&lt;', '>': '&gt;', '&': '&amp;' }[c]));
   out.innerHTML =
-    '<p style="margin:6px 0 2px"><b>' + verdict + '</b> · average difference ' + f.meanDE.toFixed(1) + ' over the test surfaces, against the film behind a ' + esc(((FF_FILM_FILTERS.find(x => x[0] === f.behind) || [, 'Wratten 12'])[1]).replace(/ \(.*\)/, '')) + '</p>' +
+    '<p style="margin:6px 0 2px"><b>' + verdict + '</b> · average difference ' + f.meanDE.toFixed(1) + ' over the test surfaces, against ' + (f.film === '8443' ? '8443' : 'Aerochrome III') + ' behind a ' + esc(((FF_FILM_FILTERS.find(x => x[0] === f.behind) || [, 'Wratten 12'])[1]).replace(/ \(.*\)/, '')) + (f.light && f.light !== 'sun' ? ', ' + esc(((FF_LIGHTS.find(x => x[0] === f.light) || [, ''])[1]).replace(/ \(.*\)/, '').toLowerCase()) : '') + '</p>' +
     '<p class="note" style="margin:0 0 4px">How well your camera can follow each film layer: infrared ' + pct(f.r2[0]) + ', red ' + pct(f.r2[1]) + ', green ' + pct(f.r2[2]) + '</p>' +
     warn.map(w => '<p class="note ffWarn" style="margin:0 0 4px">' + esc(w) + '</p>').join('') +
     '<div class="ffGrid"><span></span><span class="ffH">Film</span><span class="ffH">Yours</span><span class="ffH">Diff.</span>' +
@@ -183,6 +224,7 @@ function ffSensors() {
   const fb = $('ffBehind');
   if (fb && !fb.options.length) FF_FILM_FILTERS.forEach(([id, n]) => { const o = document.createElement('option'); o.value = id; o.textContent = n; fb.appendChild(o); });
   if (fb && !ffBehindChosen) fb.value = ffFilmFilterDefault(fpStack);
+  [['ffFilm', FF_FILMS], ['ffLight', FF_LIGHTS]].forEach(([id, list]) => { const e = $(id); if (e && !e.options.length) list.forEach(([v, n]) => { const o = document.createElement('option'); o.value = v; o.textContent = n; e.appendChild(o); }); });
   return sel;
 }
 function ffRun() {
@@ -190,7 +232,8 @@ function ffRun() {
     const sel = ffSensors();
     const sensor = sel && sel.value ? sel.value : Object.keys(fpData.sensors)[0];
     const behind = $('ffBehind') && $('ffBehind').value || ffFilmFilterDefault(fpStack);
-    try { ffLast = ffFit(fpStack.slice(), sensor, 0, behind); } catch (e) { console.error(e); ffLast = { error: 'The fit failed: ' + (e && e.message || e) }; }
+    const film = ($('ffFilm') && $('ffFilm').value) || '1443', light = ($('ffLight') && $('ffLight').value) || 'sun';
+    try { ffLast = ffFit(fpStack.slice(), sensor, 0, behind, film, light); } catch (e) { console.error(e); ffLast = { error: 'The fit failed: ' + (e && e.message || e) }; }
     ffRender();
   }).catch(() => { ffLast = { error: 'Could not load the filter database.' }; ffRender(); });
 }
@@ -199,6 +242,7 @@ function ffRun() {
   $('ffRun').addEventListener('click', ffRun);
   if ($('ffSensor')) $('ffSensor').addEventListener('change', () => { if (ffLast) ffRun(); });
   if ($('ffBehind')) $('ffBehind').addEventListener('change', () => { ffBehindChosen = true; if (ffLast) ffRun(); });
+  ['ffFilm', 'ffLight'].forEach(id => { if ($(id)) $(id).addEventListener('change', () => { if (ffLast) ffRun(); }); });
   /* Build 243: Change opens the filter picker right here instead of sending you to the Export panel. There is one
      picker (its stack is the same one export records and the IR leak estimate reads), so it is moved into this box while
      you edit and goes back to its place in Export when you press Done, fold this group, or open the Export panel. */

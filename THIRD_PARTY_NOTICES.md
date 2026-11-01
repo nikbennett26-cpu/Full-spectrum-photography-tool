@@ -172,5 +172,11 @@ Other manufacturer and third-party sources are named on each filter's card and i
   Environment* 193, 204-215) and the SAIL canopy model (Verhoef, W. (1984)), through J. Gómez-Dans's `prosail` Python
   package; bare-soil reflectance from that package's soil spectrum. Only the resulting spectra, sampled at 10nm, are
   shipped. Asphalt, water, red paint, a yellow flower and clear sky are irlab's own simple models of their usual shapes.
+- **Aerochrome III 1443 layer sensitivities** (build 245): digitised for irlab from Kodak's spectral sensitivity chart
+  (KODAK 2006, Aerial Data publication AS-77, density 1.0 END, process AR-5), from the copy reproduced in Lillesand,
+  Kiefer & Chipman, *Remote Sensing and Image Interpretation*, as posted by Andrea B. on UltravioletPhotography.com
+  ("Digital Aerochrome Filters and Stacks"). Factual data read off a published graph; the values are in `src/film-fit.js`.
+- **Light**: midday sun is the filter database's AM1.5 global spectrum; low sun, overcast and open shade are irlab's
+  own models built from it (Rayleigh and haze extinction, and sky-light fall-off), not measurements.
 - The method follows Nick Spiker's approach to a digital Aerochrome (fitting a camera to the film's layer
   sensitivities), described on his former blog; no code or data of his is used.
