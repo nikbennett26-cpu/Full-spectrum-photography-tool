@@ -1,4 +1,4 @@
-/* ---------- Fit the film to your camera and filters (build 240) ----------
+/* ---------- Digital Aerochrome (advanced) and filters (build 240) ----------
    Works out the channel mix that makes YOUR camera, through YOUR filter stack, record what Kodak's colour infrared film
    recorded, the approach Nick Spiker took with measured equipment, done here from published data.
 
@@ -294,7 +294,7 @@ function ffApply() {
   applyUserPreset({ tv: 4, m, mOff: [0, 0, 0], sliders: {} }, {
     extra: () => {
       if ($('swapSpace')) { $('swapSpace').value = '0'; if (typeof syncWidenFromSelect === 'function') syncWidenFromSelect(); }
-      setCamNativeDecode('Fitted. Now tap Pick under RAW white balance and tap something grey to finish.');
+      setCamNativeDecode('Digital Aerochrome applied. Now tap Pick under RAW white balance and tap something grey to finish.');
       if (ffToneOn && typeof curveState !== 'undefined') {
         const t = ffToneCurves(ffLast.film || '1443');
         curveState = Object.assign(curveDefault(), t);

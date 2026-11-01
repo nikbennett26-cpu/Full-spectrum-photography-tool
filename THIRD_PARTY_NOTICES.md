@@ -175,7 +175,7 @@ Other manufacturer and third-party sources are named on each filter's card and i
   cited for its finding that a converted camera's three channels respond equally from about 840nm, used to flag the
   MaxMax curves; none of its data is shipped.
 
-## Film fit (editor, "Fit the film to your camera", build 240)
+## Film fit (editor, "Digital Aerochrome (advanced)", build 240)
 
 - **Ektachrome Infrared Aero 8443 layer data**: NASA Interagency Report 146, "Predicting the Relative Dye Layer
   Densities of Color Infrared Transparencies", Figure 2, constructed from Fritz, N. L. (1967), Photogrammetric
