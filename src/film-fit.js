@@ -61,7 +61,7 @@ const FF_1443 = {
   M: [0.53, 0.57, 0.62, 0.66, 0.68, 0.67, 0.63, 0.56, 0.43, 0.25, 0.06, -0.1, -0.17, -0.22, -0.2, -0.1, 0.05, 0.24, 0.42, 0.58, 0.72, 0.86, 1.01, 1.18, 1.35, 1.42, 1.24, 0.7, -0.01, -0.64, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null, null],
   C: [1.26, 1.26, 1.23, 1.2, 1.14, 1.06, 0.94, 0.79, 0.6, 0.38, 0.14, -0.09, -0.11, 0.08, 0.03, -0.19, -0.24, -0.22, -0.17, -0.12, -0.07, -0.02, 0.03, 0.08, 0.12, 0.16, 0.21, 0.25, 0.29, 0.33, 0.36, 0.38, 0.4, 0.4, 0.39, 0.36, 0.32, 0.29, 0.26, 0.25, 0.24, 0.22, 0.2, 0.18, 0.13, 0.08, -0.02, -0.13, -0.29, -0.54, -0.87]
 };
-const FF_FILMS = [['1443', 'Aerochrome III 1443 (Kodak data sheet)'], ['8443', 'Ektachrome Infrared Aero 8443 (NASA data)']];
+const FF_FILMS = [['1443', 'Aerochrome III 1443 (Kodak AS-77)'], ['eir', 'Ektachrome Infrared EIR (Kodak TI-2323)'], ['8443', 'Ektachrome Infrared Aero 8443 (NASA data)']];
 /* The light. Midday sun is the filter database's AM1.5 global daylight. Build 247: open shade and low sun now come from
    the ASTM G173-03 reference spectra as published by NREL (derived from the SMARTS v2.9.2 radiative transfer model for
    air mass 1.5, a sun-facing surface tilted 37 degrees, rural aerosol): open shade is global minus direct beam, that is
@@ -94,7 +94,8 @@ function ffFilm(wl, behind, film, light) {
       wl.forEach((w, i) => { if (w >= b && w < b + 50) { F[0][i] += k * c / n; F[1][i] += k * m / n; F[2][i] += k * y / n; } });
     });
   } else {
-    const S = ['C', 'M', 'Y'].map(k => wl.map(w => { const j = Math.round((w - 400) / 10), v = (w >= 400 && w <= 900) ? FF_1443[k][j] : null; return v == null ? 0 : Math.pow(10, v); }));
+    const SRC = film === 'eir' ? FF_FM.sensEIR : FF_1443;   // build 250: EIR's own layer curves (TI-2323)
+    const S = ['C', 'M', 'Y'].map(k => wl.map(w => { const j = Math.round((w - 400) / 10), v = (w >= 400 && w <= 900) ? SRC[k][j] : null; return v == null ? 0 : Math.pow(10, v); }));
     // balanced as Kodak intended it, behind a Wratten 12 in sunlight: each layer scaled so a grey gives the same exposure
     const g12 = S.map(s => s.reduce((a, v, i) => a + v * T12[i] * I0[i], 0) || 1);
     F = S.map((s, l) => s.map((v, i) => v * Tx[i] * Ix[i] / g12[l]));
@@ -137,6 +138,58 @@ function ffOklab(c) {
 }
 function ffDE(a, b) { const p = ffOklab(a), q = ffOklab(b); return Math.hypot(p[0] - q[0], p[1] - q[1], p[2] - q[2]) * 100; }
 
+/* ---------- The film as it printed (build 250) ----------
+   Up to build 249 "the film" meant its three layer exposures mapped straight onto red, green and blue. Real colour
+   infrared film then turned each exposure into dye through its characteristic curve, and its three dyes overlap in
+   colour, which is a large part of why foliage comes out magenta rather than pure red. This models that from Kodak's own
+   published curves, read from the vector charts in the data sheets: the characteristic curves (density against log
+   exposure, Process AR-5, Status A) for Aerochrome III 1443 (AS-77) and Ektachrome Infrared EIR (TI-2323), and the
+   spectral dye densities (normalised so the three dyes at density 1 make a neutral of 1, viewing illuminant D5000) from
+   AS-77. TI-2323 publishes no dye curves, and Kodak states the Ektachrome films share one dye set, so EIR uses the 1443
+   dyes; 8443, with no published curves here, uses the 1443 characteristic and dyes.
+     exposure -> density: each layer's curve is placed so an 18% grey behind a Wratten 12 in sun lands at density 1.0,
+       the level the sensitivity curves themselves are defined at (1.0 END); deeper filters and other light shift it,
+       which is the film's own cast;
+     density -> colour: the light through the three dyes (amount = layer density, an approximation of Status A density
+       to dye amount), viewed in D50 (for Kodak's D5000), CIE 1931 2-degree observer, Bradford-adapted to sRGB, with the
+       clear film base (minimum density) as white, the way a slide is projected or scanned.
+   The fit cannot reproduce the curve's S-shape with a 3x3 mix (that is what the tone sliders are for), so it fits in
+   the film's own linear terms: each output is mapped back through the film's grey-scale response, and the camera side
+   is sent forward through the same response before the swatches are compared. CMFs and D50 from the colour-science
+   package; Kodak data from AS-77 (TI2562, 11-05) and TI-2323 (2005). */
+const FF_FM = {"cmf":{"x":[0.01431,0.04351,0.13438,0.2839,0.34828,0.3362,0.2908,0.19536,0.09564,0.03201,0.0049,0.0093,0.06327,0.1655,0.2904,0.43345,0.5945,0.7621,0.9163,1.0263,1.0622,1.0026,0.85445,0.6424,0.4479,0.2835,0.1649,0.0874,0.04677,0.0227,0.01136],"y":[0.0004,0.00121,0.004,0.0116,0.023,0.038,0.06,0.09098,0.13902,0.20802,0.323,0.503,0.71,0.862,0.954,0.99495,0.995,0.952,0.87,0.757,0.631,0.503,0.381,0.265,0.175,0.107,0.061,0.032,0.017,0.00821,0.0041],"z":[0.06785,0.2074,0.6456,1.3856,1.74706,1.77211,1.6692,1.28764,0.81295,0.46518,0.272,0.1582,0.07825,0.04216,0.0203,0.00875,0.0039,0.0021,0.00165,0.0011,0.0008,0.00034,0.00019,5e-05,2e-05,-0.0,0.0,0.0,0.0,0.0,0.0]},"d50":[49.31,56.51,60.03,57.82,74.82,87.25,90.61,91.37,95.11,91.96,95.72,96.61,97.13,102.1,100.76,102.32,100.0,97.74,98.92,93.5,97.69,99.27,99.04,95.72,98.86,95.67,98.19,103.0,99.13,87.38,91.6],"char1443":{"C":[3.513,3.513,3.513,3.513,3.513,3.513,3.513,3.513,3.513,3.513,3.513,3.513,3.472,3.451,3.449,3.445,3.418,3.367,3.309,3.26,3.173,2.932,2.584,2.215,1.82,1.437,1.109,0.849,0.652,0.502,0.395,0.326,0.28,0.243,0.213,0.189,0.174,0.162,0.152,0.141,0.141],"M":[3.657,3.657,3.657,3.657,3.657,3.657,3.657,3.657,3.657,3.657,3.657,3.657,3.597,3.542,3.472,3.347,3.191,3.019,2.793,2.527,2.241,1.938,1.636,1.351,1.095,0.849,0.62,0.44,0.321,0.253,0.22,0.205,0.196,0.187,0.179,0.174,0.17,0.167,0.163,0.158,0.158],"Y":[3.31,3.31,3.31,3.31,3.31,3.31,3.31,3.31,3.31,3.31,3.31,3.31,3.299,3.283,3.262,3.239,3.198,3.124,3.008,2.787,2.409,1.956,1.482,1.082,0.802,0.58,0.413,0.312,0.249,0.212,0.193,0.181,0.17,0.161,0.155,0.149,0.145,0.14,0.134,0.128,0.128]},"charEIR":{"C":[3.536,3.536,3.536,3.536,3.536,3.536,3.536,3.536,3.536,3.536,3.536,3.536,3.496,3.471,3.466,3.463,3.442,3.397,3.333,3.278,3.211,2.979,2.666,2.3,1.885,1.507,1.195,0.918,0.7,0.541,0.433,0.357,0.306,0.265,0.231,0.206,0.191,0.181,0.172,0.16,0.16],"M":[3.682,3.682,3.682,3.682,3.682,3.682,3.682,3.682,3.682,3.682,3.682,3.682,3.619,3.565,3.509,3.38,3.229,3.06,2.845,2.592,2.31,2.003,1.69,1.393,1.142,0.905,0.68,0.486,0.35,0.277,0.244,0.226,0.215,0.206,0.197,0.191,0.188,0.185,0.181,0.176,0.176],"Y":[3.328,3.328,3.328,3.328,3.328,3.328,3.328,3.328,3.328,3.328,3.328,3.328,3.322,3.306,3.281,3.261,3.223,3.156,3.057,2.848,2.507,2.05,1.582,1.16,0.865,0.633,0.449,0.344,0.278,0.235,0.213,0.199,0.187,0.179,0.173,0.167,0.163,0.158,0.153,0.146,0.146]},"dye":{"C":[0.209,0.187,0.15,0.112,0.083,0.056,0.035,0.024,0.014,0.01,0.014,0.017,0.037,0.062,0.087,0.136,0.184,0.265,0.349,0.436,0.527,0.619,0.713,0.777,0.841,0.882,0.913,0.925,0.917,0.896,0.874],"M":[0.061,0.076,0.1,0.122,0.137,0.15,0.161,0.192,0.249,0.334,0.439,0.578,0.71,0.82,0.897,0.922,0.893,0.816,0.705,0.582,0.46,0.35,0.251,0.181,0.122,0.086,0.056,0.035,0.025,0.015,0.004],"Y":[0.625,0.693,0.773,0.84,0.884,0.88,0.841,0.756,0.636,0.51,0.382,0.275,0.187,0.119,0.07,0.046,0.022,0.011,0.004,0.003,0.003,0.002,0.001,0.0,0.0,0.0,0.0,0.0,0.0,0.0,0]},"sensEIR":{"C":[1.271,1.256,1.232,1.194,1.139,1.048,0.926,0.771,0.584,0.338,0.075,-0.122,-0.064,0.167,-0.065,-0.224,-0.214,-0.179,-0.137,-0.086,-0.036,0.01,0.055,0.1,0.146,0.187,0.226,0.266,0.305,0.339,0.368,0.394,0.409,0.413,0.401,0.366,0.324,0.295,0.271,0.259,0.25,0.234,0.212,0.182,0.135,0.072,-0.02,-0.16,-0.352,-0.67,null],"M":[0.529,0.582,0.635,0.673,0.69,0.681,0.638,0.549,0.417,0.216,0.007,-0.119,-0.187,-0.211,-0.178,-0.058,0.113,0.29,0.464,0.611,0.747,0.885,1.026,1.181,1.336,1.431,1.289,0.6,-0.196,-0.809,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null],"Y":[1.052,1.099,1.146,1.168,1.17,1.15,1.115,1.069,1.015,0.953,0.975,1.055,1.136,1.188,1.226,1.23,1.219,1.06,0.802,0.187,-0.584,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null,null]}};
+const FF_M_D50_SRGB = (() => {   // Bradford D50 -> D65, then XYZ -> linear sRGB
+  const B = [0.9555766, -0.0230393, 0.0631636, -0.0282895, 1.0099416, 0.0210077, 0.0122982, -0.0204830, 1.3299098];
+  const S = [3.2404542, -1.5371385, -0.4985314, -0.9692660, 1.8760108, 0.0415560, 0.0556434, -0.2040259, 1.0572252];
+  return bfMat3mul(S, B);
+})();
+function ffCharOf(film) { return film === 'eir' ? FF_FM.charEIR : FF_FM.char1443; }
+function ffCharAt(curve, le) { const x = (le + 3) / 0.1, i = Math.max(0, Math.min(curve.length - 2, Math.floor(x))), f = Math.max(0, Math.min(1, x - i)); return curve[i] + (curve[i + 1] - curve[i]) * f; }
+function ffCharX1(curve) { for (let i = 0; i < curve.length - 1; i++) if (curve[i] >= 1 && curve[i + 1] < 1) return -3 + 0.1 * (i + (curve[i] - 1) / (curve[i] - curve[i + 1])); return -0.5; }
+/* exposures (each layer; an 18% grey behind a Wratten 12 in sun gives 0.18) -> linear sRGB as the slide shows it */
+function ffMakeRender(film) {
+  const ch = ffCharOf(film), keys = ['C', 'M', 'Y'], x1 = keys.map(k => ffCharX1(ch[k])), dye = keys.map(k => FF_FM.dye[k]);
+  const n = FF_FM.d50.length, wY = FF_FM.cmf.y.reduce((a, v, i) => a + v * FF_FM.d50[i], 0);
+  const raw = D => {
+    let X = 0, Y = 0, Z = 0;
+    for (let i = 0; i < n; i++) { const t = Math.pow(10, -(D[0] * dye[0][i] + D[1] * dye[1][i] + D[2] * dye[2][i])) * FF_FM.d50[i]; X += t * FF_FM.cmf.x[i]; Y += t * FF_FM.cmf.y[i]; Z += t * FF_FM.cmf.z[i]; }
+    const v = [X / wY, Y / wY, Z / wY], M = FF_M_D50_SRGB;
+    return [M[0] * v[0] + M[1] * v[1] + M[2] * v[2], M[3] * v[0] + M[4] * v[1] + M[5] * v[2], M[6] * v[0] + M[7] * v[1] + M[8] * v[2]];
+  };
+  const base = raw(keys.map(k => ch[k][ch[k].length - 1]));   // clear film: minimum density, shown as white
+  const dens = e => keys.map((k, l) => ffCharAt(ch[k], Math.log10(Math.max(1e-6, e[l]) / 0.18) + x1[l]));
+  const render = e => raw(dens(e)).map((v, c) => v / base[c]);
+  // the film's grey-scale response, for mapping its output back to linear terms and the camera's forward
+  // one curve per output channel (a neutral exposure series), so a film whose blue is all but gone behind a red filter
+  // still maps back and forth channel by channel rather than through one brightness curve
+  const S = [], L = [[], [], []];
+  for (let k = 0; k <= 240; k++) { const v = 0.18 * Math.pow(10, -2.5 + 4 * k / 240), o = render([v, v, v]); S.push(v); o.forEach((x, c) => L[c].push(x)); }
+  const fwd = (v, c) => { const Lc = L[c]; if (v <= S[0]) return Lc[0]; for (let k = 1; k < S.length; k++) if (v <= S[k]) return Lc[k - 1] + (Lc[k] - Lc[k - 1]) * (v - S[k - 1]) / (S[k] - S[k - 1]); return Lc[Lc.length - 1]; };
+  const inv = (o, c) => { const Lc = L[c]; if (o <= Lc[0]) return S[0]; for (let k = 1; k < Lc.length; k++) if (o <= Lc[k]) return S[k - 1] + (S[k] - S[k - 1]) * (o - Lc[k - 1]) / Math.max(1e-9, Lc[k] - Lc[k - 1]); return S[S.length - 1]; };
+  return { render, fwd, inv };
+}
+const ffRenderCache = {};
+function ffRenderer(film) { return ffRenderCache[film] || (ffRenderCache[film] = ffMakeRender(film)); }
 function ffFit(stack, sensor, maxGain, behind, film, light) {
   maxGain = maxGain || 2.0;
   film = film || '1443'; light = light || 'sun';
@@ -144,13 +197,19 @@ function ffFit(stack, sensor, maxGain, behind, film, light) {
   const g = K.map(k => k.reduce((a, b) => a + b, 0));
   if (g.some(v => !(v > 1e-9))) return { error: 'This stack lets almost nothing through to one of the channels.' };
   const Kn = K.map((k, c) => k.map(v => v / g[c]));   // white balanced: a flat grey gives 1, 1, 1
-  const train = ffTrain(wl), X = train.map(r => Kn.map(k => ffDot(k, r))), Y = train.map(r => F.map(f => ffDot(f, r))), N = X.length;
+  const R = ffRenderer(film), toLin = o => o.map((v, c) => R.inv(v, c)), fromLin = v => v.map((x, c) => R.fwd(x, c));
+  const filmLin = r => toLin(R.render(F.map(f => ffDot(f, r))));   // the slide, in the film's own linear terms
+  const train = ffTrain(wl), X = train.map(r => Kn.map(k => ffDot(k, r))), Y = train.map(filmLin), N = X.length;
+  const greyLin = toLin(R.render(F.grey.map(v => 0.18 * v))).map(v => v / 0.18);
   const XtX = [0, 0, 0, 0, 0, 0, 0, 0, 0]; X.forEach(x => { for (let i = 0; i < 3; i++) for (let j = 0; j < 3; j++) XtX[i * 3 + j] += x[i] * x[j]; });
-  const Wt = 200;
-  const XtY = [0, 1, 2].map(l => [0, 1, 2].map(i => X.reduce((a, x, n) => a + x[i] * Y[n][l], 0) + Wt * F.grey[l]));
+  /* Build 250: the grey condition is exact (a Lagrange constraint), not a heavy weight. A weight was overpowered by the
+     regularisation whenever the channels were nearly alike (behind a red filter), and the grey card came out tinted. */
+  const XtY = [0, 1, 2].map(l => [0, 1, 2].map(i => X.reduce((a, x, n) => a + x[i] * Y[n][l], 0)));
   const solve = lam => [0, 1, 2].map(l => {
-    const Mi = bfMat3inv(XtX.map((v, k) => v + Wt + ((k % 4 === 0) ? lam * N : 0))), rhs = XtY[l];
-    return [0, 1, 2].map(i => Mi[i * 3] * rhs[0] + Mi[i * 3 + 1] * rhs[1] + Mi[i * 3 + 2] * rhs[2]);
+    const Mi = bfMat3inv(XtX.map((v, k) => v + ((k % 4 === 0) ? lam * N + 1e-9 : 0))), rhs = XtY[l];
+    const mul = v => [0, 1, 2].map(i => Mi[i * 3] * v[0] + Mi[i * 3 + 1] * v[1] + Mi[i * 3 + 2] * v[2]);
+    const a0 = mul(rhs), u = mul([1, 1, 1]), k = (greyLin[l] - (a0[0] + a0[1] + a0[2])) / (u[0] + u[1] + u[2]);
+    return a0.map((v, i) => v + k * u[i]);
   });
   const big = A => Math.max(...A.map(r => Math.hypot(...r)));
   let A = solve(0);
@@ -165,14 +224,14 @@ function ffFit(stack, sensor, maxGain, behind, film, light) {
     return 1 - se / st;
   });
   const surfaces = Object.keys(FF_SURF_NAMES).filter(k => FF_SURF[k] && FF_SURF[k].length === wl.length).map(k => {
-    const r = FF_SURF[k], film = F.map(f => ffDot(f, r)), x = Kn.map(c => ffDot(c, r)), cam = A.map(a => ffDot(a, x));
-    return { key: k, name: FF_SURF_NAMES[k], film, cam, de: ffDE(film, cam) };
+    const r = FF_SURF[k], filmOut = R.render(F.map(f => ffDot(f, r))), x = Kn.map(c => ffDot(c, r)), cam = fromLin(A.map(a => ffDot(a, x)));
+    return { key: k, name: FF_SURF_NAMES[k], film: filmOut, cam, de: ffDE(filmOut, cam) };
   });
   const meanDE = surfaces.reduce((a, s) => a + s.de, 0) / surfaces.length;
   // where the light it records comes from: blue the film never saw, and infrared past the film's reach
   const tot = g.reduce((a, b) => a + b, 0);
   const share = (lo, hi) => K.reduce((a, k) => a + k.reduce((s, v, i) => s + (wl[i] >= lo && wl[i] < hi ? v : 0), 0), 0) / tot;
-  return { A, r2, surfaces, meanDE, blue: share(0, 490), farIR: share(910, 2000), behind: behind || 'w12', film, light, sensor, filmGrey: F.grey.slice() };
+  return { A, r2, surfaces, meanDE, blue: share(0, 490), farIR: share(910, 2000), behind: behind || 'w12', film, light, sensor, filmGrey: F.grey.slice(), filmOutGrey: R.render(F.grey.map(v => 0.18 * v)) };
 }
 
 function ffSwatch(rgb) {
@@ -198,13 +257,14 @@ function ffRender() {
   if (f.farIR > 0.25) warn.push('A lot of what the camera records is infrared beyond 900nm, past where the film could see.');
   const esc = s => String(s).replace(/[<>&]/g, c => ({ '<': '&lt;', '>': '&gt;', '&': '&amp;' }[c]));
   out.innerHTML =
-    '<p style="margin:6px 0 2px"><b>' + verdict + '</b> · average difference ' + f.meanDE.toFixed(1) + ' over the test surfaces, against ' + (f.film === '8443' ? '8443' : 'Aerochrome III') + ' behind a ' + esc(((FF_FILM_FILTERS.find(x => x[0] === f.behind) || [, 'Wratten 12'])[1]).replace(/ \(.*\)/, '')) + (f.light && f.light !== 'sun' ? ', ' + esc(((FF_LIGHTS.find(x => x[0] === f.light) || [, ''])[1]).replace(/ \(.*\)/, '').toLowerCase()) : '') + '</p>' +
+    '<p style="margin:6px 0 2px"><b>' + verdict + '</b> · average difference ' + f.meanDE.toFixed(1) + ' over the test surfaces, against ' + (f.film === '8443' ? '8443' : f.film === 'eir' ? 'EIR' : 'Aerochrome III') + ' behind a ' + esc(((FF_FILM_FILTERS.find(x => x[0] === f.behind) || [, 'Wratten 12'])[1]).replace(/ \(.*\)/, '')) + (f.light && f.light !== 'sun' ? ', ' + esc(((FF_LIGHTS.find(x => x[0] === f.light) || [, ''])[1]).replace(/ \(.*\)/, '').toLowerCase()) : '') + '</p>' +
     '<p class="note" style="margin:0 0 4px">How well your camera can follow each film layer: infrared ' + pct(f.r2[0]) + ', red ' + pct(f.r2[1]) + ', green ' + pct(f.r2[2]) + '</p>' +
     warn.map(w => '<p class="note ffWarn" style="margin:0 0 4px">' + esc(w) + '</p>').join('') +
     '<div class="ffGrid"><span></span><span class="ffH">Film</span><span class="ffH">Yours</span><span class="ffH">Diff.</span>' +
     f.surfaces.map(s => '<span class="ffN">' + esc(s.name) + '</span><span class="ffSw" style="background:' + ffSwatch(s.film) + '"></span><span class="ffSw" style="background:' + ffSwatch(s.cam) + '"></span><span class="ffD">' + s.de.toFixed(1) + '</span>').join('') +
     '</div>' +
     ((fpData && fpData.sensorNotes && f.sensor && fpData.sensorNotes[f.sensor]) ? '<p class="note" style="margin:4px 0 2px">Sensor: ' + esc(fpData.sensorNotes[f.sensor]) + '</p>' : '') +
+    '<p class="note" style="margin:4px 0 2px">Film swatches are the slide as printed: Kodak&rsquo;s characteristic curves and dyes. The fit matches its colours; the film&rsquo;s contrast is left to the tone sliders.</p>' +
     '<p class="note" style="margin:4px 0 6px">Surfaces are measured (USGS Spectral Library; the sky from the ASTM G173 solar spectra; the grey card is flat). The sensor curve is a model unless your camera matches it, so take this as the shape of the answer.</p>' +
     '<div style="display:flex;gap:6px;flex-wrap:wrap"><button type="button" id="ffApply" class="btnGhost">Apply to the photo</button>' +
     (ffApplied() ? '<button type="button" id="ffOff" class="btnGhost">Take it off</button>' : '') + '</div>';

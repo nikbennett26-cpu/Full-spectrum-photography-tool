@@ -330,7 +330,7 @@ function stProperties() {
       const found = dustDetectPixels(px, W, H, 60), at = ([cx, cy]) => found.some(f => Math.abs(f.x * W - cx) < 4 && Math.abs(f.y * H - cy) < 4);
       return { ok: at(dust[0]) && !at(colour[0]) && !at(edge[0]), detail: { dust: at(dust[0]), colour: at(colour[0]), edge: at(edge[0]), n: found.length } };
     } },
-    { name: 'Film fit: a grey stays grey, gains stay bounded, Wratten 12 and the triple band match the film closely, no filter is flagged for blue, and the film turns red paint yellow and leaves magenta-red foliage; a Wratten 16 is judged against film behind a Wratten 16; Aerochrome III 1443 gives magenta foliage, shade light a blue cast and low sun a warm one', img: 'scene', run: () => {
+    { name: 'Film fit: a grey stays grey, gains stay bounded, Wratten 12 and the triple band match the film closely, no filter is flagged for blue, and the film turns red paint yellow and leaves magenta-red foliage; a Wratten 16 is judged against film behind a Wratten 16; Aerochrome III 1443 gives magenta foliage, shade light a blue cast and low sun a warm one; and the dye model shows what Kodak describes: yellow leaves white, water black, evergreens reddish', img: 'scene', run: () => {
       if (!fpData) { const x = new XMLHttpRequest(); x.open('GET', 'filter-data.json', false); x.send(); fpData = JSON.parse(x.responseText); fpData.byId = Object.fromEntries(fpData.filters.map(f => [f[0], f])); }
       const sensor = Object.keys(fpData.sensors)[0], w12 = ffFit(['w12'], sensor), tb = ffFit(['tb550'], sensor), none = ffFit([], sensor);
       const S = (f, k) => f.surfaces.find(s => s.key === k);
@@ -339,10 +339,13 @@ function stProperties() {
       const w16same = ffFit(['w16'], sensor, 0, 'w16').meanDE, w16vs12 = ffFit(['w16'], sensor, 0, 'w12').meanDE;
       const a43 = ffFit(['w12'], sensor, 0, 'w12', '1443', 'sun'), sh = ffFit(['w12'], sensor, 0, 'w12', '1443', 'shade'), lo = ffFit(['w12'], sensor, 0, 'w12', '1443', 'low');
       const lf = S(a43, 'foliage').film, gSh = S(sh, 'grey').film, gLo = S(lo, 'grey').film;
-      const films = lf[0] > lf[1] && lf[2] > lf[1] && a43.meanDE < 3.5 && gSh[2] > gSh[0] && gLo[2] < gLo[0];   // 1443: magenta foliage; shade blue, low sun warm
-      const ok = films && w16same < w16vs12 && ffFilmFilterDefault(['w16', 'grb3']) === 'w16' && ffFilmFilterDefault(['tb550']) === 'w12' && rowsum.every(v => Math.abs(v - 1) < 0.03) && gain <= 2.01 && S(w12, 'grey').de < 0.5 && w12.meanDE < 3.5 && tb.meanDE < 3 && none.blue > 0.03 && w12.blue < 0.01
+      const films = lf[0] > lf[1] && lf[2] > lf[1] && a43.meanDE < 3.5 && gSh[2] > gSh[0] && gLo[2] < gLo[0];
+      // build 250: what Kodak's data sheets say the film shows (AS-77, TI-2323), from the dye model
+      const kf = k => S(a43, k).film, aut = kf('autumn'), wat = kf('water'), con = kf('conifer'), eir = ffFit(['w12'], sensor, 0, 'w12', 'eir', 'sun');
+      const kodak = Math.min(...aut) > 0.45 && Math.max(...aut) - Math.min(...aut) < 0.15 && Math.max(...wat) < 0.03 && con[0] > con[1] && !eir.error && eir.meanDE < 3.5;   // 1443: magenta foliage; shade blue, low sun warm
+      const ok = kodak && films && w16same < w16vs12 && ffFilmFilterDefault(['w16', 'grb3']) === 'w16' && ffFilmFilterDefault(['tb550']) === 'w12' && rowsum.every(v => Math.abs(v - 1) < 0.03) && gain <= 2.01 && S(w12, 'grey').de < 0.5 && w12.meanDE < 3.5 && tb.meanDE < 3 && none.blue > 0.03 && w12.blue < 0.01
         && leaf[0] > leaf[1] && leaf[0] > leaf[2] && paint[0] > paint[2] * 2 && paint[1] > paint[2] * 2;
-      return { ok, detail: { films, lf, gSh, gLo, a43: a43.meanDE, w16same, w16vs12, rowsum, gain, w12: w12.meanDE, tb: tb.meanDE, noneBlue: none.blue, leaf, paint } };
+      return { ok, detail: { kodak, aut, wat, con, films, lf, gSh, gLo, a43: a43.meanDE, w16same, w16vs12, rowsum, gain, w12: w12.meanDE, tb: tb.meanDE, noneBlue: none.blue, leaf, paint } };
     } },
     { name: 'JW Wong method swaps IR to red, red to green, green to blue with IR leak removal on at full strength, and taking it off restores your own IR leak setting', img: 'scene', run: () => {
       resetAllControls(); irLeakOn = false; irLeakAmt = 0.4; irlSync();

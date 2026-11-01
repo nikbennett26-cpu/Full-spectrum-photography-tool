@@ -193,6 +193,12 @@ Other manufacturer and third-party sources are named on each filter's card and i
   Kodak Company, *KODAK AEROCHROME III Infrared Film 1443*, publication AS-77 (TI2562, minor revision 11-05, ©2005),
   against the chart's own gridlines. Factual data from a published graph; the values are in `src/film-fit.js`. (Build
   245 had traced a screenshot of the same chart posted by Andrea B. on UltravioletPhotography.com.)
+- **Film dye model** (build 250): characteristic curves (density against log exposure, Process AR-5, Status A) and
+  spectral dye densities read from the vector charts in Eastman Kodak Company, *KODAK AEROCHROME III Infrared Film
+  1443* (AS-77, TI2562, 11-05, ©2005), and characteristic and spectral sensitivity curves from *KODAK EKTACHROME
+  Professional Infrared EIR Film* (TI-2323, ©2005). Factual data from published graphs; values in `src/film-fit.js`.
+  CIE 1931 2-degree colour-matching functions and the CIE D50 illuminant at 10nm, generated with the colour-science
+  Python package (BSD 3-Clause; the CIE data are standard tables).
 - **Light** (build 248): midday sun is the filter database's AM1.5 global spectrum. Open shade, low sun and the
   blue-sky swatch are derived from the ASTM G173-03 reference spectra (extraterrestrial, global tilt and direct +
   circumsolar, from SMARTS v2.9.2) in the table published by NREL (National Renewable Energy Laboratory); only those

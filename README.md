@@ -71,8 +71,8 @@ Five tabs, in the order the picture is made: **Looks, Light, Colour, Detail, Exp
   whether you pick it first or last. Switching to another preset takes the first one's settings off before the next goes on,
   and clearing it puts back exactly what was underneath, keeping anything you changed since. Undo and the saved session keep track.
 - **Fit the film to your camera:** under Film stocks, works out the channel mix that makes your camera, through the
-  filters you set, record what Kodak's colour infrared film recorded: Aerochrome III 1443 (layer curves read from
-  Kodak's AS-77 data sheet) or Ektachrome Infrared Aero 8443 (NASA's published data), in midday sun, low sun, overcast or open
+  filters you set, record what Kodak's colour infrared film recorded and printed (its characteristic curves and dyes):
+  Aerochrome III 1443 (Kodak's AS-77 data sheet), Ektachrome Infrared EIR (TI-2323) or Ektachrome Infrared Aero 8443 (NASA's published data), in midday sun, low sun, overcast or open
   shade (sun, shade and sky from NREL's ASTM G173 solar spectra), fitted on realistic spectra and checked against measured surfaces from the USGS Spectral Library. It shows how close it gets, layer by layer, with film-vs-yours swatches for leaves, grass,
   pine needles, autumn and dry grass, bare earth, asphalt, concrete, brick, water, snow, red and yellow paint and sky, and warns if the stack lets blue in or blocks the
   infrared the film used. Change picks the filters right there (the same list Export records). The film can be put behind the classic filters (Wratten 12, 16, 21, 25; B+W 023, 040, 041, 090;
