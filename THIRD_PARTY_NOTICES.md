@@ -168,10 +168,15 @@ Other manufacturer and third-party sources are named on each filter's card and i
 - **Ektachrome Infrared Aero 8443 layer data**: NASA Interagency Report 146, "Predicting the Relative Dye Layer
   Densities of Color Infrared Transparencies", Figure 2, constructed from Fritz, N. L. (1967), Photogrammetric
   Engineering 33(10). A US Government work; the per-band fractions are reproduced as factual data in `src/film-fit.js`.
-- **Leaf and canopy spectra**: generated with the PROSPECT-D leaf model (Féret, J.-B. et al. (2017), *Remote Sensing of
-  Environment* 193, 204-215) and the SAIL canopy model (Verhoef, W. (1984)), through J. Gómez-Dans's `prosail` Python
-  package; bare-soil reflectance from that package's soil spectrum. Only the resulting spectra, sampled at 10nm, are
-  shipped. Asphalt, water, red paint, a yellow flower and clear sky are irlab's own simple models of their usual shapes.
+- **Surface reflectance spectra** (build 246): USGS Spectral Library Version 7 — Kokaly, R.F., Clark, R.N., Swayze,
+  G.A., Livo, K.E., Hoefen, T.M., Pearson, N.C., Wise, R.A., Benzel, W.M., Lowers, H.A., Driscoll, R.L., and Klein, A.J.,
+  2017, USGS Spectral Library Version 7 Data: U.S. Geological Survey data release, https://doi.org/10.5066/F7RR1WDJ.
+  Public domain (U.S. Government work). Used: fresh oak leaf, green lawn grass (GDS91), lodgepole pine needles, yellow
+  aspen leaf, golden dry grass (GDS480), old asphalt road (GDS376), concrete road (GDS375), red building brick (GDS353),
+  open-ocean sea water (SW2), cadmium red (GDS778) and Hansa yellow (GDS785). **Modifications**, as the USGS asks to be
+  described: averaged into 10nm steps from 300 to 1100nm, the first channel held below each instrument's range, and
+  clipped to 0-1. The USGS has not reviewed or endorsed irlab or this use. Bare-soil reflectance is the soil spectrum
+  shipped with J. Gómez-Dans's `prosail` Python package; the clear-sky and grey-card spectra are irlab's own models.
 - **Aerochrome III 1443 layer sensitivities** (build 245): digitised for irlab from Kodak's spectral sensitivity chart
   (KODAK 2006, Aerial Data publication AS-77, density 1.0 END, process AR-5), from the copy reproduced in Lillesand,
   Kiefer & Chipman, *Remote Sensing and Image Interpretation*, as posted by Andrea B. on UltravioletPhotography.com
