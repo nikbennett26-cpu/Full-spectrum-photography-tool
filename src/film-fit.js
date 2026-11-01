@@ -172,7 +172,7 @@ function ffFit(stack, sensor, maxGain, behind, film, light) {
   // where the light it records comes from: blue the film never saw, and infrared past the film's reach
   const tot = g.reduce((a, b) => a + b, 0);
   const share = (lo, hi) => K.reduce((a, k) => a + k.reduce((s, v, i) => s + (wl[i] >= lo && wl[i] < hi ? v : 0), 0), 0) / tot;
-  return { A, r2, surfaces, meanDE, blue: share(0, 490), farIR: share(910, 2000), behind: behind || 'w12', film, light, filmGrey: F.grey.slice() };
+  return { A, r2, surfaces, meanDE, blue: share(0, 490), farIR: share(910, 2000), behind: behind || 'w12', film, light, sensor, filmGrey: F.grey.slice() };
 }
 
 function ffSwatch(rgb) {
@@ -204,6 +204,7 @@ function ffRender() {
     '<div class="ffGrid"><span></span><span class="ffH">Film</span><span class="ffH">Yours</span><span class="ffH">Diff.</span>' +
     f.surfaces.map(s => '<span class="ffN">' + esc(s.name) + '</span><span class="ffSw" style="background:' + ffSwatch(s.film) + '"></span><span class="ffSw" style="background:' + ffSwatch(s.cam) + '"></span><span class="ffD">' + s.de.toFixed(1) + '</span>').join('') +
     '</div>' +
+    ((fpData && fpData.sensorNotes && f.sensor && fpData.sensorNotes[f.sensor]) ? '<p class="note" style="margin:4px 0 2px">Sensor: ' + esc(fpData.sensorNotes[f.sensor]) + '</p>' : '') +
     '<p class="note" style="margin:4px 0 6px">Surfaces are measured (USGS Spectral Library; the sky from the ASTM G173 solar spectra; the grey card is flat). The sensor curve is a model unless your camera matches it, so take this as the shape of the answer.</p>' +
     '<div style="display:flex;gap:6px;flex-wrap:wrap"><button type="button" id="ffApply" class="btnGhost">Apply to the photo</button>' +
     (ffApplied() ? '<button type="button" id="ffOff" class="btnGhost">Take it off</button>' : '') + '</div>';

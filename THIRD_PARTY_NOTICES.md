@@ -163,6 +163,18 @@ Other manufacturer and third-party sources are named on each filter's card and i
   published figure into `tools/sensors/crowther2022_a7iii.json`; the extension past 800nm is irlab's own model
   (see `tools/editor_filters.mjs`), not the author's data.
 
+## Converted camera sensor responses (editor, build 249)
+
+- **LDP LLC (MaxMax.com)**, "Spectral Response" (historical page, last modified 18 June 2015): monochromator-measured
+  RGB response of converted Canon 40D, Nikon D300, Nikon D200 and Nikon D700 bodies, 375-1000nm, traced from the
+  published charts into `tools/sensors/maxmax_spectral_response.json` (which records the method and caveats).
+- **SurfLabX for IRreCams**, "Limit of infrared sensitivity for different camera sensors" (irrecams.de, 4 November
+  2023): the fall-off of a full-spectrum Sony A7R III from 1000 to 1100nm, read off the published graph, used to extend
+  the MaxMax curves past 1000nm.
+- **Pedro J. Aphalo**, "Camera spectral response: Full-spectrum Olympus E-M1" (photo-spectrum.info, 2024, CC BY-SA 4.0):
+  cited for its finding that a converted camera's three channels respond equally from about 840nm, used to flag the
+  MaxMax curves; none of its data is shipped.
+
 ## Film fit (editor, "Fit the film to your camera", build 240)
 
 - **Ektachrome Infrared Aero 8443 layer data**: NASA Interagency Report 146, "Predicting the Relative Dye Layer
