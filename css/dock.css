@@ -14,8 +14,11 @@
   #dock button svg{width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;transition:transform .2s}
   #dock button.on{color:var(--safelight)}
   #dock button.on svg{transform:translateY(-1px) scale(1.06)}
-  html.dockOn body.has-image #sheetGrip{display:flex;position:fixed;left:0;right:0;z-index:75;justify-content:center;align-items:flex-start;
-    height:48px;padding-top:15px;touch-action:none;cursor:grab;bottom:calc(var(--dockH,64px) + var(--sheetH,0px) - 34px);
+  /* Build 242: the grip's touch area is a strip around the bar itself, not the whole width. It used to span the screen
+     and reach 34px down into the tools, so a touch anywhere along the top of the panel (scrolling to a tool, say) caught
+     the grip and closed or dragged the sheet. Now 120px wide, mostly above the sheet's edge, 10px into it. */
+  html.dockOn body.has-image #sheetGrip{display:flex;position:fixed;left:50%;width:120px;margin-left:-60px;z-index:75;justify-content:center;align-items:flex-start;
+    height:34px;padding-top:15px;box-sizing:border-box;touch-action:none;cursor:grab;bottom:calc(var(--dockH,64px) + var(--sheetH,0px) - 10px);
     transition:bottom .28s cubic-bezier(.2,.8,.2,1)}
   #sheetGrip span{width:42px;height:4px;border-radius:2px;background:var(--line2)}
   html.dockOn.sheetClosed body.has-image #sheetGrip{bottom:calc(var(--dockH,64px) - 4px);height:28px;padding-top:8px}

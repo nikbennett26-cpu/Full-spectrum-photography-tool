@@ -214,42 +214,9 @@
   };
   grip.addEventListener('pointerup', endGrip); grip.addEventListener('pointercancel', endGrip);
 
-  /* The grip is a small target, so the sheet itself can also be pulled down: when it is
-     scrolled to the very top, a downward swipe on any plain part of it moves the sheet, the
-     same as dragging the grip, and lets go to the nearest rest. Sliders, buttons, canvases
-     and anything else you can interact with are left alone, and a swipe that starts while
-     the sheet is scrolled down just scrolls it. */
-  let sw = null;
-  zone.addEventListener('touchstart', e => {
-    if (!root.classList.contains('dockOn') || e.touches.length !== 1) { sw = null; return; }
-    const t = e.target;
-    /* Build 159: a whole slider row counts as a control, not just the thin track. A touch that landed beside the track
-       (between it and the - and + buttons, or just above or below the thumb) used to start a pull on the sheet, so with
-       the panel scrolled to the top, adjusting a slider kept collapsing the controls instead. */
-    if (t && t.closest && t.closest('input,canvas,select,textarea,button,a,label,summary,[contenteditable],.sl,.slStep,.wbrow,.ctl,[role=tablist],[role=slider]')) { sw = null; return; }
-    sw = { x: e.touches[0].clientX, y: e.touches[0].clientY, h: H, active: false, atTop: zone.scrollTop <= 0 };
-  }, { passive: true });
-  zone.addEventListener('touchmove', e => {
-    if (!sw) return;
-    const y = e.touches[0].clientY, dy = y - sw.y;
-    if (!sw.active) {
-      const dx = Math.abs(e.touches[0].clientX - sw.x);
-      if (dx > 12 && dx > dy) { sw = null; return; }   // a sideways gesture is someone working a control, never a pull
-      // a deliberate pull: 28px down and clearly more down than sideways (was 14px, any direction)
-      if (sw.atTop && zone.scrollTop <= 0 && dy > 28 && dy > 2 * dx && !photoFits()) { sw.active = true; sw.y = y; sw.h = H; sw.top = peekH(); root.classList.add('sheetDrag'); }
-      else return;
-    }
-    e.preventDefault();
-    rest = 'custom'; H = Math.min(sw.top, Math.max(0, sw.h - (y - sw.y))); apply();
-  }, { passive: false });
-  const endSwipe = () => {
-    if (!sw) return;
-    const was = sw.active, top = sw.top; sw = null;
-    if (!was) return;
-    root.classList.remove('sheetDrag');
-    settleAt(H, top);
-  };
-  zone.addEventListener('touchend', endSwipe); zone.addEventListener('touchcancel', endSwipe);
+  /* Build 242: the pull-down on the panel itself is gone. With the tools scrolled to the top, a downward swipe on any
+     plain part of them pulled the whole sheet down, which is exactly the gesture of scrolling up to reach a tool, so it
+     kept collapsing the tools mid-scroll. The sheet now moves only from the grip (drag it, or tap it) or a tab. */
 
   /* Hide or show the histogram. Hiding it also closes the scopes panel, so nothing keeps
      drawing in the background, and the sheet grows into the freed room. */
