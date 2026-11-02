@@ -77,6 +77,16 @@ const I18N_148 = {
   zh: { maskIr: '植被（红外）', maskIrLo: '指数下限', maskIrHi: '指数上限', maskIrNgb: '使用NGB（红对蓝）', cLocS: '线性、径向、亮度、颜色、植被' }
 };
 Object.keys(I18N_148).forEach(l => { if (I18N[l]) Object.assign(I18N[l], I18N_148[l]); });
+/* Build 264: Digital Aerochrome's own card, and the start page's "ask before each RAW" option. */
+const I18N_264 = {
+  en: { ffT: 'Digital Aerochrome', ffS: 'fit Kodak\u2019s film to your filters', decodeAsk: 'Ask how to decode each RAW' },
+  es: { ffT: 'Aerochrome digital', ffS: 'ajusta la película de Kodak a tus filtros', decodeAsk: 'Preguntar cómo decodificar cada RAW' },
+  fr: { ffT: 'Aerochrome numérique', ffS: 'adapter le film Kodak à vos filtres', decodeAsk: 'Demander comment décoder chaque RAW' },
+  de: { ffT: 'Digitales Aerochrome', ffS: 'Kodaks Film an deine Filter anpassen', decodeAsk: 'Bei jedem RAW fragen, wie dekodiert wird' },
+  ja: { ffT: 'デジタル・エアロクローム', ffS: 'コダックのフィルムをフィルターに合わせる', decodeAsk: 'RAWを開くたびにデコード方法を確認' },
+  zh: { ffT: '数字Aerochrome', ffS: '让柯达胶片匹配你的滤镜', decodeAsk: '每次打开RAW时询问解码方式' }
+};
+Object.keys(I18N_264).forEach(l => { if (I18N[l]) Object.assign(I18N[l], I18N_264[l]); });
 function detectUILang() {
   const saved = (() => { try { return localStorage.getItem('uiLang'); } catch(e) { return null; } })();
   if (saved && I18N[saved]) return saved;

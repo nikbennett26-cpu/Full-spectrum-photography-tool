@@ -2,22 +2,29 @@
 /* irlab editor: js/decode-tip.js. One of the editor's scripts, loaded in order by index.html as plain
    (non-module) scripts that share one global scope. Order matters: see the list in index.html. */
 
-/* ---------- Decode choice before the first RAW (builds 209-210) ----------
+/* ---------- Decode choice before each RAW (builds 209-210, 264) ----------
    The decode choices are read the moment a RAW is decoded, and they sit on the start page where they are easy to
-   miss. So when a RAW is opened while no decode option has been picked yet, loadFile() waits on decodeTipAsk(): a
-   short card shows the two choices that matter (colour rebuild, full sensor or quick preview) BEFORE anything is
-   decoded. Open decodes with what is shown; Cancel opens nothing. Once Open is tapped, or any decode option is
-   changed anywhere, it is not asked again. Only RAW files: decode settings do nothing for a JPEG or PNG. */
-const DECODE_TIP_KEY = 'irlab.decodeTipDone';
-function decodeTipDone() { try { return localStorage.getItem(DECODE_TIP_KEY) === '1'; } catch (e) { return false; } }
-function decodeTipMarkDone() { try { localStorage.setItem(DECODE_TIP_KEY, '1'); } catch (e) {} }
-['cr2PreferPreview', 'camSpaceSwap', 'demosaicSel', 'cr2PreferPreviewEditor', 'camSpaceSwapEditor', 'demosaicSelEd']
-  .forEach(id => { const e = $(id); if (e) e.addEventListener('change', e2 => { if (e2.isTrusted) decodeTipMarkDone(); }); });
+   miss. So when a RAW is opened, loadFile() waits on decodeTipAsk(): a short card shows the two choices that matter
+   (colour rebuild, full sensor or quick preview) as they are set right now, BEFORE anything is decoded. Open decodes
+   with what is shown; Cancel opens nothing. Build 264: it asks every time (it used to stop after the first Open), until
+   Don't ask again is ticked on the card or Ask how to decode each RAW is unticked on the start page; ticking that
+   brings it back. Only RAW files: decode settings do nothing for a JPEG or PNG. */
+const DECODE_ASK_KEY = 'irlab.decodeAsk';   // '0' = opted out
+function decodeAskOn() { try { return localStorage.getItem(DECODE_ASK_KEY) !== '0'; } catch (e) { return true; } }
+function decodeAskSet(on) {
+  try { localStorage.setItem(DECODE_ASK_KEY, on ? '1' : '0'); } catch (e) {}
+  const c = $('decodeAskEach'); if (c && c.checked !== on) c.checked = on;
+}
+(function () {
+  const c = $('decodeAskEach'); if (!c) return;
+  c.checked = decodeAskOn();
+  c.addEventListener('change', () => decodeAskSet(c.checked));
+})();
 
 let decodeTipOpen = null;   // the pending card's resolver, so a second file picked while it is up replaces it
 function decodeTipAsk(file) {
   const ext = ((file && file.name || '').split('.').pop() || '').toUpperCase();
-  if (!RAW_EXT.includes(ext) || decodeTipDone()) return Promise.resolve(true);
+  if (!RAW_EXT.includes(ext) || !decodeAskOn()) return Promise.resolve(true);
   if ((typeof sessionRestoring !== 'undefined' && sessionRestoring) || window.__keepEditsOnLoad || window.__selftestRunning) return Promise.resolve(true);
   if (decodeTipOpen) decodeTipOpen(false);
   return new Promise(resolve => {
@@ -36,6 +43,7 @@ function decodeTipAsk(file) {
       +   '<button type="button" data-v="0">Full sensor</button><button type="button" data-v="1">Quick preview</button></div></div>'
       + '<p class="dtHint">Full sensor uses every pixel the camera recorded. Quick preview uses the small JPEG inside the file: faster, with fewer RAW-only tools.</p>'
       + '<p class="dtHint">You can change these later on the start page, or under Export, Decode settings, in Advanced.</p>'
+      + '<label class="dtNever"><input type="checkbox"> Don\u2019t ask again</label>'
       + '<div class="dtBtns"><button type="button" class="dtCancel">Cancel</button><button type="button" class="dtOk">Open</button></div>';
     box.querySelector('.dtFile').textContent = file.name;
     const paint = () => {
@@ -52,7 +60,7 @@ function decodeTipAsk(file) {
       if (decodeTipOpen !== done) return;
       decodeTipOpen = null; box.remove(); veil.remove(); document.removeEventListener('keydown', onKey, true);
       if (ok) {
-        decodeTipMarkDone();
+        if (box.querySelector('.dtNever input').checked) decodeAskSet(false);   // only an Open counts; Cancel changes nothing
         // write the choices into the real controls without a change event on the demosaic selects, which would
         // re-decode a photo that is already open
         try { localStorage.setItem('irlab.demosaic', dm); } catch (e) {}

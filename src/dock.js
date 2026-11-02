@@ -238,7 +238,7 @@
      an accordion instead: all three start closed so their three headers show together, opening
      one closes the others and brings it to the top of the sheet. Desktop gets its old open
      state back when the phone layout is left. */
-  const LOOKS_GROUPS = ['matrixDetails', 'classicIrGroup', 'swapPresetsGroup', 'filmPresetGroup'];
+  const LOOKS_GROUPS = ['matrixDetails', 'classicIrGroup', 'swapPresetsGroup', 'filmPresetGroup', 'ffDetails'];
   const looksWere = {};
   function looksAccordion(on, openFirst) {
     LOOKS_GROUPS.forEach(id => {

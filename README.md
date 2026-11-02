@@ -16,7 +16,8 @@ editor) so it opens full screen and keeps working offline.
 - **Ordinary images:** JPEG, PNG, WebP, AVIF and TIFF (16-bit TIFF in, 16-bit TIFF out).
 - **RAW files:** CR2, CR3, NEF, ARW, SR2, DNG, ORF, RW2, PEF, RAF, SRW, NRW, 3FR, IIQ, MRW, KDC, DCR and X3F, decoded from
   the sensor data in the browser by LibRaw compiled to WebAssembly. A quick-preview mode reads the camera's embedded JPEG
-  instead.
+  instead. Each time a RAW is opened, a card shows how it will be decoded (colour rebuild, full sensor or quick preview)
+  before anything happens; tick Don't ask again there, or untick Ask how to decode each RAW on the start page, to stop it.
 - **Pick up where you left off:** the photo and your edits are saved in the browser. Come back within 30 minutes and it
   reopens by itself; later, a Restore button offers it. Undo, redo and Reset all are always there.
 
@@ -92,7 +93,7 @@ Five tabs, in the order the picture is made: **Looks, Light, Colour, Detail, Exp
 
 - **Filters on this photo:** the one place to pick the filters the photo was taken through, from the 230+ measured
   curves, at the top of Looks with the rest of your setup. The closed card names them. The Filters white balance,
-  Digital Aerochrome (advanced), the IR leak estimate and the record in exported files all use this list; where they
+  Digital Aerochrome, the IR leak estimate and the record in exported files all use this list; where they
   show it, the names are a link that brings you back here (on a phone it switches to Looks and opens the card).
 - **Swap & mix:** one-tap swaps (R↔B, G↔B, R↔G, and the **JW Wong method**: Kodak's DCS CIR single-image method as laid out
   by JW Wong, which takes the IR out of red and green with IR leak removal and then maps IR → red, red → green, green → blue), a full channel mix grid with offsets and a
@@ -107,7 +108,7 @@ Five tabs, in the order the picture is made: **Looks, Light, Colour, Detail, Exp
 - **Presets go on top of your edit:** a preset or look sets only its own settings and leaves the rest of your edit alone,
   whether you pick it first or last. Switching to another preset takes the first one's settings off before the next goes on,
   and clearing it puts back exactly what was underneath, keeping anything you changed since. Undo and the saved session keep track.
-- **Digital Aerochrome (advanced):** under Film stocks, works out the channel mix that makes your camera, through the
+- **Digital Aerochrome:** its own card in Looks, after Film stocks & recipes. Works out the channel mix that makes your camera, through the
   filters you set, record what Kodak's colour infrared film recorded and printed (its characteristic curves and dyes):
   Aerochrome III 1443 (Kodak's AS-77 data sheet), Ektachrome Infrared EIR (TI-2323) or Ektachrome Infrared Aero 8443 (NASA's published data), in midday sun, low sun, overcast or open
   shade (sun, shade and sky from NREL's ASTM G173 solar spectra), fitted on realistic spectra and checked against measured surfaces from the USGS Spectral Library. It shows how close it gets, layer by layer, with film-vs-yours swatches for leaves, grass,
