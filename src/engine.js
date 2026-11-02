@@ -230,6 +230,7 @@ class WebGLEngine {
       lumaW: gl.getUniformLocation(this.program, 'u_lumaW'),
       tempTint: gl.getUniformLocation(this.program, 'u_tempTint'),
       satPreserve: gl.getUniformLocation(this.program, 'u_satPreserve'),
+      wide: gl.getUniformLocation(this.program, 'u_wide'),
       contrast: gl.getUniformLocation(this.program, 'u_contrast'),
       exposure: gl.getUniformLocation(this.program, 'u_exposure'),
       brightness: gl.getUniformLocation(this.program, 'u_brightness'),
@@ -923,6 +924,7 @@ void main(){
     gl.uniform3fv(this.uLocs.postWB, new Float32Array(p.postWB));
     gl.uniform3fv(this.uLocs.tempTint, new Float32Array(p.tempTint || [1,1,1]));
     gl.uniform1f(this.uLocs.satPreserve, (p.satPreserve || 0) / 100);
+    gl.uniform1f(this.uLocs.wide, p.wideWork === false ? 0 : 1);
     gl.uniform1f(this.uLocs.contrast, contrastStrength(p.contrast));
     gl.uniform1f(this.uLocs.contrastPivot, p.contrastPivot === undefined ? 0.5 : p.contrastPivot);
     gl.uniform1f(this.uLocs.hiPivot, p.hiPivot === undefined ? 0.10 : p.hiPivot);
@@ -1158,7 +1160,7 @@ void main(){
       const hs = p.hotspot || [0, 0, 0];
       const key = [this._texGen, W, H, this.inputIsLinear ? 1 : 0, p.exposure || 0, p.hlRecover || 0, p.noiseReduction || 0,
                    p.noiseColour || 0, p.nrScale > 1 ? p.nrScale : 1, p.caR || 0, p.caB || 0, hs[0], hs[1], hs[2], p.hotSize || 0.35,
-                   p.deband || 0, p.vigCX === undefined ? 0.5 : p.vigCX, p.vigCY === undefined ? 0.5 : p.vigCY].join(',');
+                   p.deband || 0, p.wideWork === false ? 0 : 1, p.vigCX === undefined ? 0.5 : p.vigCX, p.vigCY === undefined ? 0.5 : p.vigCY].join(',');
       if (key === this._prepKey) return true;
       gl.bindFramebuffer(gl.FRAMEBUFFER, this._prep.fb);
       gl.viewport(0, 0, W, H);

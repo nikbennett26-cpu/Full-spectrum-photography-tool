@@ -226,6 +226,10 @@ uniform float u_debandRad;  // reach, in source texels, at full strength
   uniform int u_wbMethod;   // 0 = per-channel gains (u_preWB/u_postWB), 1 = Bradford (the mat3 pair)
   uniform vec3 u_tempTint;
   uniform float u_satPreserve;
+  /* Wide working space (build 253). 1 = a RAW's colours outside sRGB, and its light above white, are carried through
+     the source stages, white balance and the swap, and brought into the screen's range once, by wideToDisplay(), after
+     the swap. 0 = the old behaviour: everything clipped to the sRGB box the moment it arrived. */
+  uniform float u_wide;
   uniform float u_contrast;
   uniform float u_exposure;
 uniform float u_epdOn;     // 1 = edge-preserving tone mapping is applied
@@ -243,13 +247,23 @@ uniform sampler2D u_epdBase;   // the smooth, edge-stopping base layer of the lo
   uniform float u_whitePt;
   varying vec2 v_texCoord;
 
+  /* Mirrored about zero (build 253): a value below zero is a real colour outside sRGB once the working space is wide, and
+     pow() of a negative base is undefined in GLSL, so the old form could hand back NaN there even though the other branch
+     was chosen. For 0..1 the result is exactly what it was. */
   vec3 srgbToLinear(vec3 c) {
-    return mix(c / 12.92, pow((c + 0.055) / 1.055, vec3(2.4)), step(vec3(0.04045), c));
+    vec3 a = abs(c);
+    return sign(c) * mix(a / 12.92, pow((a + 0.055) / 1.055, vec3(2.4)), step(vec3(0.04045), a));
   }
 
   vec3 linearToSrgb(vec3 c) {
     vec3 clamped = clamp(c, 0.0, 1.0);
     return mix(clamped * 12.92, 1.055 * pow(clamped, vec3(1.0 / 2.4)) - 0.055, step(vec3(0.0031308), clamped));
+  }
+  /* The same curve with nothing cut off: below zero it is mirrored, above one it carries on. The exact inverse of
+     srgbToLinear everywhere, so a colour outside sRGB survives being stored encoded between the source stages. */
+  vec3 linearToSrgbX(vec3 c) {
+    vec3 a = abs(c);
+    return sign(c) * mix(a * 12.92, 1.055 * pow(a, vec3(1.0 / 2.4)) - 0.055, step(vec3(0.0031308), a));
   }
 
   // Soft-knee highlight protection — a standard tanh-based soft clip, the
@@ -446,6 +460,57 @@ uniform sampler2D u_epdBase;   // the smooth, edge-stopping base layer of the lo
   }
   vec3 gamutMap(vec3 c) { float ignored; return gamutMapT(c, ignored); }
 
+  /* ---------- Wide working space (build 253) ----------
+     True when this frame is a RAW's linear float and the wide working space is on. */
+  bool wideOn() { return u_wide > 0.5 && u_inputLinear > 0.5; }
+  /* The range the source stages may hold, in encoded values: the sRGB box for a JPEG or with the wide space off, and
+     roughly eight times white either side of zero with it on (encoded 2.5 is linear 8.6), which is as far as the RAW
+     decode stores. */
+  vec3 srcClamp(vec3 e) { return wideOn() ? clamp(e, vec3(-2.5), vec3(2.5)) : clamp(e, 0.0, 1.0); }
+
+  /* Where a wide picture is brought into the screen's range: once, straight after the swap.
+
+     Two steps, each of which keeps hue.
+
+     1. Colours outside sRGB. Each channel's distance below the brightest one, as a fraction of it (0 = level with it,
+        1 = at zero, past 1 = below zero, which is outside sRGB), is left alone up to 0.9 and then compressed smoothly
+        so a distance of 2.0 lands exactly on zero. This is the shape of the ACES Reference Gamut Compression (Academy
+        S-2020-001, power 1.2), measured on the encoded values rather than linear ones: in linear light a threshold of
+        0.9 would lift a pure red's empty channels to a tenth of its red, which the sRGB curve shows as a visible wash;
+        encoded, the same threshold leaves a pure red with its other channels at 11 of 255. The brightest channel never
+        moves, so brightness is kept; only the most saturated colours are touched, by the least needed, and they keep
+        their saturation instead of being mixed toward grey as gamutMapT does.
+     2. Light above white. The brightest channel is rolled off with a shoulder from 0.9 that approaches 1.0, and all
+        three channels are scaled by the same factor, so a bright saturated colour stays saturated and only loses
+        brightness. Diffuse white (1.0) ends at 0.963.
+
+     Anything still outside after that (a channel more than twice the brightest below it, encoded) is clipped, which at that
+     distance moves the colour by very little. pull reports how hard step 1 had to work, for the gamut readout. */
+  float rgcCompress(float d) {
+    const float thr = 0.9, lim = 2.0, pw = 1.2;
+    if (d <= thr) return d;
+    float sc = (lim - thr) / pow(pow((1.0 - thr) / (lim - thr), -pw) - 1.0, 1.0 / pw);
+    float x = (d - thr) / sc;
+    return thr + sc * x / pow(1.0 + pow(x, pw), 1.0 / pw);
+  }
+  vec3 wideToDisplay(vec3 c, out float pull) {
+    float mn = min(min(c.r, c.g), c.b);
+    float mx = max(max(c.r, c.g), c.b);
+    g_over  = max(g_over,  mx - 1.0);
+    g_under = max(g_under, -mn);
+    pull = 0.0;
+    if (mx <= 0.0) return vec3(0.0);
+    vec3 e = linearToSrgbX(c);
+    float me = max(max(e.r, e.g), e.b);
+    vec3 d = (vec3(me) - e) / me;
+    vec3 dc = vec3(rgcCompress(d.r), rgcCompress(d.g), rgcCompress(d.b));
+    pull = clamp(max(max(d.r - dc.r, d.g - dc.g), d.b - dc.b), 0.0, 1.0);
+    vec3 o = srgbToLinear(vec3(me) - dc * me);   // the brightest channel comes back exactly as it went in
+    const float knee = 0.9;
+    if (mx > knee) o *= (knee + (1.0 - knee) * (1.0 - exp(-(mx - knee) / (1.0 - knee)))) / mx;
+    return clamp(o, 0.0, 1.0);
+  }
+
   /* ---------- OKLab ----------
      Hue and saturation were previously done in HSL, which is a poor model
      for this job on two counts. Its "lightness" is (max+min)/2, which has
@@ -630,6 +695,7 @@ uniform sampler2D u_epdBase;   // the smooth, edge-stopping base layer of the lo
     vec3 t = texture2D(u_image, uv).rgb;
     if (u_inputLinear < 0.5 && u_exposure == 1.0 && u_hlRecover <= 0.0 &&
         u_hotspot.x == 0.0 && u_hotspot.y == 0.0 && u_hotspot.z == 0.0) return clamp(t, 0.0, 1.0);
+    if (wideOn()) return srcClamp(linearToSrgbX(stage1Lin(t, uv)));
     vec3 lin = u_inputLinear > 0.5 ? max(t, vec3(0.0)) : srgbToLinear(clamp(t, 0.0, 1.0));
     return linearToSrgb(clamp(stage1Lin(lin, uv), 0.0, 1.0));
   }
@@ -2001,8 +2067,9 @@ uniform float u_skyL;          // the typical lightness of the sky; anything cle
          (sRGB) values so the threshold means the same thing in shadows as in highlights; pixels with highlight
          headroom above 1.0 are left alone. */
       bool dbLin = u_inputLinear > 0.5;
+      bool dbWide = wideOn();
       vec3 src0 = texColor.rgb;
-      vec3 c0 = dbLin ? linearToSrgb(clamp(src0, 0.0, 1.0)) : src0;
+      vec3 c0 = dbWide ? linearToSrgbX(src0) : dbLin ? linearToSrgb(clamp(src0, 0.0, 1.0)) : src0;
       float thr = u_deband * 0.030;
       float ang0 = 6.2831853 * fract(52.9829189 * fract(dot(gl_FragCoord.xy, vec2(0.06711056, 0.00583715))));
       for (int di = 1; di <= 3; di++) {
@@ -2012,12 +2079,14 @@ uniform float u_skyL;          // the typical lightness of the sky; anything cle
         vec2 o2 = vec2(-o1.y, o1.x);
         vec3 t1 = texture2D(u_image, v_texCoord + o1).rgb, t2 = texture2D(u_image, v_texCoord - o1).rgb;
         vec3 t3 = texture2D(u_image, v_texCoord + o2).rgb, t4 = texture2D(u_image, v_texCoord - o2).rgb;
-        if (dbLin) { t1 = linearToSrgb(clamp(t1, 0.0, 1.0)); t2 = linearToSrgb(clamp(t2, 0.0, 1.0)); t3 = linearToSrgb(clamp(t3, 0.0, 1.0)); t4 = linearToSrgb(clamp(t4, 0.0, 1.0)); }
+        if (dbWide) { t1 = linearToSrgbX(t1); t2 = linearToSrgbX(t2); t3 = linearToSrgbX(t3); t4 = linearToSrgbX(t4); }
+        else if (dbLin) { t1 = linearToSrgb(clamp(t1, 0.0, 1.0)); t2 = linearToSrgb(clamp(t2, 0.0, 1.0)); t3 = linearToSrgb(clamp(t3, 0.0, 1.0)); t4 = linearToSrgb(clamp(t4, 0.0, 1.0)); }
         vec3 avg = 0.25 * (t1 + t2 + t3 + t4);
         vec3 w = 1.0 - smoothstep(vec3(thr * 0.5), vec3(thr), abs(avg - c0));
         c0 = mix(c0, avg, w);
       }
-      if (dbLin) {
+      if (dbWide) texColor.rgb = srgbToLinear(c0);
+      else if (dbLin) {
         float headroom = step(max(src0.r, max(src0.g, src0.b)), 1.0);
         texColor.rgb = mix(src0, srgbToLinear(c0), headroom);
       } else texColor.rgb = c0;
@@ -2026,11 +2095,14 @@ uniform float u_skyL;          // the typical lightness of the sky; anything cle
        two do not cancel: at default settings a JPEG's level 13 came out as 4 and 26 as 18, so every 8-bit photo lost
        its deep shadows before any edit. srgbToLinear is the exact inverse of linearToSrgb. */
     vec3 lin = u_inputLinear > 0.5
-      ? max(texColor.rgb, 0.0)
+      ? (wideOn() ? texColor.rgb : max(texColor.rgb, 0.0))
       : srgbToLinear(clamp(texColor.rgb, 0.0, 1.0));
 
     lin = stage1Lin(lin, v_texCoord);   // hotspot, exposure, highlight recovery
 
+    /* Build 253: with the wide working space on, nothing is cut off here. Values below zero (colours outside sRGB) and
+       above one (light above white) are stored encoded with the mirrored curve and come back exactly where they were. */
+    if (wideOn()) texColor.rgb = srcClamp(linearToSrgbX(lin)); else {
     texColor.rgb = clamp(lin, 0.0, 1.0);
     /* Back to encoded space for everything below. Use linearToSrgb (proper
        IEC 61966-2-1) rather than pow(1/2.2). The look pipeline decodes with
@@ -2040,6 +2112,7 @@ uniform float u_skyL;          // the typical lightness of the sky; anything cle
        washing the colour toward neutral and making exposure feel like a
        saturation squeeze rather than a clean stop change. */
     texColor.rgb = linearToSrgb(texColor.rgb);
+    }
     /* Runs first in the SHADER, before camera-fit, swap, or anything else
        here touches the pixel.
 
@@ -2320,7 +2393,7 @@ uniform float u_skyL;          // the typical lightness of the sky; anything cle
         outRgb = mix(outRgb, chromaRgb, chromaAmt);
       }
 
-      texColor.rgb = clamp(outRgb, 0.0, 1.0);
+      texColor.rgb = srcClamp(outRgb);
     }
     }   // end of the source stages (skipped when the prepared picture is already bound)
     if (u_prep > 0.5) { gl_FragColor = vec4(texColor.rgb, texColor.a); return; }
@@ -2475,7 +2548,7 @@ uniform float u_skyL;          // the typical lightness of the sky; anything cle
       l_new = max(l_new, lumC * 0.40);
 
       texColor.rgb = lumC > 0.001
-        ? clamp(texColor.rgb * (l_new / lumC), 0.0, 1.0)
+        ? srcClamp(texColor.rgb * (l_new / lumC))
         : texColor.rgb;
     }
 
@@ -2522,7 +2595,7 @@ uniform float u_skyL;          // the typical lightness of the sky; anything cle
     } else {
       rgb = srgbToLinear(texColor.rgb);
     }
-    if (u_irSubOn > 0.5) rgb = max(u_irSub * rgb, vec3(0.0));   // build 172: IR leak removal
+    if (u_irSubOn > 0.5) rgb = wideOn() ? u_irSub * rgb : max(u_irSub * rgb, vec3(0.0));   // build 172: IR leak removal
     // Reset BEFORE targetedHSL, not after: it now reports its own
     // out-of-gamut overshoot, and resetting afterward would wipe it.
     g_over = 0.0; g_under = 0.0;
@@ -2596,7 +2669,7 @@ uniform float u_skyL;          // the typical lightness of the sky; anything cle
       vec3 plainS = u_matrix * rgb + u_mOffset;
       vec3 xs = rgb;
       if (u_srcGuideOn > 0.5) {
-        vec3 sL = max(srcLin(v_texCoord), vec3(0.0));
+        vec3 sL = srgbToLinear(clamp(srcEnc(v_texCoord), 0.0, 1.0));   // the guide is 8-bit, so compare like with like
         vec3 sS = max(oklabToLinear(srcGuideLocal(linearToOklab(sL))), vec3(0.0));
         xs = rgb * (sS + 0.002) / (sL + 0.002);
       }
@@ -2624,7 +2697,7 @@ uniform float u_skyL;          // the typical lightness of the sky; anything cle
        pull it reports feeds the same "gamut pulled" readout as every other
        stage. */
     float pullSwap;
-    rgb = gamutMapT(rgb, pullSwap);
+    rgb = wideOn() ? wideToDisplay(rgb, pullSwap) : gamutMapT(rgb, pullSwap);
 
     rgb = u_wbMethod == 1 ? u_postWBM * rgb : rgb * u_postWB;
     // Temperature/tint applied as a SEPARATE stage after the picker, so a

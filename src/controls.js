@@ -637,7 +637,7 @@ const qs = sel => sel[0] === '.' || sel[0] === '[' ? document.querySelector(sel)
 const PANEL_FIELDS = [
   [['m', 'mOff'], 'm00'], [['lumPreserve'], 'lumPreserve'], [['lumaW'], 'lumaR'], [['filmOn'], 'filmOn'], [['filmTone'], 'chkFilmTone'],
   [['indexMode'], '.idxBtn'], [['activePreset'], '.pb'], [['bands'], 'bandList'], [['preWB', 'postWB', 'preWBM', 'postWBM', 'wbMethod'], 'wbPreStatus'], [['rawWb'], '#rawWbBox'],
-  [['curves'], 'curveCv'], [['masks'], 'maskDetails'], [['swapSpace'], 'swapSpace'], [['hueSpace'], '.hueSpaceBtn'], [['lut', 'preLUT', 'lutStatusText'], 'lutStatus'],
+  [['curves'], 'curveCv'], [['masks'], 'maskDetails'], [['swapSpace'], 'swapSpace'], [['wideWork'], 'wideWork'], [['hueSpace'], '.hueSpaceBtn'], [['lut', 'preLUT', 'lutStatusText'], 'lutStatus'],
   [['vigCentre'], 'vigCentreNote'], [['camMatch'], 'camMatch'], [['camSpaceSwap', 'camSpaceSwapPreset'], 'camSpaceSwap'],
 ];
 function resetPanel(step) {
@@ -778,6 +778,7 @@ function currentParams() {
     calBS:     +($('calBS')    ? $('calBS').value    : 0) || 0,
     calST:     +($('calST')    ? $('calST').value    : 0) || 0,
     swapSpace: $('swapSpace') ? +$('swapSpace').value : 2,
+    wideWork: $('wideWork') ? !!$('wideWork').checked : true,   // build 253: wide working space
     swapWiden: $('swapWiden') ? (+$('swapWiden').value) / 100 : 1,
     noiseColour: +$('noiseColour').value || 0,
     satPreserve: +($('satPreserve') && $('satPreserve').value) || 0,

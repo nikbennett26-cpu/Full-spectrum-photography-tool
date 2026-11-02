@@ -990,6 +990,12 @@ $('filmOn').addEventListener('change', () => {
   commitUndoCapture();
   haptic('select');
 });
+if ($('wideWork')) $('wideWork').addEventListener('change', () => {   // build 253
+  armUndoCapture();
+  render();
+  commitUndoCapture();
+  haptic('select');
+});
 if ($('swapSpace')) $('swapSpace').addEventListener('change', () => {
   armUndoCapture();
   syncWidenFromSelect();

@@ -1442,9 +1442,13 @@ function rawEngineResultToCanvas(res, doCamSpaceSwap, doCamSpaceSwapMatrix, doCa
          encode to sRGB once at the end. The cap at 8.0 is a sanity bound
          (three stops over white); nothing real survives the sensor above
          that, and it keeps a stray value from poisoning a 16-bit float. */
-      floatBuf[q]   = or_ > 8 ? 8 : (or_ < 0 ? 0 : or_);
-      floatBuf[q+1] = og  > 8 ? 8 : (og  < 0 ? 0 : og);
-      floatBuf[q+2] = ob  > 8 ? 8 : (ob  < 0 ? 0 : ob);
+      /* Build 253: kept below zero as well. A negative channel is a colour the camera saw that lies outside sRGB (an
+         infrared frame through the camera's own matrix puts most of the picture there); clipping it at zero here
+         decided that colour before white balance or the swap had a chance to bring it back. The shader's wide
+         working space carries it; with that switched off the shader clips it exactly as this line used to. */
+      floatBuf[q]   = or_ > 8 ? 8 : (or_ < -8 ? -8 : or_);
+      floatBuf[q+1] = og  > 8 ? 8 : (og  < -8 ? -8 : og);
+      floatBuf[q+2] = ob  > 8 ? 8 : (ob  < -8 ? -8 : ob);
       floatBuf[q+3] = 1;
     }
   }

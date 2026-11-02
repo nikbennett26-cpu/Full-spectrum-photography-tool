@@ -151,6 +151,39 @@ function stProperties() {
     return t / n;
   };
   return [
+    // build 253: the wide working space
+    { name: 'wide working space changes nothing for a JPEG (it only acts on a RAW\'s linear data)', img: 'scene', run: () => {
+      stApply({ m: [0, 0, 100, 0, 100, 0, 100, 0, 0] });
+      const b = Array.from((engine.render(Object.assign(currentParams(), { dither: false, wideWork: false })), engine.readPixels()));
+      const a2 = Array.from((engine.render(Object.assign(currentParams(), { dither: false, wideWork: true })), engine.readPixels()));
+      let mx = 0; for (let i = 0; i < a2.length; i++) mx = Math.max(mx, Math.abs(a2[i] - b[i]));
+      resetAllControls();
+      return { ok: mx <= 1, detail: { maxLevelDiff: mx } };
+    } },
+    { name: 'wide working space: light above white keeps its colour instead of being clipped channel by channel; nothing goes NaN', img: 'scene', run: () => {
+      resetAllControls();
+      const W = 64, H = 8, cv = document.createElement('canvas'); cv.width = W; cv.height = H;
+      const lf = new Float32Array(W * H * 4);
+      for (let y = 0; y < H; y++) for (let x = 0; x < W; x++) {
+        const i = (y * W + x) * 4, c = x < W / 2 ? [2.0, 0.3, 0.2] : [0.5, -0.1, 0.3];   // above white; outside sRGB
+        lf[i] = c[0]; lf[i + 1] = c[1]; lf[i + 2] = c[2]; lf[i + 3] = 1;
+      }
+      cv.__linearFloat = lf;
+      const lin = v => { v /= 255; return v <= 0.04045 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4); };
+      const at = (px, x) => { const i = (4 * W + x) * 4; return [px[i], px[i + 1], px[i + 2]]; };
+      let res;
+      try {
+        engine.setImage(cv);
+        if (!engine.inputIsLinear) return { ok: true, detail: 'no linear float upload on this GPU; skipped' };
+        engine.render(Object.assign(currentParams(), { dither: false, wideWork: true })); const pw = Array.from(engine.readPixels());
+        engine.render(Object.assign(currentParams(), { dither: false, wideWork: false })); const po = Array.from(engine.readPixels());
+        const w = at(pw, 16), o = at(po, 16), w2 = at(pw, 48);
+        const gw = lin(w[1]) / Math.max(lin(w[0]), 1e-6), go = lin(o[1]) / Math.max(lin(o[0]), 1e-6);
+        const finite = pw.every(v => Number.isFinite(v)) && w2.every(v => v >= 0 && v <= 255);
+        res = { ok: finite && Math.abs(gw - 0.15) < 0.04 && Math.abs(gw - 0.15) < Math.abs(go - 0.15), detail: { greenToRedWide: +gw.toFixed(3), greenToRedOld: +go.toFixed(3), shouldBe: 0.15, outsideSrgbPixel: w2 } };
+      } finally { engine.setImage(loadedImage); }
+      return res;
+    } },
     { name: 'exposure is monotonic (brighter with higher EV)', img: 'scene', run: () => { const a = meanL(G({ s: { bright: -1 } })), b = meanL(G({})), c = meanL(G({ s: { bright: 1 } })); return { ok: a < b && b < c, detail: [a, b, c].map(v => +v.toFixed(3)) }; } },
     { name: 'saturation 100 and hue 0 leave the image unchanged', img: 'scene', run: () => { const d = stDeltaE(G({}), G({ s: { sat: 100, hue: 0, vibrance: 0 } })); return { ok: d.max < 0.002, detail: d }; } },
     { name: 'Keep saturation never reduces chroma of bright lamps (sat 180)', img: 'lamps', run: () => { const off = lampChroma({ s: { sat: 180, satPreserve: 0 } }), on = lampChroma({ s: { sat: 180, satPreserve: 100 } }); return { ok: on >= off - 0.002, detail: { keepSatOff: +off.toFixed(4), keepSatOn: +on.toFixed(4) } }; } },

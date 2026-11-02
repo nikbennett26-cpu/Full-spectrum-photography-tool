@@ -93,6 +93,7 @@ function resetAllControls() {
   });
   filmOn = false; $('filmOn').checked = false;
   if ($('swapSpace')) $('swapSpace').value = '2';   // ProPhoto, the default
+  if ($('wideWork')) $('wideWork').checked = true;   // build 253: wide working space on by default
   if ($('swapWiden')) { $('swapWiden').value = 100; if ($('v_swapWiden')) $('v_swapWiden').textContent = 100; if (typeof syncSliderFill === 'function') syncSliderFill($('swapWiden')); }
   /* The three toggles added after this handler was written, each of which
      changes the rendered image and so belongs in a reset. They were missed
@@ -1305,6 +1306,7 @@ function captureState() {
     // variable would be if it had one -- no JS variable needed since
     // collectParams() already reads this element live at render time
     swapSpace: ($('swapSpace') && $('swapSpace').value) || '2',
+    wideWork: $('wideWork') ? !!$('wideWork').checked : true,
     // the vignette CENTRE is edit state like any slider — it changes the
     // rendered output and is baked into exports — but it lives in a JS
     // variable rather than an <input>, so it is not covered by the
@@ -1384,6 +1386,7 @@ function applyState(snap) {
   hueSpace = snap.hueSpace || 'perceptual';
   syncHueSpaceButtons();
   if ($('swapSpace')) $('swapSpace').value = snap.swapSpace !== undefined ? snap.swapSpace : '2';
+  if ($('wideWork')) $('wideWork').checked = snap.wideWork !== undefined ? !!snap.wideWork : true;
   syncWidenFromSelect();   // a saved state with a named space (or none) puts the slider where that space sits
   lumPreserve = !!snap.lumPreserve;
   if ($('lumPreserve')) $('lumPreserve').checked = lumPreserve;
@@ -1498,7 +1501,7 @@ function stateKey(s) {
     m: s.m, mOff: s.mOff, s: s.s, preWB: s.preWB, postWB: s.postWB, bands: s.bands,
     activePreset: s.activePreset, curves: s.curves, crop: s.crop, masks: s.masks,
     preWBM: s.preWBM, postWBM: s.postWBM, wbMethod: s.wbMethod,
-    hueSpace: s.hueSpace, swapSpace: s.swapSpace, vigCentre: s.vigCentre, indexMode: s.indexMode, rawWb: s.rawWb || null,
+    hueSpace: s.hueSpace, swapSpace: s.swapSpace, wideWork: s.wideWork, vigCentre: s.vigCentre, indexMode: s.indexMode, rawWb: s.rawWb || null,
     lumPreserve: s.lumPreserve, filmOn: s.filmOn,
     /* Anything captureState stores MUST be compared here too. This function
        is what decides whether a change happened at all — if a field is

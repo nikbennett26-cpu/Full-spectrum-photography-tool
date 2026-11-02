@@ -175,7 +175,7 @@ function rtwbSyncSwap() {
   const word = k => { const w = document.querySelector('#wbSwapWords [data-k="' + k + '"]'); return w ? w.textContent.trim() : k; };   // translated with the page
   const none = !!(btn && btn.dataset.perm === '012');
   let name = none ? word('none') : btn ? btn.textContent.trim() : word('mix');
-  const sp = $('swapSpace'), spaces = { '0': 'sRGB', '1': 'Rec 2020', '2': 'ProPhoto', '3': 'Custom', '4': 'Encoded' };
+  const sp = $('swapSpace'), spaces = { '0': 'sRGB', '1': 'Rec 2020', '2': 'Standard', '3': 'Custom', '4': 'Classic mixer' };
   const v = name + (!none && sp ? ' \u00b7 ' + (spaces[sp.value] || '') : '') + ' \u203a';
   if (el.textContent !== v) el.textContent = v;
 }

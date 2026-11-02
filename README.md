@@ -39,8 +39,16 @@ Work that is best done on the sensor data is done there, before the channel swap
 - **Hot pixels & stripes (RAW):** runs automatically on every RAW, with no control to set. It finds stuck or hot pixels and faint row or column stripes at full size
   and fixes them. Real points of light such as stars are left alone, and stripes are only touched when they
   can actually be found.
-- **Wide-gamut swap and camera colour:** optionally do the swap in the camera's own wider colour space (or ProPhoto) so
-  saturated colours survive it. The sensor decode can be fitted to the camera's own JPEG rendering of the same frame.
+- **Wide working space (RAW):** on by default. A RAW's colours outside sRGB and its light above white are kept, unclipped,
+  through noise reduction, white balance and the swap, and brought into the screen's range once, after the swap: only the
+  most saturated colours are compressed (they stay saturated, using the shape of the ACES Reference Gamut Compression on
+  encoded values), and the brightest light is rolled off with all three channels scaled together, so it keeps its colour.
+  Before build 253 everything was clipped to sRGB as soon as the RAW arrived. Switch it off under Colour > Swap working
+  space to get the old behaviour. The look stages after the swap, and so exports, are still sRGB.
+- **Wide-gamut swap and camera colour:** the swap runs on linear light in ProPhoto by default (**Standard**), or on
+  gamma-encoded values like an image editor's channel mixer (**Classic mixer**), for matching a recipe made in one. The
+  other spaces are kept under Colour > Swap working space (advanced). The sensor decode can be fitted to the camera's own
+  JPEG rendering of the same frame.
 
 ## The editor
 
@@ -108,8 +116,9 @@ Five tabs, in the order the picture is made: **Looks, Light, Colour, Detail, Exp
   around each pixel, not its own grainy colour, so a sky moves as one.
 - **Targeted colour** (Advanced): pick a colour on the photo and shift its hue, saturation or lightness. Lightness works
   like exposure, so the selection keeps its contrast. Applied to the original colours, before the swap.
-- **Calibration, working space, LUTs** (Advanced): primary and shadow-tint calibration; choose how wide the swap works
-  (standard sRGB, Rec2020, Wide ProPhoto as the default, or your own widening); apply a `.cube` LUT as a final grade.
+- **Calibration, working space, LUTs** (Advanced): primary and shadow-tint calibration; the swap's working space (Wide
+  ProPhoto by default, Classic mixer, sRGB with no widening, or your own widening) and the wide working space switch;
+  apply a `.cube` LUT as a final grade. Most photos never need the working space touched.
 
 ## Detail
 
