@@ -45,8 +45,8 @@ Work that is best done on the sensor data is done there, before the channel swap
   encoded values), and the brightest light is rolled off with all three channels scaled together, so it keeps its colour.
   Before build 253 everything was clipped to sRGB as soon as the RAW arrived. Switch it off under Colour > Swap working
   space to get the old behaviour. The look stages after the swap, and so exports, are still sRGB.
-- **Wide-gamut swap and camera colour:** the swap runs on linear light in ProPhoto by default (**Standard**), or on
-  gamma-encoded values like an image editor's channel mixer (**Classic mixer**), for matching a recipe made in one. The
+- **Wide-gamut swap and camera colour:** the swap always runs on linear light in ProPhoto; there is no choice beside it.
+  Classic mixer (gamma-encoded values, like an image editor's channel mixer, for matching a recipe made in one) and the
   other spaces are kept under Colour > Swap working space (advanced). The sensor decode can be fitted to the camera's own
   JPEG rendering of the same frame.
 

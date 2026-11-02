@@ -211,7 +211,7 @@ footer p{margin:0 0 8px}
       <h3>Wide-gamut swap &amp; camera colour</h3>
       <ul>
         <li><b>Wide working space</b> (on by default): a RAW's colours outside sRGB and its light above white are kept through noise reduction, white balance and the swap, then brought into the screen's range once, after the swap. The most saturated colours are compressed but stay saturated; the brightest light is rolled off with its colour kept. The look stages after the swap, and so exports, are still sRGB.</li>
-        <li>The swap runs on linear light in ProPhoto (<b>Standard</b>), or on gamma-encoded values like an image editor's channel mixer (<b>Classic mixer</b>) to match a recipe made in one.</li>
+        <li>The swap always runs on linear light in ProPhoto. Classic mixer (gamma-encoded values, like an image editor's channel mixer) and the other spaces are under Colour &rsaquo; Swap working space (advanced), for matching an old recipe.</li>
         <li>The sensor decode can be fitted to the camera's own JPEG rendering of the same frame.</li>
       </ul>
     </div>
@@ -554,7 +554,7 @@ footer p{margin:0 0 8px}
 <footer>
   <div class="wrap">
     <p><a href="https://irlab.uk">irlab.uk</a> &middot; <a href="https://irlab.uk/filters.html">Filter database</a> &middot; <a href="https://www.instagram.com/irlab.uk">Instagram</a></p>
-    <p>This page describes the app as of build 253.</p>
+    <p>This page describes the app as of build 254.</p>
   </div>
 </footer>
 </body>
