@@ -37,13 +37,13 @@ function ensureWorker() {
 
 // Decode + demosaic a RAW file. `bytes` may be a Uint8Array or ArrayBuffer;
 // its underlying buffer is transferred to the worker and left detached here.
-export function demosaicRawInWorker(bytes, qual = 'amaze') {
+export function demosaicRawInWorker(bytes, qual = 'amaze', opts = {}) {
   const w = ensureWorker();
   const buf = bytes instanceof Uint8Array ? bytes.buffer : bytes;
   const id = ++seq;
   return new Promise((resolve, reject) => {
     pending.set(id, { resolve, reject });
-    w.postMessage({ id, bytes: buf, qual }, [buf]);
+    w.postMessage({ id, bytes: buf, qual, opts }, [buf]);
   });
 }
 

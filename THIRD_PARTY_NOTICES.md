@@ -65,6 +65,10 @@ only the surrounding glue changed for a standalone build.
 - Licence: GPL-3.0-or-later.
 - Upstream: https://github.com/darktable-org/darktable
 
+The same two files, unchanged, are also built on their own into `libraw-wasm-gpl3/dist/demosaic-only.wasm`
+(`libraw-wasm-gpl3/src/demosaic_only.cc`, `build_demosaic_only.sh`) for the white balance before demosaic (build 256),
+under the same licence.
+
 ## darktable (healing, as used by Dust removal in the editor)
 
 `src/dust.js` ports the healing solver from darktable's `src/common/heal.c` (red-black Gauss-Seidel with successive

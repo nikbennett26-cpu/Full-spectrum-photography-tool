@@ -21,9 +21,18 @@
     window.__keepEditsOnLoad = true;
     try { await loadFile(f); } finally { window.__keepEditsOnLoad = false; busy = false; }
     try { applyState(snap); } catch (e) { console.warn('could not restore edits after re-decode', e); }
-    toast('Re-decoded with ' + demosaicPrefName());
+    toast('Re-decoded with ' + demosaicPrefName() + (preWbPref() ? ', balanced first' : ''));
   }
   window.__redecodeForDemosaic = redecode;
+  /* Build 256: white balance before demosaic (libraw-wasm-gpl3/glue/pre-wb.mjs). On unless switched off. */
+  const pre = [$('preWbSel'), $('preWbSelEd')].filter(Boolean);
+  const syncPre = () => pre.forEach(c => { c.checked = preWbPref(); });
+  syncPre();
+  pre.forEach(c => c.addEventListener('change', () => {
+    try { localStorage.setItem('irlab.preWb', c.checked ? 'on' : 'off'); } catch (e) {}
+    syncPre();
+    redecode();
+  }));
   sels.forEach(s => s.addEventListener('change', () => {
     try { localStorage.setItem('irlab.demosaic', s.value === 'rcd' ? 'rcd' : 'amaze'); } catch (e) {}
     sync();
@@ -607,7 +616,7 @@ const rawEngine = (function () {
       const { demosaicRawInWorker, disposeWorker } = await loadClient();
       const bytes = new Uint8Array(await file.arrayBuffer());
       try {
-        const res = await demosaicRawInWorker(bytes, qual);
+        const res = await demosaicRawInWorker(bytes, qual, { preWb: preWbPref() });
         this.lastResult = res;
         this.lastGen = loadToken;   // which photo it belongs to: nothing may rebuild a later photo from it
         this.nrPrev = null;

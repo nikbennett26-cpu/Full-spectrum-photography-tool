@@ -14,9 +14,9 @@
 import { decodeAndDemosaic } from './worker-core.mjs';
 
 self.onmessage = async (e) => {
-  const { id, bytes, qual } = e.data || {};
+  const { id, bytes, qual, opts } = e.data || {};
   try {
-    const { meta, R, G, B } = await decodeAndDemosaic(bytes, qual);
+    const { meta, R, G, B } = await decodeAndDemosaic(bytes, qual, opts || {});
     // Transfer the plane buffers back rather than copying them.
     self.postMessage({ id, ok: true, meta, R, G, B }, [R.buffer, G.buffer, B.buffer]);
   } catch (err) {

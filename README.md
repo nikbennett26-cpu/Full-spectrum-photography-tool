@@ -24,10 +24,21 @@ editor) so it opens full screen and keeps working offline.
 
 Work that is best done on the sensor data is done there, before the channel swap stretches every fault:
 
-**Decode → Hot pixels & stripes → Highlight rebuild → Noise reduction → Deconvolution → White balance → Camera colour → Channel swap & mix → Edit → Export**
+**Decode → Balance before demosaic → Demosaic → Hot pixels & stripes → Highlight rebuild → Noise reduction → Deconvolution → White balance → Camera colour → Channel swap & mix → Edit → Export**
 
 - **Demosaicing:** AMaZE by default for Bayer sensors, with RCD one tap away (switching re-decodes the open photo and keeps
   your edits, so the two can be compared); Markesteijn for Fuji X-Trans.
+- **Balance before demosaic (Bayer, on by default):** AMaZE and RCD assume the sensor's three colours are roughly even;
+  on infrared or UV one can be ten times the others, which leaves coloured fringes and zipper patterns on edges that a
+  swap then makes louder. So the light's colour is measured on the raw mosaic itself (Cheng, Prasad & Brown's PCA
+  method, the same as RAW Auto white balance), each photosite is balanced, the demosaic runs, and the balance is taken
+  back off, so white balance and every edit see the same numbers as before. On a synthetic infrared test it cuts false
+  colour on edges about ninefold with AMaZE and fourfold with RCD; on a real infrared portrait (Nikon D610, red about
+  ten times green) fine-detail false colour drops by about a fifth with both, most visibly on hair. If the balance step
+  cannot run (out of memory, or offline before it was ever loaded), the photo is decoded the ordinary way. A RAW takes a little longer to open; the switch is in
+  Decode settings. Code: `libraw-wasm-gpl3/glue/pre-wb.mjs`; the second demosaic runs in
+  `libraw-wasm-gpl3/dist/demosaic-only.wasm`, the same AMaZE and RCD source built without LibRaw
+  (`libraw-wasm-gpl3/build_demosaic_only.sh`, zig's clang); test: `node libraw-wasm-gpl3/test_pre_wb.mjs`.
 - **White balance (RAW):** opens on the camera's own as-shot balance. Temperature in Kelvin and Green, using
   RawTherapee's model, with As shot, Auto and Pick. Dragging runs on the graphics chip, so it follows your finger at full
   resolution.

@@ -334,9 +334,11 @@ function probeRawPlane(buf) {
    RCD (darktable). Which of the two is a setting (demosaicPref), so both can be compared on one photo. */
 function demosaicPref() { try { return localStorage.getItem('irlab.demosaic') === 'rcd' ? 'rcd' : 'amaze'; } catch (e) { return 'amaze'; } }
 function demosaicPrefName() { return demosaicPref() === 'rcd' ? 'RCD' : 'AMaZE'; }
+/* Build 256: balance the mosaic before demosaic (Bayer only). On by default. */
+function preWbPref() { try { return localStorage.getItem('irlab.preWb') !== 'off'; } catch (e) { return true; } }
 /* LibRaw's orientation flag as an EXIF orientation for drawOriented(): 3 = 180, 5 = 90 CCW (EXIF 8), 6 = 90 CW. */
 function rawFlipToExif(f) { return f === 3 ? 3 : f === 5 ? 8 : f === 6 ? 6 : 1; }
-function rawDemosaicName(res) { return res && res.cfa && res.cfa[0] === 9 ? 'Markesteijn' : (res && res.qual === 'rcd' ? 'RCD' : 'AMaZE'); }
+function rawDemosaicName(res) { return res && res.cfa && res.cfa[0] === 9 ? 'Markesteijn' : (res && res.qual === 'rcd' ? 'RCD' : 'AMaZE') + (res && res.preWb ? ' (balanced first)' : ''); }
 function setDecoderBadge(text, isAmaze) {
   const b = $('decoderBadge');
   if (!b) return;
