@@ -83,7 +83,7 @@ Five tabs, in the order the picture is made: **Looks, Light, Colour, Detail, Exp
   Aerochrome III 1443 (Kodak's AS-77 data sheet), Ektachrome Infrared EIR (TI-2323) or Ektachrome Infrared Aero 8443 (NASA's published data), in midday sun, low sun, overcast or open
   shade (sun, shade and sky from NREL's ASTM G173 solar spectra), fitted on realistic spectra and checked against measured surfaces from the USGS Spectral Library. It shows how close it gets, layer by layer, with film-vs-yours swatches for leaves, grass,
   pine needles, autumn and dry grass, bare earth, asphalt, concrete, brick, water, snow, red and yellow paint and sky, and warns if the stack lets blue in or blocks the
-  infrared the film used. Change picks the filters right there (the same list Export records). The film can be put behind the classic filters (Wratten 12, 16, 21, 25; B+W 023, 040, 041, 090;
+  infrared the film used. Change picks the filters right there (the same list Export records). The film can be put behind the classic filters (Wratten 12, 15, 16, 21, 25; B+W 023, 040, 041, 090;
   Y52 and O56 glass), following your stack when it has one, and keeps the tint each gave the film: deeper filters made
   greys warmer, skies greener and foliage redder. Apply puts it on as a look (RAW decoded camera native, then
   pick grey), with the film's own contrast as R, G and B tone curves unless you untick it.
@@ -162,7 +162,8 @@ through.
 - **500+ filters:** Schott glass, B+W, Hoya, Wratten, Kodak colour-compensating, 221 Thorlabs and 90 Edmund Optics
   filters, most with digitised or measured manufacturer curves. Search by name or by what you want it to do (UV-pass,
   IR-pass, IR blocker, colour).
-- **Stack and predict:** stack several filters to see the combined transmission, see the predicted RGB response, and
+- **Stack and predict:** stack several filters to see the combined transmission, drawn as a fine 1px line at the
+  screen's full sharpness so the curve can be read accurately on a phone; see the predicted RGB response, and
   check a stack for infrared leaks. *Suggest a recipe*: describe the look you want and get filter combinations.
 - **Data you can trust:** every filter names its source and how the curve was taken from it, with a badge (maker data,
   measured, chart, fit or estimate). A data self-test checks every curve, and you can switch to real data only.

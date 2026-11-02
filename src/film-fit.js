@@ -46,7 +46,7 @@ function ffWl() { const [lo, hi, st] = fpData.wl, a = []; for (let w = lo; w <= 
    infrared layer is kept at its Wratten 12 level, as the film would be metered), the cast stays, and the fit is asked
    to reproduce it (its grey condition aims at the film's grey, not at neutral). Only filters that cut on at or above the
    Wratten 12 are offered: below it blue reaches the film, and the table has no data for the film's blue sensitivity. */
-const FF_FILM_FILTERS = [['w12', 'Wratten 12 (Kodak\u2019s data)'], ['w16', 'Wratten 16'], ['w21', 'Wratten 21 (orange)'], ['w25', 'Wratten 25 (red)'],
+const FF_FILM_FILTERS = [['w12', 'Wratten 12 (Kodak\u2019s data)'], ['w15', 'Wratten 15'], ['w16', 'Wratten 16'], ['w21', 'Wratten 21 (orange)'], ['w25', 'Wratten 25 (red)'],
   ['bw023', 'B+W 023 (deep yellow)'], ['bw040', 'B+W 040 (yellow-orange)'], ['bw041', 'B+W 041 (orange)'], ['bw090', 'B+W 090 (red)'],
   ['hyg_y52', 'Y52 glass (as Nikon Y52)'], ['hyg_o56', 'O56 glass (as Nikon O56)']];
 /* Aerochrome III 1443, the film most people mean by "Aerochrome". Build 247: the three layer sensitivity curves are

@@ -58,7 +58,7 @@ function _drawChartInner(dprOverride){
      is what made exported curves and labels soft. Everything below already
      scales off dpr, so one parameter is enough. */
   const cv=$('chart'),rect=cv.getBoundingClientRect();
-  /* On-screen device pixel ratio is capped at 2. A phone reporting dpr 3 on a
+  /* On-screen device pixel ratio is capped (3 since build 255, was 2). A phone reporting a high dpr on a
      wide viewport asks for a backing store several times larger than the
      screen can show, and mobile browsers enforce a per-page canvas memory
      budget -- exceed it and the allocation silently fails or the store is
@@ -224,7 +224,7 @@ function _drawChartInner(dprOverride){
       // decorative — it's what actually distinguishes two filters that
       // land on nearly identical colours (same category, e.g. two greens).
       cx.setLineDash(DASH_PATTERNS[idx%DASH_PATTERNS.length].map(v=>v*dpr));
-      cx.strokeStyle=themeCurveColor(f.c);cx.lineWidth=1.2*dpr;cx.stroke();
+      cx.strokeStyle=themeCurveColor(f.c);cx.lineWidth=0.75*dpr;cx.stroke();   // build 255: was 1.2, kept lighter than the combined line
       cx.setLineDash([]);
     });
     cx.restore();
@@ -249,11 +249,11 @@ function _drawChartInner(dprOverride){
       px?cx.lineTo(x,y):cx.moveTo(x,y);
     }
     // Crisp, fully-opaque stroke, same reasoning as the individual curves
-    // above — no glow, just a clean line. Kept thicker (2.2 vs 1.2) than
-    // the individual curves, since this is the headline combined result,
-    // not a supporting reference line.
+    // above — no glow, just a clean line. Build 255: 1px (was 1.6), drawn at
+    // the screen's own resolution, so the curve can be read accurately; still
+    // heavier than the individual curves, since this is the combined result.
     const stackColor=fs.length>1?'#c2431b':fs[0].c;
-    cx.strokeStyle=stackColor;cx.lineWidth=1.6*dpr;cx.stroke();
+    cx.strokeStyle=stackColor;cx.lineWidth=1.0*dpr;cx.lineJoin='round';cx.stroke();
     cx.restore();
   }else{
     cx.fillStyle='#7a6a52';cx.textAlign='center';cx.textBaseline='middle';
@@ -338,7 +338,7 @@ function showChartDiag(){
 /* Set by the loss detector to force a fresh backing store on the next draw. */
 let _forceChartRealloc=false;
 /* Lowered to 1 only if the chart repeatedly fails to allocate — see repaintIfLost. */
-let chartDprCap=2;
+let chartDprCap=3;   // build 255: was 2, which drew the chart at 2x and stretched it on a 2.6-3x phone, softening the line
 function scheduleChartDraw(){
   if(_chartPending)return;
   _chartPending=true;
