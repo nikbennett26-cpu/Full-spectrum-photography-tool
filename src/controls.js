@@ -902,6 +902,7 @@ function render(fromSlider) {
 function renderNow() {
   renderPending = false;
   if (renderNeedsFillSync) { renderNeedsFillSync = false; syncSliderFills(); }
+  if (typeof desqSync === 'function' && (desqFactor() > 1 || ($('preview') && $('preview').style.aspectRatio))) desqSync();   // build 257
   updateImplicitStamp();
   if (!engine || !loadedImage) return;
   const dsc = sliderDragging ? draftScale() : 1;

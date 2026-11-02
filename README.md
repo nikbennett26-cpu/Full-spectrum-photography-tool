@@ -145,6 +145,11 @@ Five tabs, in the order the picture is made: **Looks, Light, Colour, Detail, Exp
   the whole picture (a dark-channel haze map), so a sky clears evenly right up to a dark building, with no halo.
 - **Orton glow:** a blurred, brightened copy over the sharp photo, with Amount and Softness.
 - **Colour fringing:** controls for coloured edges toward the corners.
+- **Anamorphic desqueeze:** for anamorphic lenses, 1.33×, 1.5×, 1.66× or 2×. The photo is shown at its true shape while
+  you edit (pickers, masks and crop still land where you touch, and crop ratios apply to the desqueezed picture), and
+  every export, share and batch file is resampled once at the end, after the crop: **Widen** keeps every row and adds
+  width (sharp Catmull-Rom), **Lower the height** keeps the width and averages rows, for a smaller file. Saved with the
+  edit; Reset all turns it off.
 
 ## Export
 

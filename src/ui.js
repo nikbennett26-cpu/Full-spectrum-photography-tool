@@ -131,7 +131,7 @@ function resetAllControls() {
   $('vigFall').value = 20; $('v_vigFall').textContent = '2.0';
   $('hotSize').value = 35; $('v_hotSize').textContent = 35;
   curveState = curveDefault(); drawCurveEditor();
-  cropRect = null; drawCropOverlay();
+  cropRect = null; desqueeze = 1; desqFit = 'widen'; desqSync(); drawCropOverlay();
   masks = []; maskSel = -1; if ($('mShow')) $('mShow').checked = false; maskRenderList(); maskSyncEditor(); drawMaskOverlay();
   $('vigSpread').value = 55; $('v_vigSpread').textContent = 55;
   vigCentre = [0.5, 0.5]; $('vigCentreNote').textContent = 'Centre: 0.50, 0.50 (default)';
@@ -489,8 +489,99 @@ function toast(msg, sticky) {
    are untouched by it. null means no crop. */
 let cropRect = null, cropAspect = 0;   // aspect: 0 = free, -1 = the image's own, else width / height
 function cropCopy(r) { return r ? { x0: r.x0, y0: r.y0, x1: r.x1, y1: r.y1 } : null; }
+
+/* ---------- Anamorphic desqueeze (build 257) ----------
+   An anamorphic lens squeezes a wider view sideways onto the sensor; desqueezing stretches it back by the lens's factor.
+   Nothing in the pipeline changes: the preview canvas is shown at the desqueezed shape (CSS), so pickers, masks and crop,
+   which all work in 0..1 of the picture, still land where you touch, and the finished pixels are resampled once, at the
+   end of every export path (applyCropToPixels), after the crop. "Widen" keeps every pixel row and adds width (2x on a
+   6000 px frame gives 12000 px); "Lower height" keeps the width and averages rows down, for a smaller file. */
+const DESQ_STEPS = [1, 1.33, 1.5, 1.66, 2];
+let desqueeze = 1, desqFit = 'widen';
+function desqFactor() { return desqueeze > 1.001 ? desqueeze : 1; }
+/* The preview's width in pixels as you see it: its real width times the desqueeze. */
+function pvShownW(pv) { return pv.width * desqFactor(); }
+function desqSync() {
+  const pv = $('preview'), po = $('previewOrig'); if (!pv) return;
+  const f = desqFactor();
+  const ar = f > 1 && pv.width && pv.height ? (pv.width * f) + ' / ' + pv.height : '';
+  if (pv.style.aspectRatio !== ar) pv.style.aspectRatio = ar;
+  if (po) {
+    if (f > 1) {
+      // object-fit:contain would keep Before at the squeezed shape; lay it exactly over the stretched After instead
+      const s = po.style; s.objectFit = 'fill';
+      s.left = pv.offsetLeft + 'px'; s.top = pv.offsetTop + 'px'; s.width = pv.offsetWidth + 'px'; s.height = pv.offsetHeight + 'px';
+    } else if (po.style.objectFit) { const s = po.style; s.objectFit = s.left = s.top = s.width = s.height = ''; }
+  }
+  document.querySelectorAll('#desqRow button[data-dq]').forEach(b => b.classList.toggle('on', Math.abs(+b.dataset.dq - desqFactor()) < 0.001));
+  const fs = $('desqFit'); if (fs && fs.value !== desqFit) fs.value = desqFit;
+  const n = $('desqNote');
+  if (n) n.textContent = f > 1 && pv.width ? (desqFit === 'widen'
+      ? 'Saved ' + Math.round(pv.width * f) + ' \u00d7 ' + pv.height + ' at working size (full size: width \u00d7 ' + f + ')'
+      : 'Saved ' + pv.width + ' \u00d7 ' + Math.round(pv.height / f) + ' at working size (full size: height \u00f7 ' + f + ')')
+    : 'Off: the photo is shown and saved as recorded.';
+}
+window.addEventListener('resize', () => { if (desqFactor() > 1) requestAnimationFrame(desqSync); });
+/* Resample one axis of an RGBA buffer. Up: Catmull-Rom (sharp, no ringing to speak of); down: area average. */
+function desqResample(px, w, h, W2, H2) {
+  const isF = px instanceof Float32Array, maxV = px instanceof Uint16Array ? 65535 : 255;
+  const out = new px.constructor(W2 * H2 * 4);
+  const taps = (n, n2) => {   // per output index: source indices and weights
+    const f = n2 / n, list = [];
+    for (let o = 0; o < n2; o++) {
+      const ix = [], wt = [];
+      if (f >= 1) {
+        const s = (o + 0.5) / f - 0.5, i0 = Math.floor(s), t = s - i0;
+        const cw = [((-0.5 * t + 1) * t - 0.5) * t, (1.5 * t - 2.5) * t * t + 1, ((-1.5 * t + 2) * t + 0.5) * t, (0.5 * t - 0.5) * t * t];
+        for (let k = 0; k < 4; k++) { ix.push(Math.max(0, Math.min(n - 1, i0 - 1 + k))); wt.push(cw[k]); }
+      } else {
+        const a = o / f, b = (o + 1) / f;
+        for (let i = Math.floor(a); i < Math.ceil(b) && i < n; i++) { const ov = Math.min(b, i + 1) - Math.max(a, i); if (ov > 0) { ix.push(i); wt.push(ov * f); } }
+      }
+      list.push([ix, wt]);
+    }
+    return list;
+  };
+  const put = (i, v) => { out[i] = isF ? v : (v < 0 ? 0 : v > maxV ? maxV : Math.round(v)); };
+  if (W2 !== w) {
+    const T = taps(w, W2);
+    for (let y = 0; y < h; y++) {
+      const rs = y * w * 4, ro = y * W2 * 4;
+      for (let x = 0; x < W2; x++) {
+        const [ix, wt] = T[x]; let r = 0, g = 0, b = 0, a = 0;
+        for (let k = 0; k < ix.length; k++) { const j = rs + ix[k] * 4, q = wt[k]; r += px[j] * q; g += px[j + 1] * q; b += px[j + 2] * q; a += px[j + 3] * q; }
+        const o = ro + x * 4; put(o, r); put(o + 1, g); put(o + 2, b); put(o + 3, a);
+      }
+    }
+  } else {
+    const T = taps(h, H2);
+    for (let y = 0; y < H2; y++) {
+      const [iy, wt] = T[y], ro = y * w * 4;
+      for (let x = 0; x < w * 4; x++) { let v = 0; for (let k = 0; k < iy.length; k++) v += px[iy[k] * w * 4 + x] * wt[k]; put(ro + x, v); }
+    }
+  }
+  return out;
+}
+function applyDesqueezeToPixels(px, w, h) {
+  const f = desqFactor();
+  if (f <= 1) return { px: px, w: w, h: h };
+  if (desqFit === 'height') { const H2 = Math.max(1, Math.round(h / f)); return { px: desqResample(px, w, h, w, H2), w: w, h: H2 }; }
+  const W2 = Math.round(w * f); return { px: desqResample(px, w, h, W2, h), w: W2, h: h };
+}
+
+(function wireDesqueeze() {
+  document.querySelectorAll('#desqRow button[data-dq]').forEach(b => b.addEventListener('click', () => {
+    const v = +b.dataset.dq; if (Math.abs(v - desqFactor()) < 0.001) return;
+    armUndoCapture(); desqueeze = v > 1 ? v : 1;
+    desqSync(); if (cropAspect !== 0 && cropRect) cropFit();
+    commitUndoCapture(); drawCropOverlay(); if (typeof drawMaskOverlay === 'function') drawMaskOverlay(); saveSessionState(); haptic('select');
+  }));
+  const fs = $('desqFit');
+  if (fs) fs.addEventListener('change', () => { armUndoCapture(); desqFit = fs.value === 'height' ? 'height' : 'widen'; desqSync(); commitUndoCapture(); saveSessionState(); });
+})();
+
 function cropRatio() {
-  if (cropAspect === -1) { const pv = $('preview'); return pv && pv.height ? pv.width / pv.height : 1; }
+  if (cropAspect === -1) { const pv = $('preview'); return pv && pv.height ? pvShownW(pv) / pv.height : 1; }
   return cropAspect;
 }
 function cropNormalize() {
@@ -500,7 +591,7 @@ function cropNormalize() {
 function cropFit() {
   const ratio = cropRatio(), pv = $('preview');
   if (!ratio || !pv.width) return;
-  const W = pv.width, H = pv.height;
+  const W = pvShownW(pv), H = pv.height;   // build 257: crop ratios are of the desqueezed picture
   const r = cropRect || { x0: 0, y0: 0, x1: 1, y1: 1 };
   const cx = (r.x0 + r.x1) / 2, cy = (r.y0 + r.y1) / 2;
   let wN = r.x1 - r.x0, hN = r.y1 - r.y0;
@@ -541,7 +632,9 @@ function drawCropOverlay() {
     pts.forEach(q => ctx.fillRect(q[0] - 5, q[1] - 5, 10, 10));
   }
 }
-function applyCropToPixels(px, w, h) {
+/* Every export path calls this on the finished pixels: the crop, then (build 257) the anamorphic desqueeze. */
+function applyCropToPixels(px, w, h) { const c = cropPixels(px, w, h); return applyDesqueezeToPixels(c.px, c.w, c.h); }
+function cropPixels(px, w, h) {
   if (!cropRect) return { px: px, w: w, h: h };
   const x0 = Math.max(0, Math.min(w - 1, Math.round(cropRect.x0 * w)));
   const y0 = Math.max(0, Math.min(h - 1, Math.round(cropRect.y0 * h)));
@@ -594,7 +687,7 @@ function applyCropToPixels(px, w, h) {
     armUndoCapture();
     let mode = hitTest(u, v, r);
     if (!mode) { mode = 'new'; }
-    drag = { mode: mode, su: u, sv: v, start: cropCopy(cropRect), W: pv.width, H: pv.height };
+    drag = { mode: mode, su: u, sv: v, start: cropCopy(cropRect), W: pvShownW(pv), H: pv.height };
     try { cv.setPointerCapture(e.pointerId); } catch (err) {}
   });
   cv.addEventListener('pointermove', e => {
@@ -657,7 +750,7 @@ const MASK_MAX = 4, MASK_TYPES = ['linear', 'radial', 'lum', 'color', 'ir'];
 let masks = [], maskSel = -1;
 function maskNew(type) {
   const base = { type: type, inv: false, feather: 50, exp: 0, con: 0, sat: 0, temp: 0, tint: 0 };
-  const pv = $('preview'), asp = pv && pv.height ? pv.width / pv.height : 1;
+  const pv = $('preview'), asp = pv && pv.height ? pvShownW(pv) / pv.height : 1;   // a new radial mask is round as shown
   if (type === 'linear') return Object.assign(base, { x0: 0.5, y0: 0.15, x1: 0.5, y1: 0.65 });
   if (type === 'radial') return Object.assign(base, { cx: 0.5, cy: 0.5, rx: 0.25, ry: Math.min(0.5, 0.25 * asp) });
   if (type === 'color') return Object.assign(base, { L0: 0.6, a0: 0.1, b0: 0.05, range: 30, sw: '#b05a50' });
@@ -1297,6 +1390,7 @@ function captureState() {
     tv: 4,   // slider-weight version: none = straight-line; 2 = weighted incl. Black/White point; 3 = weighted except Black/White point; 4 = Temperature/Tint on their curve (build 190)
     curves: curveCopy(curveState),
     crop: cropCopy(cropRect),
+    desqueeze: desqFactor(), desqFit: desqFit,   // build 257
     masks: JSON.parse(JSON.stringify(masks)),
     m: MCELLS.map(id => +$(id).value || 0),
     mOff: MOFFCELLS.map(id => +$(id).value || 0),
@@ -1351,7 +1445,9 @@ function captureState() {
 }
 function applyState(snap) {
   curveState = snap.curves ? curveCopy(snap.curves) : curveDefault(); drawCurveEditor();
-  cropRect = snap.crop ? cropCopy(snap.crop) : null; drawCropOverlay();
+  cropRect = snap.crop ? cropCopy(snap.crop) : null;
+  desqueeze = +snap.desqueeze > 1 ? +snap.desqueeze : 1; desqFit = snap.desqFit === 'height' ? 'height' : 'widen'; desqSync();
+  drawCropOverlay();
   masks = snap.masks ? JSON.parse(JSON.stringify(snap.masks)) : [];
   maskSel = Math.min(maskSel, masks.length - 1); maskRenderList(); maskSyncEditor(); drawMaskOverlay();
   MCELLS.forEach((id, i) => $(id).value = snap.m[i]);
@@ -1499,7 +1595,7 @@ function updateUndoButton() {
 function stateKey(s) {
   return JSON.stringify({
     m: s.m, mOff: s.mOff, s: s.s, preWB: s.preWB, postWB: s.postWB, bands: s.bands,
-    activePreset: s.activePreset, curves: s.curves, crop: s.crop, masks: s.masks,
+    activePreset: s.activePreset, curves: s.curves, crop: s.crop, desqueeze: s.desqueeze, desqFit: s.desqFit, masks: s.masks,
     preWBM: s.preWBM, postWBM: s.postWBM, wbMethod: s.wbMethod,
     hueSpace: s.hueSpace, swapSpace: s.swapSpace, wideWork: s.wideWork, vigCentre: s.vigCentre, indexMode: s.indexMode, rawWb: s.rawWb || null,
     lumPreserve: s.lumPreserve, filmOn: s.filmOn,
