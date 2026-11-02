@@ -98,7 +98,9 @@ jobs:
         run: |
           # an annotation can be read without signing in, unlike the log
           cat "$RUNNER_TEMP/tools.log" build.log 2>/dev/null > all.log || true
-          [ -s all.log ] && msg=$(tail -c 4000 all.log | sed -e 's/\x1b\[[0-9;]*m//g' -e 's/%/%25/g' | sed ':a;N;$!ba;s/\n/%0A/g')
+          # the useful part of a Gradle failure, then any error lines, then the last lines
+          { sed -n '/What went wrong/,/\* Try/p' all.log | head -60; grep -iE 'error|failed|exception' all.log | grep -v '^\s*at ' | head -40; tail -n 25 all.log; } > short.log || true
+          [ -s short.log ] && msg=$(head -c 6000 short.log | sed -e 's/\x1b\[[0-9;]*m//g' -e 's/%/%25/g' | sed ':a;N;$!ba;s/\n/%0A/g')
           echo "::error title=Android build failed::${msg:-no build log}"
 
       - name: Publish to the android release
