@@ -209,7 +209,8 @@ through.
 
 - **Install as an app** from the bottom of the editor: opens full screen and keeps working offline.
 - **Android app (testing):** IR Lab for Android, `uk.irlab.app`, is irlab.uk itself shown full screen (a Trusted Web
-  Activity), so it gets every site update straight away. Photos can be shared into it from the gallery. The APK is at
+  Activity), so it gets every site update straight away. Photos can be shared into it from the gallery. Needs Android 7
+  or newer. The APK is at
   [releases/download/android/irlab-uk.apk](https://github.com/nikbennett26-cpu/full-spectrum-photography-tool/releases/download/android/irlab-uk.apk).
 - **Six languages:** English, Spanish, French, German, Japanese and Chinese, chosen on the home page (the filter page
   follows).
