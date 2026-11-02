@@ -1,6 +1,6 @@
 /* ---------- RAW white balance from your filters (build 258) ----------
 
-   Pizzamancer's pitch: the app knows the filter stack (Your filters), so it can say which wavelengths each channel
+   Pizzamancer's pitch: the app knows the filter stack (Filters on this photo), so it can say which wavelengths each channel
    is catching and set the white balance a photo through that recipe generally wants, instead of only measuring the
    scene. Auto (Cheng PCA) measures the scene, so a frame full of leaves or sky can pull it; this does not look at the
    picture at all, so the same recipe always starts in the same place.
@@ -62,24 +62,24 @@ function fwbLightNudge(res, greyWb) {
   return [0, 1, 2].map(c => Math.min(lim, Math.max(1 / lim, (e[c] / e[1]) / greyWb[c])));
 }
 
-/* Build 259: the picker opens right here in the white balance card, so the filters never have to be set in Export first.
-   Build 260: these settings sit in their own small box that only shows while Filters is the white balance or its picker is
-   open, so As shot, Auto and Pick keep a clean card. */
-const fwbOwner = { slot: null, onReturn: () => { const e = $('fwbEdit'); if (e) e.textContent = fpStack.length ? 'Change' : 'Add'; fwbBoxSync(); } };
+/* Build 260: these settings sit in their own small box that only shows while Filters is the white balance, so As shot,
+   Auto and Pick keep a clean card. Build 261: the filters themselves are picked only in Looks > Filters on this photo;
+   the box names them as a link there. Pressing Filters with none set takes you there, and the white balance is applied
+   as soon as you add one (fwbWaiting). */
+let fwbWaiting = false;
 function fwbBoxSync() {
   const box = $('fwbBox'); if (!box) return;
-  const show = (typeof rawWbCustom !== 'undefined' && rawWbCustom && rawWbCustom.src === 'filters') || fpLentTo(fwbOwner);
+  const show = typeof rawWbCustom !== 'undefined' && !!rawWbCustom && rawWbCustom.src === 'filters';
   if (box.hidden === show) box.hidden = !show;
 }
-function fwbOpenPicker() { fwbOwner.slot = $('fwbPickHere'); if (!fwbOwner.slot) return; fpLend(fwbOwner); const e = $('fwbEdit'); if (e) e.textContent = 'Done'; fwbBoxSync(); }
 function fwbSyncStack() {
   const st = $('fwbStack'); if (st) st.textContent = fpStack.length ? (typeof fpStackNames === 'function' ? fpStackNames().join(' + ') : fpStack.join(' + ')) : 'none yet';
-  const e = $('fwbEdit'); if (e && !fpLentTo(fwbOwner)) e.textContent = fpStack.length ? 'Change' : 'Add';
 }
 
 function fwbApply() {
   const res = rtwbRes(); if (!res) return;
-  if (!fpStack.length) { fwbOpenPicker(); if (typeof toast === 'function') toast('Add the filters on your lens, then press Done'); return; }
+  if (!fpStack.length) { fwbWaiting = true; if (typeof fpGoTo === 'function') fpGoTo(); if (typeof toast === 'function') toast('Pick the filters used on this photo; the white balance follows'); return; }
+  fwbWaiting = false;
   const go = () => {
     const out = fwbGains(res, fpStack, fwbTarget, fwbSensorName());
     if (out.error) { if (typeof toast === 'function') toast(out.error, true); return; }
@@ -93,13 +93,13 @@ function fwbApply() {
   if (fpData) go(); else fpLoad().then(go).catch(() => { if (typeof toast === 'function') toast('The filter data could not load.', true); });
 }
 
-/* The stack changed while the white balance came from it: follow the new stack. */
-function fwbStackChanged() { fwbSyncStack(); if (!fpLentTo(fwbOwner) && typeof rawWbCustom !== 'undefined' && rawWbCustom && rawWbCustom.src === 'filters' && fpStack.length) fwbApply(); }
+/* The stack changed while the white balance came from it (or Filters is waiting for one): follow the new stack. */
+function fwbStackChanged() { fwbSyncStack(); if (fpStack.length && (fwbWaiting || (typeof rawWbCustom !== 'undefined' && rawWbCustom && rawWbCustom.src === 'filters'))) fwbApply(); }
 
 (function wireFilterWb() {
   const b = $('rawWbFilt'); if (!b) return;
   b.addEventListener('click', fwbApply);
-  const ed = $('fwbEdit'); if (ed) ed.addEventListener('click', () => { if (fpLentTo(fwbOwner)) { fpReturn(fwbOwner); if (fpStack.length) fwbApply(); } else fwbOpenPicker(); });   // Done applies it
+  ['rawWbShot', 'rawWbAuto', 'rawWbPick'].forEach(id => { const x = $(id); if (x) x.addEventListener('click', () => { fwbWaiting = false; }); });   // another choice cancels the wait
   fwbSyncStack();
   const t = $('fwbTarget'), a = $('fwbAuto');
   if (t) { t.value = fwbTarget; t.addEventListener('change', () => { fwbTarget = t.value === 'grey' ? 'grey' : 'foliage'; try { localStorage.setItem('irlab.fwbTarget', fwbTarget); } catch (e) {} if (rawWbCustom && rawWbCustom.src === 'filters') fwbApply(); }); }

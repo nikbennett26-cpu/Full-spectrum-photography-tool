@@ -43,9 +43,9 @@ Work that is best done on the sensor data is done there, before the channel swap
   RawTherapee's model, with As shot, Auto and Pick. Dragging runs on the graphics chip, so it follows your finger at full
   resolution.
 - **White balance from your filters (RAW):** the **Filters** button works the white balance out from your filter stack
-  (Looks › Your filters; Change in the white balance card opens the same search right there, and Done applies). Its own
-  small box (your filters, then Neutral and Adjust for the light in Advanced) shows only while Filters is the white
-  balance. It works without looking at the picture, so a frame full of leaves or sky cannot pull it and the same recipe
+  (Looks › Filters on this photo). Its own small box (the filters, as a link back to where they are picked, then
+  Neutral and Adjust for the light in Advanced) shows only while Filters is the white balance. Pressing Filters with
+  none set takes you to Filters on this photo, and the white balance is applied as soon as you add one. It works without looking at the picture, so a frame full of leaves or sky cannot pull it and the same recipe
   always starts in the same place. Per channel it sums a measured converted-sensor response (the one chosen in Digital
   Aerochrome (advanced); the Sony A7 III by default) × the filters × ASTM G173 sunlight × the target (a USGS oak leaf
   for **leaves neutral**, the classic infrared starting point, or a flat **grey card**), compares it with the same
@@ -90,10 +90,10 @@ Five tabs, in the order the picture is made: **Looks, Light, Colour, Detail, Exp
 
 ## Looks
 
-- **Your filters:** the filters on your lens, picked from the 230+ measured curves, at the top of Looks with the rest of
-  your setup. The closed card names them. The Filters white balance, Digital Aerochrome (advanced), the IR leak estimate
-  and the record in exported files all use this one list; each of those shows it with a Change button that opens the
-  same search where you are.
+- **Filters on this photo:** the one place to pick the filters the photo was taken through, from the 230+ measured
+  curves, at the top of Looks with the rest of your setup. The closed card names them. The Filters white balance,
+  Digital Aerochrome (advanced), the IR leak estimate and the record in exported files all use this list; where they
+  show it, the names are a link that brings you back here (on a phone it switches to Looks and opens the card).
 - **Swap & mix:** one-tap swaps (R↔B, G↔B, R↔G, and the **JW Wong method**: Kodak's DCS CIR single-image method as laid out
   by JW Wong, which takes the IR out of red and green with IR leak removal and then maps IR → red, red → green, green → blue), a full channel mix grid with offsets and a
   compact fine-tune bar for each cell, hold brightness and keep saturation.
@@ -173,8 +173,8 @@ Five tabs, in the order the picture is made: **Looks, Light, Colour, Detail, Exp
   every export, share and batch file is resampled once at the end, after the crop: **Widen** keeps every row and adds
   width (sharp Catmull-Rom), **Lower the height** keeps the width and averages rows, for a smaller file. Saved with the
   edit; Reset all turns it off.
-- **Filter record:** the filter stack is written into each file's metadata; Change beside the option opens the filter
-  search there.
+- **Filter record:** the filter stack is written into each file's metadata; the link beside the option takes you to
+  Filters on this photo.
 - **Batch:** apply the current look to many files at once and download them in one `.zip` (RAWs are exported at full size).
 - **Take your look with you:** *Save look as .cube*, made by the same code that draws the preview; *Save look for camera
   (.IRL)* for a Canon running Magic Lantern with the irlut module, so you see the look in LiveView; and *Look link*, your

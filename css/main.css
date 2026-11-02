@@ -1214,7 +1214,11 @@ html.studioOn body.has-image #reorderZone > #modeBar{display:flex !important;ord
 .fwbBox[hidden]{display:none}
 .fwbLine{display:flex;flex-wrap:wrap;align-items:center;gap:6px 12px}
 .fwbLine b{color:var(--paper,inherit);font-weight:600}
-.fwbLine .btnGhostSmall{padding:4px 12px;line-height:1.2;height:auto;margin-left:auto}
+/* build 261: the filter names elsewhere are a link to Looks > Filters on this photo */
+.fpLink{display:inline-flex;align-items:center;gap:4px;background:none;border:0;padding:2px 0;margin:0;font:inherit;color:var(--paper,inherit);cursor:pointer;text-align:left;min-height:28px}
+.fpLink b{font-weight:600;text-decoration:underline;text-decoration-color:var(--line2);text-underline-offset:3px}
+.fpLink span{color:var(--accent,currentColor);font-size:1.15em}
+.fpLink:hover b{text-decoration-color:currentColor}
 .fwbLine label{display:flex;align-items:center;gap:6px}
 .fwbLine input[type=checkbox]{margin:0}
 .fwbOpts{margin-top:6px}

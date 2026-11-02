@@ -331,19 +331,7 @@ function ffRun() {
   if ($('ffSensor')) $('ffSensor').addEventListener('change', () => { if (ffLast) ffRun(); });
   if ($('ffBehind')) $('ffBehind').addEventListener('change', () => { ffBehindChosen = true; if (ffLast) ffRun(); });
   ['ffFilm', 'ffLight'].forEach(id => { if ($(id)) $(id).addEventListener('change', () => { if (ffLast) ffRun(); }); });
-  /* Build 243: Change opens the filter picker right here instead of sending you to the Export panel. There is one
-     picker (its stack is the same one export records and the IR leak estimate reads), so it is moved into this box while
-     you edit and goes back home (Your filters, at the top since build 260) when you press Done, fold this group, or open Your filters. */
-  const slot = $('ffPickHere');
-  if ($('ffEdit') && slot) {   // build 259: borrowed through fpLend / fpReturn (src/filter-predict.js)
-    const owner = { slot: slot, onReturn: () => { $('ffEdit').textContent = 'Change'; } };
-    $('ffEdit').addEventListener('click', () => {
-      if (fpLentTo(owner)) { fpReturn(owner); if (ffLast === null && fpStack.length) ffRun(); return; }
-      fpLend(owner); $('ffEdit').textContent = 'Done';
-    });
-    if (fg0()) fg0().addEventListener('toggle', () => { if (!fg0().open) fpReturn(owner); });
-  }
-  function fg0() { return $('filmPresetGroup'); }
+  /* Build 261: the filters are picked only in Looks > Filters on this photo; the name here is a link there (data-fp-go). */
   const fg = $('filmPresetGroup'); if (fg) fg.addEventListener('toggle', () => { ffRender(); if (fg.open && typeof fpLoad === 'function') fpLoad().then(ffSensors).catch(() => {}); });
   ffRender();
 })();
