@@ -1,6 +1,6 @@
 /* ---------- RAW white balance from your filters (build 258) ----------
 
-   Pizzamancer's pitch: the app knows the filter stack (Export > filters), so it can say which wavelengths each channel
+   Pizzamancer's pitch: the app knows the filter stack (Your filters), so it can say which wavelengths each channel
    is catching and set the white balance a photo through that recipe generally wants, instead of only measuring the
    scene. Auto (Cheng PCA) measures the scene, so a frame full of leaves or sky can pull it; this does not look at the
    picture at all, so the same recipe always starts in the same place.
@@ -62,9 +62,16 @@ function fwbLightNudge(res, greyWb) {
   return [0, 1, 2].map(c => Math.min(lim, Math.max(1 / lim, (e[c] / e[1]) / greyWb[c])));
 }
 
-/* Build 259: the picker opens right here in the white balance card, so the filters never have to be set in Export first. */
-const fwbOwner = { slot: null, onReturn: () => { const e = $('fwbEdit'); if (e) e.textContent = fpStack.length ? 'Change' : 'Add'; } };
-function fwbOpenPicker() { fwbOwner.slot = $('fwbPickHere'); if (!fwbOwner.slot) return; fpLend(fwbOwner); const e = $('fwbEdit'); if (e) e.textContent = 'Done'; if (!fpData) fpLoad().then(() => { if (typeof fpRender === 'function') fpRender(); }).catch(() => {}); }
+/* Build 259: the picker opens right here in the white balance card, so the filters never have to be set in Export first.
+   Build 260: these settings sit in their own small box that only shows while Filters is the white balance or its picker is
+   open, so As shot, Auto and Pick keep a clean card. */
+const fwbOwner = { slot: null, onReturn: () => { const e = $('fwbEdit'); if (e) e.textContent = fpStack.length ? 'Change' : 'Add'; fwbBoxSync(); } };
+function fwbBoxSync() {
+  const box = $('fwbBox'); if (!box) return;
+  const show = (typeof rawWbCustom !== 'undefined' && rawWbCustom && rawWbCustom.src === 'filters') || fpLentTo(fwbOwner);
+  if (box.hidden === show) box.hidden = !show;
+}
+function fwbOpenPicker() { fwbOwner.slot = $('fwbPickHere'); if (!fwbOwner.slot) return; fpLend(fwbOwner); const e = $('fwbEdit'); if (e) e.textContent = 'Done'; fwbBoxSync(); }
 function fwbSyncStack() {
   const st = $('fwbStack'); if (st) st.textContent = fpStack.length ? (typeof fpStackNames === 'function' ? fpStackNames().join(' + ') : fpStack.join(' + ')) : 'none yet';
   const e = $('fwbEdit'); if (e && !fpLentTo(fwbOwner)) e.textContent = fpStack.length ? 'Change' : 'Add';

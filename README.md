@@ -42,9 +42,10 @@ Work that is best done on the sensor data is done there, before the channel swap
 - **White balance (RAW):** opens on the camera's own as-shot balance. Temperature in Kelvin and Green, using
   RawTherapee's model, with As shot, Auto and Pick. Dragging runs on the graphics chip, so it follows your finger at full
   resolution.
-- **White balance from your filters (RAW):** the **Filters** button works the white balance out from your filter stack,
-  set right in the white balance card (Your filters: Add or Change opens the search there; Done applies; it is the same
-  list Export records), without looking at the picture, so a frame full of leaves or sky cannot pull it and the same recipe
+- **White balance from your filters (RAW):** the **Filters** button works the white balance out from your filter stack
+  (Looks › Your filters; Change in the white balance card opens the same search right there, and Done applies). Its own
+  small box (your filters, then Neutral and Adjust for the light in Advanced) shows only while Filters is the white
+  balance. It works without looking at the picture, so a frame full of leaves or sky cannot pull it and the same recipe
   always starts in the same place. Per channel it sums a measured converted-sensor response (the one chosen in Digital
   Aerochrome (advanced); the Sony A7 III by default) × the filters × ASTM G173 sunlight × the target (a USGS oak leaf
   for **leaves neutral**, the classic infrared starting point, or a flat **grey card**), compares it with the same
@@ -75,7 +76,8 @@ Work that is best done on the sensor data is done there, before the channel swap
 
 ## The editor
 
-Five tabs, in the order the picture is made: **Looks, Light, Colour, Detail, Export.**
+Five tabs, in the order the picture is made: **Looks, Light, Colour, Detail, Export.** The panels are numbered
+01 to 06: Channel Swap, White Balance, Light, Colour, Detail, Export.
 
 - **Simple or Advanced**, chosen on the home page. Simple shows what most photos need. Advanced adds the channel mix grid,
   IR leak removal, local adjustments, HSL, calibration, swap space, LUTs, Orton glow, channel gains and more.
@@ -88,6 +90,10 @@ Five tabs, in the order the picture is made: **Looks, Light, Colour, Detail, Exp
 
 ## Looks
 
+- **Your filters:** the filters on your lens, picked from the 230+ measured curves, at the top of Looks with the rest of
+  your setup. The closed card names them. The Filters white balance, Digital Aerochrome (advanced), the IR leak estimate
+  and the record in exported files all use this one list; each of those shows it with a Change button that opens the
+  same search where you are.
 - **Swap & mix:** one-tap swaps (R↔B, G↔B, R↔G, and the **JW Wong method**: Kodak's DCS CIR single-image method as laid out
   by JW Wong, which takes the IR out of red and green with IR leak removal and then maps IR → red, red → green, green → blue), a full channel mix grid with offsets and a
   compact fine-tune bar for each cell, hold brightness and keep saturation.
@@ -157,16 +163,18 @@ Five tabs, in the order the picture is made: **Looks, Light, Colour, Detail, Exp
   the whole picture (a dark-channel haze map), so a sky clears evenly right up to a dark building, with no halo.
 - **Orton glow:** a blurred, brightened copy over the sharp photo, with Amount and Softness.
 - **Colour fringing:** controls for coloured edges toward the corners.
-- **Anamorphic desqueeze:** for anamorphic lenses, 1.33×, 1.5×, 1.66× or 2×. The photo is shown at its true shape while
-  you edit (pickers, masks and crop still land where you touch, and crop ratios apply to the desqueezed picture), and
-  every export, share and batch file is resampled once at the end, after the crop: **Widen** keeps every row and adds
-  width (sharp Catmull-Rom), **Lower the height** keeps the width and averages rows, for a smaller file. Saved with the
-  edit; Reset all turns it off.
 
 ## Export
 
 - **Files:** crop to common aspect ratios; 16-bit TIFF, PNG or JPEG at working size or full size, with optional ProPhoto
   RGB. Your EXIF and colour profile carry across.
+- **Anamorphic desqueeze (Advanced):** beside Crop, for anamorphic lenses, 1.33×, 1.5×, 1.66× or 2×. The photo is shown at its true shape while
+  you edit (pickers, masks and crop still land where you touch, and crop ratios apply to the desqueezed picture), and
+  every export, share and batch file is resampled once at the end, after the crop: **Widen** keeps every row and adds
+  width (sharp Catmull-Rom), **Lower the height** keeps the width and averages rows, for a smaller file. Saved with the
+  edit; Reset all turns it off.
+- **Filter record:** the filter stack is written into each file's metadata; Change beside the option opens the filter
+  search there.
 - **Batch:** apply the current look to many files at once and download them in one `.zip` (RAWs are exported at full size).
 - **Take your look with you:** *Save look as .cube*, made by the same code that draws the preview; *Save look for camera
   (.IRL)* for a Canon running Magic Lantern with the irlut module, so you see the look in LiveView; and *Look link*, your

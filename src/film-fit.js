@@ -333,7 +333,7 @@ function ffRun() {
   ['ffFilm', 'ffLight'].forEach(id => { if ($(id)) $(id).addEventListener('change', () => { if (ffLast) ffRun(); }); });
   /* Build 243: Change opens the filter picker right here instead of sending you to the Export panel. There is one
      picker (its stack is the same one export records and the IR leak estimate reads), so it is moved into this box while
-     you edit and goes back to its place in Export when you press Done, fold this group, or open the Export panel. */
+     you edit and goes back home (Your filters, at the top since build 260) when you press Done, fold this group, or open Your filters. */
   const slot = $('ffPickHere');
   if ($('ffEdit') && slot) {   // build 259: borrowed through fpLend / fpReturn (src/filter-predict.js)
     const owner = { slot: slot, onReturn: () => { $('ffEdit').textContent = 'Change'; } };

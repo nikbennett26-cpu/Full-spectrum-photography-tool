@@ -186,7 +186,7 @@ footer p{margin:0 0 8px}
         <li>Opens on the camera's own as-shot balance.</li>
         <li>Temperature in Kelvin and Green, using RawTherapee's model, with As shot, Auto and Pick.</li>
         <li>Dragging runs on the graphics chip, so it follows your finger at full resolution.</li>
-        <li><b>Filters</b>: the white balance worked out from the filters on your lens, set right in the white balance card (Add or Change opens the filter search there, Done applies), from measured sensor, filter and sunlight curves, without looking at the picture, so the same recipe always starts in the same place. It makes leaves neutral (the classic infrared white balance, from a measured oak leaf) or a grey card; with <b>Auto adjusts for the light</b> on, the scene's own Auto estimate corrects for shade, low sun or cloud, at most half a stop per channel. It is a starting point: cameras differ most in the infrared, so on a body unlike the measured sensor the Auto adjustment does more of the work.</li>
+        <li><b>Filters</b>: the white balance worked out from the filters on your lens, listed in Looks &rsaquo; Your filters (Change in the white balance card opens the same search right there, and Done applies). Its own small box shows only while Filters is the white balance. It works from measured sensor, filter and sunlight curves, without looking at the picture, so the same recipe always starts in the same place. It makes leaves neutral (the classic infrared white balance, from a measured oak leaf) or a grey card; with <b>Adjust for the light</b> on (Advanced), the scene's own Auto estimate corrects for shade, low sun or cloud, at most half a stop per channel. It is a starting point: cameras differ most in the infrared, so on a body unlike the measured sensor the Auto adjustment does more of the work.</li>
       </ul>
     </div>
     <div class="card">
@@ -222,7 +222,7 @@ footer p{margin:0 0 8px}
 
 <section id="editor">
   <h2><span class="n">03</span>The editor</h2>
-  <p class="sub">Five tabs, in the order the picture is made: Looks, Light, Colour, Detail, Export.</p>
+  <p class="sub">Five tabs, in the order the picture is made: Looks, Light, Colour, Detail, Export. The panels are numbered 01 to 06: Channel Swap, White Balance, Light, Colour, Detail, Export.</p>
   <div class="cols">
     <div>
       <h3>Simple or Advanced</h3>
@@ -247,6 +247,13 @@ footer p{margin:0 0 8px}
   <h2><span class="n">04</span>Looks</h2>
   <p class="sub">Where the colours are chosen.</p>
   <div class="grid">
+    <div class="card">
+      <h3>Your filters</h3>
+      <ul>
+        <li>The filters on your lens, picked from the 230+ measured curves, at the top of Looks with the rest of your setup. The closed card names them.</li>
+        <li>One list for the Filters white balance, Digital Aerochrome (advanced), the IR leak estimate and the record in exported files. Each shows it with a Change button that opens the same search where you are.</li>
+      </ul>
+    </div>
     <div class="card">
       <h3>Swap &amp; mix</h3>
       <ul>
@@ -412,13 +419,6 @@ footer p{margin:0 0 8px}
         <li>Fringing controls for coloured edges toward the corners.</li>
       </ul>
     </div>
-    <div class="card">
-      <h3>Anamorphic desqueeze</h3>
-      <ul>
-        <li>For anamorphic lenses: 1.33&times;, 1.5&times;, 1.66&times; or 2&times;. The photo is shown at its true shape while you edit, and crop ratios apply to the desqueezed picture.</li>
-        <li>Every export, share and batch file is resampled once at the end: <b>Widen</b> keeps all detail and adds width; <b>Lower the height</b> gives a smaller file.</li>
-      </ul>
-    </div>
   </div>
 </section>
 
@@ -432,6 +432,14 @@ footer p{margin:0 0 8px}
         <li>Crop to common aspect ratios.</li>
         <li>16-bit TIFF, PNG or JPEG, at working size or full size, with optional ProPhoto RGB.</li>
         <li>Your EXIF and colour profile carry across.</li>
+        <li>The filter stack is written into the file's metadata; Change beside the option opens the filter search there.</li>
+      </ul>
+    </div>
+    <div class="card">
+      <h3>Anamorphic desqueeze <span class="tag">Advanced</span></h3>
+      <ul>
+        <li>Beside Crop, for anamorphic lenses: 1.33&times;, 1.5&times;, 1.66&times; or 2&times;. The photo is shown at its true shape while you edit, and crop ratios apply to the desqueezed picture.</li>
+        <li>Every export, share and batch file is resampled once at the end: <b>Widen</b> keeps all detail and adds width; <b>Lower the height</b> gives a smaller file.</li>
       </ul>
     </div>
     <div class="card">
@@ -563,7 +571,7 @@ footer p{margin:0 0 8px}
 <footer>
   <div class="wrap">
     <p><a href="https://irlab.uk">irlab.uk</a> &middot; <a href="https://irlab.uk/filters.html">Filter database</a> &middot; <a href="https://www.instagram.com/irlab.uk">Instagram</a></p>
-    <p>This page describes the app as of build 259.</p>
+    <p>This page describes the app as of build 260.</p>
   </div>
 </footer>
 </body>

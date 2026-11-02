@@ -282,11 +282,11 @@ let preChangeSnapshot = null;
    started", which is the question being asked. */
 const STEP_DEFS = [
   ['swap',     '01', 'Swap'],
-  ['wb',       '03', 'WB'],
-  ['light',    '04', 'Light'],
-  ['colour',   '05', 'Colour'],
-  ['detail',   '06', 'Detail'],
-  ['export',   '07', 'Export'],
+  ['wb',       '02', 'WB'],   // build 260: numbered 01-06 with no gap
+  ['light',    '03', 'Light'],
+  ['colour',   '04', 'Colour'],
+  ['detail',   '05', 'Detail'],
+  ['export',   '06', 'Export'],
 ];
 let _stepDefaults = null;
 
@@ -318,6 +318,9 @@ function refreshStepIndicators() {
   if (_stepDefaults) document.querySelectorAll('details.dGrp').forEach(g => {
     g.classList.toggle('mod', stepControls(g).some(el => _stepDefaults.has(el) && (el.type === 'checkbox' ? el.checked : el.value) !== _stepDefaults.get(el)));
   });
+  // build 260: two cards whose state is not an input: the desqueeze factor (buttons) and the filter list
+  const dq = $('desqDetails'); if (dq && typeof desqFactor === 'function' && desqFactor() > 1) dq.classList.add('mod');
+  const fl = $('filtersDetails'); if (fl) fl.classList.toggle('mod', typeof fpStack !== 'undefined' && fpStack.length > 0);
   STEP_DEFS.forEach(([key]) => {
     const panel = stepPanelFor(key);
     const mod = stepIsModified(key);

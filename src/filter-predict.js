@@ -35,6 +35,15 @@ function fpSave() {
   try { localStorage.setItem(FP_KEY, JSON.stringify(fpStack.map(id => [id, fpData && fpData.byId[id] ? fpData.byId[id][1] : (fpNames[id] || id)]))); } catch (e) {}
   if (typeof stackMetaRefresh === 'function') stackMetaRefresh();
   if (typeof fwbStackChanged === 'function') setTimeout(fwbStackChanged, 0);   // build 258: a Filters white balance follows the stack
+  fpSumSync();
+}
+/* Build 260: the Your filters card's closed line names the stack, so you can see it without opening anything. */
+function fpSumSync() {
+  const el = document.getElementById('filtersSum'); if (!el) return;
+  const t = fpStack.length ? fpStackNames().join(' + ') : 'what\u2019s on your lens';
+  if (el.textContent !== t) el.textContent = t;
+  const card = document.getElementById('filtersDetails'); if (card) card.classList.toggle('mod', fpStack.length > 0);
+  const ex = document.getElementById('fpExportEdit'); if (ex && !(typeof fpLender !== 'undefined' && fpLender && fpLender.slot && fpLender.slot.id === 'fpExportHere')) ex.textContent = fpStack.length ? 'Change' : 'Add';
 }
 let fpNames = {};
 try { (JSON.parse(localStorage.getItem(FP_KEY) || '[]') || []).forEach(([id, n]) => { if (id) { fpStack.push(id); fpNames[id] = n; } }); } catch (e) {}
@@ -102,8 +111,9 @@ function fpRender() {
 }
 
 /* Build 259: there is one filter picker (its stack is what export records and the IR leak estimate, Digital Aerochrome
-   (advanced) and the Filters white balance read). Panels that need it borrow it: fpLend moves it into their slot,
-   fpReturn puts it back in Export. Lending to a second panel hands it back from the first. owner = { slot, onReturn }. */
+   (advanced) and the Filters white balance read). Build 260: its home is the Your filters card at the top, with the rest
+   of your setup. Panels that need it borrow it: fpLend moves it into their slot, fpReturn puts it back home. Lending to a
+   second panel hands it back from the first. owner = { slot, onReturn }. */
 let fpHomeMark = null, fpLender = null;
 function fpLentTo(owner) { return fpLender === owner; }
 function fpLend(owner) {
@@ -111,6 +121,7 @@ function fpLend(owner) {
   if (!fpHomeMark) { fpHomeMark = document.createComment('fpPick home'); pick.parentNode.insertBefore(fpHomeMark, pick); }
   if (fpLender && fpLender !== owner) { const o = fpLender; fpLender = null; o.slot.hidden = true; if (o.onReturn) o.onReturn(); }
   owner.slot.appendChild(pick); owner.slot.hidden = false; fpLender = owner;
+  if (!fpData) fpLoad().then(() => { if (typeof fpRender === 'function') fpRender(); }).catch(() => {});
   setTimeout(() => { const s = $('fpSearch'); if (s) s.focus(); }, 50);
 }
 function fpReturn(owner) {
@@ -119,12 +130,19 @@ function fpReturn(owner) {
   fpHomeMark.parentNode.insertBefore(pick, fpHomeMark.nextSibling); o.slot.hidden = true;
   if (o.onReturn) o.onReturn();
 }
-(function () {   // opening Export always brings it home
-  document.querySelectorAll('button[data-tab="export"]').forEach(b => b.addEventListener('click', () => fpReturn()));
-  const ex = $('exportSection'); if (ex) ex.addEventListener('toggle', () => { if (ex.open) fpReturn(); });
+(function () {
+  const home = $('filtersDetails');   // opening Your filters always brings it home
+  if (home) home.addEventListener('toggle', () => { if (!home.open) return; fpReturn(); if (!fpData) fpLoad().then(() => { if (typeof fpRender === 'function') fpRender(); }).catch(() => {}); });
+  const ed = $('fpExportEdit'), slot = $('fpExportHere');   // Export: Change opens it beside the record option
+  if (ed && slot) {
+    const owner = { slot: slot, onReturn: () => { ed.textContent = fpStack.length ? 'Change' : 'Add'; } };
+    ed.addEventListener('click', () => { if (fpLentTo(owner)) fpReturn(owner); else { fpLend(owner); ed.textContent = 'Done'; } });
+    const ex = $('exportSection'); if (ex) ex.addEventListener('toggle', () => { if (!ex.open) fpReturn(owner); });
+  }
+  fpSumSync();
 })();
 
-/* Build 183: the Predict card is gone. What is left is the filter picker in the Export panel, which records the stack in
+/* Build 183: the Predict card is gone. What is left is the filter picker (in Your filters since build 260), which records the stack in
    the exported file and feeds the IR leak estimate. The database loads the first time the search box is used. */
 function fpInit() {
   const sIn = $('fpSearch'); if (!sIn) return;

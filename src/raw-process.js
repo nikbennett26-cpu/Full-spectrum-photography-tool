@@ -1535,7 +1535,7 @@ function pickedFile(e, fn) {
   panels.forEach(p => {
     p.classList.add('collapsible');
     const chip = p.querySelector('.stepChip');
-    if (narrow && chip && chip.textContent.trim() !== '02') p.classList.add('collapsed');
+    if (narrow && chip && p.dataset.step !== 'swap') p.classList.add('collapsed');   // build 260: by name, not by its number
     const head = p.firstElementChild;
     head.addEventListener('click', e => {
       if (e.target.closest('button, input, select, a, label')) return;

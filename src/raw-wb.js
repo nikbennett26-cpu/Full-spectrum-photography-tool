@@ -121,6 +121,7 @@ function rtwbSyncUi() {
   on('rawWbAuto', !rawWbCustom && mode === 'auto');
   on('rawWbPick', !!(rawWbCustom && rawWbCustom.wb && rawWbCustom.src !== 'filters'));
   on('rawWbFilt', !!(rawWbCustom && rawWbCustom.src === 'filters'));
+  if (typeof fwbBoxSync === 'function') fwbBoxSync();   // build 260: the Filters box shows only while Filters is on
   const off = $('rawWbOff'); if (off) { const o = approx; if (off.hidden === o) off.hidden = !o; }
   rtwbPaintTracks(res, t, g);
 }

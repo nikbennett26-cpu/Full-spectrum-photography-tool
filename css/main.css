@@ -1209,6 +1209,16 @@ html.studioOn body.has-image #reorderZone > #modeBar{display:flex !important;ord
 .wbStepT{font-weight:600;font-size:15px}
 .wbStepS{font-size:11.5px;color:var(--muted)}
 .wbModeRow{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px}   /* build 258: As shot, Auto, Pick, Filters */
+/* build 260: Filters' own box, shown only while Filters is the white balance */
+.fwbBox{margin:6px 0 8px;padding:8px 10px;border:1px solid var(--line2);border-radius:var(--radius-sm,6px);background:var(--surface2,transparent);font-size:11.5px;color:var(--phosphor-dim)}
+.fwbBox[hidden]{display:none}
+.fwbLine{display:flex;flex-wrap:wrap;align-items:center;gap:6px 12px}
+.fwbLine b{color:var(--paper,inherit);font-weight:600}
+.fwbLine .btnGhostSmall{padding:4px 12px;line-height:1.2;height:auto;margin-left:auto}
+.fwbLine label{display:flex;align-items:center;gap:6px}
+.fwbLine input[type=checkbox]{margin:0}
+.fwbOpts{margin-top:6px}
+#fwbPickHere{margin-top:8px}
 .wbModeBtn{min-height:40px;border-radius:6px;border:1px solid var(--line2);background:transparent;color:var(--paper);
   font:inherit;font-size:13px;display:flex;align-items:center;justify-content:center;gap:6px;cursor:pointer;padding:0 6px}
 .wbModeBtn.on,.wbModeBtn.armed{border-color:var(--safelight);background:color-mix(in srgb,var(--safelight) 16%,transparent)}

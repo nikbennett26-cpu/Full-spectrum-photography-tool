@@ -12,11 +12,12 @@ const ADV_TOOLS = {
   maskDetails: 'Local adjustments', hslDetails: 'Colour by band', colCal: 'Calibration', colSpace: 'Swap working space',
   lutDetails: 'LUT', lensDetails: 'Hotspot removal', epdGrp: 'Tone mapping', fringeDetails: 'Colour fringing',
   decodeGrp: 'Decode settings', batchPanel: 'Batch',
-  irLeakDetails: 'IR leak removal', ortonGrp: 'Orton glow'   // build 209: Simple keeps only the everyday tools
+  irLeakDetails: 'IR leak removal', ortonGrp: 'Orton glow',   // build 209: Simple keeps only the everyday tools
+  desqDetails: 'Anamorphic desqueeze'   // build 260
 };
 // these change without the user touching them (a preset sets the mix), so they never count as "in use"
 // Swap & mix stays in Simple (the swap buttons are core), but its mix grid, fine bar, lift and brightness weighting are Advanced
-const ADV_PARTS = '#lumaWDetails, #mx, #mxFine, #matrixDetails .mxHint, #mxOff, .wbGainsIn';
+const ADV_PARTS = '#lumaWDetails, #mx, #mxFine, #matrixDetails .mxHint, #mxOff, .wbGainsIn, .fwbOpts';   // build 260: Filters' Neutral and light options
 const ADV_SILENT = ['channelDetails', 'decodeGrp', 'batchPanel'];
 let editorMode = 'simple';
 try {
