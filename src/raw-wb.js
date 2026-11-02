@@ -119,7 +119,8 @@ function rtwbSyncUi() {
   const on = (id, v) => { const e = $(id); if (e) { e.classList.toggle('on', v); e.setAttribute('aria-pressed', v ? 'true' : 'false'); } };
   on('rawWbShot', !rawWbCustom && mode === 'camera');
   on('rawWbAuto', !rawWbCustom && mode === 'auto');
-  on('rawWbPick', !!(rawWbCustom && rawWbCustom.wb));
+  on('rawWbPick', !!(rawWbCustom && rawWbCustom.wb && rawWbCustom.src !== 'filters'));
+  on('rawWbFilt', !!(rawWbCustom && rawWbCustom.src === 'filters'));
   const off = $('rawWbOff'); if (off) { const o = approx; if (off.hidden === o) off.hidden = !o; }
   rtwbPaintTracks(res, t, g);
 }
@@ -187,6 +188,7 @@ function rtwbSet(next) {
   if (typeof armUndoCapture === 'function') armUndoCapture();
   rawWbCustom = next ? { t: Math.min(RTWB_MAX, Math.max(RTWB_MIN, next.t)), g: Math.min(RTWB_GMAX, Math.max(RTWB_GMIN, next.g)) } : null;
   if (next && next.wb) rawWbCustom.wb = next.wb.slice();
+  if (next && next.wb && next.src) rawWbCustom.src = next.src;   // build 258: 'filters' (src/filter-wb.js)
   rawWbDrag = null;
   if (typeof commitUndoCapture === 'function') commitUndoCapture();
   reapplyCamSpaceSwap();

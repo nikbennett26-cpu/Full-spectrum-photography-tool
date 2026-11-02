@@ -34,6 +34,7 @@ function fpSave() {
   if (typeof ffStale === 'function') setTimeout(ffStale, 0);   // build 240: the film fit was for the old stack
   try { localStorage.setItem(FP_KEY, JSON.stringify(fpStack.map(id => [id, fpData && fpData.byId[id] ? fpData.byId[id][1] : (fpNames[id] || id)]))); } catch (e) {}
   if (typeof stackMetaRefresh === 'function') stackMetaRefresh();
+  if (typeof fwbStackChanged === 'function') setTimeout(fwbStackChanged, 0);   // build 258: a Filters white balance follows the stack
 }
 let fpNames = {};
 try { (JSON.parse(localStorage.getItem(FP_KEY) || '[]') || []).forEach(([id, n]) => { if (id) { fpStack.push(id); fpNames[id] = n; } }); } catch (e) {}

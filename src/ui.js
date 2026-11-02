@@ -1406,7 +1406,7 @@ function captureState() {
     // variable rather than an <input>, so it is not covered by the
     // HASH_SLIDERS sweep above and has to be captured explicitly
     vigCentre: [...vigCentre],
-    rawWb: rawWbCustom ? Object.assign({ t: rawWbCustom.t, g: rawWbCustom.g }, rawWbCustom.wb ? { wb: rawWbCustom.wb.slice() } : {}) : null,   // build 197: RAW Temperature + Green (src/raw-wb.js)
+    rawWb: rawWbCustom ? Object.assign({ t: rawWbCustom.t, g: rawWbCustom.g }, rawWbCustom.wb ? { wb: rawWbCustom.wb.slice() } : {}, rawWbCustom.src ? { src: rawWbCustom.src } : {}) : null,   // build 197: RAW Temperature + Green (src/raw-wb.js)
     indexMode: indexMode,
     lumPreserve: lumPreserve,
     filmOn: filmOn,
@@ -1560,7 +1560,7 @@ function applyState(snap) {
   if ($('camSpaceSwapPresetEditor')) $('camSpaceSwapPresetEditor').value = snap.camSpaceSwapPreset || '';
   ['camSpaceSwapPreset', 'camSpaceSwapPresetEditor'].forEach(id => { const e = $(id); if (e) e.style.display = snap.camSpaceSwap ? 'block' : 'none'; });   // build 237: the dropdown shows only with its tick, as when ticked by hand
   rawWbCustom = snap.rawWb && snap.rawWb.t > 0 && snap.rawWb.g > 0 ? { t: +snap.rawWb.t, g: +snap.rawWb.g } : null;   // build 197
-  if (rawWbCustom && Array.isArray(snap.rawWb.wb) && snap.rawWb.wb.length === 3 && snap.rawWb.wb.every(v => v > 0)) rawWbCustom.wb = snap.rawWb.wb.map(Number);   // build 199: a pick
+  if (rawWbCustom && Array.isArray(snap.rawWb.wb) && snap.rawWb.wb.length === 3 && snap.rawWb.wb.every(v => v > 0)) { rawWbCustom.wb = snap.rawWb.wb.map(Number); if (snap.rawWb.src === 'filters') rawWbCustom.src = 'filters'; }   // build 199: a pick; build 258: or from the filters
   if (typeof reapplyCamSpaceSwap === 'function') reapplyCamSpaceSwap();
   if (typeof syncRangeToggle === 'function') syncRangeToggle();
   if (typeof syncEpdLabels === 'function') syncEpdLabels();
