@@ -1,0 +1,112 @@
+# Build 263: the IR Lab Android app (a Trusted Web Activity: irlab.uk full-screen in Chrome, made with Bubblewrap).
+# Builds the signed APK and the Play upload bundle (AAB) and puts both on the "android" release, so the APK has a
+# fixed download link. The app shows the live site, so it only needs rebuilding when android/ changes (name, icon,
+# colours, version). Run it by hand from the Actions tab, or it runs itself when android/ changes on main.
+#
+# Signing: android/irlab.keystore.enc is the release key, encrypted. The ANDROID_KEY_PASSWORD repository secret
+# unlocks it (and is the keystore's password too). Without that secret the job still builds, with a throwaway key,
+# to prove the build works, but publishes nothing. .well-known/assetlinks.json carries the real key's fingerprint.
+name: Android app
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths: ['android/**', '.github/workflows/android.yml']
+
+permissions:
+  contents: write
+
+concurrency:
+  group: android
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - uses: android-actions/setup-android@v3
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Tools
+        run: |
+          set -e
+          npm install -g @bubblewrap/cli@1.27.0
+          SDKM="$ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager"
+          yes | "$SDKM" --licenses > /dev/null || true
+          "$SDKM" "build-tools;36.1.0" "platforms;android-36" > /dev/null
+          # Bubblewrap looks for sdkmanager in <sdk>/bin
+          [ -e "$ANDROID_HOME/bin" ] || ln -s "$ANDROID_HOME/cmdline-tools/latest/bin" "$ANDROID_HOME/bin"
+          mkdir -p ~/.bubblewrap
+          printf '{"jdkPath":"%s","androidSdkPath":"%s"}\n' "$JAVA_HOME" "$ANDROID_HOME" > ~/.bubblewrap/config.json
+
+      - name: Signing key
+        working-directory: android
+        env:
+          KEY_PASS: ${{ secrets.ANDROID_KEY_PASSWORD }}
+        run: |
+          set -e
+          if [ -n "$KEY_PASS" ]; then
+            openssl enc -d -aes-256-cbc -pbkdf2 -iter 600000 -in irlab.keystore.enc -out irlab.keystore -pass env:KEY_PASS
+            echo "PUBLISH=1" >> "$GITHUB_ENV"
+          else
+            echo "::warning::ANDROID_KEY_PASSWORD is not set, so this is a test build with a throwaway key and nothing is published."
+            keytool -genkeypair -keystore irlab.keystore -storetype PKCS12 -alias irlab -keyalg RSA -keysize 2048 \
+              -validity 30 -storepass throwaway-key -keypass throwaway-key -dname "CN=test" > /dev/null
+          fi
+
+      - name: Build
+        working-directory: android
+        env:
+          BUBBLEWRAP_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD || 'throwaway-key' }}
+          BUBBLEWRAP_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD || 'throwaway-key' }}
+        run: |
+          set -eo pipefail
+          # the version is the site's build number
+          B=$(grep -o 'name="irlab-build" content="[0-9]*' ../index.html | grep -o '[0-9]*$')
+          sed -i -E "s/\"appVersionCode\": [0-9]+/\"appVersionCode\": $B/; s/\"appVersionName\": \"[^\"]*\"/\"appVersionName\": \"$B\"/; s/\"appVersion\": \"[^\"]*\"/\"appVersion\": \"$B\"/" twa-manifest.json
+          echo "VERSION=$B" >> "$GITHUB_ENV"
+          bubblewrap update --skipVersionUpgrade --manifest=./twa-manifest.json < /dev/null 2>&1 | tee build.log
+          bubblewrap build --manifest=./twa-manifest.json < /dev/null 2>&1 | tee -a build.log
+          mkdir -p out
+          cp app-release-signed.apk out/irlab-uk.apk
+          cp app-release-bundle.aab out/irlab-uk.aab
+          ls -l out
+
+      - name: Report a failure
+        if: failure()
+        working-directory: android
+        run: |
+          # an annotation can be read without signing in, unlike the log
+          [ -f build.log ] && msg=$(tail -c 4000 build.log | sed -e 's/\x1b\[[0-9;]*m//g' -e 's/%/%25/g' | sed ':a;N;$!ba;s/\n/%0A/g')
+          echo "::error title=Android build failed::${msg:-no build log}"
+
+      - name: Publish to the android release
+        if: env.PUBLISH == '1'
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: android
+          name: IR Lab for Android
+          make_latest: true
+          body: |
+            IR Lab for Android, app version ${{ env.VERSION }}.
+
+            **irlab-uk.apk**: download on your phone and open it to install (allow installs from your browser when asked).
+            The app shows irlab.uk itself, so it gets every update to the site straight away; this file only changes when
+            the app's name, icon or colours do.
+
+            **irlab-uk.aab**: the same app in the form Google Play takes.
+          files: |
+            android/out/irlab-uk.apk
+            android/out/irlab-uk.aab

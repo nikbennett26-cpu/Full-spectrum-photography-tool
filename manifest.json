@@ -1,14 +1,14 @@
 {
-  "name": "IR Lab — Infrared Colour Swap",
+  "name": "IR Lab · irlab.uk",
   "short_name": "IR Lab",
-  "description": "Channel-swap false-colour tool for full-spectrum, UV and infrared photography. Runs entirely in the browser.",
+  "description": "A free darkroom for full-spectrum, infrared and UV photography: RAW decoding, channel swaps, colour, detail and a filter database. Your photos never leave your device.",
   "id": "/",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",
   "orientation": "any",
-  "background_color": "#160f0a",
-  "theme_color": "#160f0a",
+  "background_color": "#141518",
+  "theme_color": "#141518",
   "categories": [
     "photo",
     "graphics",

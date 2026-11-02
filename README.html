@@ -523,8 +523,9 @@ footer p{margin:0 0 8px}
   <table>
     <tr><th>Feature</th><th>Detail</th></tr>
     <tr><td>Install as an app</td><td>From the bottom of the editor. Opens full screen and keeps working offline.</td></tr>
+    <tr><td>Android app (testing)</td><td>IR Lab for Android shows irlab.uk itself full screen, so it gets every site update straight away, and photos can be shared into it from the gallery. <a href="https://github.com/nikbennett26-cpu/full-spectrum-photography-tool/releases/download/android/irlab-uk.apk">Download the APK</a>.</td></tr>
     <tr><td>Languages</td><td>English, Spanish, French, German, Japanese and Chinese, chosen on the home page; the filter page follows. The newest cards (Filters on this photo, the Filters white balance options, Digital Aerochrome, Anamorphic desqueeze) are English only for now.</td></tr>
-    <tr><td>Privacy</td><td>Photos never leave your device. Decoding, editing and export all happen in the browser. The site counts visits with anonymised Google Analytics and says so on your first visit.</td></tr>
+    <tr><td>Privacy</td><td>Photos never leave your device. Decoding, editing and export all happen in the browser. The site counts visits with anonymised Google Analytics and says so on your first visit. Full policy: <a href="https://irlab.uk/privacy.html">privacy.html</a>.</td></tr>
     <tr><td>Self-test</td><td><a href="https://irlab.uk/?selftest">irlab.uk/?selftest</a> renders around fifty fixed settings on your own GPU, compares them with a stored baseline, then checks rules that must always hold (neutral settings change nothing, reset is exact, and so on).</td></tr>
     <tr><td>Updates</td><td>The editor footer shows your build number and the app checks for a newer one.</td></tr>
     <tr><td>What's new</td><td>A change log inside the app, on the home page.</td></tr>
@@ -543,6 +544,10 @@ footer p{margin:0 0 8px}
     <div>
       <h3>Tests</h3>
       <p><code>run.mjs</code>, <code>cases.mjs</code> and <code>golden.json</code> compare the build with a stored baseline on software WebGL. The in-app self-test checks rules that must always hold.</p>
+    </div>
+    <div>
+      <h3>Android app</h3>
+      <p><code>android/</code> is the Bubblewrap project. GitHub Actions (<code>.github/workflows/android.yml</code>) builds the signed APK and Play bundle onto the <code>android</code> release; the encrypted key is unlocked by the <code>ANDROID_KEY_PASSWORD</code> secret. See README.md.</p>
     </div>
   </div>
 </section>
@@ -571,7 +576,7 @@ footer p{margin:0 0 8px}
 <footer>
   <div class="wrap">
     <p><a href="https://irlab.uk">irlab.uk</a> &middot; <a href="https://irlab.uk/filters.html">Filter database</a> &middot; <a href="https://www.instagram.com/irlab.uk">Instagram</a></p>
-    <p>This page describes the app as of build 262.</p>
+    <p>This page describes the app as of build 263.</p>
   </div>
 </footer>
 </body>

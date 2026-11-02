@@ -1,0 +1,59 @@
+{
+  "packageId": "uk.irlab.app",
+  "host": "irlab.uk",
+  "name": "IR Lab",
+  "launcherName": "IR Lab",
+  "display": "standalone",
+  "orientation": "default",
+  "themeColor": "#141518",
+  "themeColorDark": "#141518",
+  "navigationColor": "#141518",
+  "navigationColorDark": "#141518",
+  "navigationDividerColor": "#141518",
+  "navigationDividerColorDark": "#141518",
+  "backgroundColor": "#141518",
+  "enableNotifications": false,
+  "startUrl": "/",
+  "iconUrl": "https://raw.githubusercontent.com/nikbennett26-cpu/full-spectrum-photography-tool/main/icon-512-v3.png",
+  "maskableIconUrl": "https://raw.githubusercontent.com/nikbennett26-cpu/full-spectrum-photography-tool/main/icon-maskable-512-v3.png",
+  "splashScreenFadeOutDuration": 300,
+  "signingKey": {
+    "path": "./irlab.keystore",
+    "alias": "irlab"
+  },
+  "appVersionName": "263",
+  "appVersionCode": 263,
+  "shortcuts": [],
+  "generatorApp": "bubblewrap-cli",
+  "webManifestUrl": "https://raw.githubusercontent.com/nikbennett26-cpu/full-spectrum-photography-tool/main/manifest.json",
+  "fallbackType": "customtabs",
+  "features": {},
+  "alphaDependencies": {
+    "enabled": false
+  },
+  "enableSiteSettingsShortcut": true,
+  "isChromeOSOnly": false,
+  "isMetaQuest": false,
+  "fullScopeUrl": "https://irlab.uk/",
+  "minSdkVersion": 21,
+  "fingerprints": [],
+  "shareTarget": {
+    "action": "https://irlab.uk/share-target",
+    "method": "POST",
+    "enctype": "multipart/form-data",
+    "params": {
+      "files": [
+        {
+          "name": "image",
+          "accept": [
+            "image/*",
+            "application/octet-stream"
+          ]
+        }
+      ]
+    }
+  },
+  "additionalTrustedOrigins": [],
+  "retainedBundles": [],
+  "appVersion": "263"
+}

@@ -1,0 +1,8 @@
+irlab.keystore
+.gradle/
+app/build/
+build/
+local.properties
+*.apk
+*.aab
+*.idsig
