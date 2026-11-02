@@ -41,7 +41,7 @@ Work that is best done on the sensor data is done there, before the channel swap
   `libraw-wasm-gpl3/dist/demosaic-only.wasm`, the same AMaZE and RCD source built without LibRaw
   (`libraw-wasm-gpl3/build_demosaic_only.sh`, zig's clang); test: `node libraw-wasm-gpl3/test_pre_wb.mjs`.
 - **White balance (RAW):** opens on the camera's own as-shot balance. Temperature in Kelvin and Green, using
-  RawTherapee's model, with As shot, Auto and Pick. Dragging runs on the graphics chip, so it follows your finger at full
+  RawTherapee's model, with As shot, Auto and Filters (grey picking is done by the two grey pickers above it). Dragging runs on the graphics chip, so it follows your finger at full
   resolution.
 - **White balance from your filters (RAW):** the **Filters** button works the white balance out from your filter stack
   (Looks › Filters on this photo). Its own small box (the filters, as a link back to where they are picked, then
@@ -95,15 +95,14 @@ Five tabs, in the order the picture is made: **Looks, Light, Colour, Detail, Exp
   curves, at the top of Looks with the rest of your setup. The closed card names them. The Filters white balance,
   Digital Aerochrome, the IR leak estimate and the record in exported files all use this list; where they
   show it, the names are a link that brings you back here (on a phone it switches to Looks and opens the card).
-- **Swap & mix:** one-tap swaps (R↔B, G↔B, R↔G, and the **JW Wong method**: Kodak's DCS CIR single-image method as laid out
-  by JW Wong, which takes the IR out of red and green with IR leak removal and then maps IR → red, red → green, green → blue), a full channel mix grid with offsets and a
+- **Swap & mix:** one-tap swaps (R↔B, G↔B, R↔G and the rotations), a full channel mix grid with offsets and a
   compact fine-tune bar for each cell, hold brightness and keep saturation.
 - **Classic IR looks:** eight finished one-tap looks for ordinary infrared, each setting the channel mix and tone together and naming the filter it suits: B&W infrared (plain, dramatic, glow), warm-toned B&W, Goldie, Pink & teal, Faux colour IR film and Full-spectrum natural (which balances its own colour to neutral). They are starting points, fully editable. Tap a look again to take it off.
 - **Presets & film recipes:** UV and IR presets, and recipes including Fedia's Triple Band Aerochrome. Save your own
   looks, with a strength control and an IR tone curve. NDVI and NGB index views.
 - **Infrared Ektachrome IE · Triple Band:** for a full-spectrum camera with the MidOpt TB550/660/850 triple band filter,
   after nfoto's method on UltravioletPhotography.com: the RAW opened with no camera colour profile (camera native), no
-  channel swap, and a 143° hue turn in Display mode; then pick grey on asphalt with the RAW white balance picker. Aims at
+  channel swap, and a 143° hue turn in Display mode; then pick grey on asphalt with grey picker 1 (before the swap). Aims at
   the original E-4 film (graded reds, darker conifers) rather than the later, harsher EIR. Not yet checked on a real photo.
 - **Presets go on top of your edit:** a preset or look sets only its own settings and leaves the rest of your edit alone,
   whether you pick it first or last. Switching to another preset takes the first one's settings off before the next goes on,

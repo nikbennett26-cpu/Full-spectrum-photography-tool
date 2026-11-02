@@ -1424,14 +1424,6 @@ function presetLayerBegin() {
 }
 function presetLayerEnd(base) { PRESET_LAYER = { base: base, after: layerStrip(captureState()) }; }
 
-/* Build 238: the JW Wong method's subtraction step: IR leak removal on at full strength (src/ir-leak.js). Its settings
-   travel with the edit, so taking the preset off turns it back to how you had it. */
-function jwwApply() {
-  if (typeof irLeakOn === 'undefined') return;
-  irLeakOn = true; irLeakAmt = 1; irlSync();
-  if (!irlK() && typeof fpLoad === 'function') fpLoad().then(() => { irlSync(); render(); }).catch(() => {});   // the estimate needs the sensor curves
-}
-
 /* Build 237: the Infrared Ektachrome IE recipe's one extra step. nfoto develops the RAW with no camera colour profile,
    so the white balance and the hue turn act on what the sensor recorded rather than on colours the camera matrix has
    already bent (and, for an IR-heavy file, clipped). That is the decode's camera-native option (CAM_NATIVE_VALUE in
@@ -1450,7 +1442,7 @@ function setCamNativeDecode(rawMsg) {   // build 240: shared with the film fit (
   }
   return raw;
 }
-function ieApply() { setCamNativeDecode('Now tap Pick under RAW white balance and tap something neutral, such as asphalt or concrete.'); }
+function ieApply() { setCamNativeDecode('Now use grey picker 1, Before swap, in White Balance, and tap something neutral, such as asphalt or concrete.'); }
 
 function buildPresetButtons(list, containerId) {
   list.forEach(p => {
@@ -1500,7 +1492,6 @@ function buildPresetButtons(list, containerId) {
       if (p.recipe === 'hh') hhApplyExtras();
       if (p.recipe === 'eir') eirApply();
       if (p.recipe === 'ie') ieApply();
-      if (p.recipe === 'jww') jwwApply();
       // a preset may carry a hue offset — that's what distinguishes e.g. 550nm
       // from Aerochrome, which share the same matrix. Presets without one
       // explicitly reset hue to 0 so a previous preset's offset can't linger.

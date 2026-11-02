@@ -382,16 +382,6 @@ function stProperties() {
         && leaf[0] > leaf[1] && leaf[0] > leaf[2] && paint[0] > paint[2] * 2 && paint[1] > paint[2] * 2;
       return { ok, detail: { tone, kodak, aut, wat, con, films, lf, gSh, gLo, a43: a43.meanDE, w16same, w16vs12, rowsum, gain, w12: w12.meanDE, tb: tb.meanDE, noneBlue: none.blue, leaf, paint } };
     } },
-    { name: 'JW Wong method swaps IR to red, red to green, green to blue with IR leak removal on at full strength, and taking it off restores your own IR leak setting', img: 'scene', run: () => {
-      resetAllControls(); irLeakOn = false; irLeakAmt = 0.4; irlSync();
-      const b = [...document.querySelectorAll('#pgIR .pb')].find(x => x.querySelector('b').textContent === 'JW Wong method');
-      if (!b) return { ok: false, detail: 'no button' };
-      b.click(); const on = { leak: irLeakOn, amt: irLeakAmt, m: MCELLS.map(id => +$(id).value).join() };
-      b.click(); const off = { leak: irLeakOn, amt: irLeakAmt, m: MCELLS.map(id => +$(id).value).join() };
-      resetAllControls(); irLeakOn = false; irLeakAmt = 1; irlSync();
-      const ok = on.leak && on.amt === 1 && on.m === '0,0,100,100,0,0,0,100,0' && !off.leak && off.amt === 0.4 && off.m === '100,0,0,0,100,0,0,0,100';
-      return { ok, detail: { on, off } };
-    } },
     { name: 'Display hue mode turns the display values the way an editor Hue/Saturation tool does, and the Infrared Ektachrome IE preset sets it and takes it off again', img: 'scene', run: () => {
       resetAllControls();
       const rd = () => { engine.render(Object.assign(currentParams(), { dither: false })); return engine.readPixels(); };

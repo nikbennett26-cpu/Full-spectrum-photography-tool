@@ -185,7 +185,7 @@ footer p{margin:0 0 8px}
       <h3>White balance <span class="tag raw">RAW</span></h3>
       <ul>
         <li>Opens on the camera's own as-shot balance.</li>
-        <li>Temperature in Kelvin and Green, using RawTherapee's model, with As shot, Auto and Pick.</li>
+        <li>Temperature in Kelvin and Green, using RawTherapee's model, with As shot, Auto and Filters. Grey picking is done by the two grey pickers above it.</li>
         <li>Dragging runs on the graphics chip, so it follows your finger at full resolution.</li>
         <li><b>Filters</b>: the white balance worked out from the filters on your lens, picked in Looks &rsaquo; Filters on this photo. Its own small box, naming them as a link back there, shows only while Filters is the white balance; pressing Filters with none set takes you there, and the white balance is applied as soon as you add one. It works from measured sensor, filter and sunlight curves, without looking at the picture, so the same recipe always starts in the same place. It makes leaves neutral (the classic infrared white balance, from a measured oak leaf) or a grey card; with <b>Adjust for the light</b> on (Advanced), the scene's own Auto estimate corrects for shade, low sun or cloud, at most half a stop per channel. It is a starting point: cameras differ most in the infrared, so on a body unlike the measured sensor the Auto adjustment does more of the work.</li>
       </ul>
@@ -258,7 +258,7 @@ footer p{margin:0 0 8px}
     <div class="card">
       <h3>Swap &amp; mix</h3>
       <ul>
-        <li>One-tap swaps: R&harr;B, G&harr;B, R&harr;G, and the JW Wong method: Kodak's DCS CIR single-image method as laid out by JW Wong, which takes the IR out of red and green with IR leak removal, then maps IR &rarr; red, red &rarr; green, green &rarr; blue.</li>
+        <li>One-tap swaps: R&harr;B, G&harr;B, R&harr;G and the rotations.</li>
         <li>A full channel mix grid with offsets, and a compact fine-tune bar for each cell.</li>
         <li>Hold brightness or keep saturation while you swap.</li>
       </ul>
@@ -277,7 +277,7 @@ footer p{margin:0 0 8px}
         <li>Digital Aerochrome: its own card in Looks, after Film stocks &amp; recipes. Works out the channel mix that makes your camera, through the filters you set, record what Kodak&rsquo;s colour infrared film recorded and printed (its characteristic curves and dyes): Aerochrome III 1443 (Kodak&rsquo;s AS-77 data sheet), Ektachrome Infrared EIR (TI-2323) or Ektachrome Infrared Aero 8443 (NASA&rsquo;s published data), in midday sun, low sun, overcast or open shade (sun, shade and sky from NREL&rsquo;s ASTM G173 solar spectra), fitted on realistic spectra and checked against measured surfaces from the USGS Spectral Library. It shows how close it gets, with film-vs-yours swatches for leaves, grass, pine needles, autumn and dry grass, bare earth, asphalt, concrete, brick, water, snow, red and yellow paint and sky, and warns if the stack lets blue in or blocks the film&rsquo;s infrared. Change picks the filters right there (the same list Export records). The film can be put behind the classic filters (Wratten 12, 15, 16, 21, 25; B+W 023, 040, 041, 090; Y52 and O56 glass), following your stack when it has one, and keeps the tint each gave the film: deeper filters made greys warmer, skies greener and foliage redder. Apply puts it on as a look (RAW decoded camera native, then pick grey), with the film&rsquo;s own contrast as R, G and B tone curves unless you untick it.</li>
         <li>UV and IR presets, and recipes including Fedia's Triple Band Aerochrome.</li>
         <li>Save your own looks, with a strength control and an IR tone curve.</li>
-        <li>Infrared Ektachrome IE · Triple Band: for a full-spectrum camera with the MidOpt TB550/660/850 filter, after nfoto's method on UltravioletPhotography.com. The RAW opens with no camera colour profile, there is no channel swap, and the hue turns 143° in Display mode; then pick grey on asphalt with the RAW white balance picker. Aims at the original E-4 film rather than the later, harsher EIR. Not yet checked on a real photo.</li>
+        <li>Infrared Ektachrome IE · Triple Band: for a full-spectrum camera with the MidOpt TB550/660/850 filter, after nfoto's method on UltravioletPhotography.com. The RAW opens with no camera colour profile, there is no channel swap, and the hue turns 143° in Display mode; then pick grey on asphalt with grey picker 1 (before the swap). Aims at the original E-4 film rather than the later, harsher EIR. Not yet checked on a real photo.</li>
         <li>Presets go on top of your edit: each sets only its own settings and leaves the rest alone, whether you pick it first or last. Switching presets takes the first one off before the next goes on, and clearing one puts back exactly what was underneath, keeping anything you changed since.</li>
         <li>NDVI and NGB index views.</li>
       </ul>
@@ -577,7 +577,7 @@ footer p{margin:0 0 8px}
 <footer>
   <div class="wrap">
     <p><a href="https://irlab.uk">irlab.uk</a> &middot; <a href="https://irlab.uk/filters.html">Filter database</a> &middot; <a href="https://www.instagram.com/irlab.uk">Instagram</a></p>
-    <p>This page describes the app as of build 264.</p>
+    <p>This page describes the app as of build 265.</p>
   </div>
 </footer>
 </body>

@@ -221,7 +221,7 @@ function rtwbSet(next) {
   const mode = m => { try { localStorage.setItem('irlab.rawWb', m); } catch (e) {} };
   $('rawWbShot').addEventListener('click', () => { mode('camera'); rtwbSet(null); });
   $('rawWbAuto').addEventListener('click', () => { mode('auto'); rtwbSet(null); });
-  $('rawWbPick').addEventListener('click', () => pickMode === 'rawWb' ? exitPick() : enterPick('rawWb'));
+  // build 265: no dropper here any more; the two grey pickers above Temperature & tint cover it
 
   // +/-50 K: a press is one step and one undo entry; held, it repeats, previewed until let go
   [['rawWbCool', -1], ['rawWbWarm', 1]].forEach(([id, dir]) => {
