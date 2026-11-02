@@ -334,19 +334,14 @@ function ffRun() {
   /* Build 243: Change opens the filter picker right here instead of sending you to the Export panel. There is one
      picker (its stack is the same one export records and the IR leak estimate reads), so it is moved into this box while
      you edit and goes back to its place in Export when you press Done, fold this group, or open the Export panel. */
-  const pick = $('fpPick'), slot = $('ffPickHere');
-  if ($('ffEdit') && pick && slot) {
-    const home = document.createComment('fpPick home'); pick.parentNode.insertBefore(home, pick);
-    const here = () => slot.contains(pick);
-    const putBack = () => { if (!here()) return; home.parentNode.insertBefore(pick, home.nextSibling); slot.hidden = true; $('ffEdit').textContent = 'Change'; };
+  const slot = $('ffPickHere');
+  if ($('ffEdit') && slot) {   // build 259: borrowed through fpLend / fpReturn (src/filter-predict.js)
+    const owner = { slot: slot, onReturn: () => { $('ffEdit').textContent = 'Change'; } };
     $('ffEdit').addEventListener('click', () => {
-      if (here()) { putBack(); if (ffLast === null && fpStack.length) ffRun(); return; }
-      slot.appendChild(pick); slot.hidden = false; $('ffEdit').textContent = 'Done';
-      setTimeout(() => { const s = $('fpSearch'); if (s) s.focus(); }, 50);
+      if (fpLentTo(owner)) { fpReturn(owner); if (ffLast === null && fpStack.length) ffRun(); return; }
+      fpLend(owner); $('ffEdit').textContent = 'Done';
     });
-    if (fg0()) fg0().addEventListener('toggle', () => { if (!fg0().open) putBack(); });
-    document.querySelectorAll('button[data-tab="export"]').forEach(b => b.addEventListener('click', putBack));
-    const ex = $('exportSection'); if (ex) ex.addEventListener('toggle', () => { if (ex.open) putBack(); });
+    if (fg0()) fg0().addEventListener('toggle', () => { if (!fg0().open) fpReturn(owner); });
   }
   function fg0() { return $('filmPresetGroup'); }
   const fg = $('filmPresetGroup'); if (fg) fg.addEventListener('toggle', () => { ffRender(); if (fg.open && typeof fpLoad === 'function') fpLoad().then(ffSensors).catch(() => {}); });

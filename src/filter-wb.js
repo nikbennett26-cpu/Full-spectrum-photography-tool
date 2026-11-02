@@ -34,7 +34,7 @@ function fwbSensorName() {
 /* Camera-space multipliers (green = 1) for this stack and target, or { error }. */
 function fwbGains(res, stack, target, sensorName) {
   if (!fpData) return { error: 'The filter data has not loaded yet.' };
-  if (!stack || !stack.length) return { error: 'Add the filters on your lens first: Export › Format, search for each filter.' };
+  if (!stack || !stack.length) return { error: 'Add the filters on your lens first (Filters \u203a Add).' };
   const wl = ffWl(), n = wl.length, S = fpData.sensors[sensorName] || fpData.sensors[Object.keys(fpData.sensors)[0]];
   const sun = ffIll(wl, 'sun'), T = new Array(n).fill(1), V = fwbHotMirror(wl);
   stack.forEach(id => { const f = fpData.byId[id]; if (f) f[4].forEach((t, i) => { T[i] *= t; }); });
@@ -62,8 +62,17 @@ function fwbLightNudge(res, greyWb) {
   return [0, 1, 2].map(c => Math.min(lim, Math.max(1 / lim, (e[c] / e[1]) / greyWb[c])));
 }
 
+/* Build 259: the picker opens right here in the white balance card, so the filters never have to be set in Export first. */
+const fwbOwner = { slot: null, onReturn: () => { const e = $('fwbEdit'); if (e) e.textContent = fpStack.length ? 'Change' : 'Add'; } };
+function fwbOpenPicker() { fwbOwner.slot = $('fwbPickHere'); if (!fwbOwner.slot) return; fpLend(fwbOwner); const e = $('fwbEdit'); if (e) e.textContent = 'Done'; if (!fpData) fpLoad().then(() => { if (typeof fpRender === 'function') fpRender(); }).catch(() => {}); }
+function fwbSyncStack() {
+  const st = $('fwbStack'); if (st) st.textContent = fpStack.length ? (typeof fpStackNames === 'function' ? fpStackNames().join(' + ') : fpStack.join(' + ')) : 'none yet';
+  const e = $('fwbEdit'); if (e && !fpLentTo(fwbOwner)) e.textContent = fpStack.length ? 'Change' : 'Add';
+}
+
 function fwbApply() {
   const res = rtwbRes(); if (!res) return;
+  if (!fpStack.length) { fwbOpenPicker(); if (typeof toast === 'function') toast('Add the filters on your lens, then press Done'); return; }
   const go = () => {
     const out = fwbGains(res, fpStack, fwbTarget, fwbSensorName());
     if (out.error) { if (typeof toast === 'function') toast(out.error, true); return; }
@@ -78,11 +87,13 @@ function fwbApply() {
 }
 
 /* The stack changed while the white balance came from it: follow the new stack. */
-function fwbStackChanged() { if (typeof rawWbCustom !== 'undefined' && rawWbCustom && rawWbCustom.src === 'filters' && fpStack.length) fwbApply(); }
+function fwbStackChanged() { fwbSyncStack(); if (!fpLentTo(fwbOwner) && typeof rawWbCustom !== 'undefined' && rawWbCustom && rawWbCustom.src === 'filters' && fpStack.length) fwbApply(); }
 
 (function wireFilterWb() {
   const b = $('rawWbFilt'); if (!b) return;
   b.addEventListener('click', fwbApply);
+  const ed = $('fwbEdit'); if (ed) ed.addEventListener('click', () => { if (fpLentTo(fwbOwner)) { fpReturn(fwbOwner); if (fpStack.length) fwbApply(); } else fwbOpenPicker(); });   // Done applies it
+  fwbSyncStack();
   const t = $('fwbTarget'), a = $('fwbAuto');
   if (t) { t.value = fwbTarget; t.addEventListener('change', () => { fwbTarget = t.value === 'grey' ? 'grey' : 'foliage'; try { localStorage.setItem('irlab.fwbTarget', fwbTarget); } catch (e) {} if (rawWbCustom && rawWbCustom.src === 'filters') fwbApply(); }); }
   if (a) { a.checked = fwbAuto; a.addEventListener('change', () => { fwbAuto = a.checked; try { localStorage.setItem('irlab.fwbAuto', fwbAuto ? 'on' : 'off'); } catch (e) {} if (rawWbCustom && rawWbCustom.src === 'filters') fwbApply(); }); }

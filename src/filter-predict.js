@@ -101,6 +101,29 @@ function fpRender() {
   fpRenderResults();
 }
 
+/* Build 259: there is one filter picker (its stack is what export records and the IR leak estimate, Digital Aerochrome
+   (advanced) and the Filters white balance read). Panels that need it borrow it: fpLend moves it into their slot,
+   fpReturn puts it back in Export. Lending to a second panel hands it back from the first. owner = { slot, onReturn }. */
+let fpHomeMark = null, fpLender = null;
+function fpLentTo(owner) { return fpLender === owner; }
+function fpLend(owner) {
+  const pick = $('fpPick'); if (!pick || !owner || !owner.slot) return;
+  if (!fpHomeMark) { fpHomeMark = document.createComment('fpPick home'); pick.parentNode.insertBefore(fpHomeMark, pick); }
+  if (fpLender && fpLender !== owner) { const o = fpLender; fpLender = null; o.slot.hidden = true; if (o.onReturn) o.onReturn(); }
+  owner.slot.appendChild(pick); owner.slot.hidden = false; fpLender = owner;
+  setTimeout(() => { const s = $('fpSearch'); if (s) s.focus(); }, 50);
+}
+function fpReturn(owner) {
+  const pick = $('fpPick'); if (!pick || !fpHomeMark || !fpLender || (owner && fpLender !== owner)) return;
+  const o = fpLender; fpLender = null;
+  fpHomeMark.parentNode.insertBefore(pick, fpHomeMark.nextSibling); o.slot.hidden = true;
+  if (o.onReturn) o.onReturn();
+}
+(function () {   // opening Export always brings it home
+  document.querySelectorAll('button[data-tab="export"]').forEach(b => b.addEventListener('click', () => fpReturn()));
+  const ex = $('exportSection'); if (ex) ex.addEventListener('toggle', () => { if (ex.open) fpReturn(); });
+})();
+
 /* Build 183: the Predict card is gone. What is left is the filter picker in the Export panel, which records the stack in
    the exported file and feeds the IR leak estimate. The database loads the first time the search box is used. */
 function fpInit() {

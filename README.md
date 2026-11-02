@@ -42,8 +42,9 @@ Work that is best done on the sensor data is done there, before the channel swap
 - **White balance (RAW):** opens on the camera's own as-shot balance. Temperature in Kelvin and Green, using
   RawTherapee's model, with As shot, Auto and Pick. Dragging runs on the graphics chip, so it follows your finger at full
   resolution.
-- **White balance from your filters (RAW):** the **Filters** button works the white balance out from the stack you set in
-  Export > Format, without looking at the picture, so a frame full of leaves or sky cannot pull it and the same recipe
+- **White balance from your filters (RAW):** the **Filters** button works the white balance out from your filter stack,
+  set right in the white balance card (Your filters: Add or Change opens the search there; Done applies; it is the same
+  list Export records), without looking at the picture, so a frame full of leaves or sky cannot pull it and the same recipe
   always starts in the same place. Per channel it sums a measured converted-sensor response (the one chosen in Digital
   Aerochrome (advanced); the Sony A7 III by default) × the filters × ASTM G173 sunlight × the target (a USGS oak leaf
   for **leaves neutral**, the classic infrared starting point, or a flat **grey card**), compares it with the same
