@@ -1056,7 +1056,6 @@ async function loadFileInner(file) {
       toast('Loaded CR2 sensor data \u2014 ' + cv.width + '\u00d7' + cv.height +
             (cv.__hasCameraWB ? ' (' + (cv.__demosaicName || demosaicPrefName()) + ', camera-matrix developed' + (cv.__camSpaceSwapApplied ? ', ' + cv.__camSpaceSwapName + ' in ProPhoto)' : ')') : ' (' + (cv.__demosaicName || demosaicPrefName()) + ', auto white balanced)'));
       setDecoderBadge((cv.__demosaicName || demosaicPrefName()) + ' (WASM, GPL-3)', true);
-      renderRawPlaneReport(cv.__rawReport);
       /* Both halves of the file are in hand right here — the sensor decode
          just produced, and the camera's own JPEG of the same frame — which
          is the only moment they can be matched against each other. Fitted
@@ -1210,7 +1209,6 @@ async function loadFileInner(file) {
         ? 'Loaded CR2 embedded preview \u2014 ' + found.w + '\u00d7' + found.h + ' (camera rendering, not raw sensor data)'
         : 'CR2 sensor decode failed \u2014 using the embedded preview instead');
       setDecoderBadge('Camera preview (not sensor data)', false);
-      renderRawPlaneReport(found.rawPlane);
     }
   } else if (RAW_EXT.includes(ext)) {
     // A real camera RAW that only has this tool's generic preview-extraction
@@ -1241,7 +1239,6 @@ async function loadFileInner(file) {
         toast('Loaded ' + ext + ' sensor data \u2014 ' + cv.width + '\u00d7' + cv.height +
               (cv.__hasCameraWB ? ' (' + (cv.__demosaicName || demosaicPrefName()) + ', camera-matrix developed' + (cv.__camSpaceSwapApplied ? ', ' + cv.__camSpaceSwapName + ' in ProPhoto)' : ')') : ' (' + (cv.__demosaicName || demosaicPrefName()) + ', auto white balanced)'));
         setDecoderBadge((cv.__demosaicName || demosaicPrefName()) + ' (WASM, GPL-3)', true);
-        renderRawPlaneReport(cv.__rawReport);
         /* Fast path, same reasoning as the CR2 branch: cv already has real
            pixels in it, so finishLoad() can draw it directly \u2014 no PNG
            encode/decode round trip just to get it on screen. origFile and
@@ -1301,10 +1298,8 @@ async function loadFileInner(file) {
       exifOrient = found.orient || 1;
       toast('Loaded ' + ext + ' preview \u2014 ' + found.w + '\u00d7' + found.h + ' (camera rendering, not raw sensor data)');
       setDecoderBadge('Camera preview (not sensor data)', false);
-      renderRawPlaneReport(found.rawPlane);
     }
   } else {
-    if ($('rawPlanePanel')) $('rawPlanePanel').style.display = 'none';   // an ordinary JPEG/PNG has no sensor plane to report on
     setDecoderBadge(null);   // not a RAW load at all, nothing to mark
     // Not a RAW at all (or a TIFF, already-developed pixel data rather than
     // a mosaic) — nothing for the decoder to act on.

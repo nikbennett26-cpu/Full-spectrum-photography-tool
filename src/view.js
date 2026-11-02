@@ -682,10 +682,8 @@ window.addEventListener('resize', scheduleHistogram);
    unless asked for. An explicit choice is remembered and always wins. */
 /* ===================== GOOGLE ANALYTICS 4 =====================
 
-   >>> PUT YOUR MEASUREMENT ID HERE. It looks like G-XXXXXXXXXX and is in
-   >>> the GA4 admin under Data Streams. Until it's filled in, nothing loads
-   >>> and the consent bar stays hidden — so the page is safe to deploy
-   >>> as-is.
+   The measurement ID is set below (GA4 admin > Data Streams). With it blank,
+   nothing loads and the consent bar stays hidden.
 
    The tag is injected only after Accept. Loading gtag.js first and then
    showing a banner is the common drop-in pattern and it is the wrong way

@@ -348,48 +348,6 @@ function setDecoderBadge(text, isAmaze) {
   b.style.display = 'block';
 }
 
-function renderRawPlaneReport(rp) {
-  const panel = $('rawPlanePanel'), out = $('rawPlaneReport');
-  if (!panel || !out) return;   // the readout panel was removed from the page; nothing to fill in
-  if (!panel || !out) return;
-  if (!rp || !rp.found) {
-    panel.style.display = 'block';
-    out.textContent = 'No sensor-plane data located in this file' +
-      (rp && rp.reason ? ' \u2014 ' + rp.reason : '') + '.';
-    return;
-  }
-  const lines = [];
-  lines.push('Renderer: ' + (typeof engine !== 'undefined' && engine && engine.isWebGL2
-    ? 'WebGL2 \u2014 the exposure/contrast float-precision fix (see Recently Added) is active'
-    : 'WebGL1 \u2014 the float-precision fix isn\u2019t available on this browser/device; large exposure pushes may band more visibly on smooth gradients like skies'));
-  lines.push(rp.width + '\u00d7' + rp.height + ' \u00b7 ' + rp.bitsPerSample + '-bit \u00b7 compression: ' + rp.compressionName);
-  if (rp.cfa) {
-    lines.push('CFA pattern: ' + (rp.cfa.bayer || (rp.cfa.codes.join('') + ' (not a standard 2\u00d72 Bayer layout \u2014 needs different demosaic maths)')));
-  } else {
-    lines.push('CFA pattern: not present in this file\u2019s tags');
-  }
-  lines.push('Black level: ' + (rp.blackLevel ? rp.blackLevel.join(', ') : 'not found') +
-    '  \u00b7  White level: ' + (rp.whiteLevel || 'not found'));
-  if (rp.decoded) {
-    // A real decode happened, not just a diagnostic probe \u2014 this branch
-    // exists because the panel was written before cr2ToCanvas did, when
-    // "reporting only, nothing changes" was true for every file that could
-    // reach here. It no longer is, for a CR2 specifically, and saying so
-    // stale would undersell the thing this panel is supposed to report on.
-    if (rp.crop) lines.push('Crop origin (from SensorInfo): left ' + rp.crop.left + ', top ' + rp.crop.top + ', right ' + rp.crop.right + ', bottom ' + rp.crop.bottom);
-    lines.push('');
-    lines.push('\u2713 This is what\u2019s actually on screen \u2014 the full sensor plane was decoded and demosaiced, not a camera-rendered preview standing in for it.');
-  } else {
-    lines.push('As-shot neutral: ' + (rp.asShotNeutral ? rp.asShotNeutral.map(v => v.toFixed(3)).join(', ') : 'not found'));
-    lines.push('');
-    lines.push(rp.supported
-      ? '\u2713 Sensor data is uncompressed and WAS read \u2014 ' + (rp.pixels ? rp.pixels.length : 0) + ' raw samples in memory (not used for anything yet).'
-      : '\u2717 Sensor data is stored compressed (' + rp.compressionName + ') and was NOT decoded. This is normal for a camera-original CR2/NEF/ARW \u2014 decoding it needs a real demosaic decoder, which this diagnostic deliberately does not attempt.');
-  }
-  panel.style.display = 'block';
-  out.textContent = lines.join('\n');
-}
-
 /* EXIF Orientation, tag 0x0112 in IFD0.
 
    A RAW's embedded preview is a bare JPEG stream with no APP1 segment, so the

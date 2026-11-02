@@ -1222,7 +1222,6 @@ html.studioOn body.has-image #reorderZone > #modeBar{display:flex !important;ord
 .fwbLine label{display:flex;align-items:center;gap:6px}
 .fwbLine input[type=checkbox]{margin:0}
 .fwbOpts{margin-top:6px}
-#fwbPickHere{margin-top:8px}
 .wbModeBtn{min-height:40px;border-radius:6px;border:1px solid var(--line2);background:transparent;color:var(--paper);
   font:inherit;font-size:13px;display:flex;align-items:center;justify-content:center;gap:6px;cursor:pointer;padding:0 6px}
 .wbModeBtn.on,.wbModeBtn.armed{border-color:var(--safelight);background:color-mix(in srgb,var(--safelight) 16%,transparent)}

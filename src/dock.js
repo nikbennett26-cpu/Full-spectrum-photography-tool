@@ -43,7 +43,6 @@
       else if (step === 'colour') { t = 'colour'; o = 2; }
       else if (step === 'targeted') { t = 'colour'; o = 3; }
       else if (step === 'detail') { t = 'detail'; o = 1; }
-      else if (el.id === 'rawPlanePanel') { t = 'looks'; o = 3; }
       else if (el.tagName === 'FOOTER') { t = 'export'; o = 4; }
       else if (el.classList && el.classList.contains('panel')) {
         if (el.querySelector('#bDl')) { t = 'export'; o = 1; }

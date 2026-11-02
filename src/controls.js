@@ -932,7 +932,6 @@ function wbUiSoon() {   // called from tempTintGains(), so every path that build
     if (sliderDragging) { wbUiTimer = setTimeout(run, 150); return; }
     wbUiTimer = null; wbUiRunning = true;
     try { if (typeof rtwbSyncUi === 'function') rtwbSyncUi(); } catch (e) {}
-    try { if (typeof wsTabsSync === 'function') wsTabsSync(); } catch (e) {}
     wbUiRunning = false;
   }, 120);
 }
@@ -945,7 +944,7 @@ function wbUiSoon() {   // called from tempTintGains(), so every path that build
     t = null;
     if (!document.body.classList.contains('rawOpen')) return;
     let ready = false; try { ready = typeof rtwbRes === 'function' && !!rtwbRes(); } catch (e) {}
-    if (ready && !wbUiRunning) { wbUiRunning = true; try { rtwbSyncUi(); wsTabsSync(); } catch (e) {} wbUiRunning = false; }
+    if (ready && !wbUiRunning) { wbUiRunning = true; try { rtwbSyncUi(); } catch (e) {} wbUiRunning = false; }
     const box = $('rawWbBox');
     if (ready && box && !box.hidden) return;
     if (++tries < 50) t = setTimeout(poll, 300);

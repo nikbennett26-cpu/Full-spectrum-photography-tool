@@ -252,7 +252,9 @@ The interface comes in English, Spanish, French, German, Japanese and Chinese, c
   "decrease Exposure". A sentence broken up by bold or italic words is marked `data-tr-block` and translated whole.
   Only the chosen language's file is loaded.
 
-Text with no entry simply stays in English, so editing an English string means updating its entries too.
+Text with no entry simply stays in English, so editing an English string means updating its entries too. The newest
+cards (Filters on this photo, the Filters white balance options, Digital Aerochrome and Anamorphic desqueeze) have no
+entries yet, so they show in English in every language for now.
 `python3 tools/i18n_check.py index.html de` lists what is still English in a language (it needs the local server on
 port 8820 and Playwright). The What's new change log, and the filters page's long research notes (marked `.noTr`), are
 deliberately English only. Text drawn into a canvas is outside the page, so it goes through `irlabTr.lookup()` directly
