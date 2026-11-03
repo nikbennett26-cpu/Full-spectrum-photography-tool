@@ -70,6 +70,10 @@ function decodeTipCard(fileName, okLabel) {
     const q = $('cr2PreferPreview');
     let dm = typeof demosaicPref === 'function' ? demosaicPref() : 'amaze';
     let quick = !!(q && q.checked);
+    // build 273: the other two start-page decode settings, so the card holds every decode choice
+    const cs = $('camSpaceSwap');
+    let camSwap = !!(cs && cs.checked);
+    let preWb = typeof preWbPref === 'function' ? preWbPref() : true;
     const box = document.createElement('div');
     box.id = 'decodeTip'; box.setAttribute('role', 'dialog'); box.setAttribute('aria-modal', 'true'); box.setAttribute('aria-labelledby', 'decodeTipT');
     box.innerHTML =
@@ -81,6 +85,12 @@ function decodeTipCard(fileName, okLabel) {
       + '<div class="dtRow"><span class="dtLbl">Decode</span><div class="dtSeg" data-k="q">'
       +   '<button type="button" data-v="0">Full sensor</button><button type="button" data-v="1">Quick preview</button></div></div>'
       + '<p class="dtHint">Full sensor uses every pixel the camera recorded. Quick preview uses the small JPEG inside the file: faster, with fewer RAW-only tools.</p>'
+      + '<div class="dtRow"><span class="dtLbl">Balance before rebuild</span><div class="dtSeg" data-k="pw">'
+      +   '<button type="button" data-v="1">On</button><button type="button" data-v="0">Off</button></div></div>'
+      + '<p class="dtHint">Evens out the sensor\u2019s channels before the colour rebuild, for far fewer coloured fringes on edges.</p>'
+      + '<div class="dtRow"><span class="dtLbl">Swap in the camera\u2019s colours</span><div class="dtSeg" data-k="cs">'
+      +   '<button type="button" data-v="1">On</button><button type="button" data-v="0">Off</button></div></div>'
+      + '<p class="dtHint">Does the channel swap in the camera\u2019s own colour space, so saturated colours survive it better. Needs a RAW with the camera\u2019s colour data.</p>'
       + '<p class="dtHint">You can change these later on the start page, or under Export, Decode settings, in Advanced.</p>'
       + '<label class="dtNever"><input type="checkbox"> Don\u2019t ask again</label>'
       + '<div class="dtBtns"><button type="button" class="dtCancel">Cancel</button><button type="button" class="dtOk">Open</button></div>';
@@ -89,9 +99,12 @@ function decodeTipCard(fileName, okLabel) {
     const paint = () => {
       box.querySelectorAll('.dtSeg[data-k="dm"] button').forEach(b => b.setAttribute('aria-pressed', b.dataset.v === dm ? 'true' : 'false'));
       box.querySelectorAll('.dtSeg[data-k="q"] button').forEach(b => b.setAttribute('aria-pressed', (b.dataset.v === '1') === quick ? 'true' : 'false'));
+      box.querySelectorAll('.dtSeg[data-k="pw"] button').forEach(b => b.setAttribute('aria-pressed', (b.dataset.v === '1') === preWb ? 'true' : 'false'));
+      box.querySelectorAll('.dtSeg[data-k="cs"] button').forEach(b => b.setAttribute('aria-pressed', (b.dataset.v === '1') === camSwap ? 'true' : 'false'));
     };
     box.querySelectorAll('.dtSeg button').forEach(b => b.addEventListener('click', () => {
-      if (b.parentElement.dataset.k === 'dm') dm = b.dataset.v; else quick = b.dataset.v === '1';
+      const k = b.parentElement.dataset.k, on = b.dataset.v === '1';
+      if (k === 'dm') dm = b.dataset.v; else if (k === 'q') quick = on; else if (k === 'pw') preWb = on; else camSwap = on;
       paint();
     }));
     paint();
@@ -107,6 +120,15 @@ function decodeTipCard(fileName, okLabel) {
         ['demosaicSel', 'demosaicSelEd'].forEach(id => { const s = $(id); if (s) s.value = dm; });
         const ql = $('ltDecoder'); if (ql) ql.textContent = dm === 'rcd' ? 'RCD' : 'AMaZE';
         if (q) { q.checked = quick; q.dispatchEvent(new Event('change')); }   // syncs the editor copy and the start-page summary
+        /* build 273: written straight into the controls (no change event, which would re-decode or re-render a photo
+           that is already open); the next decode reads them */
+        try { localStorage.setItem('irlab.preWb', preWb ? 'on' : 'off'); } catch (e) {}
+        ['preWbSel', 'preWbSelEd'].forEach(id => { const c = $(id); if (c) c.checked = preWb; });
+        if (cs && cs.checked !== camSwap) {
+          ['camSpaceSwap', 'camSpaceSwapEditor'].forEach(id => { const c = $(id); if (c) c.checked = camSwap; });
+          ['camSpaceSwapPreset', 'camSpaceSwapPresetEditor'].forEach(id => { const e = $(id); if (e) e.style.display = camSwap ? 'block' : 'none'; });
+          if (typeof camNativeByLook !== 'undefined') camNativeByLook = false;   // a choice made here is the person's own
+        }
       }
       resolve(ok);
     };
