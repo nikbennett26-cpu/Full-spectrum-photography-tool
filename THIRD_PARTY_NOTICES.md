@@ -166,6 +166,12 @@ Other manufacturer and third-party sources are named on each filter's card and i
   licensed CC BY 4.0. The Sony A7III multispectral channel responses (Figure 1f, 300-800nm) were traced from the
   published figure into `tools/sensors/crowther2022_a7iii.json`; the extension past 800nm is irlab's own model
   (see `tools/editor_filters.mjs`), not the author's data.
+- **Crowther, J.M. (2019).** Understanding colour reproduction in multispectral imaging: measuring camera sensor response
+  in the ultraviolet, visible and infrared. *The Imaging Science Journal* 67(5), 268-276.
+  https://doi.org/10.1080/13682199.2019.1638664 — the paper was supplied by the author. The Canon EOS 5DS R
+  multispectral channel responses (Figure 5b, 300-800nm) were traced from the figure into
+  `tools/sensors/crowther2019_5dsr.json` (build 267); past 800nm it uses the same irlab model as the Sony, not the
+  author's data.
 
 ## Converted camera sensor responses (editor, build 249)
 

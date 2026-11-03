@@ -41,26 +41,32 @@ for (const [name, key] of [['Generic CMOS (approximation)', 'CMOS sensor'], ['Ko
   const m = Math.max(...['R', 'G', 'B'].flatMap(ch => s[ch].filter(Number.isFinite)));
   sensors[name] = Object.fromEntries(['R', 'G', 'B'].map(ch => [ch, WL.map(l => q(at(s[ch], l) / m))]));
 }
-/* Sony A7III multispectral conversion, measured 300-800nm (Crowther 2022, J. Imaging 8:54, Figure 1f; traced into
-   tools/sensors/crowther2022_a7iii.json, which records how). Past 800nm the paper has no measurement, so it is
-   extended under two stated, sourced assumptions: (1) the colour filter dyes become equally transparent for all three
-   channels beyond about 800nm (the same paper, Figure 7b), so the channels converge on the red channel's 800nm level
+/* Converted cameras measured 300-800nm by Dr Jonathan Crowther (JMC Scientific Consulting Ltd), traced into
+   tools/sensors/*.json, each of which records how:
+     Sony A7III multispectral (J. Imaging 2022, 8:54, Figure 1f; crowther2022_a7iii.json)
+     Canon EOS 5DS R multispectral (Imaging Science Journal 2019, 67:268, Figure 5b; crowther2019_5dsr.json; build 267)
+   Past 800nm neither paper has a measurement, so each is extended under two stated, sourced assumptions: (1) the colour
+   filter dyes become equally transparent for all three channels beyond about 800nm (J. Imaging 2022, Figure 7b; the 2019
+   paper notes the channels closing up through 700-800nm), so the channels converge on the red channel's 800nm level
    over 800-860nm; (2) the common level then falls with silicon's response, taken from the real KAF-8300 sensor curve
    (its three channels also converge there). */
-{
-  const A = JSON.parse(fs.readFileSync(path.join(here, 'sensors', 'crowther2022_a7iii.json'), 'utf8'));
+function crowtherSensor(file) {
+  const A = JSON.parse(fs.readFileSync(path.join(here, 'sensors', file), 'utf8'));
   const kaf = sensors['Kodak KAF-8300 CCD (real, astronomy)'];
   const kmean = WL.map((l, i) => (kaf.R[i] + kaf.G[i] + kaf.B[i]) / 3);
   const k800 = kmean[WL.indexOf(800)];
   const peak = Math.max(...A.R, ...A.G, ...A.B);
   const lerp = (xs, ys, x) => { for (let i = 1; i < xs.length; i++) if (x <= xs[i]) return ys[i - 1] + (ys[i] - ys[i - 1]) * (x - xs[i - 1]) / (xs[i] - xs[i - 1]); return ys[ys.length - 1]; };
   const r800 = A.R[A.R.length - 1];
-  sensors['Sony A7III full spectrum (measured to 800nm)'] = Object.fromEntries(['R', 'G', 'B'].map(ch => [ch, WL.map((l, i) => {
+  return Object.fromEntries(['R', 'G', 'B'].map(ch => [ch, WL.map((l, i) => {
     if (l <= 800) return q(lerp(A.wavelength_nm, A[ch], l) / peak);
     const own = A[ch][A[ch].length - 1], w = Math.max(0, 1 - (l - 800) / 60);
     return q((w * own + (1 - w) * r800) * (kmean[i] / k800) / peak);
   })]));
 }
+sensors['Sony A7III full spectrum (measured to 800nm)'] = crowtherSensor('crowther2022_a7iii.json');
+const CANON_5DSR = 'Canon 5DS R full spectrum (measured to 800nm)';
+sensors[CANON_5DSR] = crowtherSensor('crowther2019_5dsr.json');
 /* Build 249: four converted cameras measured 375-1000nm by MaxMax (LDP LLC), traced into
    tools/sensors/maxmax_spectral_response.json (which records how, and the caveats). Below 380nm the response is taken
    down to nothing by 340nm (the measurement starts at 375nm and every yellow-to-red stack blocks that region anyway).
@@ -84,9 +90,10 @@ const MAXMAX_NAMES = { 'Canon 40D': 'Canon 40D full spectrum (MaxMax, measured 3
 }
 const sensorNotes = {
   'Sony A7III full spectrum (measured to 800nm)': 'Measured 300-800nm on a real converted body by JMC Scientific Consulting Ltd (Dr Jonathan Crowther), published in J. Imaging 2022, 8, 54 (doi:10.3390/jimaging8030054, CC BY 4.0); traced from the paper\u2019s Figure 1f. Past 800nm it is modelled: the colour filters stop separating the channels (same paper) and the response falls with silicon\u2019s.',
+  [CANON_5DSR]: 'Measured 300-800nm on a real converted body (internal UV/IR filter removed, colour filter array kept) by Dr Jonathan Crowther (JMC Scientific Consulting Ltd), published in The Imaging Science Journal 2019, 67, 268-276 (doi:10.1080/13682199.2019.1638664); traced from the paper\u2019s Figure 5b. Past 800nm it is modelled the same way as the Sony A7III. The one to use for a converted Canon.',
   'Generic CMOS (approximation)': 'A generic approximation, not a measured camera; no data past 1000nm.',
   'Kodak KAF-8300 CCD (real, astronomy)': 'A real measured sensor, but an astronomy CCD, not a camera body.',
-  ...Object.fromEntries(Object.values(MAXMAX_NAMES).map(n => [n, 'Measured on a real converted body by MaxMax (LDP LLC) with a monochromator, 375-1000nm, and traced from their published chart; past 1000nm it follows the fall-off SurfLabX measured on a modern full-spectrum sensor. Use with care: above about 840nm its three channels do not come together, which the direct measurements of other converted cameras show they should (Crowther 2022, Sony A7 III; Aphalo 2024, Olympus E-M1), so the values were probably read after white balance or a colour conversion in Photoshop. The default Sony A7 III curve is the safer choice.' + (/Canon/.test(n) ? ' Still the only measured Canon here, for other Canon bodies.' : '')]))
+  ...Object.fromEntries(Object.values(MAXMAX_NAMES).map(n => [n, 'Measured on a real converted body by MaxMax (LDP LLC) with a monochromator, 375-1000nm, and traced from their published chart; past 1000nm it follows the fall-off SurfLabX measured on a modern full-spectrum sensor. Use with care: above about 840nm its three channels do not come together, which the direct measurements of other converted cameras show they should (Crowther 2022, Sony A7 III; Aphalo 2024, Olympus E-M1), so the values were probably read after white balance or a colour conversion in Photoshop. The default Sony A7 III curve is the safer choice.' + (/Canon/.test(n) ? ' For a converted Canon, the Canon 5DS R curve (measured directly) is the safer choice.' : '')]))
 };
 const illKey = Object.keys(X.ILLUMINANTS_REAL)[0];
 const ill = X.ILLUMINANTS_REAL[illKey], im = Math.max(...ill.filter(Number.isFinite));
@@ -94,7 +101,7 @@ const out = {
   note: 'Generated by tools/editor_filters.mjs from src-filters. Transmission is on-axis, 0-1; sensors normalised to their own peak.',
   wl: [300, 1100, 10], illuminant: illKey, sensorNotes, ill: WL.map(l => q(at(ill, l) / im)), sensors, filters,
 };
-const order = ['Sony A7III full spectrum (measured to 800nm)', MAXMAX_NAMES['Canon 40D'], MAXMAX_NAMES['Nikon D300'], MAXMAX_NAMES['Nikon D200'], MAXMAX_NAMES['Nikon D700'], 'Generic CMOS (approximation)', 'Kodak KAF-8300 CCD (real, astronomy)'];
+const order = ['Sony A7III full spectrum (measured to 800nm)', CANON_5DSR, MAXMAX_NAMES['Canon 40D'], MAXMAX_NAMES['Nikon D300'], MAXMAX_NAMES['Nikon D200'], MAXMAX_NAMES['Nikon D700'], 'Generic CMOS (approximation)', 'Kodak KAF-8300 CCD (real, astronomy)'];
 out.sensors = Object.fromEntries(order.map(k => [k, sensors[k]]));
 fs.writeFileSync(path.join(here, '..', 'filter-data.json'), JSON.stringify(out));
 console.log(`filter-data.json: ${filters.length} filters, ${Object.keys(sensors).length} sensors`);
