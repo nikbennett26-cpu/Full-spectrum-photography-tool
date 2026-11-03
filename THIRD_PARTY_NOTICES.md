@@ -198,7 +198,13 @@ Other manufacturer and third-party sources are named on each filter's card and i
   open-ocean sea water (SW2), melting snow (mSnw01a), dry marsh sediment as bare earth (DWV3-0511), cadmium red
   (GDS778) and Hansa yellow (GDS785). **Modifications**, as the USGS asks to be
   described: averaged into 10nm steps from 300 to 1100nm, the first channel held below each instrument's range, and
-  clipped to 0-1. The USGS has not reviewed or endorsed irlab or this use. The clear-sky and grey-card spectra are irlab's own models.
+  clipped to 0-1. The USGS has not reviewed or endorsed irlab or this use. The grey card is irlab's own model (a flat 18%).
+- **Clear-sky spectrum** (build 275): Kider, J.T., Knowlton, D., Newlin, J., Li, Y.K. and Greenberg, D.P., *A Framework
+  for the Experimental Comparison of Solar and Skydome Illumination*, ACM Transactions on Graphics 33(6), SIGGRAPH Asia
+  2014. Measurement data https://github.com/spectralskylight/sky-measurements-2014, licensed under the Apache License,
+  Version 2.0 (http://www.apache.org/licenses/LICENSE-2.0). **Modifications**: four clear captures (2013-05-27 10:00,
+  12:00, 12:30; 2013-09-24 13:10) reduced to one sky-relative-to-sunlight curve, 10nm steps 300-1100nm, gas absorption
+  bands bridged, lightly smoothed; the method and the values are in `tools/sky/kider2014_clear_sky.json`.
 - **Aerochrome III 1443 layer sensitivities** (build 247): read from the vector spectral-sensitivity chart in Eastman
   Kodak Company, *KODAK AEROCHROME III Infrared Film 1443*, publication AS-77 (TI2562, minor revision 11-05, ©2005),
   against the chart's own gridlines. Factual data from a published graph; the values are in `src/film-fit.js`. (Build
