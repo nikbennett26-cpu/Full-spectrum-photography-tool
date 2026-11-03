@@ -9,7 +9,7 @@
    with what is shown; Cancel opens nothing. Build 264: it asks every time (it used to stop after the first Open), until
    Don't ask again is ticked on the card or Ask how to decode each RAW is unticked on the start page; ticking that
    brings it back. Only RAW files: decode settings do nothing for a JPEG or PNG. */
-const DECODE_ASK_KEY = 'irlab.decodeAsk';   // '0' = opted out
+const DECODE_ASK_KEY = 'irlab.decodeAsk2';   // '0' = opted out. Build 272: a new key, so an opt-out ticked while the card was being tested (build 264) no longer hides it
 function decodeAskOn() { try { return localStorage.getItem(DECODE_ASK_KEY) !== '0'; } catch (e) { return true; } }
 function decodeAskSet(on) {
   try { localStorage.setItem(DECODE_ASK_KEY, on ? '1' : '0'); } catch (e) {}
