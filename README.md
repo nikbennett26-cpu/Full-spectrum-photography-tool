@@ -220,6 +220,8 @@ through.
   [releases/download/android/irlab-uk.apk](https://github.com/nikbennett26-cpu/full-spectrum-photography-tool/releases/download/android/irlab-uk.apk).
 - **Six languages:** English, Spanish, French, German, Japanese and Chinese, chosen on the home page (the filter page
   follows).
+- **Discord:** the community, testers and the Android app are on the irlab Discord: https://discord.gg/rWhu8U6Ne2 (linked
+  from the home page).
 - **Updates:** the editor footer shows your build number, and the app checks for a newer one. A change log is inside the app.
 
 ## Privacy
