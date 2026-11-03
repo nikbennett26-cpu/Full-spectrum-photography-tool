@@ -16,8 +16,9 @@ editor) so it opens full screen and keeps working offline.
 - **Ordinary images:** JPEG, PNG, WebP, AVIF and TIFF (16-bit TIFF in, 16-bit TIFF out).
 - **RAW files:** CR2, CR3, NEF, ARW, SR2, DNG, ORF, RW2, PEF, RAF, SRW, NRW, 3FR, IIQ, MRW, KDC, DCR and X3F, decoded from
   the sensor data in the browser by LibRaw compiled to WebAssembly. A quick-preview mode reads the camera's embedded JPEG
-  instead. Each time a RAW is opened, a card shows how it will be decoded (colour rebuild, full sensor or quick preview)
-  before anything happens; tick Don't ask again there, or untick Ask how to decode each RAW on the start page, to stop it.
+  instead. Each time you tap Open photo or New image, a card shows how RAWs will be decoded (colour rebuild, full sensor
+  or quick preview) before the file picker opens, so it is settled before you choose; a RAW dropped or shared in is asked
+  about once it arrives; tick Don't ask again there, or untick Ask how to decode each RAW on the start page, to stop it.
   A RAW with no usable extension (Android's picker often names a file just "image") is recognised from its first bytes,
   for the card and for decoding.
 - **Every new photo starts fresh:** edits are reset (unless Apply previous settings is on), and a camera-native decode
