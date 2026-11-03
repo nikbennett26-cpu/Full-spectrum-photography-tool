@@ -199,6 +199,12 @@ Other manufacturer and third-party sources are named on each filter's card and i
   (GDS778) and Hansa yellow (GDS785). **Modifications**, as the USGS asks to be
   described: averaged into 10nm steps from 300 to 1100nm, the first channel held below each instrument's range, and
   clipped to 0-1. The USGS has not reviewed or endorsed irlab or this use. The grey card is irlab's own model (a flat 18%).
+- **Human skin reflectance** (build 276): Cooksey, C.C., Allen, D.W. and Tsai, B.K., *Reference Data Set of Human Skin
+  Reflectance*, Journal of Research of the National Institute of Standards and Technology 122:26 (2017),
+  https://doi.org/10.6028/jres.122.026; data https://opendata.nist.gov (NIST data, https://www.nist.gov/open/license).
+  **Modifications**: the 100 subjects' average spectra reduced to three tones (pointwise medians of the lightest third,
+  middle third and darkest ten), 10nm steps 300-1100nm; the method and values are in `tools/skin/nist2017_skin.json`.
+  NIST has not reviewed or endorsed irlab or this use.
 - **Clear-sky spectrum** (build 275): Kider, J.T., Knowlton, D., Newlin, J., Li, Y.K. and Greenberg, D.P., *A Framework
   for the Experimental Comparison of Solar and Skydome Illumination*, ACM Transactions on Graphics 33(6), SIGGRAPH Asia
   2014. Measurement data https://github.com/spectralskylight/sky-measurements-2014, licensed under the Apache License,
