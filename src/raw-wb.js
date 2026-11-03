@@ -100,8 +100,7 @@ function rtwbSyncUi() {
   if (box.hidden === !!res) box.hidden = !res;
   const sw = $('wbSwapStep'); if (sw && sw.hidden === !!res) sw.hidden = !res;
   const grp = $('wbTempGrp'); if (grp) grp.classList.toggle('wbRaw', !!res);
-  // build 209: a RAW has its own Pick in the white balance card, so Simple hides the two grey pickers
-  const gp = document.querySelector('.wbSlim'); if (gp) gp.classList.toggle('advRaw', !!res);
+  // build 266: the grey pickers stay in Simple too (build 209 hid them on a RAW, which had its own Pick until build 265)
   if (!res) return;
   rtwbGpuWarm();
   rtwbSyncSwap();

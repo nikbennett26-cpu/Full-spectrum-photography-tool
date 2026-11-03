@@ -121,8 +121,9 @@ Five tabs, in the order the picture is made: **Looks, Light, Colour, Detail, Exp
   past 840nm as direct measurements say they should), alongside the generic and astronomy curves.
 - **Source channels:** a readout of which source channel carries your signal. For filter stacks that block blue,
   **IR leak removal** takes the infrared out of red and green before the swap, for cleaner Aerochrome-style colour.
-- **Temperature & tint:** camera white balance (RAW), then a balance before the swap and one after it, each with a grey
-  picker; Auto tone and channel gains. The sliders give finer control where real settings sit (half the travel covers ±100).
+- **White balance:** one card. At the top, the two grey pickers (before the swap and after it) and channel gains; under
+  them Temperature & tint: camera white balance (RAW, with As shot, Auto and Filters), the swap, and the cast after it.
+  Auto tone in the header. The grey pickers show in Simple too. The sliders give finer control where real settings sit (half the travel covers ±100).
 
 ## Light
 

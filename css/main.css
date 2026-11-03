@@ -1182,7 +1182,6 @@ html.dockOn #curveCv{max-width:min(260px,32vh)}
 
 /* Build 171: Simple / Advanced */
 html.simpleMode .adv{display:none !important}
-html.simpleMode .wbSlim.advRaw{display:none !important}
 #modeBar .modeMore{opacity:.6;font-weight:400}
 #modeBar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:4px 0 10px}
 #modeBar .modeSeg{display:inline-flex;gap:2px;background:none;border:1px solid var(--line2);border-radius:8px;padding:2px}
@@ -1208,7 +1207,9 @@ html.studioOn body.has-image #reorderZone > #modeBar{display:flex !important;ord
 .wbStepHd{display:flex;justify-content:space-between;align-items:baseline;gap:8px}
 .wbStepT{font-weight:600;font-size:15px}
 .wbStepS{font-size:11.5px;color:var(--muted)}
-.wbModeRow{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px}   /* build 258: As shot, Auto, Pick, Filters */
+/* build 266: Temperature & tint inside the white balance card, framed like Channel gains */
+.wbSlim > #wbTempGrp{margin:12px 0 12px;border:1px solid var(--line);border-radius:12px;padding:0 10px}
+.wbModeRow{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}   /* build 265: As shot, Auto, Filters (Pick went; the grey pickers above do it) */
 /* build 260: Filters' own box, shown only while Filters is the white balance */
 .fwbBox{margin:6px 0 8px;padding:8px 10px;border:1px solid var(--line2);border-radius:var(--radius-sm,6px);background:var(--surface2,transparent);font-size:11.5px;color:var(--phosphor-dim)}
 .fwbBox[hidden]{display:none}
