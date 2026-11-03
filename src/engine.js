@@ -67,6 +67,17 @@ class WebGLEngine {
       console.warn('WebGL context restored, rebuilding');
       try {
         this.texture = null; this.lutTex = null; this.lutPreTex = null; this.hellwigVWTex = null; this._prep = null; this._prepKey = null;
+        /* Build 277: EVERY handle the old context gave out is dead, and each cache below otherwise believed its table was
+           still uploaded. The tone curve was the visible one: after switching to another app on a phone (Android takes
+           the graphics memory back), any curve, the film's contrast from Digital Aerochrome included, drew from an empty
+           table and the photo went black until the page was reloaded. Clearing the handles AND the keys that say what
+           was uploaded makes each one build itself again on the next frame. */
+        this.curveTex = null; this._curveKey = null;
+        this.skyTex = null; this.skyColTex = null; this._skyId = null; this._skyColId = null;
+        this.epdTex = null; this._epdId = null; this._toneMaps = null; this.toneBase = null; this._toneFail = false;
+        this._rd = null; this._rdFail = false;
+        this._bg = null; this._sg = null; this._og = null; this._lo = null; this._blit = null;
+        this._texGen = (this._texGen || 0) + 1;
         /* Buffers as well as shaders. A lost context takes EVERY GL object
            with it, and the vertex quad every draw call reads from lives in
            initBuffers, not initShaders — rebuilding only the shaders left a
@@ -1030,6 +1041,7 @@ void main(){
        steady frame costs nothing. Half-float on WebGL2 so a shallow part of
        the curve does not collapse neighbouring levels; 8-bit otherwise. */
     if (p.curveOn && p.curveLut) {
+      if (this.curveTex && !gl.isTexture(this.curveTex)) { this.curveTex = null; this._curveKey = null; }   // build 277: a handle from a lost context
       if (this._curveKey !== p.curveKey) {
         if (!this.curveTex) this.curveTex = gl.createTexture();
         gl.activeTexture(gl.TEXTURE4);
