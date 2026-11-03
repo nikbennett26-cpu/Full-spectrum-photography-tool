@@ -45,7 +45,7 @@ var decodeAskedFirst = 0;   // when the card was last answered before a picker o
   ['fi', 'fi2'].forEach(id => {
     const inp = $(id); if (!inp) return;
     let pass = false;
-    inp.addEventListener('click', e => {
+    const ask = e => {
       if (pass) { pass = false; return; }
       if (!decodeAskOn() || window.__selftestRunning) return;
       e.preventDefault(); e.stopPropagation();
@@ -55,7 +55,13 @@ var decodeAskedFirst = 0;   // when the card was last answered before a picker o
         inp.click();   // still inside the tap on Choose photo, so the browser lets the picker open
         setTimeout(() => { pass = false; }, 1000);
       });
-    }, true);
+    };
+    /* Build 271: caught on the label that wraps the input as well as on the input. On Android (the installed app in
+       particular) a tap on the label could open the picker without the cancellable click on the input this relied on,
+       so the card never showed. Stopping the label's own click stops it from reaching the input at all. */
+    const lab = inp.closest('label');
+    if (lab) lab.addEventListener('click', e => { if (e.target === inp) return; ask(e); }, true);
+    inp.addEventListener('click', ask, true);   // programmatic clicks, and anything that reaches the input directly
   });
 })();
 function decodeTipCard(fileName, okLabel) {
