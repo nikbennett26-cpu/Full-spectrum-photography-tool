@@ -23,7 +23,10 @@ let dustSel = -1;
 let dustSrcFor = -1;         // a spot waiting for its source to be tapped (darktable: move the source shape)
 let dustSrcToken = null;     // the photo the sources were picked on
 const DUST_FEATHER = 0.35;   // soft edge outside the radius, as a fraction of it
-const DUST_MAX_ITER = 1000;  // darktable's default for retouch
+const DUST_MAX_ITER = 1000;
+/* build 274: how smooth a spot's wider surroundings must be (mean local detail, 0-1 light). Measured: dust on sky sits
+   at 0.002-0.014, small rocks and shadows on heather at 0.035 and up. */
+const DUST_SMOOTH = 0.02;  // darktable's default for retouch
 
 /* darktable heal.c, ported. d (target) and s (source) are Float32Array RGB patches of w*h; mask is 0..1. Writes the healed
    patch into d where mask > 0 (the caller blends by the mask afterwards). */
@@ -209,11 +212,20 @@ function dustCandidates(sp, px, W, H) {
   const ok = (scx, scy) => !(scx - outer < 1 || scy - outer < 1 || scx + outer > W - 2 || scy + outer > H - 2) &&
     !dustSpots.some(o => o !== sp && Math.hypot(o.x * W - scx, o.y * H - scy) < (o.r * S + R) * (1 + DUST_FEATHER)) &&
     Math.hypot(scx - cx, scy - cy) > outer * 1.5;
+  /* build 274: the copy must come from the same kind of ground. A source whose surroundings are a different colour or
+     brightness from the spot's (sky for a spot on a hillside) is only used when nothing close enough exists, searching
+     further out first. */
+  const tmSum = tm[0] + tm[1] + tm[2];
+  const alike = (scx, scy) => { const m = mean(ring.map(([ox, oy]) => at(scx + ox, scy + oy))); return Math.hypot(m[0] - tm[0], m[1] - tm[1], m[2] - tm[2]) <= 0.12 * Math.max(60, tmSum); };
   const out = [];
-  for (const dist of [1.7, 2.2, 3, 4]) for (let a = 0; a < 24; a++) {
-    const t = a / 24 * Math.PI * 2, scx = cx + Math.cos(t) * outer * dist, scy = cy + Math.sin(t) * outer * dist;
-    if (!ok(scx, scy)) continue;
-    out.push({ sx: scx / W, sy: scy / H, dist, score: score(scx, scy, dist) });
+  for (const dist of [1.7, 2.2, 3, 4, 6, 9]) {
+    if (dist > 4 && out.some(c => c.alike)) break;   // the near rings already have a match
+    for (let a = 0; a < 24; a++) {
+      const t = a / 24 * Math.PI * 2, scx = cx + Math.cos(t) * outer * dist, scy = cy + Math.sin(t) * outer * dist;
+      if (!ok(scx, scy)) continue;
+      const al = alike(scx, scy);
+      out.push({ sx: scx / W, sy: scy / H, dist, alike: al, score: score(scx, scy, dist) + (al ? 0 : 1e6) });
+    }
   }
   out.sort((p, q) => p.score - q.score);
   /* Line the best few up to the pixel: the heal can absorb a difference in level but not an edge that is a pixel or two
@@ -222,7 +234,7 @@ function dustCandidates(sp, px, W, H) {
     let bx = c.sx * W, by = c.sy * H, bs = c.score;
     for (let dy = -3; dy <= 3; dy++) for (let dx = -3; dx <= 3; dx++) {
       const x = c.sx * W + dx, y = c.sy * H + dy; if (!ok(x, y)) continue;
-      const v = score(x, y, c.dist); if (v < bs) { bs = v; bx = x; by = y; }
+      const v = score(x, y, c.dist) + (c.alike && alike(x, y) ? 0 : 1e6); if (v < bs) { bs = v; bx = x; by = y; }
     }
     c.sx = bx / W; c.sy = by / H; c.score = bs;
   });
@@ -274,6 +286,10 @@ function dustDetectPixels(px, W, H, sensitivity) {
   const around = dustBlur(l, w, h, Math.max(2, 0.012 * long));
   const detail = new Float32Array(n); for (let i = 0; i < n; i++) detail[i] = Math.abs(l[i] - around[i]);
   const texture = dustBlur(detail, w, h, Math.max(3, 0.02 * long));
+  /* build 274: the texture of the wider area, several spot-widths out. Dust only shows (and is only worth healing) on
+     smooth ground: sky, water, a plain wall. On heather, rock or leaves the finder used to pick up dozens of small dark
+     stones and shadows that pass every test a spot on its own can be given. */
+  const wide = dustBlur(detail, w, h, Math.max(6, 0.035 * long));
   const minDark = 0.03 - 0.022 * Math.max(0, Math.min(1, sensitivity / 100));
   const dark = new Float32Array(n); for (let i = 0; i < n; i++) dark[i] = Math.max(around[i] - l[i], 0);
   const cand = i => dark[i] > minDark && dark[i] > 3 * texture[i] && l[i] > 0.08;
@@ -309,6 +325,10 @@ function dustDetectPixels(px, W, H, sensitivity) {
     if (ringN < 16) continue;
     const rm = ringSum / ringN, rsd = Math.sqrt(Math.max(0, ringSq / ringN - rm * rm));
     if (ringAbove < 0.85 * ringN || rsd > 0.45 * peak + 0.004) continue;
+    { let wt = 0, wn = 0; const wr = Math.max(r * 5, r + 8);
+      for (let a = 0; a < 16; a++) { const qx = Math.round(cx + wr * Math.cos(a * Math.PI / 8)), qy = Math.round(cy + wr * Math.sin(a * Math.PI / 8)); if (qx < 0 || qx >= w || qy < 0 || qy >= h) continue; wt += wide[qy * w + qx]; wn++; }
+      const wideTex = wn ? wt / wn : 1;
+      if (wideTex > DUST_SMOOTH || wideTex > 0.3 * peak) continue; }   // smooth ground, and the spot well above its texture
     { const ch = [0, 0, 0], cr = [0, 0, 0]; let nb = 0;
       const sxp = W / w, syp = H / h, ix = Math.round(cx * sxp), iy = Math.round(cy * syp), rr = Math.max(1, Math.round(r * 0.5 * sxp)), R2 = Math.max(rr + 2, Math.round(ringR * sxp));
       for (let a = 0; a < 12; a++) { const qx = Math.round(ix + R2 * Math.cos(a * Math.PI / 6)), qy = Math.round(iy + R2 * Math.sin(a * Math.PI / 6)); if (qx < 0 || qx >= W || qy < 0 || qy >= H) continue; const q = (qy * W + qx) * 4; cr[0] += px[q]; cr[1] += px[q + 1]; cr[2] += px[q + 2]; nb++; }
@@ -318,7 +338,9 @@ function dustDetectPixels(px, W, H, sensitivity) {
     if (true) out.push({ x: (sx / cnt + 0.5) / w, y: (sy / cnt + 0.5) / h, r: (r * 1.6 / long) * Math.max(w, h) / Math.min(w, h), strength: peak });
   }
   out.sort((a, b) => b.strength - a.strength);
-  return out.slice(0, 60);
+  /* build 274: on a busy frame keep the clear standouts only, so it offers a handful rather than dozens */
+  const kept = out.length > 12 ? out.filter(o => o.strength >= 0.35 * out[0].strength) : out;
+  return kept.slice(0, 30);
 }
 function dustFind() {
   if (!loadedImage || !rawCanvas || typeof rawPixels === 'undefined' || !rawPixels) { toast('Open a photo first.'); return; }
