@@ -772,6 +772,21 @@ async function tiffToCanvas(buf){
 }
 
 const TIFF_EXT = ['TIF','TIFF'];
+const IMG_EXT = ['JPG','JPEG','PNG','WEBP','AVIF','GIF','BMP'];
+/* What a file is, from its first bytes, for when the name has no usable extension (Android's file picker often gives
+   just "image"). TIFF-rooted files are a CR2 when Canon's "CR" sits at byte 8, otherwise a TIFF (other TIFF-based RAWs
+   cannot be told from a TIFF this cheaply); build 268 adds the RAWs with their own signatures. Null if unknown. */
+async function sniffFileExt(file) {
+  const h = new Uint8Array(await file.slice(0, 12).arrayBuffer());
+  const s = (a, b) => String.fromCharCode(...h.slice(a, b));
+  if (s(0, 8) === 'FUJIFILM') return 'RAF';
+  if (s(4, 11) === 'ftypcrx') return 'CR3';
+  if (s(0, 4) === 'IIRO' || s(0, 4) === 'IIRS') return 'ORF';
+  if (h[0] === 0x49 && h[1] === 0x49 && h[2] === 0x55 && h[3] === 0x00) return 'RW2';
+  const tiffish = (h[0] === 0x49 && h[1] === 0x49 && h[2] === 0x2A && h[3] === 0x00) || (h[0] === 0x4D && h[1] === 0x4D && h[2] === 0x00 && h[3] === 0x2A);
+  if (tiffish) return (h[8] === 0x43 && h[9] === 0x52) ? 'CR2' : 'TIF';
+  return null;
+}
 
 /* Guards against two loads running at once. A CR2 decode takes many seconds
    and deliberately yields to keep the UI alive, which means a second file can
@@ -906,6 +921,13 @@ async function loadFileInner(file) {
      clobber the way there would be resetting it mid-session. */
   if (!($('applyPreviousSettings') && $('applyPreviousSettings').checked) && !window.__keepEditsOnLoad) {
     resetAllControls();
+    /* Build 268: a camera-native decode switched on by a look belongs to the last photo (src/controls.js). Left on, the
+       next photo decoded without its colour profile and, with the film's contrast curve still on top, came out black. */
+    if (typeof camNativeByLook !== 'undefined' && camNativeByLook) {
+      camNativeByLook = false;
+      ['camSpaceSwap', 'camSpaceSwapEditor'].forEach(id => { const e = $(id); if (e) e.checked = false; });
+      ['camSpaceSwapPreset', 'camSpaceSwapPresetEditor'].forEach(id => { const e = $(id); if (e) { e.value = ''; e.style.display = 'none'; } });
+    }
   }
   let ext = (file.name.split('.').pop() || '').toUpperCase();
   /* Some Android providers hand back a generic name ("image", "content", or
@@ -916,17 +938,10 @@ async function loadFileInner(file) {
      first bytes settle it: every CR2/NEF/ARW/DNG is a TIFF-rooted container
      starting II*\0 or MM\0*, and Canon writes "CR" at offset 8. */
   try {
-    const known = RAW_EXT.includes(ext) || TIFF_EXT.includes(ext) ||
-                  ['JPG','JPEG','PNG','WEBP','AVIF','GIF','BMP'].includes(ext);
+    const known = RAW_EXT.includes(ext) || TIFF_EXT.includes(ext) || IMG_EXT.includes(ext);
     if (!known) {
-      const h = new Uint8Array(await file.slice(0, 4).arrayBuffer());
-      const tiffish = (h[0]===0x49 && h[1]===0x49 && h[2]===0x2A && h[3]===0x00) ||
-                      (h[0]===0x4D && h[1]===0x4D && h[2]===0x00 && h[3]===0x2A);
-      if (tiffish) {
-        const t = new Uint8Array(await file.slice(8, 10).arrayBuffer());
-        ext = (t[0]===0x43 && t[1]===0x52) ? 'CR2' : 'TIF';
-        console.info('File had no usable extension; identified as', ext, 'from its header');
-      }
+      const sniffed = await sniffFileExt(file);   // build 268: shared with the decode card (src/decode-tip.js)
+      if (sniffed) { ext = sniffed; console.info('File had no usable extension; identified as', ext, 'from its header'); }
     }
   } catch (e) { /* unreadable header: carry on with the name alone */ }
   /* TIFF first: it is the format a raw developer exports, so this is the

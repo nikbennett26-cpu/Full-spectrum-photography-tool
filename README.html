@@ -144,7 +144,8 @@ footer p{margin:0 0 8px}
         <li>CR2, CR3, NEF, ARW, SR2, DNG, ORF, RW2, PEF, RAF, SRW, NRW, 3FR, IIQ, MRW, KDC, DCR and X3F.</li>
         <li>Decoded from the sensor data in your browser by LibRaw compiled to WebAssembly.</li>
         <li>A quick-preview mode reads the camera's embedded JPEG instead.</li>
-        <li>Each time you open one, a card shows how it will be decoded before anything happens. Tick Don&rsquo;t ask again, or untick Ask how to decode each RAW on the start page, to stop it.</li>
+        <li>Each time you open one, a card shows how it will be decoded before anything happens. Tick Don&rsquo;t ask again, or untick Ask how to decode each RAW on the start page, to stop it. A RAW with no usable file extension is recognised from its first bytes.</li>
+        <li>Every new photo starts fresh: a camera-native decode switched on by a look (Digital Aerochrome, the IE look) is switched back off.</li>
       </ul>
     </div>
     <div class="card">
@@ -577,7 +578,7 @@ footer p{margin:0 0 8px}
 <footer>
   <div class="wrap">
     <p><a href="https://irlab.uk">irlab.uk</a> &middot; <a href="https://irlab.uk/filters.html">Filter database</a> &middot; <a href="https://www.instagram.com/irlab.uk">Instagram</a></p>
-    <p>This page describes the app as of build 267.</p>
+    <p>This page describes the app as of build 268.</p>
   </div>
 </footer>
 </body>

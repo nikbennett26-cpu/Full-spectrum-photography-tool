@@ -844,10 +844,10 @@ const CAM_SPACE_SWAP_PRESETS = (typeof IR_PRESETS !== 'undefined' ? IR_PRESETS.f
      controls to reapplyCamSpaceSwap() instead reuses the already-decoded
      rawEngine.lastResult and only touches the pixel source -- no reset
      of anything else the user has already changed. */
-  [swap, swapEd].forEach(el => el.addEventListener('change', () => { showHide(); reapplyCamSpaceSwap(); }));
+  [swap, swapEd].forEach(el => el.addEventListener('change', e => { if (e.isTrusted && typeof camNativeByLook !== 'undefined') camNativeByLook = false; showHide(); reapplyCamSpaceSwap(); }));
   showHide();
-  sel.addEventListener('change', () => { selEd.value = sel.value; reapplyCamSpaceSwap(); });
-  selEd.addEventListener('change', () => { sel.value = selEd.value; reapplyCamSpaceSwap(); });
+  sel.addEventListener('change', e => { if (e.isTrusted && typeof camNativeByLook !== 'undefined') camNativeByLook = false; selEd.value = sel.value; reapplyCamSpaceSwap(); });
+  selEd.addEventListener('change', e => { if (e.isTrusted && typeof camNativeByLook !== 'undefined') camNativeByLook = false; sel.value = selEd.value; reapplyCamSpaceSwap(); });
 })();
 /* Reads whichever of the two dropdowns actually has a selection \u2014 they're
    kept in sync above, so either one reflects the true current choice.

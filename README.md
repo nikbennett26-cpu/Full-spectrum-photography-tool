@@ -18,6 +18,11 @@ editor) so it opens full screen and keeps working offline.
   the sensor data in the browser by LibRaw compiled to WebAssembly. A quick-preview mode reads the camera's embedded JPEG
   instead. Each time a RAW is opened, a card shows how it will be decoded (colour rebuild, full sensor or quick preview)
   before anything happens; tick Don't ask again there, or untick Ask how to decode each RAW on the start page, to stop it.
+  A RAW with no usable extension (Android's picker often names a file just "image") is recognised from its first bytes,
+  for the card and for decoding.
+- **Every new photo starts fresh:** edits are reset (unless Apply previous settings is on), and a camera-native decode
+  that a look switched on (Digital Aerochrome, the Infrared Ektachrome IE look) is switched back off. Ticked by hand on
+  the start page, it stays.
 - **Pick up where you left off:** the photo and your edits are saved in the browser. Come back within 30 minutes and it
   reopens by itself; later, a Restore button offers it. Undo, redo and Reset all are always there.
 

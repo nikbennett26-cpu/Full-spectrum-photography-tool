@@ -1430,9 +1430,14 @@ function presetLayerEnd(base) { PRESET_LAYER = { base: base, after: layerStrip(c
    src/wb-lut.js), switched on through the same route as the decode-time swap so the preview, white balance, noise
    reduction and export all follow it; taking the preset off puts the decode back. On a JPEG or TIFF there is no profile
    left to take off, so it says so. */
+/* Build 268: a look that switches the decode to camera native (Digital Aerochrome, the IE look) only means it for the
+   photo it was applied to. camNativeByLook marks that, so the next photo opens with the decode it had before, where the
+   same switch ticked by hand on the start page is a choice for every photo and stays. */
+var camNativeByLook = false;   // var, not let: other files test it with typeof, which a let still in its dead zone would throw on
 function setCamNativeDecode(rawMsg) {   // build 240: shared with the film fit (src/film-fit.js)
   const raw = typeof rawEngine !== 'undefined' && rawEngine.lastResult && rawEngine.lastGen === loadToken;
   if (raw) {
+    camNativeByLook = true;
     ['camSpaceSwap', 'camSpaceSwapEditor'].forEach(id => { const e = $(id); if (e) e.checked = true; });
     ['camSpaceSwapPreset', 'camSpaceSwapPresetEditor'].forEach(id => { const e = $(id); if (e) { e.value = CAM_NATIVE_VALUE; e.style.display = 'block'; } });
     if (typeof reapplyCamSpaceSwap === 'function') reapplyCamSpaceSwap();

@@ -22,10 +22,15 @@ function decodeAskSet(on) {
 })();
 
 let decodeTipOpen = null;   // the pending card's resolver, so a second file picked while it is up replaces it
-function decodeTipAsk(file) {
-  const ext = ((file && file.name || '').split('.').pop() || '').toUpperCase();
-  if (!RAW_EXT.includes(ext) || !decodeAskOn()) return Promise.resolve(true);
-  if ((typeof sessionRestoring !== 'undefined' && sessionRestoring) || window.__keepEditsOnLoad || window.__selftestRunning) return Promise.resolve(true);
+async function decodeTipAsk(file) {
+  let ext = ((file && file.name || '').split('.').pop() || '').toUpperCase();
+  /* Build 268: Android's picker (the installed app especially) often names a file just "image", so a RAW went past this
+     card unasked. Unknown names are identified from their first bytes, the same way loadFile does it. */
+  if (!RAW_EXT.includes(ext) && !TIFF_EXT.includes(ext) && !IMG_EXT.includes(ext) && typeof sniffFileExt === 'function') {
+    try { ext = (await sniffFileExt(file)) || ext; } catch (e) {}
+  }
+  if (!RAW_EXT.includes(ext) || !decodeAskOn()) return true;
+  if ((typeof sessionRestoring !== 'undefined' && sessionRestoring) || window.__keepEditsOnLoad || window.__selftestRunning) return true;
   if (decodeTipOpen) decodeTipOpen(false);
   return new Promise(resolve => {
     const q = $('cr2PreferPreview');

@@ -1434,6 +1434,7 @@ function captureState() {
        applyState below for that call. */
     camSpaceSwap: !!($('camSpaceSwap') && $('camSpaceSwap').checked),
     camSpaceSwapPreset: ($('camSpaceSwapPreset') && $('camSpaceSwapPreset').value) || '',
+    camNativeByLook: typeof camNativeByLook !== 'undefined' && camNativeByLook,   // build 268: so a restored session still knows
     // deep-copied, not just spread — these are edited in place by the
     // per-band sliders, so a shallow reference here would let a LATER edit
     // silently rewrite a snapshot that undo is already holding onto
@@ -1560,6 +1561,7 @@ function applyState(snap) {
   if ($('camSpaceSwap')) $('camSpaceSwap').checked = !!snap.camSpaceSwap;
   if ($('camSpaceSwapEditor')) $('camSpaceSwapEditor').checked = !!snap.camSpaceSwap;
   if ($('camSpaceSwapPreset')) $('camSpaceSwapPreset').value = snap.camSpaceSwapPreset || '';
+  if (typeof camNativeByLook !== 'undefined') camNativeByLook = !!snap.camNativeByLook;
   if ($('camSpaceSwapPresetEditor')) $('camSpaceSwapPresetEditor').value = snap.camSpaceSwapPreset || '';
   ['camSpaceSwapPreset', 'camSpaceSwapPresetEditor'].forEach(id => { const e = $(id); if (e) e.style.display = snap.camSpaceSwap ? 'block' : 'none'; });   // build 237: the dropdown shows only with its tick, as when ticked by hand
   rawWbCustom = snap.rawWb && snap.rawWb.t > 0 && snap.rawWb.g > 0 ? { t: +snap.rawWb.t, g: +snap.rawWb.g } : null;   // build 197
