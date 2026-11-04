@@ -228,7 +228,7 @@ class WebGLEngine {
       srcGuide: gl.getUniformLocation(this.program, 'u_srcGuide'), srcGuideTexel: gl.getUniformLocation(this.program, 'u_srcGuideTexel'),
       srcGuideOn: gl.getUniformLocation(this.program, 'u_srcGuideOn'), srcProbe: gl.getUniformLocation(this.program, 'u_srcProbe'),
       ortonOn: gl.getUniformLocation(this.program, 'u_ortonOn'), ortonProbe: gl.getUniformLocation(this.program, 'u_ortonProbe'), orton: gl.getUniformLocation(this.program, 'u_orton'),
-      ortonBias: gl.getUniformLocation(this.program, 'u_ortonBias'), ortonTex: gl.getUniformLocation(this.program, 'u_ortonTex'), ortonInv: gl.getUniformLocation(this.program, 'u_ortonInv'), ortonTexel: gl.getUniformLocation(this.program, 'u_ortonTexel'),
+      ortonBias: gl.getUniformLocation(this.program, 'u_ortonBias'), halation: gl.getUniformLocation(this.program, 'u_halation'), halBias: gl.getUniformLocation(this.program, 'u_halBias'), ortonTex: gl.getUniformLocation(this.program, 'u_ortonTex'), ortonInv: gl.getUniformLocation(this.program, 'u_ortonInv'), ortonTexel: gl.getUniformLocation(this.program, 'u_ortonTexel'),
       bandPC: gl.getUniformLocation(this.program, 'u_bandPC'),
       bandDL: gl.getUniformLocation(this.program, 'u_bandDL'),
       preWB: gl.getUniformLocation(this.program, 'u_preWB'),
@@ -688,7 +688,7 @@ void main(){
      mipmapped texture the main pass then blurs from. Only runs while the Orton slider is above zero. */
   _ortonPass(p) {
     const gl = this.gl;
-    if (!this.isWebGL2 || !p || !((p.orton || 0) > 0) || this._ogFail) return false;
+    if (!this.isWebGL2 || !p || !(((p.orton || 0) > 0) || ((p.halation || 0) > 0)) || this._ogFail) return false;   // build 279: Halation shares this pass
     try {
       const W = this.canvas.width, H = this.canvas.height, w = Math.max(16, Math.ceil(W / 2)), hh = Math.max(16, Math.ceil(H / 2));
       if (!this._og || this._og.w !== w || this._og.h !== hh) {
@@ -943,7 +943,7 @@ void main(){
     gl.uniform1f(this.uLocs.bandProbe, p.__bandProbe ? 1 : 0);
     gl.uniform1f(this.uLocs.srcProbe, p.__srcProbe ? 1 : 0);
     {   // build 184: Orton effect
-      const on = !!(p.__ortonReady || p.__ortonProbe) && (p.orton || 0) > 0;
+      const on = !!(p.__ortonReady || p.__ortonProbe) && ((p.orton || 0) > 0 || (p.halation || 0) > 0);
       gl.uniform1f(this.uLocs.ortonOn, on ? 1 : 0); gl.uniform1f(this.uLocs.ortonProbe, p.__ortonProbe ? 1 : 0);
       gl.uniform1f(this.uLocs.orton, Math.min(1, Math.max(0, p.orton || 0)));
       const W = this.canvas.width, H = this.canvas.height;
@@ -953,6 +953,10 @@ void main(){
       const rad = (0.004 + 0.046 * Math.pow(Math.min(1, Math.max(0, p.ortonSoft == null ? 0.5 : p.ortonSoft)), 1.3)) * Math.min(W, H) / 2;
       gl.uniform1f(this.uLocs.ortonBias, Math.max(0, Math.log2(Math.max(1, rad / 2))));
       gl.uniform1i(this.uLocs.ortonTex, 12);
+      // build 279: halation, spread 0..1 -> blur radius 1.5% .. 9% of the short edge, as a mip level of the same texture
+      gl.uniform1f(this.uLocs.halation, Math.min(1, Math.max(0, p.halation || 0)));
+      const hrad = (0.015 + 0.075 * Math.min(1, Math.max(0, p.halSpread == null ? 0.5 : p.halSpread))) * Math.min(W, H) / 2;
+      gl.uniform1f(this.uLocs.halBias, Math.max(0, Math.log2(Math.max(1, hrad / 2))));
     }
     gl.uniform1f(this.uLocs.irSubOn, p.irSub ? 1 : 0);
     gl.uniformMatrix3fv(this.uLocs.irSub, false, p.irSub || new Float32Array([1, 0, 0, 0, 1, 0, 0, 0, 1]));

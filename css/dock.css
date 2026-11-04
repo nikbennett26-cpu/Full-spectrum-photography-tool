@@ -504,6 +504,8 @@ body:has(#consentBar.on):not(.has-image) #emptyStateGroup.lab{padding-bottom:96p
 #emptyStateGroup.lab #discordLink .dcName{display:flex;align-items:center;gap:8px}
 #emptyStateGroup.lab #discordLink svg{width:16px;height:16px;color:#8a867d}
 #emptyStateGroup.lab #discordLink .dcGo{color:#8a867d;transition:color .2s}
+#emptyStateGroup.lab #creditsHome{padding:12px 0 2px;font:400 12px/1.5 var(--font-body);color:#8c8984}
+#emptyStateGroup.lab #creditsHome a{color:#c9c5bb!important;font-weight:500!important}
 #emptyStateGroup.lab #buildStampHome{display:flex;justify-content:space-between;align-items:center;min-height:44px;margin:0;font:400 11px/1 var(--font-mono);color:#8a867d;text-align:left}
 #emptyStateGroup.lab #buildStampHome .updBtn{min-width:36px;min-height:36px}
 @media (min-width:900px){

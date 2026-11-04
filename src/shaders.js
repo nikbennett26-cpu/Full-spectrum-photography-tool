@@ -650,7 +650,7 @@ uniform sampler2D u_epdBase;   // the smooth, edge-stopping base layer of the lo
   /* Build 184: Orton effect. A first pass writes the finished picture, screened onto itself (brighter), into a half-size
      mipmapped texture; the main pass blurs that and multiplies it onto the screened sharp picture, the way Michael
      Orton sandwiched a sharp and an out-of-focus overexposed slide. */
-  uniform float u_ortonOn, u_ortonProbe, u_orton, u_ortonBias; uniform sampler2D u_ortonTex; uniform vec2 u_ortonInv, u_ortonTexel;
+  uniform float u_ortonOn, u_ortonProbe, u_orton, u_ortonBias, u_halation, u_halBias; uniform sampler2D u_ortonTex; uniform vec2 u_ortonInv, u_ortonTexel;
 
   float hueDegOf(vec2 ab) {
     float d = degrees(atan(ab.y, ab.x));
@@ -3185,6 +3185,7 @@ uniform float u_skyL;          // the typical lightness of the sky; anything cle
       vec3 oScr = 1.0 - (1.0 - ox) * (1.0 - ox);   // the picture screened onto itself: Orton's overexposed copy
       if (u_ortonProbe > 0.5) { gl_FragColor = vec4(oScr, 1.0); return; }
       vec2 ouv = gl_FragCoord.xy * u_ortonInv;
+      if (u_orton > 0.0) {
       vec2 ost = exp2(u_ortonBias) * u_ortonTexel;
       vec3 ob = vec3(0.0); float ow = 0.0;
       for (int j = -2; j <= 2; j++) {
@@ -3200,6 +3201,28 @@ uniform float u_skyL;          // the typical lightness of the sky; anything cle
       vec3 xb = 1.0 - sqrt(max(1.0 - ob, 0.0));
       float lk = clamp(dot(xb, LUMW) / max(dot(ob * ob, LUMW), 1e-4), 1.0, 3.0);
       srgb = mix(srgb, min(oScr * ob * lk, vec3(1.0)), u_orton);   // multiply: the blur's glow over the sharp copy's detail
+      }
+      /* Build 279: Halation, back as a Detail tool. In film, light that passes through the emulsion bounces off the
+         base and exposes the layers again around bright highlights, and infrared film has no anti-halation layer
+         worth the name, so bright edges glow warm red. Here: the bright part of the finished picture (recovered from
+         the same half-size texture the Orton stage uses, by undoing its screen), blurred wider than Orton's, tinted
+         red-orange and screened back on, so it can only brighten and never leaves 0..1. */
+      if (u_halation > 0.0) {
+        vec2 hst = exp2(u_halBias) * u_ortonTexel;
+        vec3 hb = vec3(0.0); float hw = 0.0;
+        for (int j = -2; j <= 2; j++) {
+          for (int i = -2; i <= 2; i++) {
+            float w = exp(-float(i * i + j * j) / 4.5);
+            vec3 hs = texture2D(u_ortonTex, ouv + vec2(float(i), float(j)) * hst, u_halBias + 1.0).rgb;
+            vec3 hx = 1.0 - sqrt(max(1.0 - hs, 0.0));
+            hb += hx * smoothstep(0.55, 1.0, dot(hx, LUMW)) * w; hw += w;
+          }
+        }
+        hb /= hw;
+        float hl = dot(hb, LUMW);
+        vec3 hglow = clamp(vec3(1.0, 0.22, 0.05) * hl * 2.4 * u_halation, 0.0, 1.0);
+        srgb = 1.0 - (1.0 - clamp(srgb, 0.0, 1.0)) * (1.0 - hglow);
+      }
     }
 
     /* Clipping / gamut overlay ("blinkies").

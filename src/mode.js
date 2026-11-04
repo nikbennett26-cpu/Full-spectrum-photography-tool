@@ -12,7 +12,7 @@ const ADV_TOOLS = {
   maskDetails: 'Local adjustments', hslDetails: 'Colour by band', colCal: 'Calibration', colSpace: 'Swap working space',
   lutDetails: 'LUT', lensDetails: 'Hotspot removal', epdGrp: 'Tone mapping', fringeDetails: 'Colour fringing',
   decodeGrp: 'Decode settings', batchPanel: 'Batch',
-  irLeakDetails: 'IR leak removal', ortonGrp: 'Orton glow',   // build 209: Simple keeps only the everyday tools
+  irLeakDetails: 'IR leak removal', ortonGrp: 'Orton glow', halationGrp: 'Halation',   // build 209: Simple keeps only the everyday tools
   desqDetails: 'Anamorphic desqueeze'   // build 260
 };
 // these change without the user touching them (a preset sets the mix), so they never count as "in use"

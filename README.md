@@ -173,6 +173,7 @@ Five tabs, in the order the picture is made: **Looks, Light, Colour, Detail, Exp
 - **Clarity & dehaze:** clarity adds local contrast only, without brightening the picture. **Dehaze** measures haze across
   the whole picture (a dark-channel haze map), so a sky clears evenly right up to a dark building, with no halo.
 - **Orton glow:** a blurred, brightened copy over the sharp photo, with Amount and Softness.
+- **Halation** (build 279): the warm red-orange glow film throws round bright highlights, with Amount and Spread. It reads the finished picture, so it follows your exposure and look.
 - **Colour fringing:** controls for coloured edges toward the corners.
 
 ## Export
@@ -360,7 +361,7 @@ URL (so a cached old file never runs under a newer page), then runs `tools/build
 
 ## Credits
 
-Tool by [@irlab.uk](https://www.instagram.com/irlab.uk) and [Phil Warren](https://philwarrenphotography.com).
+Tool by [Nick Bennett (@irlab.uk)](https://www.instagram.com/irlab.uk) and [Phil Warren](https://philwarrenphotography.com).
 Colour science and RAW decoding by Phil Warren. Tested and contributed by
 [@fedialebarboc](https://www.instagram.com/fedialebarboc).
 

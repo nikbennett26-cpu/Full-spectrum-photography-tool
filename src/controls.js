@@ -770,6 +770,8 @@ function currentParams() {
     dehaze:    +($('dehaze')    ? $('dehaze').value    : 0) || 0,
     orton:     ($('orton') ? +$('orton').value : 0) / 100,                       // build 184
     ortonSoft: ($('ortonSoft') ? +$('ortonSoft').value : 50) / 100,
+    halation:  ($('halation') ? +$('halation').value : 0) / 100,                     // build 279
+    halSpread: ($('halSpread') ? +$('halSpread').value : 50) / 100,
     calRH:     +($('calRH')    ? $('calRH').value    : 0) || 0,
     calGH:     +($('calGH')    ? $('calGH').value    : 0) || 0,
     calBH:     +($('calBH')    ? $('calBH').value    : 0) || 0,
@@ -1003,7 +1005,7 @@ function fmtSliderValue(id, v) {
   if (WB_CURVE[id]) return Math.round(wbEff(v));
   return (id === 'sharpenRadius' || id === 'rawDeconvR') ? (v / 10).toFixed(1) : v;
 }
-['orton','ortonSoft','hotR','hotG','hotB','hotSize','caR','caB','swapWiden','bright','hue','sat','vibrance','filmToneAmt','blackPt','whitePt','noiseReduction','clarity','dehaze','sharpen','sharpenRadius','sharpenMask','noiseColour','temp','tint','satPreserve','contrast','highlights','shadows','vigAmt','vigFall','vigSpread','lumaR','lumaG','lumaB','brightness','calRH','calGH','calBH','calRS','calGS','calBS','calST','hiRange','shRange','rawNrL','rawNrC','rawDeconv','rawDeconvR','hslH0','hslH1','hslH2','hslH3','hslH4','hslH5','hslH6','hslH7','hslS0','hslS1','hslS2','hslS3','hslS4','hslS5','hslS6','hslS7','hslL0','hslL1','hslL2','hslL3','hslL4','hslL5','hslL6','hslL7'].forEach(id => {
+['orton','ortonSoft','halation','halSpread','hotR','hotG','hotB','hotSize','caR','caB','swapWiden','bright','hue','sat','vibrance','filmToneAmt','blackPt','whitePt','noiseReduction','clarity','dehaze','sharpen','sharpenRadius','sharpenMask','noiseColour','temp','tint','satPreserve','contrast','highlights','shadows','vigAmt','vigFall','vigSpread','lumaR','lumaG','lumaB','brightness','calRH','calGH','calBH','calRS','calGS','calBS','calST','hiRange','shRange','rawNrL','rawNrC','rawDeconv','rawDeconvR','hslH0','hslH1','hslH2','hslH3','hslH4','hslH5','hslH6','hslH7','hslS0','hslS1','hslS2','hslS3','hslS4','hslS5','hslS6','hslS7','hslL0','hslL1','hslL2','hslL3','hslL4','hslL5','hslL6','hslL7'].forEach(id => {
   $(id).addEventListener('input', () => { const el = $(id); $('v_' + id).textContent = fmtSliderValue(id, el.value); syncSliderFill(el); render(true); });
 });
 MCELLS.forEach(id => $(id).addEventListener('input', () => { render(); mxSync(); }));
