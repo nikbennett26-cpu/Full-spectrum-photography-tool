@@ -369,7 +369,8 @@ function stProperties() {
       const S = (f, k) => f.surfaces.find(s => s.key === k);
       const rowsum = w12.A.map(r => r[0] + r[1] + r[2]), gain = Math.max(...w12.A.map(r => Math.hypot(...r)));
       const leaf = S(w12, 'foliage').film, paint = S(w12, 'redpaint').film;
-      const w16same = ffFit(['w16'], sensor, 0, 'w16', '1443', 'sun', true).meanDE, w16vs12 = ffFit(['w16'], sensor, 0, 'w12', '1443', 'sun', true).meanDE;   // build 285: without the foliage calibration, which would help one side only
+      const orig21 = f => { const l = f.surfaces.filter(s => !['grassMost', 'spurgeSep', 'spurgeOct'].includes(s.key)); return l.reduce((a, s) => a + s.de, 0) / l.length; };   // build 288: the filter-match check keeps to the original surfaces; the very dark crimson spurge dominates it otherwise
+      const w16same = orig21(ffFit(['w16'], sensor, 0, 'w16', '1443', 'sun', true)), w16vs12 = orig21(ffFit(['w16'], sensor, 0, 'w12', '1443', 'sun', true));   // build 285: without the foliage calibration, which would help one side only
       const vegH = ffToHsl(S(w12, 'foliage').film)[0], vegCamH = ffToHsl(S(w12, 'foliage').cam)[0], vegOk = Math.abs(vegH - 326) < 6 && Math.abs(vegCamH - 326) < 20;   // build 285: healthy foliage is magenta, near the nine real frames
       const a43 = ffFit(['w12'], sensor, 0, 'w12', '1443', 'sun'), sh = ffFit(['w12'], sensor, 0, 'w12', '1443', 'shade'), lo = ffFit(['w12'], sensor, 0, 'w12', '1443', 'low');
       const lf = S(a43, 'foliage').film, gSh = S(sh, 'grey').film, gLo = S(lo, 'grey').film;
