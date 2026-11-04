@@ -369,7 +369,8 @@ function stProperties() {
       const S = (f, k) => f.surfaces.find(s => s.key === k);
       const rowsum = w12.A.map(r => r[0] + r[1] + r[2]), gain = Math.max(...w12.A.map(r => Math.hypot(...r)));
       const leaf = S(w12, 'foliage').film, paint = S(w12, 'redpaint').film;
-      const w16same = ffFit(['w16'], sensor, 0, 'w16').meanDE, w16vs12 = ffFit(['w16'], sensor, 0, 'w12').meanDE;
+      const w16same = ffFit(['w16'], sensor, 0, 'w16', '1443', 'sun', true).meanDE, w16vs12 = ffFit(['w16'], sensor, 0, 'w12', '1443', 'sun', true).meanDE;   // build 285: without the foliage calibration, which would help one side only
+      const vegH = ffToHsl(S(w12, 'foliage').film)[0], vegCamH = ffToHsl(S(w12, 'foliage').cam)[0], vegOk = Math.abs(vegH - 326) < 6 && Math.abs(vegCamH - 326) < 20;   // build 285: healthy foliage is magenta, near the nine real frames
       const a43 = ffFit(['w12'], sensor, 0, 'w12', '1443', 'sun'), sh = ffFit(['w12'], sensor, 0, 'w12', '1443', 'shade'), lo = ffFit(['w12'], sensor, 0, 'w12', '1443', 'low');
       const lf = S(a43, 'foliage').film, gSh = S(sh, 'grey').film, gLo = S(lo, 'grey').film;
       const films = lf[0] > lf[1] && lf[2] > lf[1] && a43.meanDE < 3.5 && gSh[2] > gSh[0] && gLo[2] < gLo[0];
@@ -378,7 +379,7 @@ function stProperties() {
       const kodak = Math.min(...aut) > 0.45 && Math.max(...aut) - Math.min(...aut) < 0.15 && Math.max(...wat) < 0.03 && con[0] > con[1] && !eir.error && eir.meanDE < 3.5;   // 1443: magenta foliage; shade blue, low sun warm
       const tc = ffToneCurves('1443'), mono = ['r', 'g', 'b'].every(k => tc[k].every((q, i) => i === 0 || q[1] >= tc[k][i - 1][1])), mid = tc.r.find(q => q[0] === 0.46);
       const tone = mono && mid && mid[1] > 0.3 && mid[1] < 0.5;   // build 251: the film's contrast as curves, rising, grey near the middle
-      const ok = tone && kodak && films && w16same < w16vs12 && ffFilmFilterDefault(['w16', 'grb3']) === 'w16' && ffFilmFilterDefault(['tb550']) === 'w12' && rowsum.every(v => Math.abs(v - 1) < 0.03) && gain <= 2.01 && S(w12, 'grey').de < 0.5 && w12.meanDE < 3.5 && tb.meanDE < 3 && none.blue > 0.03 && w12.blue < 0.01
+      const ok = vegOk && tone && kodak && films && w16same < w16vs12 && ffFilmFilterDefault(['w16', 'grb3']) === 'w16' && ffFilmFilterDefault(['tb550']) === 'w12' && rowsum.every(v => Math.abs(v - 1) < 0.03) && gain <= 2.01 && S(w12, 'grey').de < 0.5 && w12.meanDE < 3.5 && tb.meanDE < 3 && none.blue > 0.03 && w12.blue < 0.01
         && leaf[0] > leaf[1] && leaf[0] > leaf[2] && paint[0] > paint[2] * 2 && paint[1] > paint[2] * 2;
       return { ok, detail: { tone, kodak, aut, wat, con, films, lf, gSh, gLo, a43: a43.meanDE, w16same, w16vs12, rowsum, gain, w12: w12.meanDE, tb: tb.meanDE, noneBlue: none.blue, leaf, paint } };
     } },

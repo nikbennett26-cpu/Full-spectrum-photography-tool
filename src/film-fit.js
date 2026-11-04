@@ -225,7 +225,7 @@ function ffVegCal(lin) {
   const d = ffVegDelta(), [h, s, l] = ffToHsl(lin);
   return ffFromHsl((h + d.dh + 360) % 360, Math.min(1, s * d.ds), Math.max(0.02, Math.min(0.98, l + d.dl)));
 }
-function ffFit(stack, sensor, maxGain, behind, film, light) {
+function ffFit(stack, sensor, maxGain, behind, film, light, noVegCal) {   // noVegCal: the self-test's way to judge the filter match alone
   maxGain = maxGain || 2.0;
   film = film || '1443'; light = light || 'sun';
   const wl = ffWl(), F = ffFilm(wl, behind || 'w12', film, light), K = ffKernel(stack, sensor, light);
@@ -233,7 +233,7 @@ function ffFit(stack, sensor, maxGain, behind, film, light) {
   if (g.some(v => !(v > 1e-9))) return { error: 'This stack lets almost nothing through to one of the channels.' };
   const Kn = K.map((k, c) => k.map(v => v / g[c]));   // white balanced: a flat grey gives 1, 1, 1
   const R = ffRenderer(film), toLin = o => o.map((v, c) => R.inv(v, c)), fromLin = v => v.map((x, c) => R.fwd(x, c));
-  const vegCal = (behind || 'w12') === 'w12' && film === '1443' && typeof FF_SURF.foliage !== 'undefined' && FF_SURF.foliage.length === wl.length;
+  const vegCal = !noVegCal && (behind || 'w12') === 'w12' && film === '1443' && typeof FF_SURF.foliage !== 'undefined' && FF_SURF.foliage.length === wl.length;
   const vegArr = vegCal ? FF_VEG_KEYS.map(k => FF_SURF[k]) : [];
   const slide = (r, isVeg) => { const o = R.render(F.map(f => ffDot(f, r))); return isVeg ? ffVegCal(o) : o; };
   const filmLin = r => toLin(slide(r, vegArr.indexOf(r) >= 0));   // the slide, in the film's own linear terms
