@@ -360,7 +360,7 @@ function ffRun() {
     const sensor = sel && sel.value ? sel.value : Object.keys(fpData.sensors)[0];
     const behind = $('ffBehind') && $('ffBehind').value || ffFilmFilterDefault(fpStack);
     const film = ($('ffFilm') && $('ffFilm').value) || '1443', light = ($('ffLight') && $('ffLight').value) || 'sun';
-    try { ffLast = ffFit(fpStack.slice(), sensor, 0, behind, film, light); } catch (e) { console.error(e); ffLast = { error: 'The fit failed: ' + (e && e.message || e) }; }
+    try { ffLast = ffFit(fpStack.slice(), sensor, 0, behind, film, light, !($('ffVeg') && $('ffVeg').checked)); } /* build 287: the pink calibration is a tick, off by default */ catch (e) { console.error(e); ffLast = { error: 'The fit failed: ' + (e && e.message || e) }; }
     ffRender();
   }).catch(() => { ffLast = { error: 'Could not load the filter database.' }; ffRender(); });
 }
@@ -369,7 +369,7 @@ function ffRun() {
   $('ffRun').addEventListener('click', ffRun);
   if ($('ffSensor')) $('ffSensor').addEventListener('change', () => { if (ffLast) ffRun(); });
   if ($('ffBehind')) $('ffBehind').addEventListener('change', () => { ffBehindChosen = true; if (ffLast) ffRun(); });
-  ['ffFilm', 'ffLight'].forEach(id => { if ($(id)) $(id).addEventListener('change', () => { if (ffLast) ffRun(); }); });
+  ['ffFilm', 'ffLight', 'ffVeg'].forEach(id => { if ($(id)) $(id).addEventListener('change', () => { if (ffLast) ffRun(); }); });
   /* Build 261: the filters are picked only in Looks > Filters on this photo; the name here is a link there (data-fp-go). */
   const fg = $('ffDetails');   /* build 264: its own card */ if (fg) fg.addEventListener('toggle', () => { ffRender(); if (fg.open && typeof fpLoad === 'function') fpLoad().then(ffSensors).catch(() => {}); });
   ffRender();
