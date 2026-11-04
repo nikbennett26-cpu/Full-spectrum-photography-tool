@@ -437,7 +437,7 @@ function ffRun() {
   if (!$('ffRun')) return;
   $('ffRun').addEventListener('click', ffRun);
   if ($('ffFind')) $('ffFind').addEventListener('click', ffFindRun);
-  if ($('ffFindOut')) $('ffFindOut').addEventListener('click', e => { const b = e.target.closest('button[data-ff-use]'); if (!b || !fpData) return; fpStack = b.dataset.ffUse.split(',').filter(id => fpData.byId[id]); try { fpSave(); fpRender(); if (typeof fpSumSync === 'function') fpSumSync(); } catch (x) { /* the filter card may not be built yet */ } ffBehindChosen = false; ffRun(); });
+  if ($('ffFindOut')) $('ffFindOut').addEventListener('click', e => { const b = e.target.closest('button[data-ff-use]'); if (!b || !fpData) return; fpStack = b.dataset.ffUse.split(',').filter(id => fpData.byId[id]); try { fpSave(); fpRender(); if (typeof fpSumSync === 'function') fpSumSync(); } catch (x) { /* the filter card may not be built yet */ } ffBehindChosen = false; setTimeout(ffRun, 60); /* after the setTimeout(ffStale) that fpSave queues, which would otherwise clear the fit just drawn and flicker the chart */ b.textContent = 'In use'; });
   if ($('ffSensor')) $('ffSensor').addEventListener('change', () => { if (ffLast) ffRun(); });
   if ($('ffBehind')) $('ffBehind').addEventListener('change', () => { ffBehindChosen = true; if (ffLast) ffRun(); });
   ['ffFilm', 'ffLight', 'ffVeg'].forEach(id => { if ($(id)) $(id).addEventListener('change', () => { if (ffLast) ffRun(); }); });
