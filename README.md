@@ -361,7 +361,7 @@ URL (so a cached old file never runs under a newer page), then runs `tools/build
 
 ## Credits
 
-Tool by [Nik Bennett (@irlab.uk)](https://www.instagram.com/irlab.uk) and [Phil Warren](https://philwarrenphotography.com).
+Tool by [Nik Bennett](https://www.instagram.com/irlab.uk) and [Phil Warren](https://philwarrenphotography.com).
 Colour science and RAW decoding by Phil Warren. Tested and contributed by
 [@fedialebarboc](https://www.instagram.com/fedialebarboc).
 
