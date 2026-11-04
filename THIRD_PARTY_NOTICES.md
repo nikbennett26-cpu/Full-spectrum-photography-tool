@@ -198,7 +198,7 @@ Other manufacturer and third-party sources are named on each filter's card and i
   open-ocean sea water (SW2), melting snow (mSnw01a), dry marsh sediment as bare earth (DWV3-0511), cadmium red
   (GDS778) and Hansa yellow (GDS785); build 278 added a dried oak leaf (Oak-Leaf-2), a yellow-green aspen leaf
   (Aspen-3 yellowGreenTop) and a half-dry, half-green grass mix (AMX28); build 288 added leafy spurge in September
-  and October 1997 (Spurge-A1) and a mostly dry grass mix (AMX31, 80% dry), linearly interpolated onto the same 10nm grid. **Modifications**, as the USGS asks to be
+  and October 1997 (Spurge-A1) and a mostly dry grass mix (AMX31, 80% dry); build 289 added a black needlerush turning brown and dead (J.roemer. DWV1-0511c and d), blue spruce needles (DW92-5) and juniper (IH91-4B); all linearly interpolated onto the same 10nm grid. **Modifications**, as the USGS asks to be
   described: averaged into 10nm steps from 300 to 1100nm, the first channel held below each instrument's range, and
   clipped to 0-1. The USGS has not reviewed or endorsed irlab or this use. The grey card is irlab's own model (a flat 18%).
 - **Human skin reflectance** (build 276): Cooksey, C.C., Allen, D.W. and Tsai, B.K., *Reference Data Set of Human Skin
