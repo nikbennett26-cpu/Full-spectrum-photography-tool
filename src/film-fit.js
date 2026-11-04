@@ -196,6 +196,35 @@ function ffMakeRender(film) {
 }
 const ffRenderCache = {};
 function ffRenderer(film) { return ffRenderCache[film] || (ffRenderCache[film] = ffMakeRender(film)); }
+/* Build 285: healthy vegetation, calibrated to real frames. The dye model puts healthy foliage behind a Wratten 12 at hue
+   350 (pink-red), saturation 42, where nine real Aerochrome 1443 frames measured hue 326 (magenta), saturation 60, lightness
+   46 (see the Mosse note in index.html). The film's data sheets give the layers, not the printing, exposure and scanning of
+   a real frame, so for healthy leaves, grass and conifer (not drying or dead vegetation, not skin, not anything else) the
+   film target is moved by the difference between the model and those frames, in HSL. Only for 1443 behind a Wratten 12,
+   the stock the frames were shot on; every other film and filter stays purely from the data. */
+const FF_VEG_REF = { h: 326, s: 0.60, l: 0.46 }, FF_VEG_KEYS = ['foliage', 'grass', 'conifer'];
+const ffEncV = v => { v = Math.max(0, Math.min(1, v)); return v <= 0.0031308 ? 12.92 * v : 1.055 * Math.pow(v, 1 / 2.4) - 0.055; };
+const ffDecV = v => v <= 0.04045 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4);
+function ffToHsl(lin) {
+  const [r, g, b] = lin.map(ffEncV), mx = Math.max(r, g, b), mn = Math.min(r, g, b), d = mx - mn, l = (mx + mn) / 2;
+  let h = 0; if (d) { h = mx === r ? ((g - b) / d) % 6 : mx === g ? (b - r) / d + 2 : (r - g) / d + 4; h = (h * 60 + 360) % 360; }
+  return [h, d ? d / (1 - Math.abs(2 * l - 1)) : 0, l];
+}
+function ffFromHsl(h, s, l) {
+  const c = (1 - Math.abs(2 * l - 1)) * s, x = c * (1 - Math.abs((h / 60) % 2 - 1)), m = l - c / 2;
+  const [r, g, b] = h < 60 ? [c, x, 0] : h < 120 ? [x, c, 0] : h < 180 ? [0, c, x] : h < 240 ? [0, x, c] : h < 300 ? [x, 0, c] : [c, 0, x];
+  return [r + m, g + m, b + m].map(ffDecV);
+}
+let ffVegDeltaCache = null;
+function ffVegDelta() {   // model foliage (1443, Wratten 12, sun) against the real-frame reference
+  if (ffVegDeltaCache) return ffVegDeltaCache;
+  const wl = ffWl(), F = ffFilm(wl, 'w12', '1443', 'sun'), m = ffToHsl(ffRenderer('1443').render(F.map(f => ffDot(f, FF_SURF.foliage))));
+  return (ffVegDeltaCache = { dh: FF_VEG_REF.h - m[0], ds: FF_VEG_REF.s / Math.max(0.05, m[1]), dl: FF_VEG_REF.l - m[2] });
+}
+function ffVegCal(lin) {
+  const d = ffVegDelta(), [h, s, l] = ffToHsl(lin);
+  return ffFromHsl((h + d.dh + 360) % 360, Math.min(1, s * d.ds), Math.max(0.02, Math.min(0.98, l + d.dl)));
+}
 function ffFit(stack, sensor, maxGain, behind, film, light) {
   maxGain = maxGain || 2.0;
   film = film || '1443'; light = light || 'sun';
@@ -204,8 +233,12 @@ function ffFit(stack, sensor, maxGain, behind, film, light) {
   if (g.some(v => !(v > 1e-9))) return { error: 'This stack lets almost nothing through to one of the channels.' };
   const Kn = K.map((k, c) => k.map(v => v / g[c]));   // white balanced: a flat grey gives 1, 1, 1
   const R = ffRenderer(film), toLin = o => o.map((v, c) => R.inv(v, c)), fromLin = v => v.map((x, c) => R.fwd(x, c));
-  const filmLin = r => toLin(R.render(F.map(f => ffDot(f, r))));   // the slide, in the film's own linear terms
-  const train = ffTrain(wl), X = train.map(r => Kn.map(k => ffDot(k, r))), Y = train.map(filmLin), N = X.length;
+  const vegCal = (behind || 'w12') === 'w12' && film === '1443' && typeof FF_SURF.foliage !== 'undefined' && FF_SURF.foliage.length === wl.length;
+  const vegArr = vegCal ? FF_VEG_KEYS.map(k => FF_SURF[k]) : [];
+  const slide = (r, isVeg) => { const o = R.render(F.map(f => ffDot(f, r))); return isVeg ? ffVegCal(o) : o; };
+  const filmLin = r => toLin(slide(r, vegArr.indexOf(r) >= 0));   // the slide, in the film's own linear terms
+  // healthy vegetation is the point of this film, so it counts for more in the fit (only when it has a calibrated target)
+  const train = vegCal ? ffTrain(wl).concat(...vegArr.map(v => new Array(vegArr.length ? 90 : 0).fill(v))) : ffTrain(wl), X = train.map(r => Kn.map(k => ffDot(k, r))), Y = train.map(filmLin), N = X.length;
   const greyLin = toLin(R.render(F.grey.map(v => 0.18 * v))).map(v => v / 0.18);
   const XtX = [0, 0, 0, 0, 0, 0, 0, 0, 0]; X.forEach(x => { for (let i = 0; i < 3; i++) for (let j = 0; j < 3; j++) XtX[i * 3 + j] += x[i] * x[j]; });
   /* Build 250: the grey condition is exact (a Lagrange constraint), not a heavy weight. A weight was overpowered by the
@@ -230,7 +263,7 @@ function ffFit(stack, sensor, maxGain, behind, film, light) {
     return 1 - se / st;
   });
   const surfaces = Object.keys(FF_SURF_NAMES).filter(k => FF_SURF[k] && FF_SURF[k].length === wl.length).map(k => {
-    const r = FF_SURF[k], filmOut = R.render(F.map(f => ffDot(f, r))), x = Kn.map(c => ffDot(c, r)), cam = fromLin(A.map(a => ffDot(a, x)));
+    const r = FF_SURF[k], filmOut = slide(r, vegCal && FF_VEG_KEYS.indexOf(k) >= 0), x = Kn.map(c => ffDot(c, r)), cam = fromLin(A.map(a => ffDot(a, x)));
     return { key: k, name: FF_SURF_NAMES[k], film: filmOut, cam, de: ffDE(filmOut, cam) };
   });
   const meanDE = surfaces.reduce((a, s) => a + s.de, 0) / surfaces.length;
@@ -252,7 +285,7 @@ function ffRender() {
   if (!ffLast) { out.hidden = true; return; }
   const f = ffLast; out.hidden = false;
   if (f.error) { out.innerHTML = '<p class="note">' + f.error + '</p>'; return; }
-  const verdict = f.meanDE < 2.5 ? 'Close to the film' : f.meanDE < 4.5 ? 'A fair match' : 'A loose match';
+  const verdict = f.meanDE < 2.5 ? 'Close to the film model' : f.meanDE < 4.5 ? 'A fair match to the film model' : 'A loose match to the film model';   // build 285: it is judged against the model, not against scans
   const pct = v => Math.max(0, Math.round(v * 100)) + '%';
   const warn = [];
   if (!fpStack.length) warn.push('No filters set. The film was always used behind a yellow filter; without one, blue light reaches every channel.');
@@ -263,7 +296,7 @@ function ffRender() {
   if (f.farIR > 0.25) warn.push('A lot of what the camera records is infrared beyond 900nm, past where the film could see.');
   const esc = s => String(s).replace(/[<>&]/g, c => ({ '<': '&lt;', '>': '&gt;', '&': '&amp;' }[c]));
   out.innerHTML =
-    '<p style="margin:6px 0 2px"><b>' + verdict + '</b> · average difference ' + f.meanDE.toFixed(1) + ' over the test surfaces, against ' + (f.film === '8443' ? '8443' : f.film === 'eir' ? 'EIR' : 'Aerochrome III') + ' behind a ' + esc(((FF_FILM_FILTERS.find(x => x[0] === f.behind) || [, 'Wratten 12'])[1]).replace(/ \(.*\)/, '')) + (f.light && f.light !== 'sun' ? ', ' + esc(((FF_LIGHTS.find(x => x[0] === f.light) || [, ''])[1]).replace(/ \(.*\)/, '').toLowerCase()) : '') + '</p>' +
+    '<p style="margin:6px 0 2px"><b>' + verdict + '</b> · average difference ' + f.meanDE.toFixed(1) + ' over the test surfaces of the film model, against ' + (f.film === '8443' ? '8443' : f.film === 'eir' ? 'EIR' : 'Aerochrome III') + ' behind a ' + esc(((FF_FILM_FILTERS.find(x => x[0] === f.behind) || [, 'Wratten 12'])[1]).replace(/ \(.*\)/, '')) + (f.light && f.light !== 'sun' ? ', ' + esc(((FF_LIGHTS.find(x => x[0] === f.light) || [, ''])[1]).replace(/ \(.*\)/, '').toLowerCase()) : '') + '</p>' +
     '<p class="note" style="margin:0 0 4px">How well your camera can follow each film layer: infrared ' + pct(f.r2[0]) + ', red ' + pct(f.r2[1]) + ', green ' + pct(f.r2[2]) + '</p>' +
     warn.map(w => '<p class="note ffWarn" style="margin:0 0 4px">' + esc(w) + '</p>').join('') +
     '<div class="ffGrid"><span></span><span class="ffH">Film</span><span class="ffH">Yours</span><span class="ffH">Diff.</span>' +
