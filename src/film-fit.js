@@ -354,6 +354,75 @@ function ffSensors() {
   [['ffFilm', FF_FILMS], ['ffLight', FF_LIGHTS]].forEach(([id, list]) => { const e = $(id); if (e && !e.options.length) list.forEach(([v, n]) => { const o = document.createElement('option'); o.value = v; o.textContent = n; e.appendChild(o); }); });
   return sel;
 }
+
+/* Build 290: the filter stack finder. Runs the same fit on filters from the database and ranks the stacks by how close
+   they bring your camera to the film. Singles first (the whole database, about 5 seconds), then the best few singles
+   each paired with every other filter that lets light through, or, if you pick it, your own stack plus one more filter.
+   Done in short slices so the page stays usable; the result is the same fit as the Fit button, so a stack found here
+   reads the same there. */
+let ffFindToken = 0;
+function ffFindScore(f) { return f && !f.error ? f.meanDE : Infinity; }
+function ffFind(opt, onProgress) {
+  const my = ++ffFindToken, d = fpData, sensor = opt.sensor;
+  const usable = d.filters.filter(f => f[4] && f[4].length === d.ill.length && Math.max.apply(null, f[4]) > 0.05).map(f => f[0]);
+  const mean = id => { const t = d.byId[id][4]; return t.reduce((a, v) => a + v, 0) / t.length; };
+  const partners = usable.filter(id => mean(id) > 0.15);
+  const rows = new Map(), key = st => st.slice().sort().join('+');
+  const jobs = [];
+  const own = opt.mode === 'add' ? (opt.stack || []).filter(id => d.byId[id]) : null;
+  if (own) partners.forEach(id => { if (own.indexOf(id) < 0) jobs.push(own.concat([id])); }), own.length && jobs.push(own.slice());
+  else usable.forEach(id => jobs.push([id]));
+  let i = 0, phase = own ? 1 : 0, total = jobs.length, done = 0;
+  const run = st => { if (st.length > 4) return; const k = key(st); if (rows.has(k)) return; let f; try { f = ffFit(st, sensor, 0, opt.behind, opt.film, opt.light, opt.noVeg); } catch (e) { f = null; } rows.set(k, { stack: st, f }); };
+  return new Promise(res => {
+    const step = () => {
+      if (my !== ffFindToken) return res(null);
+      const t0 = performance.now();
+      while (i < jobs.length && performance.now() - t0 < 40) { run(jobs[i++]); done++; }
+      if (onProgress) onProgress(done, total, phase);
+      if (i < jobs.length) return setTimeout(step, 0);
+      if (phase === 0) {
+        const best = Array.from(rows.values()).filter(r => r.f && !r.f.error).sort((a, b) => ffFindScore(a.f) - ffFindScore(b.f)).slice(0, 8);
+        best.forEach(b => partners.forEach(id => { if (b.stack.indexOf(id) < 0) jobs.push(b.stack.concat([id])); }));
+        phase = 1; total = jobs.length;
+        return setTimeout(step, 0);
+      }
+      const out = Array.from(rows.values()).filter(r => r.f && !r.f.error).sort((a, b) => ffFindScore(a.f) - ffFindScore(b.f));
+      /* the same partner filter turns up with every near-identical yellow, so list each filter once: the best three single filters, then the best pairs that share no filter */
+      const pick = [], used = new Set();
+      if (!own) out.filter(r => r.stack.length === 1).slice(0, 3).forEach(r => { pick.push(r); used.add(r.stack[0]); });
+      out.forEach(r => {
+        if (pick.length >= 8 || (!own && r.stack.length === 1)) return;
+        const fresh = r.stack.filter(id => own ? own.indexOf(id) < 0 : true);
+        if (fresh.some(id => used.has(id))) return;
+        fresh.forEach(id => used.add(id)); pick.push(r);
+      });
+      res(pick);
+    };
+    step();
+  });
+}
+function ffFindRender(list, msg) {
+  const o = $('ffFindOut'); if (!o) return;
+  if (!list) { o.innerHTML = msg ? '<p class="note">' + msg + '</p>' : ''; return; }
+  const esc = s => String(s).replace(/[<>&]/g, c => ({ '<': '&lt;', '>': '&gt;', '&': '&amp;' }[c]));
+  o.innerHTML = '<p class="note" style="margin:6px 0 2px">The closest stacks to the film model for this camera, film and light (lower is closer):</p>' +
+    list.map((r, n) => '<div class="ffRow" style="display:flex;gap:6px;align-items:center;flex-wrap:wrap"><span><b>' + (n + 1) + '.</b> ' + esc(r.stack.map(id => fpData.byId[id][1]).join(' + ')) + ' <span class="note">· difference ' + r.f.meanDE.toFixed(1) + ', infrared layer ' + Math.max(0, Math.round(r.f.r2[0] * 100)) + '%' + (r.f.blue > 0.03 ? ', lets blue through' : '') + '</span></span><button type="button" class="btnGhost" data-ff-use="' + r.stack.join(',') + '">Use</button></div>').join('') +
+    '<p class="note" style="margin:4px 0 0">Searches filters in the database, not only the ones you own. Use puts the stack on this photo.</p>';
+}
+function ffFindRun() {
+  fpLoad().then(() => {
+    const sel = ffSensors(), sensor = sel && sel.value ? sel.value : Object.keys(fpData.sensors)[0];
+    const behind = $('ffBehind') && $('ffBehind').value || 'w12';
+    const film = ($('ffFilm') && $('ffFilm').value) || '1443', light = ($('ffLight') && $('ffLight').value) || 'sun';
+    const mode = $('ffFindMode') && $('ffFindMode').value === 'add' && fpStack.length ? 'add' : 'all';
+    const btn = $('ffFind'); if (btn) btn.disabled = true;
+    ffFindRender(null, 'Searching…');
+    ffFind({ sensor, behind, film, light, mode, stack: fpStack.slice(), noVeg: !($('ffVeg') && $('ffVeg').checked) }, (a, b, ph) => { ffFindRender(null, 'Searching… ' + Math.min(99, Math.round(100 * a / Math.max(1, b))) + '% (' + (ph ? 'pairs' : 'single filters') + ')'); })
+      .then(list => { if (btn) btn.disabled = false; if (list) ffFindRender(list.length ? list : null, list.length ? '' : 'Nothing fitted: the stack lets almost nothing through to one of the channels.'); })
+      .catch(e => { console.error(e); if (btn) btn.disabled = false; ffFindRender(null, 'The search failed.'); });
+  });
+}
 function ffRun() {
   fpLoad().then(() => {
     const sel = ffSensors();
@@ -367,6 +436,8 @@ function ffRun() {
 (function ffWire() {
   if (!$('ffRun')) return;
   $('ffRun').addEventListener('click', ffRun);
+  if ($('ffFind')) $('ffFind').addEventListener('click', ffFindRun);
+  if ($('ffFindOut')) $('ffFindOut').addEventListener('click', e => { const b = e.target.closest('button[data-ff-use]'); if (!b || !fpData) return; fpStack = b.dataset.ffUse.split(',').filter(id => fpData.byId[id]); try { fpSave(); fpRender(); if (typeof fpSumSync === 'function') fpSumSync(); } catch (x) { /* the filter card may not be built yet */ } ffBehindChosen = false; ffRun(); });
   if ($('ffSensor')) $('ffSensor').addEventListener('change', () => { if (ffLast) ffRun(); });
   if ($('ffBehind')) $('ffBehind').addEventListener('change', () => { ffBehindChosen = true; if (ffLast) ffRun(); });
   ['ffFilm', 'ffLight', 'ffVeg'].forEach(id => { if ($(id)) $(id).addEventListener('change', () => { if (ffLast) ffRun(); }); });

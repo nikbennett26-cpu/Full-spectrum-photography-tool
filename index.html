@@ -25,7 +25,7 @@
 <meta name="twitter:image" content="https://irlab.uk/og-card.png?v=112">
 <link rel="canonical" href="https://irlab.uk/">
 <meta name="theme-color" content="#141518">
-<meta name="irlab-build" content="290">
+<meta name="irlab-build" content="291">
 <link rel="manifest" href="/manifest.json">
 <link rel="icon" href="/favicon.ico?v=3" sizes="any">
 <link rel="icon" href="/favicon.svg?v=3" type="image/svg+xml">
@@ -57,12 +57,12 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500&family=Barlow+Condensed:wght@500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
 
-<script src="i18n/tr.js?b=290"></script>
-<link rel="stylesheet" href="css/main.css?b=290">
-<link rel="stylesheet" id="uxRefresh" href="css/refresh.css?b=290">
-<link rel="stylesheet" href="css/trichrome.css?b=290">
-<link rel="stylesheet" id="uxDock" href="css/dock.css?b=290">
-<link rel="stylesheet" href="css/minimal.css?b=290">
+<script src="i18n/tr.js?b=291"></script>
+<link rel="stylesheet" href="css/main.css?b=291">
+<link rel="stylesheet" id="uxRefresh" href="css/refresh.css?b=291">
+<link rel="stylesheet" href="css/trichrome.css?b=291">
+<link rel="stylesheet" id="uxDock" href="css/dock.css?b=291">
+<link rel="stylesheet" href="css/minimal.css?b=291">
 </head>
 <body>
 
@@ -211,6 +211,7 @@
     <div id="whatsNew">
       <details>
         <summary><span data-i18n="whatsNewLabel">What’s new</span><span class="wnLatest">Autumn red and drying grass in Digital Aerochrome</span></summary>
+        <p style="margin:0 0 3px"><b style="color:var(--phosphor-dim)">Find the best filters, in Digital Aerochrome.</b> A new button looks through the filter database for the stacks that bring your camera closest to the film, or, if you prefer, tries each other filter added to the stack you already have. It lists the best few with how close each is and how well your camera can follow the infrared layer, and Use puts one on the photo. It runs the same fit as the Fit button.</p>
         <p style="margin:0 0 3px"><b style="color:var(--phosphor-dim)">Autumn red and drying grass in Digital Aerochrome.</b> The fit now also tests on measured leafy spurge in September and October and on mostly dry grass (USGS Spectral Library). Through the film they show the order Fedia described for these plants: pink while healthy, then red as they age, then brown when dry. Aspen only yellows and oak stays pink, so that red stage depends on the plant. Build 289 adds turning-brown and dead rush, blue spruce and juniper to the test surfaces. Measured sea water, muddy water and melting snow are now test surfaces too.</p>
         <p style="margin:0 0 3px"><b style="color:var(--phosphor-dim)">Pink healthy foliage, if you want it.</b> Digital Aerochrome has a new tick, Pink healthy foliage, as in real frames. Off, healthy leaves come straight from the data sheet and the measured spectra, a redder pink. On, healthy leaves, grass and pine needles on Aerochrome III behind a Wratten 12 are calibrated to nine real 1443 frames (hue 326, magenta), and count for more in the fit. Drying and dead vegetation always come from the data. The rating says it is judged against the film <i>model</i>, not against scans.</p>
         <p style="margin:0 0 3px"><b style="color:var(--phosphor-dim)">Halation is back.</b> A new Detail tool, Halation, adds the warm red-orange glow film throws round bright highlights, where light bounces back through the emulsion. Amount sets how much; Spread sets how far it reaches. It works from the finished picture, so it follows your exposure and look, and it only ever brightens, so nothing clips.</p>
@@ -619,7 +620,7 @@
     <!-- Build 279: the people behind it, on the home page -->
     <div id="creditsHome">Made by <a href="https://www.instagram.com/irlab.uk" target="_blank" rel="noopener" style="color:var(--safelight);font-weight:600;text-decoration:none">Nik Bennett</a>
       &middot; Colour science &amp; RAW decode by <a href="https://philwarrenphotography.com" target="_blank" rel="noopener" style="color:var(--safelight);font-weight:600;text-decoration:none">Phil Warren</a></div>
-    <div id="buildStampHome">Version 2026-11-04 · build 290</div>
+    <div id="buildStampHome">Version 2026-11-04 · build 291</div>
   </footer>
 </div>
 
@@ -1035,6 +1036,9 @@
           <label class="ffRow" title="The yellow or orange filter the film is imagined behind. Follows your stack when it has one of these.">Film behind <select id="ffBehind" aria-label="Filter the film is imagined behind"></select></label>
           <button type="button" id="ffRun" class="btnGhost" style="margin-top:6px">Fit</button>
           <div id="ffOut" hidden></div>
+          <label class="ffRow" title="Looks through filters in the database for the stack that brings your camera closest to the film. Or keeps your current stack and tries each other filter added to it.">Find the best filters <select id="ffFindMode" aria-label="What to search"><option value="all">Whole database</option><option value="add">Add one to my stack</option></select></label>
+          <button type="button" id="ffFind" class="btnGhost" style="margin-top:6px">Find</button>
+          <div id="ffFindOut"></div>
         </div>
         </div>
       </details>
@@ -1800,7 +1804,7 @@
       <br><a href="privacy.html" target="_blank" rel="noopener" style="color:var(--muted);text-decoration:underline">Privacy</a>
       <br><a href="LICENSE.md" target="_blank" rel="noopener" style="color:var(--muted);text-decoration:underline">Source: AGPL-3.0</a>
       <br><a href="THIRD_PARTY_NOTICES.md" target="_blank" rel="noopener" style="color:var(--muted);text-decoration:underline">Third-party notices (LibRaw, RawTherapee)</a>
-<br><span id="buildStamp" style="color:var(--muted)" title="Which version of the app this is. Tap the arrow to check for a newer one and update.">Version 2026-11-04 · build 290</span>
+<br><span id="buildStamp" style="color:var(--muted)" title="Which version of the app this is. Tap the arrow to check for a newer one and update.">Version 2026-11-04 · build 291</span>
       <br><button id="btnInstall" type="button">Install as an app</button>
       <span id="kbHint">Ctrl+Z undo &middot; Ctrl+Shift+Z redo &middot; [ ] cycle presets &middot; F full quality view &middot; Space hold to compare</span>
     </footer>
@@ -1896,6 +1900,6 @@
 <!-- The editor's code: editor.js, BUILT from src/*.js by tools/build.py (see the README's Code layout). One script, so
      it all runs in one go, as the single inline block it came from did. ?b=<build> keeps the service worker's cached
      copy of an older editor.js from ever running under a newer page; tools/bump_build.py sets it. -->
-<script src="editor.js?b=290"></script>
+<script src="editor.js?b=291"></script>
 </body>
 </html>
