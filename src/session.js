@@ -371,14 +371,16 @@ async function restoreSessionInner(rec) {
   const myToken = loadToken;
   const st = await idbGet('state');
   if (myToken !== loadToken) return;   // the person picked a photo themselves while the saved one was being read
+  const before = loadToken;
   const loading = loadFile(new File([rec.blob], rec.name || 'restored.jpg', { type: rec.blob.type || 'image/jpeg' }));
-  /* loadFile bumps loadToken synchronously, as its very first act, so the token to compare against is the one it
-     just made, taken right after calling it. This used to compare with the value from BEFORE the call, which is
-     never equal afterwards, so the check always said "someone else loaded something" and returned: the photo
-     came back after a reload, but none of its edits ever did. */
-  const mine = loadToken;
+  /* Build 296: ours is the load that took loadToken from `before` to `before + 1`. Anything else means the person
+     picked a photo of their own while this one was loading, so their photo wins and the saved edits are dropped.
+     This used to read loadToken straight after calling loadFile, assuming loadFile bumps it synchronously before its
+     first await. It no longer does (the bump now comes a little later), so the value read was one behind, the check
+     always said "someone else loaded something", and the photo came back after a reload with none of its edits.
+     Counting from `before` does not depend on when inside loadFile the bump happens. */
   await loading;
-  if (mine !== loadToken) return;   // a newer load (the user's own pick) has since started
+  if (loadToken !== before + 1) return;
   // settings applied after the image, since applyState triggers a render
   if (st && st.state) { try { applyState(st.state); } catch (e) {} }
 }
