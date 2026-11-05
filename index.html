@@ -25,7 +25,7 @@
 <meta name="twitter:image" content="https://irlab.uk/og-card.png?v=112">
 <link rel="canonical" href="https://irlab.uk/">
 <meta name="theme-color" content="#141518">
-<meta name="irlab-build" content="296">
+<meta name="irlab-build" content="297">
 <link rel="manifest" href="/manifest.json">
 <link rel="icon" href="/favicon.ico?v=3" sizes="any">
 <link rel="icon" href="/favicon.svg?v=3" type="image/svg+xml">
@@ -57,12 +57,12 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500&family=Barlow+Condensed:wght@500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
 
-<script src="i18n/tr.js?b=296"></script>
-<link rel="stylesheet" href="css/main.css?b=296">
-<link rel="stylesheet" id="uxRefresh" href="css/refresh.css?b=296">
-<link rel="stylesheet" href="css/trichrome.css?b=296">
-<link rel="stylesheet" id="uxDock" href="css/dock.css?b=296">
-<link rel="stylesheet" href="css/minimal.css?b=296">
+<script src="i18n/tr.js?b=297"></script>
+<link rel="stylesheet" href="css/main.css?b=297">
+<link rel="stylesheet" id="uxRefresh" href="css/refresh.css?b=297">
+<link rel="stylesheet" href="css/trichrome.css?b=297">
+<link rel="stylesheet" id="uxDock" href="css/dock.css?b=297">
+<link rel="stylesheet" href="css/minimal.css?b=297">
 </head>
 <body>
 
@@ -210,8 +210,9 @@
   <footer class="labFoot">
     <div id="whatsNew">
       <details>
-        <summary><span data-i18n="whatsNewLabel">What’s new</span><span class="wnLatest">Autumn red and drying grass in Digital Aerochrome</span></summary>
+        <summary><span data-i18n="whatsNewLabel">What’s new</span><span class="wnLatest">Digital Aerochrome moved up, under Swap &amp; mix</span></summary>
         <p style="margin:0 0 3px"><b style="color:var(--phosphor-dim)">Your edits now come back after closing the app.</b> If you closed the tab or the app by accident, the photo came back but none of your edits did. That is fixed: reopen within 30 minutes and it picks up where you left off, edits included, and after that the Restore button on the start page brings back the photo and its edits.</p>
+        <p style="margin:0 0 3px"><b style="color:var(--phosphor-dim)">Digital Aerochrome moved up.</b> It now sits directly under Swap &amp; mix, and its text uses the same font as the rest of the app.</p>
         <p style="margin:0 0 3px"><b style="color:var(--phosphor-dim)">More conifers in Digital Aerochrome.</b> Pine, spruce and fir needles and two forest canopies, measured by USGS, are now test surfaces. The film model renders them dark crimson, redder than broadleaf, as Kodak describes. Your camera comes out about 15 degrees pinker than the film on them, so the average difference rating is a little higher.</p>
         <p style="margin:0 0 3px"><b style="color:var(--phosphor-dim)">Autumn red and drying grass in Digital Aerochrome.</b> The fit now also tests on measured leafy spurge in September and October and on mostly dry grass (USGS Spectral Library). Through the film they show the order Fedia described for these plants: pink while healthy, then red as they age, then brown when dry. Aspen only yellows and oak stays pink, so that red stage depends on the plant. Build 289 adds turning-brown and dead rush, blue spruce and juniper to the test surfaces. Measured sea water, muddy water and melting snow are now test surfaces too.</p>
         <p style="margin:0 0 3px"><b style="color:var(--phosphor-dim)">Pink healthy foliage, if you want it.</b> Digital Aerochrome has a new tick, Pink healthy foliage, as in real frames. Off, healthy leaves come straight from the data sheet and the measured spectra, a redder pink. On, healthy leaves, grass and pine needles on Aerochrome III behind a Wratten 12 are calibrated to nine real 1443 frames (hue 326, magenta), and count for more in the fit. Drying and dead vegetation always come from the data. The rating says it is judged against the film <i>model</i>, not against scans.</p>
@@ -621,7 +622,7 @@
     <!-- Build 279: the people behind it, on the home page -->
     <div id="creditsHome">Made by <a href="https://www.instagram.com/irlab.uk" target="_blank" rel="noopener" style="color:var(--safelight);font-weight:600;text-decoration:none">Nik Bennett</a>
       &middot; Colour science &amp; RAW decode by <a href="https://philwarrenphotography.com" target="_blank" rel="noopener" style="color:var(--safelight);font-weight:600;text-decoration:none">Phil Warren</a></div>
-    <div id="buildStampHome">Version 2026-11-05 · build 296</div>
+    <div id="buildStampHome">Version 2026-11-05 · build 297</div>
   </footer>
 </div>
 
@@ -903,6 +904,25 @@
         </div>
         </div>
       </details>
+      <!-- Build 240: fit the film to your own camera and filter stack (src/film-fit.js). Build 264: its own card, rather
+           than tucked in at the bottom of Film stocks & recipes. -->
+      <details class="dGrp" id="ffDetails">
+        <summary><span class="dT" data-i18n="ffT">Digital Aerochrome</span><span class="dS" data-i18n="ffS">fit Kodak&rsquo;s film to your filters</span><span class="dDot" aria-hidden="true"></span></summary>
+        <div class="dBody">
+        <div id="ffBox" class="ffBox">
+          <p class="note" style="margin:2px 0 6px">Works out the channel mix that makes your camera, through your filters, see the way Kodak&rsquo;s colour infrared film did (Aerochrome III 1443 or Ektachrome Infrared EIR from Kodak&rsquo;s data sheets, or 8443 from NASA&rsquo;s data), and shows how close it gets. The film swatches show the slide as the film&rsquo;s own dyes printed it. Best from a RAW.</p>
+          <div class="ffRow">Filters on this photo: <button type="button" class="fpLink" data-fp-go title="Set in Looks &rsaquo; Filters on this photo"><b id="ffStack">none set</b> <span aria-hidden="true">&rsaquo;</span></button></div>
+          <label class="ffRow">Film <select id="ffFilm" aria-label="Film to match"></select></label>
+          <label class="ffRow">Light <select id="ffLight" aria-label="The light the photo is taken in"></select></label>
+          <label class="ffRow">Sensor <select id="ffSensor" aria-label="Sensor response used for the fit"></select></label>
+          <label class="ffRow" title="Moves healthy leaves, grass and pine needles toward the magenta of nine real Aerochrome 1443 frames, which is pinker than the data sheet alone gives. Only for Aerochrome III behind a Wratten 12. Drying and dead vegetation always come from the data."><input type="checkbox" id="ffVeg"> Pink healthy foliage, as in real frames</label>
+          <label class="ffRow" title="The yellow or orange filter the film is imagined behind. Follows your stack when it has one of these.">Film behind <select id="ffBehind" aria-label="Filter the film is imagined behind"></select></label>
+          <button type="button" id="ffRun" class="btnGhost" style="margin-top:6px">Fit</button>
+          <div id="ffOut" hidden></div>
+        </div>
+        </div>
+      </details>
+
       <!-- Presets are shortcuts onto the matrix above, not a separate
            mechanism — collapsible on the same basis as the film group below,
            so the panel can be collapsed down to just the matrix editor once
@@ -1022,25 +1042,7 @@
         <button type="button" id="btnShareUserPreset" class="swapBtn" style="margin-top:6px">Share current look as a link</button>
         </div>
       </details>
-      <!-- Build 240: fit the film to your own camera and filter stack (src/film-fit.js). Build 264: its own card, rather
-           than tucked in at the bottom of Film stocks & recipes. -->
-      <details class="dGrp" id="ffDetails">
-        <summary><span class="dT" data-i18n="ffT">Digital Aerochrome</span><span class="dS" data-i18n="ffS">fit Kodak&rsquo;s film to your filters</span><span class="dDot" aria-hidden="true"></span></summary>
-        <div class="dBody">
-        <div id="ffBox" class="ffBox">
-          <p class="note" style="margin:2px 0 6px">Works out the channel mix that makes your camera, through your filters, see the way Kodak&rsquo;s colour infrared film did (Aerochrome III 1443 or Ektachrome Infrared EIR from Kodak&rsquo;s data sheets, or 8443 from NASA&rsquo;s data), and shows how close it gets. The film swatches show the slide as the film&rsquo;s own dyes printed it. Best from a RAW.</p>
-          <div class="ffRow">Filters on this photo: <button type="button" class="fpLink" data-fp-go title="Set in Looks &rsaquo; Filters on this photo"><b id="ffStack">none set</b> <span aria-hidden="true">&rsaquo;</span></button></div>
-          <label class="ffRow">Film <select id="ffFilm" aria-label="Film to match"></select></label>
-          <label class="ffRow">Light <select id="ffLight" aria-label="The light the photo is taken in"></select></label>
-          <label class="ffRow">Sensor <select id="ffSensor" aria-label="Sensor response used for the fit"></select></label>
-          <label class="ffRow" title="Moves healthy leaves, grass and pine needles toward the magenta of nine real Aerochrome 1443 frames, which is pinker than the data sheet alone gives. Only for Aerochrome III behind a Wratten 12. Drying and dead vegetation always come from the data."><input type="checkbox" id="ffVeg"> Pink healthy foliage, as in real frames</label>
-          <label class="ffRow" title="The yellow or orange filter the film is imagined behind. Follows your stack when it has one of these.">Film behind <select id="ffBehind" aria-label="Filter the film is imagined behind"></select></label>
-          <button type="button" id="ffRun" class="btnGhost" style="margin-top:6px">Fit</button>
-          <div id="ffOut" hidden></div>
-        </div>
-        </div>
-      </details>
-      <details class="dGrp" id="looksTone">
+<details class="dGrp" id="looksTone">
         <summary><span class="dT" data-i18n="cStr">Strength &amp; IR tone</span><span class="dS" data-i18n="cStrS">preset strength, tone curve</span><span class="dDot" aria-hidden="true"></span></summary>
         <div class="dBody">
       <div id="presetStrengthBox" style="display:none;margin-top:12px">
@@ -1802,7 +1804,7 @@
       <br><a href="privacy.html" target="_blank" rel="noopener" style="color:var(--muted);text-decoration:underline">Privacy</a>
       <br><a href="LICENSE.md" target="_blank" rel="noopener" style="color:var(--muted);text-decoration:underline">Source: AGPL-3.0</a>
       <br><a href="THIRD_PARTY_NOTICES.md" target="_blank" rel="noopener" style="color:var(--muted);text-decoration:underline">Third-party notices (LibRaw, RawTherapee)</a>
-<br><span id="buildStamp" style="color:var(--muted)" title="Which version of the app this is. Tap the arrow to check for a newer one and update.">Version 2026-11-05 · build 296</span>
+<br><span id="buildStamp" style="color:var(--muted)" title="Which version of the app this is. Tap the arrow to check for a newer one and update.">Version 2026-11-05 · build 297</span>
       <br><button id="btnInstall" type="button">Install as an app</button>
       <span id="kbHint">Ctrl+Z undo &middot; Ctrl+Shift+Z redo &middot; [ ] cycle presets &middot; F full quality view &middot; Space hold to compare</span>
     </footer>
@@ -1898,6 +1900,6 @@
 <!-- The editor's code: editor.js, BUILT from src/*.js by tools/build.py (see the README's Code layout). One script, so
      it all runs in one go, as the single inline block it came from did. ?b=<build> keeps the service worker's cached
      copy of an older editor.js from ever running under a newer page; tools/bump_build.py sets it. -->
-<script src="editor.js?b=296"></script>
+<script src="editor.js?b=297"></script>
 </body>
 </html>

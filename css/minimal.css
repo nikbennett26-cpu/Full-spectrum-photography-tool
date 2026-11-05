@@ -324,3 +324,5 @@ html.dockOn body.has-image #reorderZone > #modeBar.empty,html.studioOn body.has-
 /* build 294: one small red dot after the two tool links on the start page, so they read as something you can tap */
 #emptyStateGroup.lab #triStart,#emptyStateGroup.lab a.labTool .flTitle{align-items:center;justify-content:center}
 #emptyStateGroup.lab #triStart::after,#emptyStateGroup.lab a.labTool .flTitle::after{content:"";display:inline-block;width:6px;height:6px;border-radius:50%;background:#d63a3a;flex:none;margin:0 0 0 12px}
+/* Build 297: Digital Aerochrome sits under Swap & mix, in the app's own font (Inter) throughout, with no monospace. */
+#ffDetails,#ffDetails *{font-family:var(--font-body)!important}
