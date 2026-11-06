@@ -80,11 +80,10 @@ html.studioOn body.has-image #previewSticky{background:transparent!important}
 html.studioOn body.has-image #reorderZone,html.dockOn body.has-image #reorderZone{background:var(--st-bg)}
 
 /* square corners */
-.dGrp,.dCard,details[data-step="wb"] .wbSlim,details[data-step="wb"] .wbGains,#histogram,#previewWrap,#preview,#previewOrig,
+.dGrp,details[data-step="wb"] .wbSlim,details[data-step="wb"] .wbGains,#histogram,#previewWrap,#preview,#previewOrig,
 html.studioOn body.has-image #histogram,html.studioOn body.has-image #previewWrap,html.studioOn body.has-image #preview{border-radius:0!important}
-html.dockOn body.has-image #dockSheet,html.dockOn body.has-image .dockSheet{border-radius:0!important}
 #histogram{background:var(--st-bg,#000)!important}
-.dCard,details[data-step="wb"] .wbSlim,details[data-step="wb"] .wbGains{background:transparent!important;border-color:var(--line)!important}
+details[data-step="wb"] .wbSlim,details[data-step="wb"] .wbGains{background:transparent!important;border-color:var(--line)!important}
 
 /* top bar: plain icons, no boxes */
 html.studioOn body.has-image .toolbar .ptIconBtn,html.dockOn body.has-image .toolbar .ptIconBtn,.toolbar .ptIconBtn{border-color:transparent!important;background:transparent!important}
@@ -132,7 +131,7 @@ body:not(.has-image){background:#000!important}
 /* the consent bar */
 #consentBar{background:var(--bg)!important;border-top:1px solid var(--line)!important;box-shadow:none!important;border-radius:0!important}
 #emptyStateGroup.lab .labPanel{border:0!important;padding:0!important}
-#emptyStateGroup.lab #dropzone,#emptyStateGroup.lab .labFmtBox,#emptyStateGroup.lab .labFmt{border-radius:0!important}
+#emptyStateGroup.lab #dropzone{border-radius:0!important}
 
 /* ---- filters page (css/filters.css) ---- */
 body.fltPage{background:#000!important}
@@ -142,8 +141,7 @@ body.fltPage :is(.backlink,.panel,#chart,#specStrip,.grpHead,.grp details[open] 
 body.fltPage .panel,body.fltPage #fChart,body.fltPage #filterList,body.fltPage #fTabs{background:transparent!important;border-color:var(--line)!important;-webkit-backdrop-filter:none!important;backdrop-filter:none!important}
 body.fltPage :is(header h1,.pt,.grpHead .gname,.fbconf,#stickyStack b,.fb b,#behaviour h4,.bh .bn,#stackSummary,.provLine b){font-weight:500!important}
 body.fltPage header h1{font-weight:300!important;font-family:var(--font-body)!important}
-body.fltPage .backlink,body.fltPage button,body.fltPage .chip{background:transparent!important;border:1px solid var(--line2)!important;color:var(--paper)!important}
-body.fltPage .backlink{color:var(--safelight)!important;border-color:var(--safelight)!important}
+body.fltPage button,body.fltPage .chip{background:transparent!important;border:1px solid var(--line2)!important;color:var(--paper)!important}
 body.fltPage .chip.on,body.fltPage button.on,body.fltPage #fTabs button.on,body.fltPage #fTabs button[aria-selected="true"]{border-color:var(--safelight)!important;color:var(--paper)!important}
 body.fltPage #fTabs button{border:0!important}
 body.fltPage .grpHead .gcount{border-radius:2px!important}
@@ -221,9 +219,6 @@ html.dockOn body.has-image #dock button{border:0!important;outline-offset:-2px}
 #mx [id^="mt"]{display:flex;align-items:center;justify-content:center;border-top:1px solid var(--line);font-size:11px;color:var(--muted)}
 #mx #mt2{border-bottom:1px solid var(--line)}
 .mxPrevLbl{font-size:11px!important;font-weight:400!important;letter-spacing:.12em;text-transform:uppercase;color:var(--paper-dim)!important;margin:18px 0 8px!important}
-.wsTabs{display:flex;flex-wrap:wrap;gap:4px 20px}
-.wsTabs button{min-height:36px;padding:0 0 4px;background:none;border:0;border-bottom:1px solid transparent;color:var(--paper-dim);font:inherit;font-size:13.5px;cursor:pointer}
-.wsTabs button.on{color:var(--paper);border-bottom-color:var(--safelight)}
 .mxPreview{gap:3px!important}
 .mxPreview div{height:20px!important;border-radius:0!important;background:transparent}
 .mxPreview i{inset:0 0 calc(50% + 1px) 0!important}
@@ -342,3 +337,15 @@ html.dockOn body.has-image #reorderZone .dGrp:not([open]) > summary{margin-botto
 html.dockOn body.has-image #reorderZone .dGrp > summary{min-height:47px!important;padding-top:13px!important;padding-bottom:13px!important}
 /* Build 319: the sheet rising over the photo while you scroll the tools (src/dock.js lift()) gets a firmer shadow */
 html.dockOn.sheetLift body.has-image #reorderZone{box-shadow:0 -18px 40px -8px rgba(0,0,0,.85)}
+/* Build 320: the before/after divider is hidden while the slider sits at either end (src/i18n.js setComparePos) */
+#cmpHandle.cmpEdge{opacity:0!important;pointer-events:none}
+/* Build 320: the in-app message card that replaces the browser's alert box (src/shaders.js irlabNotice) */
+#irNotice{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(var(--dockH,0px) + 16px);z-index:600;width:min(460px,calc(100vw - 24px));
+  max-height:min(60vh,520px);display:flex;flex-direction:column;background:#141518;border:1px solid var(--line2,#3d4048);border-left:3px solid #d63a3a;
+  border-radius:10px;box-shadow:0 18px 50px -10px rgba(0,0,0,.8);font:400 14px/1.5 var(--font-body,Inter,system-ui,sans-serif);color:var(--paper,#eceae4)}
+#irNotice .irnList{overflow:auto;padding:14px 16px 4px}
+#irNotice .irnMsg{margin:0 0 10px;white-space:pre-wrap;overflow-wrap:anywhere}
+#irNotice .irnMsg + .irnMsg{border-top:1px solid var(--line,#2a2d33);padding-top:10px}
+#irNotice .irnActs{display:flex;justify-content:flex-end;gap:8px;padding:8px 12px 12px}
+#irNotice button{min-height:36px;padding:0 14px;border-radius:6px;border:1px solid var(--line2,#3d4048);background:transparent;color:inherit;font:inherit;cursor:pointer}
+#irNotice .irnClose{border-color:#d63a3a}

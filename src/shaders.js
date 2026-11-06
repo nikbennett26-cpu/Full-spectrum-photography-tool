@@ -10,16 +10,52 @@
    every async path remembering its own try/catch, one net at the top
    catches whatever slips through and actually shows it, so "nothing
    happened" becomes a message that says what happened instead. */
+/* Build 320: messages show in a card inside the app instead of the browser's alert box. The alert box froze the whole
+   page until it was dismissed, looked like a system error, and on a phone sat over everything. The card sits above
+   the controls, keeps line breaks, has Copy (for a bug report) and a close button, and stays until it is closed.
+   Every alert() in the app goes through it, so file, decode and export messages change too. The same message
+   arriving again while it is showing is not stacked twice. */
+const nativeAlert = window.alert.bind(window);
+function irlabNotice(msg) {
+  msg = String(msg == null ? '' : msg);
+  if (!document.body) { nativeAlert(msg); return; }
+  let box = document.getElementById('irNotice');
+  if (!box) {
+    box = document.createElement('div'); box.id = 'irNotice'; box.setAttribute('role', 'alertdialog'); box.setAttribute('aria-live', 'assertive');
+    box.innerHTML = '<div class="irnList"></div><div class="irnActs"><button type="button" class="irnCopy">Copy</button><button type="button" class="irnClose" aria-label="Close">Close</button></div>';
+    box.querySelector('.irnClose').onclick = () => box.remove();
+    box.querySelector('.irnCopy').onclick = async () => {
+      const t = [...box.querySelectorAll('.irnMsg')].map(m => m.textContent).join('\n\n');
+      try { await navigator.clipboard.writeText(t); box.querySelector('.irnCopy').textContent = 'Copied'; } catch (e) {}
+    };
+    document.body.appendChild(box);
+  }
+  const list = box.querySelector('.irnList');
+  if ([...list.children].some(m => m.textContent === msg)) return;
+  const m = document.createElement('p'); m.className = 'irnMsg'; m.textContent = msg; list.appendChild(m);
+  while (list.children.length > 3) list.firstChild.remove();
+  box.querySelector('.irnCopy').textContent = 'Copy';
+}
+window.alert = irlabNotice;
+
+/* Surfaces anything that fails silently otherwise. This exact bug shape —
+   a decode completes, a status message shows, then nothing, no error
+   anywhere — is what an uncaught exception or a rejected promise nobody
+   awaits looks like from the outside: the browser logs it to a console
+   most people never open, and the app just stops. Rather than rely on
+   every async path remembering its own try/catch, one net at the top
+   catches whatever slips through and actually shows it, so "nothing
+   happened" becomes a message that says what happened instead. */
 window.addEventListener('error', (e) => {
   console.error('Uncaught error:', e.error || e.message);
-  alert('Something went wrong and stopped partway through:\n\n' +
+  irlabNotice('Something went wrong and stopped partway through:\n\n' +
         (e.error && e.error.message ? e.error.message : e.message) +
         '\n\nA screenshot of this, along with what you were doing, is the fastest way to get it fixed.');
 });
 window.addEventListener('unhandledrejection', (e) => {
   const reason = e.reason;
   console.error('Unhandled promise rejection:', reason);
-  alert('Something went wrong and stopped partway through:\n\n' +
+  irlabNotice('Something went wrong and stopped partway through:\n\n' +
         (reason && reason.message ? reason.message : String(reason)) +
         '\n\nA screenshot of this, along with what you were doing, is the fastest way to get it fixed.');
 });

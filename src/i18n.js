@@ -552,6 +552,9 @@ function setComparePos(pct) {
   pct = Math.max(0, Math.min(100, +pct));
   $('previewOrig').style.clipPath = 'inset(0 ' + (100 - pct) + '% 0 0)';
   $('cmpHandle').style.left = pct + '%';
+  /* build 320: at either end the divider sits on the picture's edge, where it read as a red rendering fault; it only
+     shows while the split is somewhere inside the picture */
+  $('cmpHandle').classList.toggle('cmpEdge', pct <= 0.5 || pct >= 99.5);
   // This bar doesn't touch render(), which is the only place the custom
   // slider fill gets refreshed for every other control — comparing before
   // and after is a preview-only overlay, not a pipeline change, so it's

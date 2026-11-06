@@ -88,7 +88,6 @@
   html.dockOn body.has-image #reorderZone > #scopeDetails{margin:0 0 12px}
   html.dockOn body.has-image #zoomBadge .previewPill{padding:4px 7px;font-size:10px}
 }
-#histChip{display:none}
 #hslRows .hslRow{display:none}
 .updBtn{margin-left:8px;padding:2px 9px;border-radius:999px;border:1px solid var(--line2,rgba(255,255,255,.2));background:transparent;color:var(--muted);font:600 11px/1.4 ui-sans-serif,system-ui,sans-serif;cursor:pointer;vertical-align:baseline}
 .updBtn:hover{color:var(--paper,#eee);border-color:var(--paper-dim,#aaa)}
@@ -104,7 +103,6 @@
 #rawNrBox,#rawHlBox,#rawDeconvBox{display:none}
 /* Deep sky, Crimson foliage and the sky-selection view are no longer shown; the EIR base preset still sets them (scaled by Preset strength) */
 #skyDeepRow,#crimsonRow,#skyShowRow{display:none !important}
-#epdBox .sl input[type=range]{width:100%}
 body.rawOpen #rawNrBox,body.rawOpen #rawHlBox,body.rawOpen #rawDeconvBox{display:block}
 #rawNrBox.busy input[type=range]{opacity:.5;pointer-events:none}
 #saveReady{position:fixed;left:50%;bottom:calc(16px + env(safe-area-inset-bottom,0px) + var(--dockH,0px));transform:translate(-50%,140%);z-index:9998;display:flex;align-items:center;gap:10px;
@@ -366,7 +364,6 @@ html.studioOn body.has-image,html.dockOn body.has-image{
              radial-gradient(46vmax 36vmax at 58% 120%,var(--gl-glow-c),transparent 62%),var(--st-bg);
   background-attachment:fixed}
 html.dockOn body.has-image #previewSticky{background:transparent}
-.glassSurf{background:var(--gl-fill);-webkit-backdrop-filter:var(--gl-blur);backdrop-filter:var(--gl-blur)}
 @media (min-width:1000px) and (orientation:landscape), (min-width:1100px){
   html.studioOn body.has-image .toolbar{background:var(--gl-fill);-webkit-backdrop-filter:var(--gl-blur);backdrop-filter:var(--gl-blur);border-bottom-color:var(--gl-edge);box-shadow:inset 0 -1px 0 var(--gl-hi)}
   html.studioOn body.has-image #dock{background:var(--gl-fill);-webkit-backdrop-filter:var(--gl-blur);backdrop-filter:var(--gl-blur);border-right-color:var(--gl-edge);box-shadow:inset -1px 0 0 var(--gl-hi)}
@@ -412,8 +409,8 @@ html.studioOn body.has-image #toast,html.dockOn body.has-image #toast{background
    (tokens above), checkboxes are a size a thumb can hit, and the undo pill over the photo hides until there is
    something to undo. */
 .note{font-size:12px;line-height:1.45}
-.grpHdr,.matrix .hdr,#decoderBadge,#implicitStamp,#clipKey,.frtable .fmeta,#kbHint{font-size:11px}
-.subhdr,.cmpBarLabels,.pb .psub,.frtable th,#channelStrip figcaption span{font-size:11px}
+.grpHdr,.matrix .hdr,#decoderBadge,#implicitStamp,#clipKey,#kbHint{font-size:11px}
+.subhdr,.cmpBarLabels,.pb .psub,#channelStrip figcaption span{font-size:11px}
 .instTag{font-size:10px}
 body.has-image #cw:not(.zoomed) #zoomBadge.urIdle{display:none}
 html.dockOn body.has-image #zoomBadge .previewPill[disabled]{display:none}
@@ -471,7 +468,6 @@ body:has(#consentBar.on):not(.has-image) #emptyStateGroup.lab{padding-bottom:96p
   border:1px solid #2a2d33;border-radius:6px;color:#eceae4;font:400 13px/1 var(--font-mono);cursor:pointer}
 #emptyStateGroup.lab #btnRestore:hover{border-color:#c2431b}
 #emptyStateGroup.lab #btnRestore .rsWhen{color:#8a867d}
-#emptyStateGroup.lab .labFmt{margin:0;font-size:10.5px;line-height:1.6;color:#8a867d}
 #emptyStateGroup.lab .labRow{display:flex;justify-content:space-between;align-items:center;gap:16px;min-height:48px;margin:0;padding:4px 0;
   border-bottom:1px dashed #22252a;font:400 13px/1.4 var(--font-mono);color:#eceae4;cursor:pointer}
 #emptyStateGroup.lab .labRow input[type=checkbox]{width:20px;height:20px;margin:0;flex:none;accent-color:#6fab96}
@@ -555,7 +551,6 @@ details[data-step="colour"] .dGrp .cBands i{width:9px;height:9px;border-radius:5
 details[data-step="colour"] .dGrp .dBody > .sl:first-child,details[data-step="colour"] .dGrp .dBody > .note:first-child{margin-top:0}
 details[data-step="wb"] > summary .wbSum{font-family:var(--font-mono);font-size:11.5px;color:var(--muted);text-transform:none;letter-spacing:0;font-weight:400;margin-left:8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
 details[data-step="wb"] .wbStatus{font-family:var(--font-mono);font-size:11.5px;color:var(--phosphor-dim);opacity:.9}
-details[data-step="wb"] .wbPip{flex:none}
 details[data-step="wb"] .wbGains{margin-top:12px;border:1px solid var(--line);border-radius:12px;background:rgba(255,255,255,.02)}
 details[data-step="wb"] .wbGains > summary{list-style:none;display:flex;align-items:center;gap:10px;min-height:44px;padding:0 14px;cursor:pointer;font-size:13px;color:var(--paper)}
 details[data-step="wb"] .wbGains > summary::-webkit-details-marker{display:none}
@@ -710,8 +705,6 @@ body.imgLoading #emptyStateGroup.lab .ltCursor{animation:none;opacity:.35}
 @media (prefers-reduced-motion:reduce){#emptyStateGroup.lab .ltCursor{animation:none}}
 
 /* ---- Cards everywhere (build 116) ---- */
-.dCard{margin-top:10px;border:1px solid var(--line2);border-radius:10px;background:rgba(255,255,255,.015);padding:12px 14px}
-.dCard > .note:first-child{margin-top:0}
 .dGrp .dBody > :first-child{margin-top:0}
 .dGrp .dBody > details:not(.dGrp) > summary{font-size:12px}
 #exportSection > .dGrp:first-of-type{margin-top:12px}
@@ -750,23 +743,9 @@ html.dockOn body.has-image .toolbar > [data-lbl], html.dockOn body.has-image .to
 .fpChip{display:inline-flex;align-items:center;gap:6px;padding:4px 4px 4px 10px;border:1px solid var(--line2);border-radius:999px;font-size:12px}
 .fpChip small{opacity:.65;font-size:10px;letter-spacing:.03em}
 .fpChip button{border:0;background:none;color:inherit;font-size:16px;line-height:1;padding:2px 6px;cursor:pointer;min-height:28px}
-.fpSensorRow{display:flex;align-items:center;gap:8px;margin:6px 0 4px}
-.fpSensorRow select{flex:1;min-width:0}
-.fpTbl{width:100%;border-collapse:collapse;font-size:12px;font-variant-numeric:tabular-nums;margin-top:6px}
-.fpTbl th{font-weight:500;opacity:.65;text-align:right;padding:3px 4px}
-.fpTbl td{text-align:right;padding:3px 4px;border-top:1px solid var(--line2)}
-.fpTbl td:first-child,.fpTbl th:first-child{text-align:left}
-.fpSwaps{display:flex;flex-direction:column;gap:8px;margin-top:6px}
-.fpSwap{display:flex;gap:10px;align-items:flex-start;font-size:12px;line-height:1.45}
-.fpSwap .swapBtn{flex:0 0 auto;min-width:84px}
-.fpTag{display:inline-block;margin-left:4px;padding:0 6px;border:1px solid var(--line2);border-radius:999px;font-size:10px;opacity:.75}
 /* Build 180: filter picker */
-.fpHdr{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:2px 0 4px}
-.fpHdrT{font:500 11px var(--font-mono);letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
-.fpStack .fpEmpty{margin:0}
 .fpChip{min-height:34px;box-sizing:border-box;background:var(--surface2)}
 .fpChip button{min-width:32px;min-height:32px}
-.fpAdd{margin-top:8px}
 .fpSearch{min-height:44px;font-size:16px}
 .fpResults{display:flex;flex-direction:column;gap:4px;margin-top:6px}
 .fpResults:empty{display:none}
@@ -778,36 +757,8 @@ html.dockOn body.has-image .toolbar > [data-lbl], html.dockOn body.has-image .to
 .fpHitA{grid-area:a;font:500 12px var(--font-mono);color:var(--safelight);white-space:nowrap}
 .fpHit.on{border-color:var(--safelight);background:var(--surface2)}
 .fpHit.on .fpHitA{color:var(--phosphor)}
-.fpHelp{margin:8px 0 4px}
-.fpExamples{display:flex;flex-wrap:wrap;gap:6px;align-items:center;margin:4px 0 8px}
-.fpSees{list-style:none;margin:6px 0 8px;padding:0;display:flex;flex-direction:column;gap:5px;font-size:13.5px;line-height:1.4}
-.fpSees li span{color:var(--muted);font-size:12px}
-.fpSug{margin:4px 0 8px}
-.fpMore{margin-top:10px}
-.fpMore>summary{cursor:pointer;font:500 12px var(--font-mono);color:var(--phosphor-dim)}
-.fpExamples button{min-height:34px;padding:0 12px;border:1px solid var(--line2);border-radius:999px;background:none;color:var(--paper);font:500 12px system-ui,-apple-system,sans-serif;cursor:pointer}
-.fpExamples button:hover{border-color:var(--safelight);color:var(--safelight)}
-.fpSensorRow select{max-width:100%;text-overflow:ellipsis}
 .fpAlias{margin:2px 0;font-size:11.5px}
 /* Build 181: prediction vs photo, and next steps */
-.fpIntro{margin:0 0 10px}
-.fpPhoto,.fpNext{margin-top:12px;padding-top:10px;border-top:1px solid var(--line2)}
-.fpPhotoT{font:500 11px var(--font-mono);letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin-bottom:6px}
-.fpBars{display:flex;flex-direction:column;gap:6px}
-.fpBar{display:grid;grid-template-columns:16px 1fr;align-items:center;gap:8px;font:600 12px var(--font-mono)}
-.fpBar i{display:flex;flex-direction:column;gap:2px}
-.fpBar b{display:block;height:6px;border-radius:3px;min-width:2px}
-b.fpPred,span.fpPred{background:var(--line2)}
-b.fpMeas,span.fpMeas{background:var(--safelight)}
-.fpKey{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-top:6px;font-size:11px;color:var(--muted)}
-.fpKey span{display:inline-block;width:14px;height:6px;border-radius:3px;margin-left:6px}
-.fpKey span:first-child{margin-left:0}
-.fpAct{display:flex;align-items:center;gap:10px;width:100%;min-height:44px;margin-top:6px;padding:8px 12px;border:1px solid var(--line2);border-radius:8px;background:none;color:inherit;font:inherit;font-size:13px;text-align:left;cursor:pointer}
-.fpAct:hover{border-color:var(--safelight)}
-.fpAct b,.fpActNote b{flex:0 0 auto;display:inline-grid;place-items:center;width:22px;height:22px;border-radius:50%;background:var(--safelight);color:var(--bg);font:600 12px var(--font-mono)}
-.fpAct.done{border-color:var(--phosphor)}
-.fpAct.done b{background:var(--phosphor)}
-.fpActNote{display:flex;align-items:center;gap:10px;margin:6px 0 0}
 /* Build 183: the stack picker now sits in Export, under "Record the filter stack" */
 .fpPick{margin:6px 0 4px 22px;display:flex;flex-direction:column;gap:6px}
 .fpPick .fpStack{margin:0}
