@@ -240,3 +240,9 @@ vendor/mp4-muxer.js is mp4-muxer 5.2.2 by Vanilagy, MIT licence (https://github.
 ## mp4box.js
 
 vendor/mp4box.all.min.js is mp4box.js 0.5.4 (GPAC / Telecom ParisTech, Cyril Concolato), BSD-3-Clause licence (https://github.com/gpac/mp4box.js). It takes MP4 and MOV files apart so every video frame can be decoded in order (build 300).
+
+## Inter (typeface)
+
+`fonts/inter-*.woff2` — Inter 5.3 by The Inter Project Authors (https://github.com/rsms/inter), taken from the
+@fontsource/inter package. Licensed under the SIL Open Font License, Version 1.1; the full licence is in
+`fonts/Inter-OFL.txt`. Served from irlab.uk since build 318, in place of Google Fonts.

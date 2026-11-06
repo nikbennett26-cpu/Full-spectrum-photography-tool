@@ -25,7 +25,7 @@
 <meta name="twitter:image" content="https://irlab.uk/og-card.png?v=112">
 <link rel="canonical" href="https://irlab.uk/">
 <meta name="theme-color" content="#141518">
-<meta name="irlab-build" content="317">
+<meta name="irlab-build" content="318">
 <link rel="manifest" href="/manifest.json">
 <link rel="icon" href="/favicon.ico?v=3" sizes="any">
 <link rel="icon" href="/favicon.svg?v=3" type="image/svg+xml">
@@ -53,16 +53,15 @@
 }
 </script>
 
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500&family=Barlow+Condensed:wght@500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="preload" href="fonts/inter-latin-400-normal.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="css/fonts.css?b=318">
 
-<script src="i18n/tr.js?b=317"></script>
-<link rel="stylesheet" href="css/main.css?b=317">
-<link rel="stylesheet" id="uxRefresh" href="css/refresh.css?b=317">
-<link rel="stylesheet" href="css/trichrome.css?b=317">
-<link rel="stylesheet" id="uxDock" href="css/dock.css?b=317">
-<link rel="stylesheet" href="css/minimal.css?b=317">
+<script src="i18n/tr.js?b=318"></script>
+<link rel="stylesheet" href="css/main.css?b=318">
+<link rel="stylesheet" id="uxRefresh" href="css/refresh.css?b=318">
+<link rel="stylesheet" href="css/trichrome.css?b=318">
+<link rel="stylesheet" id="uxDock" href="css/dock.css?b=318">
+<link rel="stylesheet" href="css/minimal.css?b=318">
 </head>
 <body>
 
@@ -210,7 +209,8 @@
   <footer class="labFoot">
     <div id="whatsNew">
       <details>
-        <summary><span data-i18n="whatsNewLabel">What’s new</span><span class="wnLatest">Faster histogram, tidier Export</span></summary>
+        <summary><span data-i18n="whatsNewLabel">What’s new</span><span class="wnLatest">Fonts served by irlab.uk</span></summary>
+        <p style="margin:0 0 3px"><b style="color:var(--phosphor-dim)">Fonts served by irlab.uk.</b> The app's typeface, Inter, now comes from irlab.uk itself instead of Google Fonts, so opening the app no longer contacts Google for it, and the first screen has one less connection to wait on. Two other typefaces that were downloaded but no longer used anywhere are gone. The app looks the same.</p>
         <p style="margin:0 0 3px"><b style="color:var(--phosphor-dim)">Lighter after every edit.</b> The histograms used to copy the whole picture off the graphics chip after each change (about 10 MB for a 1400 by 1800 photo) and shrink it on the main processor; the graphics chip now shrinks it and only a small copy comes back. The histogram itself is the same. While the start page is open, the editor's large shader is also prepared in the background where the browser allows it, so the first photo should open with less of a pause. Export's heading now matches the other tabs, and the format buttons are in the app's red instead of the browser's blue.</p>
         <p style="margin:0 0 3px"><b style="color:var(--phosphor-dim)">Desktop layout fixed.</b> Since build 304 a stray closing tag left over from the first video controls broke the desktop editor: the picture shrank to a strip, the side panels cut off, and the credits squeezed into the left rail. It is back as it was, and the Video tab sits where it should on both desktop and phone.</p>
         <p style="margin:0 0 3px"><b style="color:var(--phosphor-dim)">Tap a number to type it.</b> Every slider's value (the dotted-underlined number) can now be tapped to type an exact figure, such as Hue shift 9 or Saturation 128, instead of chasing it with a finger. It keeps to the slider's range and steps, and undo works as usual.</p>
@@ -640,7 +640,7 @@
     <!-- Build 279: the people behind it, on the home page -->
     <div id="creditsHome">Made by <a href="https://www.instagram.com/irlab.uk" target="_blank" rel="noopener" style="color:var(--safelight);font-weight:600;text-decoration:none">Nik Bennett</a>
       &middot; Colour science &amp; RAW decode by <a href="https://philwarrenphotography.com" target="_blank" rel="noopener" style="color:var(--safelight);font-weight:600;text-decoration:none">Phil Warren</a></div>
-    <div id="buildStampHome">Version 2026-11-06 · build 317</div>
+    <div id="buildStampHome">Version 2026-11-06 · build 318</div>
   </footer>
 </div>
 
@@ -1853,7 +1853,7 @@
       <br><a href="privacy.html" target="_blank" rel="noopener" style="color:var(--muted);text-decoration:underline">Privacy</a>
       <br><a href="LICENSE.md" target="_blank" rel="noopener" style="color:var(--muted);text-decoration:underline">Source: AGPL-3.0</a>
       <br><a href="THIRD_PARTY_NOTICES.md" target="_blank" rel="noopener" style="color:var(--muted);text-decoration:underline">Third-party notices (LibRaw, RawTherapee)</a>
-<br><span id="buildStamp" style="color:var(--muted)" title="Which version of the app this is. Tap the arrow to check for a newer one and update.">Version 2026-11-06 · build 317</span>
+<br><span id="buildStamp" style="color:var(--muted)" title="Which version of the app this is. Tap the arrow to check for a newer one and update.">Version 2026-11-06 · build 318</span>
       <br><button id="btnInstall" type="button">Install as an app</button>
       <span id="kbHint">Ctrl+Z undo &middot; Ctrl+Shift+Z redo &middot; [ ] cycle presets &middot; F full quality view &middot; Space hold to compare</span>
     </footer>
@@ -1949,6 +1949,6 @@
 <!-- The editor's code: editor.js, BUILT from src/*.js by tools/build.py (see the README's Code layout). One script, so
      it all runs in one go, as the single inline block it came from did. ?b=<build> keeps the service worker's cached
      copy of an older editor.js from ever running under a newer page; tools/bump_build.py sets it. -->
-<script src="editor.js?b=317"></script>
+<script src="editor.js?b=318"></script>
 </body>
 </html>
