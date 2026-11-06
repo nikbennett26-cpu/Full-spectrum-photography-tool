@@ -5,6 +5,7 @@
    the MIT-licensed mp4-muxer (vendor/mp4-muxer.js, loaded only when a video is exported). */
 let videoSrc = null;          /* { file, w, h, dur } while the open picture is a frame of a video, else null */
 let videoStop = false, videoBusy = false;
+let videoLogKind = '';
 const VID_MAX = 1920;         /* the longest side is brought down to this: the processing is per frame, in the browser */
 
 function videoIsFile(f) { return !!f && (/^video\//.test(f.type || '') || /\.(mp4|m4v|mov|webm)$/i.test(f.name || '')); }
@@ -37,10 +38,12 @@ function videoUi() {
   const b = document.getElementById('bVid'), n = document.getElementById('vidNote');
   if (b) b.style.display = videoSrc ? '' : 'none';
   if (n) n.style.display = videoSrc ? '' : 'none';
+  const t = document.getElementById('vidTools'); if (t) t.style.display = videoSrc ? '' : 'none';
+  const sc = document.getElementById('vidScrub'); if (sc && videoSrc) { sc.value = Math.round(1000 * Math.min(0.5, videoSrc.dur / 2) / (videoSrc.dur || 1)); videoScrubLabel(); }
 }
 /* Called first thing by loadFile: a video becomes a still frame (and is remembered); anything else clears the video. */
 async function videoIntercept(file) {
-  if (!videoIsFile(file)) { if (videoSrc) { videoSrc = null; videoUi(); } return file; }
+  if (!videoIsFile(file)) { if (videoSrc) { try { URL.revokeObjectURL(videoSrc.el.src); } catch (e) {} videoSrc = null; videoLogSet(''); videoUi(); } return file; }
   let v;
   try { v = await videoLoad(file); } catch (e) { alert(e.message + '\n\nTry an H.264 MP4 (the usual phone and camera format).'); return null; }
   const dur = isFinite(v.duration) ? v.duration : 0;
@@ -49,9 +52,10 @@ async function videoIntercept(file) {
   const c = document.createElement('canvas'); c.width = w; c.height = h;
   c.getContext('2d').drawImage(v, 0, 0, w, h);
   const blob = await new Promise(r => c.toBlob(r, 'image/jpeg', 0.95));
-  URL.revokeObjectURL(v.src);
-  if (!blob) { alert('Could not read a frame from that video.'); return null; }
-  videoSrc = { file, w, h, dur };
+  if (!blob) { URL.revokeObjectURL(v.src); alert('Could not read a frame from that video.'); return null; }
+  if (videoSrc && videoSrc.el) { try { URL.revokeObjectURL(videoSrc.el.src); } catch (e) {} }
+  videoSrc = { file, w, h, dur, el: v };
+  videoLogSet('');
   videoUi();
   if (typeof toast === 'function') toast('Video opened on one frame. Edit as usual, then Export video (Export tab).');
   return new File([blob], (file.name || 'video').replace(/\.\w+$/, '') + '-frame.jpg', { type: 'image/jpeg' });
@@ -349,3 +353,64 @@ async function videoExport() {
 }
 document.addEventListener('DOMContentLoaded', () => { const b = document.getElementById('bVid'); if (b) b.onclick = videoExport; videoUi(); });
 if (document.readyState !== 'loading') { const b = document.getElementById('bVid'); if (b) b.onclick = videoExport; videoUi(); }
+
+/* Build 301: camera log input. A log clip (F-Log, F-Log2, S-Log3, LogC3) is a flat picture whose values are not light.
+   A 3D lookup table made from the published curve turns it into a normal picture at the very start of the pipeline (the
+   early-LUT stage), so the swap and white balance work on real light. Scene light is mapped straight to sRGB with
+   middle grey kept at 18%, clipped at white; bring highlights down with Exposure if the log clip carries more. */
+const VID_LOG = {
+  flog:  y => y >= 0.100537775223865 ? (Math.pow(10, (y - 0.790453) / 0.344676) - 0.009468) / 0.555556 : (y - 0.092864) / 8.735631,
+  flog2: y => y >= 0.100686685370811 ? (Math.pow(10, (y - 0.384316) / 0.245281) - 0.064829) / 5.555556 : (y - 0.092864) / 8.799461,
+  slog3: y => { const c = y * 1023; return y >= 171.2102946929 / 1023 ? (Math.pow(10, (c - 420) / 261.5)) * 0.19 - 0.01 : (c - 95) * 0.01125 / (171.2102946929 - 95); },
+  logc3: t => t > 5.367655 * 0.010591 + 0.092809 ? (Math.pow(10, (t - 0.385537) / 0.24719) - 0.052272) / 5.555556 : (t - 0.092809) / 5.367655
+};
+function videoLogLUT(kind) {
+  const f = VID_LOG[kind]; if (!f) return null;
+  const N = 65, curve = new Float32Array(N);
+  for (let i = 0; i < N; i++) {
+    let L = f(i / (N - 1)); L = Math.max(0, Math.min(1, L));
+    curve[i] = L <= 0.0031308 ? 12.92 * L : 1.055 * Math.pow(L, 1 / 2.4) - 0.055;
+  }
+  const data = new Float32Array(N * N * N * 3);
+  for (let z = 0; z < N; z++) for (let y = 0; y < N; y++) for (let x = 0; x < N; x++) {
+    const o = ((z * N + y) * N + x) * 3; data[o] = curve[x]; data[o + 1] = curve[y]; data[o + 2] = curve[z];
+  }
+  return { size: N, domainMin: [0, 0, 0], domainMax: [1, 1, 1], data };
+}
+function videoLogSet(kind) {
+  videoLogKind = kind || '';
+  const sel = document.getElementById('vidLog'); if (sel && sel.value !== videoLogKind) sel.value = videoLogKind;
+  if (typeof engine === 'undefined' || !engine) { preLUTUser = null; return; }
+  preLUTUser = videoLogLUT(videoLogKind);
+  try { engine.setLUTPre(preLUTUser || decodeFilmLUT()); render(); } catch (e) {}
+}
+function videoScrubLabel() {
+  const sc = document.getElementById('vidScrub'), l = document.getElementById('v_vidScrub');
+  if (sc && l && videoSrc) l.textContent = (videoSrc.dur * sc.value / 1000).toFixed(1) + ' s';
+}
+let videoScrubBusy = false, videoScrubAgain = false;
+async function videoScrubTo() {
+  if (!videoSrc || !videoSrc.el || videoBusy) return;
+  if (videoScrubBusy) { videoScrubAgain = true; return; }
+  videoScrubBusy = true;
+  try {
+    do {
+      videoScrubAgain = false;
+      const sc = document.getElementById('vidScrub'), v = videoSrc.el;
+      const t = Math.min(videoSrc.dur * sc.value / 1000, Math.max(0, videoSrc.dur - 0.001));
+      const shown = videoShownTime(v, t); await videoSeek(v, t); await shown;
+      const cv = (typeof rawCanvas !== 'undefined') ? rawCanvas : null; if (!cv) break;
+      cv.getContext('2d').drawImage(v, 0, 0, cv.width, cv.height);
+      engine.setImage(typeof dustPrepare === 'function' ? dustPrepare(cv) : cv);
+      render();
+    } while (videoScrubAgain);
+  } catch (e) {} finally { videoScrubBusy = false; }
+}
+(function videoWire() {
+  const go = () => {
+    const sel = document.getElementById('vidLog'), sc = document.getElementById('vidScrub');
+    if (sel) sel.onchange = () => videoLogSet(sel.value);
+    if (sc) { sc.oninput = () => { videoScrubLabel(); videoScrubTo(); }; }
+  };
+  if (document.readyState !== 'loading') go(); else document.addEventListener('DOMContentLoaded', go);
+})();
