@@ -236,3 +236,7 @@ Other manufacturer and third-party sources are named on each filter's card and i
 ## mp4-muxer
 
 vendor/mp4-muxer.js is mp4-muxer 5.2.2 by Vanilagy, MIT licence (https://github.com/Vanilagy/mp4-muxer). It writes the MP4 container when a video is exported (build 298).
+
+## mp4box.js
+
+vendor/mp4box.all.min.js is mp4box.js 0.5.4 (GPAC / Telecom ParisTech, Cyril Concolato), BSD-3-Clause licence (https://github.com/gpac/mp4box.js). It takes MP4 and MOV files apart so every video frame can be decoded in order (build 300).

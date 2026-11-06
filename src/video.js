@@ -137,6 +137,145 @@ async function videoAudioWrite(a, muxer) {
   await enc.flush(); enc.close();
   if (err) throw err;
 }
+/* Build 300: the frame-by-frame path. Seeking a <video> to each frame hands back stale frames now and then (about one in
+   five on a phone clip: repeats followed by jumps, which is jerk), so MP4 and MOV files are read here instead: the file
+   is taken apart with mp4box (BSD-3-Clause, vendor/mp4box.all.min.js), every video sample goes through the browser's
+   own VideoDecoder in order, each frame keeps its real timestamp, and AAC audio is copied across untouched. */
+function videoLoadScript(src, globalName) {
+  if (window[globalName]) return Promise.resolve();
+  return new Promise((res, rej) => {
+    const s = document.createElement('script'); s.src = src;
+    s.onload = () => (window[globalName] ? res() : rej(new Error(src + ' missing')));
+    s.onerror = () => rej(new Error('Could not load ' + src + ' (are you offline?)'));
+    document.head.appendChild(s);
+  });
+}
+async function videoDemux(file) {
+  await videoLoadScript('vendor/mp4box.all.min.js', 'MP4Box');
+  const ab = await file.arrayBuffer();
+  return new Promise((res, rej) => {
+    const mf = MP4Box.createFile(); let info = null; const out = { v: [], a: [] };
+    mf.onError = e => rej(new Error('Could not read the file (' + e + ')'));
+    mf.onReady = i => {
+      info = i;
+      const vt = i.videoTracks[0], at = i.audioTracks[0];
+      if (!vt) { rej(new Error('No video track found')); return; }
+      mf.setExtractionOptions(vt.id, 'v', { nbSamples: 1e9 });
+      if (at) mf.setExtractionOptions(at.id, 'a', { nbSamples: 1e9 });
+      mf.start();
+    };
+    mf.onSamples = (id, user, samples) => { for (const x of samples) out[user].push(x); };
+    ab.fileStart = 0; mf.appendBuffer(ab); mf.flush();
+    if (!info || !out.v.length) rej(new Error('No video samples found')); else res({ mf, info, out });
+  });
+}
+function videoCodecDesc(mf, trackId) {
+  const trak = mf.getTrackById(trackId);
+  for (const e of trak.mdia.minf.stbl.stsd.entries) {
+    const b = e.avcC || e.hvcC || e.av1C;
+    if (b) { const ds = new DataStream(undefined, 0, DataStream.BIG_ENDIAN); b.write(ds); return new Uint8Array(ds.buffer, 8); }
+  }
+  return undefined;
+}
+function videoAacDesc(mf, trackId) {
+  const trak = mf.getTrackById(trackId);
+  for (const e of trak.mdia.minf.stbl.stsd.entries) {
+    if (e.esds) { try { return new Uint8Array(e.esds.esd.descs[0].descs[0].data); } catch (x) {} }
+  }
+  return undefined;
+}
+const vidSleep = ms => new Promise(r => setTimeout(r, ms));
+function vidStamp() { const d = new Date(), p2 = n => String(n).padStart(2, '0'); return d.getFullYear() + p2(d.getMonth() + 1) + p2(d.getDate()) + '-' + p2(d.getHours()) + p2(d.getMinutes()); }
+
+/* Returns true when it handled the whole export, false when the caller should use the seeking path instead. */
+async function videoExportDecoder(say) {
+  if (!window.VideoDecoder || !window.EncodedVideoChunk || !/\.(mp4|m4v|mov)$/i.test(videoSrc.file.name || '') && !/mp4|quicktime/.test(videoSrc.file.type || '')) return false;
+  let dm;
+  try { dm = await videoDemux(videoSrc.file); } catch (e) { return false; }
+  const { mf, info, out } = dm, vt = info.videoTracks[0], at = info.audioTracks[0];
+  const dcfg = { codec: vt.codec, codedWidth: vt.video.width, codedHeight: vt.video.height, description: videoCodecDesc(mf, vt.id) };
+  try { const sup = await VideoDecoder.isConfigSupported(dcfg); if (!sup || !sup.supported) return false; } catch (e) { return false; }
+  /* display size: the picture is turned upright here, so portrait phone clips come out portrait with no rotation flag */
+  const m = vt.matrix || [65536, 0, 0, 0, 65536, 0, 0, 0, 1073741824];
+  const rot = ((Math.round(Math.atan2(m[1], m[0]) * 180 / Math.PI) % 360) + 360) % 360;
+  const swap = rot === 90 || rot === 270;
+  let sw = swap ? vt.video.height : vt.video.width, sh = swap ? vt.video.width : vt.video.height;
+  const mx = Math.max(sw, sh), k = mx > VID_MAX ? VID_MAX / mx : 1;
+  const w = Math.max(2, Math.round(sw * k) - (Math.round(sw * k) % 2)), h = Math.max(2, Math.round(sh * k) - (Math.round(sh * k) % 2));
+  const vs = out.v, ts = vt.timescale;
+  const spanUs = (vs[vs.length - 1].cts + vs[vs.length - 1].duration - vs[0].cts) * 1e6 / ts;
+  const fps = Math.max(1, vs.length / (spanUs / 1e6));
+  const bitrate = Math.max(2e6, Math.min(40e6, Math.round(w * h * fps * 0.12)));
+  const pick = await videoPickCodec(w, h, Math.round(fps), bitrate);
+  if (!pick) throw new Error('No video encoder this browser supports at ' + w + '×' + h + '.');
+  /* audio: AAC is copied as it is; anything else is decoded and encoded again if the browser can, else left out */
+  const aacOk = at && /^mp4a\.40/.test(at.codec) && videoAacDesc(mf, at.id);
+  const audio = aacOk ? null : await videoAudioPrep(videoSrc.file);
+  const muxer = new Mp4Muxer.Muxer({
+    target: new Mp4Muxer.ArrayBufferTarget(),
+    video: { codec: pick.mux, width: w, height: h, frameRate: Math.round(fps) },
+    audio: aacOk ? { codec: 'aac', numberOfChannels: at.audio.channel_count, sampleRate: at.audio.sample_rate }
+         : (audio ? { codec: audio.mux, numberOfChannels: audio.ch, sampleRate: audio.sr } : undefined),
+    fastStart: 'in-memory', firstTimestampBehavior: 'offset'
+  });
+  let encErr = null, decErr = null;
+  const enc = new VideoEncoder({ output: (c, mt) => muxer.addVideoChunk(c, mt), error: e => { encErr = e; } });
+  enc.configure(pick.cfg);
+  const fc = document.createElement('canvas'); fc.width = w; fc.height = h; const fx = fc.getContext('2d');
+  const oc = document.createElement('canvas'); oc.width = w; oc.height = h; const ox = oc.getContext('2d');
+  const keyEvery = Math.max(1, Math.round(fps * 2));
+  let pending = 0, chain = Promise.resolve(), nOut = 0, firstTs = null;
+  const draw = f => {
+    fx.save();
+    if (rot === 90) { fx.translate(w, 0); fx.rotate(Math.PI / 2); fx.drawImage(f, 0, 0, h, w); }
+    else if (rot === 270) { fx.translate(0, h); fx.rotate(-Math.PI / 2); fx.drawImage(f, 0, 0, h, w); }
+    else if (rot === 180) { fx.translate(w, h); fx.rotate(Math.PI); fx.drawImage(f, 0, 0, w, h); }
+    else fx.drawImage(f, 0, 0, w, h);
+    fx.restore();
+  };
+  const handle = async f => {
+    try {
+      if (videoStop || encErr) return;
+      if (firstTs === null) firstTs = f.timestamp;
+      draw(f);
+      if (!(nOut > 0 && engine.updateFrame && engine.updateFrame(fc))) engine.setImage(fc);
+      engine.render(currentParams());
+      ox.drawImage(engine.canvas, 0, 0, w, h);
+      const vf = new VideoFrame(oc, { timestamp: f.timestamp - firstTs, duration: f.duration || Math.round(1e6 / fps) });
+      enc.encode(vf, { keyFrame: nOut % keyEvery === 0 }); vf.close(); nOut++;
+      while (enc.encodeQueueSize > 6 && !encErr) await vidSleep(6);
+      if (nOut % 3 === 0) { say('Exporting ' + Math.round(100 * nOut / vs.length) + '% · tap to stop'); await vidSleep(0); }
+    } finally { f.close(); pending--; }
+  };
+  const dec = new VideoDecoder({ output: f => { pending++; chain = chain.then(() => handle(f)); }, error: e => { decErr = e; } });
+  dec.configure(dcfg);
+  for (const sm of vs) {
+    while ((dec.decodeQueueSize > 8 || pending > 3) && !decErr && !encErr && !videoStop) await vidSleep(4);
+    if (decErr || encErr || videoStop) break;
+    dec.decode(new EncodedVideoChunk({ type: sm.is_sync ? 'key' : 'delta', timestamp: Math.round(sm.cts * 1e6 / ts), duration: Math.round(sm.duration * 1e6 / ts), data: sm.data }));
+  }
+  if (!decErr && !videoStop) { try { await dec.flush(); } catch (e) { decErr = decErr || e; } }
+  await chain;
+  try { dec.close(); } catch (e) {}
+  if (decErr || encErr) { try { enc.close(); } catch (e) {} throw (decErr || encErr); }
+  if (videoStop) { try { enc.close(); } catch (e) {} if (typeof toast === 'function') toast('Video export stopped'); return true; }
+  await enc.flush(); enc.close();
+  let audioNote = 'no audio';
+  if (aacOk) {
+    say('Adding audio…');
+    const desc = videoAacDesc(mf, at.id), ats = at.timescale;
+    const meta = { decoderConfig: { codec: at.codec, numberOfChannels: at.audio.channel_count, sampleRate: at.audio.sample_rate, description: desc } };
+    out.a.forEach((sm, i) => muxer.addAudioChunkRaw(sm.data, sm.is_sync ? 'key' : 'delta', Math.round(sm.cts * 1e6 / ats), Math.round(sm.duration * 1e6 / ats), i === 0 ? meta : undefined));
+    audioNote = 'audio kept as recorded';
+  } else if (audio) {
+    say('Adding audio…'); try { await videoAudioWrite(audio, muxer); audioNote = 'audio re-encoded'; } catch (e) {}
+  }
+  muxer.finalize();
+  deliverBlob(new Blob([muxer.target.buffer], { type: 'video/mp4' }), 'channel-swap-' + vidStamp() + '.mp4');
+  if (typeof toast === 'function') toast('Video saved · ' + nOut + ' frames, every frame decoded · ' + audioNote);
+  return true;
+}
+
 async function videoExport() {
   const btn = document.getElementById('bVid');
   if (videoBusy) { videoStop = true; return; }
@@ -151,6 +290,8 @@ async function videoExport() {
   try {
     say('Preparing…');
     await videoLoadMuxer();
+    if (await videoExportDecoder(say)) { ok = true; return ok; }
+    /* Fallback (WebM, or a browser that cannot decode this file itself): seek the <video> frame by frame. */
     v = await videoLoad(videoSrc.file);
     const [w, h] = videoSize(v), dur = v.duration;
     const fps = await videoFps(v), total = Math.max(1, Math.floor(dur * fps));
@@ -169,7 +310,7 @@ async function videoExport() {
     enc.configure(pick.cfg);
     const fc = document.createElement('canvas'); fc.width = w; fc.height = h;
     const fx = fc.getContext('2d');
-    const oc = document.createElement('canvas'); oc.width = w; oc.height = h;   /* the GL canvas is copied here: a 2D canvas is the dependable source for a VideoFrame */
+    const oc = document.createElement('canvas'); oc.width = w; oc.height = h;
     const ox = oc.getContext('2d');
     const keyEvery = Math.max(1, Math.round(fps * 2)); let lastMt = -1, nOut = 0;
     for (let i = 0; i < total && !videoStop && !encErr; i++) {
@@ -177,7 +318,7 @@ async function videoExport() {
       const shown = videoShownTime(v, tgt);
       await videoSeek(v, tgt);
       const mt = await shown;
-      if (mt <= lastMt + 1e-4) continue;   /* the same frame again (a clip slower than the grid): skip it, the one before holds its time */
+      if (mt <= lastMt + 1e-4) continue;
       lastMt = mt;
       fx.drawImage(v, 0, 0, w, h);
       if (!(nOut > 0 && engine.updateFrame && engine.updateFrame(fc))) engine.setImage(fc);
@@ -185,8 +326,8 @@ async function videoExport() {
       ox.drawImage(engine.canvas, 0, 0, w, h);
       const vf = new VideoFrame(oc, { timestamp: Math.round(mt * 1e6), duration: Math.round(1e6 / fps) });
       enc.encode(vf, { keyFrame: nOut % keyEvery === 0 }); vf.close(); nOut++;
-      while (enc.encodeQueueSize > 6) await new Promise(r => setTimeout(r, 8));
-      if (i % 3 === 0) { say('Exporting ' + Math.round(100 * i / total) + '% · tap to stop'); await new Promise(r => setTimeout(r, 0)); }
+      while (enc.encodeQueueSize > 6) await vidSleep(8);
+      if (i % 3 === 0) { say('Exporting ' + Math.round(100 * i / total) + '% · tap to stop'); await vidSleep(0); }
     }
     if (encErr) throw encErr;
     if (videoStop) { try { enc.close(); } catch (e) {} if (typeof toast === 'function') toast('Video export stopped'); return; }
@@ -194,11 +335,9 @@ async function videoExport() {
     let withAudio = false;
     if (audio) { say('Adding audio…'); try { await videoAudioWrite(audio, muxer); withAudio = true; } catch (e) {} }
     muxer.finalize();
-    const blob = new Blob([muxer.target.buffer], { type: 'video/mp4' });
     ok = true;
-    const d = new Date(), p2 = n => String(n).padStart(2, '0');
-    deliverBlob(blob, 'channel-swap-' + d.getFullYear() + p2(d.getMonth() + 1) + p2(d.getDate()) + '-' + p2(d.getHours()) + p2(d.getMinutes()) + '.mp4');
-    if (typeof toast === 'function') toast('Video saved' + (withAudio ? '' : ' (no audio: this browser could not encode it)') + ' · ' + total + ' frames at ' + fps + ' fps');
+    deliverBlob(new Blob([muxer.target.buffer], { type: 'video/mp4' }), 'channel-swap-' + vidStamp() + '.mp4');
+    if (typeof toast === 'function') toast('Video saved' + (withAudio ? '' : ' (no audio: this browser could not encode it)') + ' · ' + nOut + ' frames');
   } catch (e) {
     alert('Video export failed: ' + (e && e.message ? e.message : e));
   } finally {
