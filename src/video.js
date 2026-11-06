@@ -428,16 +428,51 @@ const VID_LOG = {
   slog3: y => { const c = y * 1023; return y >= 171.2102946929 / 1023 ? (Math.pow(10, (c - 420) / 261.5)) * 0.19 - 0.01 : (c - 95) * 0.01125 / (171.2102946929 - 95); },
   logc3: t => t > 5.367655 * 0.010591 + 0.092809 ? (Math.pow(10, (t - 0.385537) / 0.24719) - 0.052272) / 5.555556 : (t - 0.092809) / 5.367655
 };
-function videoLogLUT(kind) {
+/* Camera colour gamuts (CIE xy primaries, all D65). A log clip is usually recorded in the camera's own wide gamut, so after
+   the curve is undone the colours are turned into Rec.709 primaries, or a log clip looks washed out even once it is bright
+   enough. F-Gamut uses the Rec.2020 primaries. */
+const VID_GAMUT = {
+  rec2020: [[0.708, 0.292], [0.170, 0.797], [0.131, 0.046]],
+  sgamut3cine: [[0.766, 0.275], [0.225, 0.800], [0.089, -0.087]],
+  sgamut3: [[0.730, 0.280], [0.140, 0.855], [0.100, -0.050]],
+  awg3: [[0.6840, 0.3130], [0.2210, 0.8480], [0.0861, -0.1020]]
+};
+const VID_GAMUT_AUTO = { flog: 'rec2020', flog2: 'rec2020', slog3: 'sgamut3cine', logc3: 'awg3' };
+let videoGamutKind = 'auto';
+function vidRgbToXyz(pr) {
+  const W = [0.3127 / 0.3290, 1, (1 - 0.3127 - 0.3290) / 0.3290];
+  const P = pr.map(([x, y]) => [x / y, 1, (1 - x - y) / y]);   /* columns: X,Y,Z of each primary at Y = 1 */
+  const M = [[P[0][0], P[1][0], P[2][0]], [P[0][1], P[1][1], P[2][1]], [P[0][2], P[1][2], P[2][2]]];
+  const S = vidMul3v(vidInv3(M), W);
+  return M.map(r => [r[0] * S[0], r[1] * S[1], r[2] * S[2]]);
+}
+function vidInv3(m) {
+  const [a, b, c] = m[0], [d, e, f] = m[1], [g, h, i] = m[2];
+  const A = e * i - f * h, B = -(d * i - f * g), C = d * h - e * g, det = a * A + b * B + c * C;
+  return [[A / det, -(b * i - c * h) / det, (b * f - c * e) / det], [B / det, (a * i - c * g) / det, -(a * f - c * d) / det], [C / det, -(a * h - b * g) / det, (a * e - b * d) / det]];
+}
+function vidMul3(a, b) { return a.map(r => [0, 1, 2].map(j => r[0] * b[0][j] + r[1] * b[1][j] + r[2] * b[2][j])); }
+function vidMul3v(m, v) { return m.map(r => r[0] * v[0] + r[1] * v[1] + r[2] * v[2]); }
+/* the matrix from a camera gamut to linear Rec.709, or null for none */
+function videoGamutMatrix(g) {
+  const pr = VID_GAMUT[g]; if (!pr) return null;
+  return vidMul3(vidInv3(vidRgbToXyz([[0.64, 0.33], [0.30, 0.60], [0.15, 0.06]])), vidRgbToXyz(pr));
+}
+function videoGamutFor(kind) {
+  if (!kind) return '';
+  return videoGamutKind === 'auto' ? (VID_GAMUT_AUTO[kind] || '') : (videoGamutKind === 'none' ? '' : videoGamutKind);
+}
+function videoLogLUT(kind, gamut) {
   const f = VID_LOG[kind]; if (!f) return null;
-  const N = 65, curve = new Float32Array(N);
-  for (let i = 0; i < N; i++) {
-    let L = f(i / (N - 1)); L = Math.max(0, Math.min(1, L));
-    curve[i] = L <= 0.0031308 ? 12.92 * L : 1.055 * Math.pow(L, 1 / 2.4) - 0.055;
-  }
+  const N = 65, lin = new Float32Array(N);
+  for (let i = 0; i < N; i++) lin[i] = Math.max(0, f(i / (N - 1)));
+  const M = videoGamutMatrix(gamut);
+  const enc = L => { L = Math.max(0, Math.min(1, L)); return L <= 0.0031308 ? 12.92 * L : 1.055 * Math.pow(L, 1 / 2.4) - 0.055; };
   const data = new Float32Array(N * N * N * 3);
   for (let z = 0; z < N; z++) for (let y = 0; y < N; y++) for (let x = 0; x < N; x++) {
-    const o = ((z * N + y) * N + x) * 3; data[o] = curve[x]; data[o + 1] = curve[y]; data[o + 2] = curve[z];
+    const o = ((z * N + y) * N + x) * 3; let r = lin[x], g = lin[y], b = lin[z];
+    if (M) { const R = M[0][0] * r + M[0][1] * g + M[0][2] * b, G = M[1][0] * r + M[1][1] * g + M[1][2] * b, B = M[2][0] * r + M[2][1] * g + M[2][2] * b; r = R; g = G; b = B; }
+    data[o] = enc(r); data[o + 1] = enc(g); data[o + 2] = enc(b);
   }
   return { size: N, domainMin: [0, 0, 0], domainMax: [1, 1, 1], data };
 }
@@ -445,7 +480,8 @@ function videoLogSet(kind) {
   videoLogKind = kind || '';
   const sel = document.getElementById('vidLog'); if (sel && sel.value !== videoLogKind) sel.value = videoLogKind;
   if (typeof engine === 'undefined' || !engine) { preLUTUser = null; return; }
-  preLUTUser = videoLogLUT(videoLogKind);
+  const gr = document.getElementById('vidGamutRow'); if (gr) gr.style.display = videoLogKind ? '' : 'none';
+  preLUTUser = videoLogLUT(videoLogKind, videoGamutFor(videoLogKind));
   try { engine.setLUTPre(preLUTUser || decodeFilmLUT()); render(); } catch (e) {}
 }
 function videoScrubLabel() {
@@ -532,7 +568,7 @@ async function videoLookSave() {
   const name = raw.trim(); if (!name) return;
   if (name in ex && !(await askConfirm('Replace “' + name + '”?', 'A look with that name already exists.', 'Replace'))) return;
   const ps = loadUserPresets(), lg = document.getElementById('vidLog');
-  ps[name] = Object.assign(captureLookForUserPreset(), { vidLog: lg ? lg.value : '' });
+  ps[name] = Object.assign(captureLookForUserPreset(), { vidLog: lg ? lg.value : '', vidGamut: videoGamutKind });
   saveUserPresetsToStorage(ps);
   if (typeof renderUserPresetButtons === 'function') renderUserPresetButtons();
   videoLooksFill(); toast('Saved “' + name + '”');
@@ -542,17 +578,37 @@ function videoLookApply(name) {
   const look = loadUserPresets()[name]; if (!look) return;
   applyUserPreset(look);
   const lg = document.getElementById('vidLog');
+  videoGamutKind = look.vidGamut || 'auto'; const gs = document.getElementById('vidGamut'); if (gs) gs.value = videoGamutKind;
   if (lg) { lg.value = look.vidLog || ''; videoLogSet(lg.value); }
   toast('Applied “' + name + '”');
+}
+/* What this device's browser can decode and encode, for a bug report: copied to the clipboard. */
+async function videoCheckDevice() {
+  const out = document.getElementById('vidCheckOut'); if (out) { out.style.display = ''; out.textContent = 'Checking…'; }
+  const C = [['H.264', 'avc1.640028'], ['H.265 8-bit', 'hvc1.1.6.L120.B0'], ['H.265 10-bit', 'hvc1.2.4.L120.B0'], ['VP9 8-bit', 'vp09.00.10.08'], ['VP9 10-bit', 'vp09.02.10.10'], ['AV1 8-bit', 'av01.0.04M.08'], ['AV1 10-bit', 'av01.0.04M.10']];
+  const yes = async (K, cfg) => { try { const r = await K.isConfigSupported(cfg); return !!(r && r.supported); } catch (e) { return false; } };
+  const L = ['irlab build ' + (typeof BUILD_NO !== 'undefined' ? BUILD_NO : '?'), navigator.userAgent];
+  if (!window.VideoDecoder || !window.VideoEncoder) L.push('No WebCodecs in this browser');
+  else for (const [n, c] of C) {
+    const d = await yes(VideoDecoder, { codec: c, codedWidth: 1920, codedHeight: 1080 });
+    const e = await yes(VideoEncoder, { codec: c, width: 1920, height: 1080, bitrate: 8e6, framerate: 30 });
+    L.push(n + ': decode ' + (d ? 'yes' : 'no') + ', encode ' + (e ? 'yes' : 'no'));
+  }
+  if (window.AudioEncoder) for (const [n, c] of [['AAC', 'mp4a.40.2'], ['Opus', 'opus']]) L.push(n + ' audio encode: ' + ((await yes(AudioEncoder, { codec: c, sampleRate: 48000, numberOfChannels: 2, bitrate: 128000 })) ? 'yes' : 'no'));
+  if (videoSrc) L.push('Open clip: ' + (document.getElementById('vidInfo') || {}).textContent);
+  const t = L.join('\n'); if (out) out.textContent = t;
+  try { await navigator.clipboard.writeText(t); toast('Copied — paste it to send'); } catch (e) {}
 }
 (function videoWire() {
   const go = () => {
     const lb = document.getElementById('bVidLut'); if (lb) lb.onclick = () => { const b = document.getElementById('btnExportLUT'); if (b) b.click(); };
     const sb = document.getElementById('bVidSave'); if (sb) sb.onclick = videoLookSave;
+    const cb = document.getElementById('bVidCheck'); if (cb) cb.onclick = videoCheckDevice;
     const ls = document.getElementById('vidLook'); if (ls) ls.onchange = () => { videoLookApply(ls.value); ls.value = ''; };
     videoLooksFill();
     const sel = document.getElementById('vidLog'), sc = document.getElementById('vidScrub');
     if (sel) sel.onchange = () => videoLogSet(sel.value);
+    const gs = document.getElementById('vidGamut'); if (gs) gs.onchange = () => { videoGamutKind = gs.value || 'auto'; videoLogSet(videoLogKind); };
     if (sc) { sc.oninput = () => { videoPlayStop(true); videoScrubLabel(); videoScrubTo(); }; }
     const pb = document.getElementById('bVidPlay'); if (pb) pb.onclick = videoPlay;
     const ib = document.getElementById('bVidTab');

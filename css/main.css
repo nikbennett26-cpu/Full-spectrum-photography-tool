@@ -1283,3 +1283,8 @@ html.studioOn body.has-image #reorderZone > #modeBar{display:flex !important;ord
 .ffSw{height:18px;border-radius:3px;border:1px solid rgba(127,127,127,.35)}
 .ffD{text-align:right;font-family:var(--font-mono);font-size:10.5px;color:var(--muted)}
 .ffWarn{color:var(--warn,#d9a441)}
+/* Build 310: the Video card's heading had the same escaping accent line as the old step headers (a stray red
+   vertical line through the heading). It is a plain <details>, so switch the accent off and keep the hairline. */
+#vidPanel > summary.pt{list-style:none}
+#vidPanel > summary.pt::-webkit-details-marker{display:none}
+#vidPanel > summary.pt::after{content:none!important;display:none!important}

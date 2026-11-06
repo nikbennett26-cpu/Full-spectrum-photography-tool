@@ -25,7 +25,7 @@
 <meta name="twitter:image" content="https://irlab.uk/og-card.png?v=112">
 <link rel="canonical" href="https://irlab.uk/">
 <meta name="theme-color" content="#141518">
-<meta name="irlab-build" content="309">
+<meta name="irlab-build" content="310">
 <link rel="manifest" href="/manifest.json">
 <link rel="icon" href="/favicon.ico?v=3" sizes="any">
 <link rel="icon" href="/favicon.svg?v=3" type="image/svg+xml">
@@ -57,12 +57,12 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500&family=Barlow+Condensed:wght@500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
 
-<script src="i18n/tr.js?b=309"></script>
-<link rel="stylesheet" href="css/main.css?b=309">
-<link rel="stylesheet" id="uxRefresh" href="css/refresh.css?b=309">
-<link rel="stylesheet" href="css/trichrome.css?b=309">
-<link rel="stylesheet" id="uxDock" href="css/dock.css?b=309">
-<link rel="stylesheet" href="css/minimal.css?b=309">
+<script src="i18n/tr.js?b=310"></script>
+<link rel="stylesheet" href="css/main.css?b=310">
+<link rel="stylesheet" id="uxRefresh" href="css/refresh.css?b=310">
+<link rel="stylesheet" href="css/trichrome.css?b=310">
+<link rel="stylesheet" id="uxDock" href="css/dock.css?b=310">
+<link rel="stylesheet" href="css/minimal.css?b=310">
 </head>
 <body>
 
@@ -210,7 +210,8 @@
   <footer class="labFoot">
     <div id="whatsNew">
       <details>
-        <summary><span data-i18n="whatsNewLabel">What’s new</span><span class="wnLatest">Video: live preview</span></summary>
+        <summary><span data-i18n="whatsNewLabel">What’s new</span><span class="wnLatest">Log colour space, device check</span></summary>
+        <p style="margin:0 0 3px"><b style="color:var(--phosphor-dim)">Proper colour for log clips.</b> With a Camera log set, a new Colour space setting also turns the camera's wide gamut (F-Gamut, S-Gamut3.Cine, S-Gamut3, ARRI Wide Gamut 3) into normal colour, using the makers' published primaries, so log clips no longer look washed out once they are bright. It picks the usual one for each log by itself. Check this device lists which video formats your phone can read and write and copies the list, for bug reports. The stray red line by the Video heading is gone, and "open file" is translated.</p>
         <p style="margin:0 0 3px"><b style="color:var(--phosphor-dim)">Live preview.</b> The Video tab has a Preview button that plays the clip in the editor with your look on it, with sound. Change a slider and the look changes as it plays. A slow phone skips frames rather than slowing the clip; Export video still makes the real file.</p>
         <p style="margin:0 0 3px"><b style="color:var(--phosphor-dim)">More for video.</b> The Video tab now has export Size (720 up to 4K, or as shot), Quality and Codec (H.264, or smaller H.265 where the device can write it). Save look as LUT writes a .cube of your look, with the Camera log step included, for DaVinci Resolve and other editors. Save this look keeps a look and its Camera log setting, and My looks puts it on another clip.</p>
         <p style="margin:0 0 3px"><b style="color:var(--phosphor-dim)">Video button is now a camera.</b> The icon that opens the Video tab looked like a play button, so it seemed to do nothing. It is now a video-camera icon.</p>
@@ -632,7 +633,7 @@
     <!-- Build 279: the people behind it, on the home page -->
     <div id="creditsHome">Made by <a href="https://www.instagram.com/irlab.uk" target="_blank" rel="noopener" style="color:var(--safelight);font-weight:600;text-decoration:none">Nik Bennett</a>
       &middot; Colour science &amp; RAW decode by <a href="https://philwarrenphotography.com" target="_blank" rel="noopener" style="color:var(--safelight);font-weight:600;text-decoration:none">Phil Warren</a></div>
-    <div id="buildStampHome">Version 2026-11-06 · build 309</div>
+    <div id="buildStampHome">Version 2026-11-06 · build 310</div>
   </footer>
 </div>
 
@@ -1803,6 +1804,7 @@
         <div class="dBody">
         <p class="note" id="vidInfo" style="margin:2px 0 8px">&nbsp;</p>
         <label class="ffRow">Camera log <select id="vidLog" aria-label="The log curve this clip was recorded in"><option value="">Normal (Rec.709)</option><option value="flog">F-Log (Fujifilm)</option><option value="flog2">F-Log2 (Fujifilm)</option><option value="slog3">S-Log3 (Sony)</option><option value="logc3">LogC3 (ARRI, EI 800)</option></select></label>
+        <label class="ffRow" id="vidGamutRow" style="display:none">Colour space <select id="vidGamut" aria-label="The colour gamut this log clip was recorded in"><option value="auto">Match the log (usual)</option><option value="none">Leave as is</option><option value="rec2020">F-Gamut / Rec.2020</option><option value="sgamut3cine">S-Gamut3.Cine</option><option value="sgamut3">S-Gamut3</option><option value="awg3">ARRI Wide Gamut 3</option></select></label>
         <p class="note" style="margin:2px 0 8px">Only for clips recorded in a log profile. It turns the flat picture into a normal one before anything else, so swaps and white balance act on real light. It shares the early stage with Triple Band Aerochrome, so use one or the other.</p>
         <div class="sl"><label>Frame to edit on <b id="v_vidScrub">0.0 s</b></label><input type="range" id="vidScrub" aria-label="Pick the frame to edit on" min="0" max="1000" value="0"></div>
         <button id="bVidPlay" style="width:100%;margin:2px 0 4px" title="Plays the clip here with your look on it, with sound. A slow device skips frames. This is only a preview; Export video makes the real file.">&#9654; Preview</button>
@@ -1819,6 +1821,8 @@
           <button id="bVidSave" style="flex:1" title="Keeps this look, with the Camera log setting, so you can put it on another clip.">Save this look</button>
         </div>
         <label class="ffRow" id="vidLookRow" style="display:none">My looks <select id="vidLook" aria-label="Apply one of your saved looks"></select></label>
+        <button id="bVidCheck" style="width:100%;margin-top:10px" title="Lists which video formats this device can read and write, and copies the list so you can send it with a bug report.">Check this device</button>
+        <pre id="vidCheckOut" class="note" style="display:none;white-space:pre-wrap;font-size:11px;margin:6px 0 0"></pre>
         <p class="note" id="vidNote" style="margin:4px 0 0">Your edits are applied to every frame and saved as an MP4 (audio kept where this browser can). Long clips take a while; the screen should stay on.</p>
         </div>
       </details>
@@ -1844,7 +1848,7 @@
       <br><a href="privacy.html" target="_blank" rel="noopener" style="color:var(--muted);text-decoration:underline">Privacy</a>
       <br><a href="LICENSE.md" target="_blank" rel="noopener" style="color:var(--muted);text-decoration:underline">Source: AGPL-3.0</a>
       <br><a href="THIRD_PARTY_NOTICES.md" target="_blank" rel="noopener" style="color:var(--muted);text-decoration:underline">Third-party notices (LibRaw, RawTherapee)</a>
-<br><span id="buildStamp" style="color:var(--muted)" title="Which version of the app this is. Tap the arrow to check for a newer one and update.">Version 2026-11-06 · build 309</span>
+<br><span id="buildStamp" style="color:var(--muted)" title="Which version of the app this is. Tap the arrow to check for a newer one and update.">Version 2026-11-06 · build 310</span>
       <br><button id="btnInstall" type="button">Install as an app</button>
       <span id="kbHint">Ctrl+Z undo &middot; Ctrl+Shift+Z redo &middot; [ ] cycle presets &middot; F full quality view &middot; Space hold to compare</span>
     </footer>
@@ -1940,6 +1944,6 @@
 <!-- The editor's code: editor.js, BUILT from src/*.js by tools/build.py (see the README's Code layout). One script, so
      it all runs in one go, as the single inline block it came from did. ?b=<build> keeps the service worker's cached
      copy of an older editor.js from ever running under a newer page; tools/bump_build.py sets it. -->
-<script src="editor.js?b=309"></script>
+<script src="editor.js?b=310"></script>
 </body>
 </html>
