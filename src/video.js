@@ -14,7 +14,18 @@ function videoOpts() {
   const res = parseInt(g('vidRes') || '1920', 10), q = g('vidQ') || 'normal';
   return { res: isNaN(res) ? 1920 : res, qk: ({ small: 0.07, normal: 0.12, high: 0.22 })[q] || 0.12, hevc: g('vidCodec') === 'hevc' };
 }
-function videoBitrate(w, h, fps) { return Math.max(1.5e6, Math.min(100e6, Math.round(w * h * fps * videoOpts().qk))); }
+/* Build 314: the bitrate follows the source clip, scaled to the output size, so a camera's 40 Mbps clip is not squeezed to
+   a few Mbps (an IR grade adds contrast and noise, which smeared moving detail into blotches). Small keeps the old
+   size-based figure; Normal matches the source; High gives it half as much again. */
+function videoBitrate(w, h, fps, srcBps, srcPx) {
+  const o = videoOpts(), q = document.getElementById('vidQ'), qv = q ? q.value : 'normal';
+  let b = w * h * fps * o.qk;
+  if (srcBps > 0 && qv !== 'small') {
+    const scaled = srcBps * Math.min(1, (w * h) / (srcPx || w * h));
+    b = Math.max(b, scaled * (qv === 'high' ? 1.5 : 1));
+  }
+  return Math.max(1.5e6, Math.min(qv === 'high' ? 120e6 : 80e6, Math.round(b)));
+}
 function videoIsFile(f) { return !!f && (/^video\//.test(f.type || '') || /\.(mp4|m4v|mov|webm)$/i.test(f.name || '')); }
 function videoSize(v, max) {
   max = max === undefined ? VID_MAX : max;
@@ -276,7 +287,8 @@ async function videoExportDecoder(say) {
   const vs = out.v, ts = vt.timescale;
   const spanUs = (vs[vs.length - 1].cts + vs[vs.length - 1].duration - vs[0].cts) * 1e6 / ts;
   const fps = Math.max(1, vs.length / (spanUs / 1e6));
-  const bitrate = videoBitrate(w, h, fps);
+  const srcBps = (() => { let n = 0; for (const x of vs) n += x.size || 0; return n > 0 && spanUs > 0 ? n * 8 / (spanUs / 1e6) : 0; })();
+  const bitrate = videoBitrate(w, h, fps, srcBps, sw * sh);
   const pick = await videoPickCodec(w, h, Math.round(fps), bitrate);
   if (!pick) throw new Error('No video encoder this browser supports at ' + w + '×' + h + '.');
   /* audio: AAC is copied as it is; anything else is decoded and encoded again if the browser can, else left out */
@@ -366,7 +378,7 @@ async function videoExport() {
     v = await videoLoad(videoSrc.file);
     const [w, h] = videoSize(v, videoOpts().res), dur = v.duration;
     const fps = await videoFps(v), total = Math.max(1, Math.floor(dur * fps));
-    const bitrate = videoBitrate(w, h, fps);
+    const bitrate = videoBitrate(w, h, fps, dur > 0 ? videoSrc.file.size * 8 / dur * 0.95 : 0, v.videoWidth * v.videoHeight);
     const pick = await videoPickCodec(w, h, fps, bitrate);
     if (!pick) throw new Error('No video encoder this browser supports at ' + w + '×' + h + '.');
     const audio = await videoAudioPrep(videoSrc.file);
