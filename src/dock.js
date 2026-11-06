@@ -551,3 +551,17 @@ document.addEventListener('wheel', e => {
   document.addEventListener('contextmenu', e => { if (onRail() && e.target.closest && e.target.closest(SEL)) e.preventDefault(); }, true);
   window.addEventListener('scroll', hide, { passive: true, capture: true });
 })();
+
+/* Build 317: in the dock and on desktop the Export tab is the Export section, so its heading no longer folds it away
+   (folding it left an empty tab). Elsewhere it folds as before. */
+(function exportHeadFixed() {
+  document.addEventListener('click', e => {
+    const s = e.target && e.target.closest && e.target.closest('#exportSection > summary');
+    if (!s) return;
+    const h = document.documentElement;
+    if (!document.body.classList.contains('has-image') || !(h.classList.contains('dockOn') || h.classList.contains('studioOn'))) return;
+    if (e.target.closest('button, a, input, select, label')) return;
+    e.preventDefault();
+    const d = document.getElementById('exportSection'); if (d && !d.open) d.open = true;
+  }, true);
+})();

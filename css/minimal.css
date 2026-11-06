@@ -326,3 +326,11 @@ html.dockOn body.has-image #reorderZone > #modeBar.empty,html.studioOn body.has-
 #emptyStateGroup.lab #triStart::after,#emptyStateGroup.lab a.labTool .flTitle::after{content:"";display:inline-block;width:6px;height:6px;border-radius:50%;background:#d63a3a;flex:none;margin:0 0 0 12px}
 /* Build 297: Digital Aerochrome sits under Swap & mix, in the app's own font (Inter) throughout, with no monospace. */
 #ffDetails,#ffDetails *{font-family:var(--font-body)!important}
+
+/* Build 317: one heading style. Export's title was the only step heading at 15px semibold with a red arrow; the
+   others (Channel Swap, Light, White Balance, Detail) are 17px regular with no arrow, because in the dock a tab is
+   always open. Export now matches, and its arrow goes (src/dock.js keeps it from being folded away). */
+html.dockOn body.has-image #exportSection > summary.secHead,html.studioOn body.has-image #exportSection > summary.secHead{font-weight:400!important;font-size:17px!important;letter-spacing:.01em!important;cursor:default!important}
+html.dockOn body.has-image #exportSection > summary.secHead::after,html.studioOn body.has-image #exportSection > summary.secHead::after{display:none!important;content:none!important}
+/* Build 317: radio buttons and tick boxes in the app's red, not the browser's default blue (Export format, etc.) */
+input[type=radio],input[type=checkbox]{accent-color:#d63a3a}

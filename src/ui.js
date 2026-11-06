@@ -1120,12 +1120,16 @@ function scheduleCurveHist() {
     const det = $('curveDetails'), pts = $('curvePoints'), pv = $('preview');
     if (!det || !det.open || !pts || pts.hidden || !loadedImage || !pv || !pv.width || !engine || !engine.hasPreserveBuffer) return;
     try {
-      if (!curveHistCv) curveHistCv = document.createElement('canvas');
       const w = 128, h = Math.max(1, Math.round(128 * pv.height / pv.width));
-      curveHistCv.width = w; curveHistCv.height = h;
-      const cx = curveHistCv.getContext('2d', { willReadFrequently: true });
-      cx.drawImage(pv, 0, 0, w, h);
-      const d = cx.getImageData(0, 0, w, h).data, N = 64;
+      let d = engine.readSmall ? engine.readSmall(w, h) : null;   // build 317: shrunk on the GPU
+      if (!d) {
+        if (!curveHistCv) curveHistCv = document.createElement('canvas');
+        curveHistCv.width = w; curveHistCv.height = h;
+        const cx = curveHistCv.getContext('2d', { willReadFrequently: true });
+        cx.drawImage(pv, 0, 0, w, h);
+        d = cx.getImageData(0, 0, w, h).data;
+      }
+      const N = 64;
       const hs = { l: new Float32Array(N), r: new Float32Array(N), g: new Float32Array(N), b: new Float32Array(N) };
       for (let i = 0; i < d.length; i += 4) {
         const r = d[i], g = d[i + 1], b = d[i + 2];

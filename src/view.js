@@ -101,6 +101,16 @@ function drawHistogram() {
      synchronous render immediately before reading in that case, and read
      via readPixels() (a direct gl.readPixels() call, unaffected by
      preserveDrawingBuffer either way) instead of drawImage(). */
+  /* build 317: the GPU shrinks the frame and only the small copy is read back (engine.readSmall) */
+  let small = null;
+  if (engine && engine.readSmall) {
+    if (!engine.hasPreserveBuffer && !clipOn) engine.render(currentParams());
+    small = engine.readSmall(HIST_W, hh);
+    if (small && clipOn) engine.render(currentParams());
+  }
+  let d;
+  if (small) d = small;
+  else {
   if (engine && !engine.hasPreserveBuffer) {
     engine.render(clipOn ? exportParams() : currentParams());
     const px = engine.readPixels();   // already a Uint8ClampedArray, matching pv's own dimensions since pv IS engine.canvas
@@ -115,7 +125,8 @@ function drawHistogram() {
     if (clipOn) engine.render(currentParams());
   }
 
-  const d = histCtx.getImageData(0, 0, HIST_W, hh).data;
+  d = histCtx.getImageData(0, 0, HIST_W, hh).data;
+  }
   const bins = [new Uint32Array(256), new Uint32Array(256), new Uint32Array(256)];
   /* Counted per PIXEL, not per channel. The old count took the largest
      single-channel bin-0 total, so one saturated yellow area — B = 0 across

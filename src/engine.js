@@ -602,6 +602,37 @@ void main(){
     this.lutDomainMax = lut.domainMax.slice(0, 3);
   }
 
+  /* Build 317: a small copy of what is on the canvas, for the histograms. The GPU shrinks the frame (one blit) and
+     only the small copy comes back to the CPU, instead of the whole frame (about 10 MB for a 1400 x 1800 photo, read
+     back after every edit while the GPU waited) being copied out and shrunk on the CPU. Each output pixel is a
+     bilinear sample of the frame, not an average of a whole block, so clipped highlights still count as clipped.
+     Returns top-down RGBA rows, or null where it cannot (WebGL1), and the caller falls back to the old path. */
+  readSmall(w, h) {
+    const gl = this.gl;
+    if (!this.isWebGL2 || this._rsFail || !gl) return null;
+    try {
+      if (!this._rs || this._rs.w !== w || this._rs.h !== h) {
+        if (this._rs) { gl.deleteFramebuffer(this._rs.fb); gl.deleteRenderbuffer(this._rs.rb); }
+        const fb = gl.createFramebuffer(), rb = gl.createRenderbuffer();
+        gl.bindRenderbuffer(gl.RENDERBUFFER, rb); gl.renderbufferStorage(gl.RENDERBUFFER, gl.RGBA8, w, h);
+        gl.bindFramebuffer(gl.FRAMEBUFFER, fb); gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.RENDERBUFFER, rb);
+        const ok = gl.checkFramebufferStatus(gl.FRAMEBUFFER) === gl.FRAMEBUFFER_COMPLETE;
+        gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+        if (!ok) { gl.deleteFramebuffer(fb); gl.deleteRenderbuffer(rb); this._rsFail = true; return null; }
+        this._rs = { fb, rb, w, h, raw: new Uint8Array(w * h * 4) };
+      }
+      const r = this._rs, W = this.canvas.width, H = this.canvas.height;
+      gl.bindFramebuffer(gl.READ_FRAMEBUFFER, null); gl.bindFramebuffer(gl.DRAW_FRAMEBUFFER, r.fb);
+      gl.blitFramebuffer(0, 0, W, H, 0, 0, w, h, gl.COLOR_BUFFER_BIT, gl.LINEAR);
+      gl.bindFramebuffer(gl.READ_FRAMEBUFFER, r.fb);
+      gl.readPixels(0, 0, w, h, gl.RGBA, gl.UNSIGNED_BYTE, r.raw);
+      gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+      if (gl.getError() !== gl.NO_ERROR) { this._rsFail = true; return null; }
+      const out = new Uint8ClampedArray(w * h * 4), row = w * 4;
+      for (let y = 0; y < h; y++) out.set(r.raw.subarray((h - 1 - y) * row, (h - y) * row), y * row);
+      return out;
+    } catch (e) { try { gl.bindFramebuffer(gl.FRAMEBUFFER, null); } catch (e2) {} this._rsFail = true; return null; }
+  }
   readPixels() {
     // WebGL's origin is bottom-left, canvas/image convention is top-left —
     // flip rows so the exported pixel data matches what's actually on screen
@@ -1334,3 +1365,39 @@ const $ = id => document.getElementById(id);
    preset buttons (controls.js) use them while the page is still loading. */
 function srgbToLinearF(c){return c<=0.04045?c/12.92:Math.pow((c+0.055)/1.055,2.4);}
 function linearToSrgbF(c){c=Math.max(0,Math.min(1,c));return c<=0.0031308?c*12.92:1.055*Math.pow(c,1/2.4)-0.055;}
+
+/* Build 317: warm the shader before the first photo. The editor's main shader is very large, and the browser
+   compiles it the moment the first photo opens, which on a mid-range phone can hold the page still for a second or
+   more. While the start page is idle, the same source is compiled once in a throwaway WebGL2 context, on the
+   driver's own thread (KHR_parallel_shader_compile), so the page never waits on it. Chrome keeps compiled programs
+   keyed by their source, so the real compile when a photo opens is then mostly a cache hit. Nothing in the editor
+   is touched; the context is dropped as soon as the compile is done. Skipped where the extension is missing (there
+   it would block the page instead), when a photo is already open, and on the self-test. */
+(function shaderPrewarm() {
+  if (typeof window === 'undefined' || typeof FS_SOURCE !== 'string') return;
+  const start = () => {
+    try {
+      if ((typeof loadedImage !== 'undefined' && loadedImage) || (typeof engine !== 'undefined' && engine)) return;
+      if (typeof SELFTEST !== 'undefined' && SELFTEST) return;
+      const cv = document.createElement('canvas'); cv.width = cv.height = 4;
+      const gl = cv.getContext('webgl2', { antialias: false, premultipliedAlpha: false });
+      if (!gl) return;
+      const par = gl.getExtension('KHR_parallel_shader_compile'), lose = gl.getExtension('WEBGL_lose_context');
+      const drop = () => { try { if (lose) lose.loseContext(); } catch (e) {} };
+      if (!par) { drop(); return; }
+      const mk = (t, src) => { const sh = gl.createShader(t); gl.shaderSource(sh, src); gl.compileShader(sh); return sh; };
+      const vs = mk(gl.VERTEX_SHADER, VS_SOURCE), fs = mk(gl.FRAGMENT_SHADER, FS_SOURCE);
+      const pr = gl.createProgram(); gl.attachShader(pr, vs); gl.attachShader(pr, fs); gl.linkProgram(pr);
+      const t0 = performance.now();
+      const poll = () => {
+        let done = false; try { done = gl.isContextLost() || gl.getProgramParameter(pr, par.COMPLETION_STATUS_KHR); } catch (e) { done = true; }
+        if (!done && performance.now() - t0 < 20000) { setTimeout(poll, 120); return; }
+        window.__shaderPrewarmMs = Math.round(performance.now() - t0);
+        drop();
+      };
+      setTimeout(poll, 120);
+    } catch (e) {}
+  };
+  const later = () => { if (typeof requestIdleCallback === 'function') requestIdleCallback(start, { timeout: 4000 }); else setTimeout(start, 1500); };
+  if (document.readyState === 'complete') setTimeout(later, 800); else window.addEventListener('load', () => setTimeout(later, 800), { once: true });
+})();
