@@ -497,6 +497,18 @@ void main(){
     }
   }
 
+  /* Build 299: the next frame of a video, same size as the picture already on the GPU: a sub-upload instead of the full
+     setImage (no canvas resize, no texture re-creation). False when it can't, so the caller falls back to setImage. */
+  updateFrame(img) {
+    const gl = this.gl;
+    if (!this.texture || this.inputIsLinear || this.canvas.width !== img.width || this.canvas.height !== img.height) return false;
+    gl.activeTexture(gl.TEXTURE0);
+    gl.bindTexture(gl.TEXTURE_2D, this.texture);
+    gl.texSubImage2D(gl.TEXTURE_2D, 0, 0, 0, gl.RGBA, gl.UNSIGNED_BYTE, img);
+    this._texGen = (this._texGen || 0) + 1; this._toneImg = img; this._toneMaps = null; this.toneBase = null;
+    return true;
+  }
+
   /* Build 201: new linear data for the picture already on the GPU, same size -- the RAW white balance drag. Skips
      everything setImage does around the upload (canvas sizing, the 8-bit path). False when it can't, so the caller
      falls back to a full install. */

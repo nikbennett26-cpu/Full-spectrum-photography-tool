@@ -71,10 +71,21 @@ async function videoFps(v) {
   const d = []; for (let i = 1; i < ts.length; i++) { const x = ts[i] - ts[i - 1]; if (x > 0.004) d.push(x); }
   if (d.length < 3) return 30;
   d.sort((a, b) => a - b);
-  const f = 1 / d[d.length >> 1];
-  const snaps = [24, 25, 30, 50, 60]; let best = 30, bd = 1e9;
-  snaps.forEach(s => { const e = Math.abs(f - s); if (e < bd) { bd = e; best = s; } });
-  return bd < 2.5 ? best : Math.max(10, Math.min(60, Math.round(f)));
+  /* The shortest gaps, not the middle: a phone that cannot keep up skips frame callbacks, which only ever makes a gap
+     longer, so the middle of the list can read a 60 fps clip as 30. */
+  const f = 1 / d[Math.floor((d.length - 1) * 0.15)];
+  const snaps = [24, 25, 30, 50, 60, 120]; let best = 30, bd = 1e9;
+  snaps.forEach(s2 => { const e = Math.abs(f - s2) / s2; if (e < bd) { bd = e; best = s2; } });
+  return bd < 0.06 ? best : Math.max(10, Math.min(120, Math.round(f)));
+}
+/* The time of the frame the video actually shows after a seek (its own clock, so a variable frame rate keeps its timing). */
+function videoShownTime(v, fallback) {
+  return new Promise(res => {
+    if (!v.requestVideoFrameCallback) { res(fallback); return; }
+    let d = false; const f = t => { if (!d) { d = true; res(t); } };
+    v.requestVideoFrameCallback((n, md) => f(md.mediaTime));
+    setTimeout(() => f(fallback), 500);
+  });
 }
 function videoLoadMuxer() {
   if (window.Mp4Muxer) return Promise.resolve();
@@ -160,15 +171,20 @@ async function videoExport() {
     const fx = fc.getContext('2d');
     const oc = document.createElement('canvas'); oc.width = w; oc.height = h;   /* the GL canvas is copied here: a 2D canvas is the dependable source for a VideoFrame */
     const ox = oc.getContext('2d');
-    const keyEvery = Math.max(1, Math.round(fps * 2));
+    const keyEvery = Math.max(1, Math.round(fps * 2)); let lastMt = -1, nOut = 0;
     for (let i = 0; i < total && !videoStop && !encErr; i++) {
-      await videoSeek(v, Math.min(i / fps, Math.max(0, dur - 0.001)));
+      const tgt = Math.min((i + 0.25) / fps, Math.max(0, dur - 0.001));
+      const shown = videoShownTime(v, tgt);
+      await videoSeek(v, tgt);
+      const mt = await shown;
+      if (mt <= lastMt + 1e-4) continue;   /* the same frame again (a clip slower than the grid): skip it, the one before holds its time */
+      lastMt = mt;
       fx.drawImage(v, 0, 0, w, h);
-      engine.setImage(fc);
+      if (!(nOut > 0 && engine.updateFrame && engine.updateFrame(fc))) engine.setImage(fc);
       engine.render(currentParams());
       ox.drawImage(engine.canvas, 0, 0, w, h);
-      const vf = new VideoFrame(oc, { timestamp: Math.round(i * 1e6 / fps), duration: Math.round(1e6 / fps) });
-      enc.encode(vf, { keyFrame: i % keyEvery === 0 }); vf.close();
+      const vf = new VideoFrame(oc, { timestamp: Math.round(mt * 1e6), duration: Math.round(1e6 / fps) });
+      enc.encode(vf, { keyFrame: nOut % keyEvery === 0 }); vf.close(); nOut++;
       while (enc.encodeQueueSize > 6) await new Promise(r => setTimeout(r, 8));
       if (i % 3 === 0) { say('Exporting ' + Math.round(100 * i / total) + '% · tap to stop'); await new Promise(r => setTimeout(r, 0)); }
     }
