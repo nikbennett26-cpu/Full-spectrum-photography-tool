@@ -24,8 +24,12 @@ function videoLoad(file) {
 }
 function videoSeek(v, t) {
   return new Promise(r => {
-    const done = () => { v.removeEventListener('seeked', done); r(); };
+    /* Seeking to where it already is fires no "seeked", so that case (and any seek that stalls) resolves on its own. */
+    if (!v.seeking && Math.abs(v.currentTime - t) < 1e-4) { r(); return; }
+    let tm = null;
+    const done = () => { v.removeEventListener('seeked', done); clearTimeout(tm); r(); };
     v.addEventListener('seeked', done);
+    tm = setTimeout(done, 4000);
     v.currentTime = t;
   });
 }
@@ -154,13 +158,16 @@ async function videoExport() {
     enc.configure(pick.cfg);
     const fc = document.createElement('canvas'); fc.width = w; fc.height = h;
     const fx = fc.getContext('2d');
+    const oc = document.createElement('canvas'); oc.width = w; oc.height = h;   /* the GL canvas is copied here: a 2D canvas is the dependable source for a VideoFrame */
+    const ox = oc.getContext('2d');
     const keyEvery = Math.max(1, Math.round(fps * 2));
     for (let i = 0; i < total && !videoStop && !encErr; i++) {
       await videoSeek(v, Math.min(i / fps, Math.max(0, dur - 0.001)));
       fx.drawImage(v, 0, 0, w, h);
       engine.setImage(fc);
       engine.render(currentParams());
-      const vf = new VideoFrame(engine.canvas, { timestamp: Math.round(i * 1e6 / fps), duration: Math.round(1e6 / fps) });
+      ox.drawImage(engine.canvas, 0, 0, w, h);
+      const vf = new VideoFrame(oc, { timestamp: Math.round(i * 1e6 / fps), duration: Math.round(1e6 / fps) });
       enc.encode(vf, { keyFrame: i % keyEvery === 0 }); vf.close();
       while (enc.encodeQueueSize > 6) await new Promise(r => setTimeout(r, 8));
       if (i % 3 === 0) { say('Exporting ' + Math.round(100 * i / total) + '% · tap to stop'); await new Promise(r => setTimeout(r, 0)); }

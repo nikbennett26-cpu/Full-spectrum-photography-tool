@@ -231,3 +231,8 @@ Other manufacturer and third-party sources are named on each filter's card and i
   out of the beam, power-law fitted over gas-free windows. Overcast remains irlab's own model.
 - The method follows Nick Spiker's approach to a digital Aerochrome (fitting a camera to the film's layer
   sensitivities), described on his former blog; no code or data of his is used.
+
+
+## mp4-muxer
+
+vendor/mp4-muxer.js is mp4-muxer 5.2.2 by Vanilagy, MIT licence (https://github.com/Vanilagy/mp4-muxer). It writes the MP4 container when a video is exported (build 298).

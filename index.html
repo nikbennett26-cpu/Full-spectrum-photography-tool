@@ -25,7 +25,7 @@
 <meta name="twitter:image" content="https://irlab.uk/og-card.png?v=112">
 <link rel="canonical" href="https://irlab.uk/">
 <meta name="theme-color" content="#141518">
-<meta name="irlab-build" content="297">
+<meta name="irlab-build" content="298">
 <link rel="manifest" href="/manifest.json">
 <link rel="icon" href="/favicon.ico?v=3" sizes="any">
 <link rel="icon" href="/favicon.svg?v=3" type="image/svg+xml">
@@ -57,12 +57,12 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500&family=Barlow+Condensed:wght@500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
 
-<script src="i18n/tr.js?b=297"></script>
-<link rel="stylesheet" href="css/main.css?b=297">
-<link rel="stylesheet" id="uxRefresh" href="css/refresh.css?b=297">
-<link rel="stylesheet" href="css/trichrome.css?b=297">
-<link rel="stylesheet" id="uxDock" href="css/dock.css?b=297">
-<link rel="stylesheet" href="css/minimal.css?b=297">
+<script src="i18n/tr.js?b=298"></script>
+<link rel="stylesheet" href="css/main.css?b=298">
+<link rel="stylesheet" id="uxRefresh" href="css/refresh.css?b=298">
+<link rel="stylesheet" href="css/trichrome.css?b=298">
+<link rel="stylesheet" id="uxDock" href="css/dock.css?b=298">
+<link rel="stylesheet" href="css/minimal.css?b=298">
 </head>
 <body>
 
@@ -210,8 +210,9 @@
   <footer class="labFoot">
     <div id="whatsNew">
       <details>
-        <summary><span data-i18n="whatsNewLabel">What’s new</span><span class="wnLatest">Digital Aerochrome moved up, under Swap &amp; mix</span></summary>
+        <summary><span data-i18n="whatsNewLabel">What’s new</span><span class="wnLatest">Open video, edit one frame, export the clip</span></summary>
         <p style="margin:0 0 3px"><b style="color:var(--phosphor-dim)">Your edits now come back after closing the app.</b> If you closed the tab or the app by accident, the photo came back but none of your edits did. That is fixed: reopen within 30 minutes and it picks up where you left off, edits included, and after that the Restore button on the start page brings back the photo and its edits.</p>
+        <p style="margin:0 0 3px"><b style="color:var(--phosphor-dim)">Video.</b> You can now open an MP4, MOV or WebM. It opens on one frame so every tool works as on a photo, and Export video (in Export) runs your settings on every frame and saves an MP4, with the audio where your browser can encode it. Longest side is brought down to 1920. Needs a browser that can play the file and write video (recent Chrome, Edge or Safari); 10-bit and HEVC clips may not play everywhere, and the frames are 8-bit.</p>
         <p style="margin:0 0 3px"><b style="color:var(--phosphor-dim)">Digital Aerochrome moved up.</b> It now sits directly under Swap &amp; mix, and its text uses the same font as the rest of the app.</p>
         <p style="margin:0 0 3px"><b style="color:var(--phosphor-dim)">More conifers in Digital Aerochrome.</b> Pine, spruce and fir needles and two forest canopies, measured by USGS, are now test surfaces. The film model renders them dark crimson, redder than broadleaf, as Kodak describes. Your camera comes out about 15 degrees pinker than the film on them, so the average difference rating is a little higher.</p>
         <p style="margin:0 0 3px"><b style="color:var(--phosphor-dim)">Autumn red and drying grass in Digital Aerochrome.</b> The fit now also tests on measured leafy spurge in September and October and on mostly dry grass (USGS Spectral Library). Through the film they show the order Fedia described for these plants: pink while healthy, then red as they age, then brown when dry. Aspen only yellows and oak stays pink, so that red stage depends on the plant. Build 289 adds turning-brown and dead rush, blue spruce and juniper to the test surfaces. Measured sea water, muddy water and melting snow are now test surfaces too.</p>
@@ -622,7 +623,7 @@
     <!-- Build 279: the people behind it, on the home page -->
     <div id="creditsHome">Made by <a href="https://www.instagram.com/irlab.uk" target="_blank" rel="noopener" style="color:var(--safelight);font-weight:600;text-decoration:none">Nik Bennett</a>
       &middot; Colour science &amp; RAW decode by <a href="https://philwarrenphotography.com" target="_blank" rel="noopener" style="color:var(--safelight);font-weight:600;text-decoration:none">Phil Warren</a></div>
-    <div id="buildStampHome">Version 2026-11-05 · build 297</div>
+    <div id="buildStampHome">Version 2026-11-06 · build 298</div>
   </footer>
 </div>
 
@@ -1806,7 +1807,7 @@
       <br><a href="privacy.html" target="_blank" rel="noopener" style="color:var(--muted);text-decoration:underline">Privacy</a>
       <br><a href="LICENSE.md" target="_blank" rel="noopener" style="color:var(--muted);text-decoration:underline">Source: AGPL-3.0</a>
       <br><a href="THIRD_PARTY_NOTICES.md" target="_blank" rel="noopener" style="color:var(--muted);text-decoration:underline">Third-party notices (LibRaw, RawTherapee)</a>
-<br><span id="buildStamp" style="color:var(--muted)" title="Which version of the app this is. Tap the arrow to check for a newer one and update.">Version 2026-11-05 · build 297</span>
+<br><span id="buildStamp" style="color:var(--muted)" title="Which version of the app this is. Tap the arrow to check for a newer one and update.">Version 2026-11-06 · build 298</span>
       <br><button id="btnInstall" type="button">Install as an app</button>
       <span id="kbHint">Ctrl+Z undo &middot; Ctrl+Shift+Z redo &middot; [ ] cycle presets &middot; F full quality view &middot; Space hold to compare</span>
     </footer>
@@ -1902,6 +1903,6 @@
 <!-- The editor's code: editor.js, BUILT from src/*.js by tools/build.py (see the README's Code layout). One script, so
      it all runs in one go, as the single inline block it came from did. ?b=<build> keeps the service worker's cached
      copy of an older editor.js from ever running under a newer page; tools/bump_build.py sets it. -->
-<script src="editor.js?b=297"></script>
+<script src="editor.js?b=298"></script>
 </body>
 </html>
