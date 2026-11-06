@@ -54,11 +54,44 @@ async function videoGrab(v, c, dur) {
   return first === null ? 0 : first;
 }
 function videoUi() {
-  const b = document.getElementById('bVid'), n = document.getElementById('vidNote');
-  if (b) b.style.display = videoSrc ? '' : 'none';
-  if (n) n.style.display = videoSrc ? '' : 'none';
-  const t = document.getElementById('vidTools'); if (t) t.style.display = videoSrc ? '' : 'none';
+  const p = document.getElementById('vidPanel');
+  if (p) p.style.display = videoSrc ? '' : 'none';
   const sc = document.getElementById('vidScrub'); if (sc && videoSrc) { sc.value = Math.round(1000 * (videoSrc.startT || 0) / (videoSrc.dur || 1)); videoScrubLabel(); }
+  videoInfo();
+}
+/* One line about the clip: size, length, file size, and (measured by playing a few frames) the frame rate. */
+async function videoInfo() {
+  const el = document.getElementById('vidInfo'); if (!el || !videoSrc) return;
+  const src = videoSrc, mb = (src.file.size / 1048576).toFixed(src.file.size > 1e7 ? 0 : 1);
+  const base = src.w + '\u00d7' + src.h + ' \u00b7 ' + src.dur.toFixed(1) + ' s \u00b7 ' + mb + ' MB';
+  el.textContent = base;
+  try {
+    if (src.meta == null) src.meta = await videoProbe(src.file);
+    if (src.meta == null && src.fps == null) src.fps = await videoFps(src.el);
+    if (videoSrc !== src) return;
+    if (src.meta) el.textContent = base + ' \u00b7 ' + src.meta.fps.toFixed(src.meta.fps % 1 ? 2 : 0) + ' fps \u00b7 ' + src.meta.frames + ' frames \u00b7 ' + src.meta.codec;
+    else el.textContent = base + ' \u00b7 about ' + src.fps + ' fps';
+  } catch (e) { if (videoSrc === src) el.textContent = base; }
+}
+/* Exact frame rate, frame count and codec from the file's own index (MP4 and MOV), without reading any frames. */
+async function videoProbe(file) {
+  if (!/\.(mp4|m4v|mov)$/i.test(file.name || '') && !/mp4|quicktime/.test(file.type || '')) return null;
+  try {
+    await videoLoadScript('vendor/mp4box.all.min.js', 'MP4Box');
+    const ab = await file.arrayBuffer();
+    return await new Promise(res => {
+      const mf = MP4Box.createFile();
+      mf.onError = () => res(null);
+      mf.onReady = i => { const t = i.videoTracks[0]; res(t && t.nb_samples && t.duration ? { fps: t.nb_samples / (t.duration / t.timescale), frames: t.nb_samples, codec: t.codec.split('.')[0] } : null); };
+      ab.fileStart = 0; mf.appendBuffer(ab); mf.flush();
+      setTimeout(() => res(null), 3000);
+    });
+  } catch (e) { return null; }
+}
+function vidEta(t0, done, total) {
+  if (done < 3) return '';
+  const left = Math.round((performance.now() - t0) / done * (total - done) / 1000);
+  return ' \u00b7 ' + Math.floor(left / 60) + ':' + String(left % 60).padStart(2, '0') + ' left';
 }
 /* Called first thing by loadFile: a video becomes a still frame (and is remembered); anything else clears the video. */
 async function videoIntercept(file) {
@@ -247,7 +280,7 @@ async function videoExportDecoder(say) {
   const fc = document.createElement('canvas'); fc.width = w; fc.height = h; const fx = fc.getContext('2d');
   const oc = document.createElement('canvas'); oc.width = w; oc.height = h; const ox = oc.getContext('2d');
   const keyEvery = Math.max(1, Math.round(fps * 2));
-  let pending = 0, chain = Promise.resolve(), nOut = 0, firstTs = null;
+  let pending = 0, chain = Promise.resolve(), nOut = 0, firstTs = null; const t0 = performance.now();
   const draw = f => {
     fx.save();
     if (rot === 90) { fx.translate(w, 0); fx.rotate(Math.PI / 2); fx.drawImage(f, 0, 0, h, w); }
@@ -267,7 +300,7 @@ async function videoExportDecoder(say) {
       const vf = new VideoFrame(oc, { timestamp: f.timestamp - firstTs, duration: f.duration || Math.round(1e6 / fps) });
       enc.encode(vf, { keyFrame: nOut % keyEvery === 0 }); vf.close(); nOut++;
       while (enc.encodeQueueSize > 6 && !encErr) await vidSleep(6);
-      if (nOut % 3 === 0) { say('Exporting ' + Math.round(100 * nOut / vs.length) + '% · tap to stop'); await vidSleep(0); }
+      if (nOut % 3 === 0) { say('Exporting ' + Math.round(100 * nOut / vs.length) + '%' + vidEta(t0, nOut, vs.length) + ' · tap to stop'); await vidSleep(0); }
     } finally { f.close(); pending--; }
   };
   const dec = new VideoDecoder({ output: f => { pending++; chain = chain.then(() => handle(f)); }, error: e => { decErr = e; } });
@@ -335,7 +368,7 @@ async function videoExport() {
     const fx = fc.getContext('2d');
     const oc = document.createElement('canvas'); oc.width = w; oc.height = h;
     const ox = oc.getContext('2d');
-    const keyEvery = Math.max(1, Math.round(fps * 2)); let lastMt = -1, nOut = 0;
+    const keyEvery = Math.max(1, Math.round(fps * 2)); let lastMt = -1, nOut = 0; const t0 = performance.now();
     for (let i = 0; i < total && !videoStop && !encErr; i++) {
       const tgt = Math.min((i + 0.25) / fps, Math.max(0, dur - 0.001));
       const shown = videoShownTime(v, tgt);
@@ -350,7 +383,7 @@ async function videoExport() {
       const vf = new VideoFrame(oc, { timestamp: Math.round(mt * 1e6), duration: Math.round(1e6 / fps) });
       enc.encode(vf, { keyFrame: nOut % keyEvery === 0 }); vf.close(); nOut++;
       while (enc.encodeQueueSize > 6) await vidSleep(8);
-      if (i % 3 === 0) { say('Exporting ' + Math.round(100 * i / total) + '% · tap to stop'); await vidSleep(0); }
+      if (i % 3 === 0) { say('Exporting ' + Math.round(100 * i / total) + '%' + vidEta(t0, nOut, total) + ' · tap to stop'); await vidSleep(0); }
     }
     if (encErr) throw encErr;
     if (videoStop) { try { enc.close(); } catch (e) {} if (typeof toast === 'function') toast('Video export stopped'); return; }

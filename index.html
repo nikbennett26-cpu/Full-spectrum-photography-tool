@@ -25,7 +25,7 @@
 <meta name="twitter:image" content="https://irlab.uk/og-card.png?v=112">
 <link rel="canonical" href="https://irlab.uk/">
 <meta name="theme-color" content="#141518">
-<meta name="irlab-build" content="302">
+<meta name="irlab-build" content="303">
 <link rel="manifest" href="/manifest.json">
 <link rel="icon" href="/favicon.ico?v=3" sizes="any">
 <link rel="icon" href="/favicon.svg?v=3" type="image/svg+xml">
@@ -57,12 +57,12 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500&family=Barlow+Condensed:wght@500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
 
-<script src="i18n/tr.js?b=302"></script>
-<link rel="stylesheet" href="css/main.css?b=302">
-<link rel="stylesheet" id="uxRefresh" href="css/refresh.css?b=302">
-<link rel="stylesheet" href="css/trichrome.css?b=302">
-<link rel="stylesheet" id="uxDock" href="css/dock.css?b=302">
-<link rel="stylesheet" href="css/minimal.css?b=302">
+<script src="i18n/tr.js?b=303"></script>
+<link rel="stylesheet" href="css/main.css?b=303">
+<link rel="stylesheet" id="uxRefresh" href="css/refresh.css?b=303">
+<link rel="stylesheet" href="css/trichrome.css?b=303">
+<link rel="stylesheet" id="uxDock" href="css/dock.css?b=303">
+<link rel="stylesheet" href="css/minimal.css?b=303">
 </head>
 <body>
 
@@ -210,8 +210,9 @@
   <footer class="labFoot">
     <div id="whatsNew">
       <details>
-        <summary><span data-i18n="whatsNewLabel">What’s new</span><span class="wnLatest">Log video input and a frame picker</span></summary>
+        <summary><span data-i18n="whatsNewLabel">What’s new</span><span class="wnLatest">A Video card, hidden for photos</span></summary>
         <p style="margin:0 0 3px"><b style="color:var(--phosphor-dim)">Your edits now come back after closing the app.</b> If you closed the tab or the app by accident, the photo came back but none of your edits did. That is fixed: reopen within 30 minutes and it picks up where you left off, edits included, and after that the Restore button on the start page brings back the photo and its edits.</p>
+        <p style="margin:0 0 3px"><b style="color:var(--phosphor-dim)">A Video card.</b> Everything about a clip is now in one card in Export that only appears while a video is open: size, frame rate, frame count and codec, the Camera log choice, the frame picker, Export video, and the time left while it runs. Photos never show it.</p>
         <p style="margin:0 0 3px"><b style="color:var(--phosphor-dim)">Videos no longer open black.</b> A frame grabbed the instant a seek finished, or from a clip that opens on black, could come up black. The app now waits for the frame to be shown and tries other moments until it finds one with a picture, and says so when the browser cannot decode a clip's video at all.</p>
         <p style="margin:0 0 3px"><b style="color:var(--phosphor-dim)">Log video, and pick your frame.</b> With a video open, Export has a Camera log setting (F-Log, F-Log2, S-Log3, LogC3 from the makers' published curves) that turns a flat log clip into a normal picture before anything else, so channel swaps and white balance work on real light, and a slider to grade on any frame of the clip. The log setting takes the place of a film look in the early stage.</p>
         <p style="margin:0 0 3px"><b style="color:var(--phosphor-dim)">Video, frame by frame.</b> MP4 and MOV clips are now read frame by frame with the browser's own decoder instead of seeking, which gave repeated and skipped frames (jerky playback). Every source frame is processed once at its real time, portrait clips stay upright, and AAC audio is copied across untouched. WebM and browsers without the decoder use the old method.</p>
@@ -627,7 +628,7 @@
     <!-- Build 279: the people behind it, on the home page -->
     <div id="creditsHome">Made by <a href="https://www.instagram.com/irlab.uk" target="_blank" rel="noopener" style="color:var(--safelight);font-weight:600;text-decoration:none">Nik Bennett</a>
       &middot; Colour science &amp; RAW decode by <a href="https://philwarrenphotography.com" target="_blank" rel="noopener" style="color:var(--safelight);font-weight:600;text-decoration:none">Phil Warren</a></div>
-    <div id="buildStampHome">Version 2026-11-06 · build 302</div>
+    <div id="buildStampHome">Version 2026-11-06 · build 303</div>
   </footer>
 </div>
 
@@ -1787,12 +1788,21 @@
 
       <!-- Outside the collapse, inside the section: format and resolution
            decide what this produces, but it has to stay one tap away. -->
-      <button id="bDl" class="primary keyBtn keyDown" style="width:100%;margin-top:16px">Export Image</button>
-      <button id="bVid" class="primary keyBtn keyDown" style="width:100%;margin-top:8px;display:none">Export video</button>
-      <p class="note" id="vidNote" style="display:none;margin:4px 0 0">A video is open on one frame. Your edits are applied to every frame and saved as an MP4 (longest side 1920, audio kept where this browser can encode it). Long clips take a while; the screen should stay on.</p>
-      <div id="vidTools" style="display:none;margin-top:8px">
+      <!-- Build 303: everything about a video in one card, shown only while a video is open. -->
+      <details class="dGrp" id="vidPanel" open style="display:none;margin-top:16px">
+        <summary><span class="dT">Video</span><span class="dS">clip, log curve, export</span><span class="dDot" aria-hidden="true"></span></summary>
+        <div class="dBody">
+        <p class="note" id="vidInfo" style="margin:2px 0 8px">&nbsp;</p>
         <label class="ffRow">Camera log <select id="vidLog" aria-label="The log curve this clip was recorded in"><option value="">Normal (Rec.709)</option><option value="flog">F-Log (Fujifilm)</option><option value="flog2">F-Log2 (Fujifilm)</option><option value="slog3">S-Log3 (Sony)</option><option value="logc3">LogC3 (ARRI, EI 800)</option></select></label>
-        <div class="sl" style="margin-top:6px"><label>Frame to edit on <b id="v_vidScrub">0.0 s</b></label><input type="range" id="vidScrub" aria-label="Pick the frame to edit on" min="0" max="1000" value="0"></div>
+        <p class="note" style="margin:2px 0 8px">Only for clips recorded in a log profile. It turns the flat picture into a normal one before anything else, so swaps and white balance act on real light. It shares the early stage with Triple Band Aerochrome, so use one or the other.</p>
+        <div class="sl"><label>Frame to edit on <b id="v_vidScrub">0.0 s</b></label><input type="range" id="vidScrub" aria-label="Pick the frame to edit on" min="0" max="1000" value="0"></div>
+        <p class="note" style="margin:2px 0 8px">Your edits stay when you move to another frame.</p>
+        <button id="bVid" class="primary keyBtn keyDown" style="width:100%;margin-top:4px">Export video</button>
+        <p class="note" id="vidNote" style="margin:4px 0 0">Your edits are applied to every frame and saved as an MP4 (longest side 1920, audio kept where this browser can). Long clips take a while; the screen should stay on.</p>
+        </div>
+      </details>
+      <button id="bDl" class="primary keyBtn keyDown" style="width:100%;margin-top:16px">Export Image</button>
+
         <p class="note" style="margin:2px 0 0">Camera log turns a flat log clip into a normal picture before anything else, so swaps and white balance act on real light. It takes the place of a film look in the early stage. Move the frame to grade on a different moment; your edits stay.</p>
       </div>
       <!-- Build 139: the share sheet (Instagram, Facebook, WhatsApp...), a before | after picture, and a link to the look.
@@ -1816,7 +1826,7 @@
       <br><a href="privacy.html" target="_blank" rel="noopener" style="color:var(--muted);text-decoration:underline">Privacy</a>
       <br><a href="LICENSE.md" target="_blank" rel="noopener" style="color:var(--muted);text-decoration:underline">Source: AGPL-3.0</a>
       <br><a href="THIRD_PARTY_NOTICES.md" target="_blank" rel="noopener" style="color:var(--muted);text-decoration:underline">Third-party notices (LibRaw, RawTherapee)</a>
-<br><span id="buildStamp" style="color:var(--muted)" title="Which version of the app this is. Tap the arrow to check for a newer one and update.">Version 2026-11-06 · build 302</span>
+<br><span id="buildStamp" style="color:var(--muted)" title="Which version of the app this is. Tap the arrow to check for a newer one and update.">Version 2026-11-06 · build 303</span>
       <br><button id="btnInstall" type="button">Install as an app</button>
       <span id="kbHint">Ctrl+Z undo &middot; Ctrl+Shift+Z redo &middot; [ ] cycle presets &middot; F full quality view &middot; Space hold to compare</span>
     </footer>
@@ -1912,6 +1922,6 @@
 <!-- The editor's code: editor.js, BUILT from src/*.js by tools/build.py (see the README's Code layout). One script, so
      it all runs in one go, as the single inline block it came from did. ?b=<build> keeps the service worker's cached
      copy of an older editor.js from ever running under a newer page; tools/bump_build.py sets it. -->
-<script src="editor.js?b=302"></script>
+<script src="editor.js?b=303"></script>
 </body>
 </html>
