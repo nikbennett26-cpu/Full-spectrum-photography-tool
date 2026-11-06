@@ -1288,3 +1288,5 @@ html.studioOn body.has-image #reorderZone > #modeBar{display:flex !important;ord
 #vidPanel > summary.pt{list-style:none}
 #vidPanel > summary.pt::-webkit-details-marker{display:none}
 #vidPanel > summary.pt::after{content:none!important;display:none!important}
+/* Build 315: a slider's number can be tapped to type a value */
+.sl label b[id^="v_"]{cursor:text;text-decoration:underline dotted;text-underline-offset:3px;text-decoration-color:var(--muted,#777);padding:6px 4px;margin:-6px -4px}

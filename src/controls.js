@@ -1598,3 +1598,28 @@ function updateClearPresetBtn() {
 $('btnClearPreset').onclick = () => { armUndoCapture(); clearPreset(); commitUndoCapture(); haptic('select'); };
 
 // 4. File Loading
+
+/* Build 315: tap a slider's number to type an exact value. On a phone a slider covers its whole range in a few
+   centimetres (Hue shift is about a degree per pixel), so landing on 9 or 128 by dragging is fiddly. The typed number
+   is the slider's own value, snapped to its step and kept in its range, and goes through the same input and change
+   events as a drag, so undo, presets and the session save all see it. */
+(function sliderTypeValue() {
+  document.addEventListener('click', async e => {
+    const b = e.target && e.target.closest && e.target.closest('.sl label b[id^="v_"]');
+    if (!b) return;
+    const el = document.getElementById(b.id.slice(2));
+    if (!el || el.type !== 'range' || el.disabled) return;
+    e.preventDefault(); e.stopPropagation();
+    const name = ((b.parentElement && b.parentElement.firstChild && b.parentElement.firstChild.textContent) || '').trim() || 'Value';
+    const min = +el.min || 0, max = el.max === '' ? 100 : +el.max, step = el.step === 'any' ? 0 : (+el.step || 1);
+    const raw = await askText(name + ' (' + min + ' to ' + max + ')', String(el.value), 'Set');
+    if (raw === null) return;
+    let v = parseFloat(String(raw).replace(',', '.').replace(/[^\d.+-]/g, ''));
+    if (!isFinite(v)) return;
+    v = Math.max(min, Math.min(max, v));
+    if (step) v = Math.round((v - min) / step) * step + min;
+    el.value = String(+v.toFixed(6));
+    el.dispatchEvent(new Event('input', { bubbles: true }));
+    el.dispatchEvent(new Event('change', { bubbles: true }));
+  }, true);
+})();
