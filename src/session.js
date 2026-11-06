@@ -342,6 +342,9 @@ function saveSessionState() {
 }
 function saveSessionImage(blob, name) {
   if (SELFTEST) return;
+  /* Build 311: for a video the saved copy is the clip itself, not the one frame it opened on, so coming back (after an
+     update, or a discarded tab) reopens it in video mode; src/video.js keeps the frame and Camera log in 'vid'. */
+  if (typeof videoSrc !== 'undefined' && videoSrc && videoSrc.file) { blob = videoSrc.file; name = videoSrc.file.name || 'video.mp4'; }
   // the SOURCE blob, not the rendered canvas: restoring then runs the normal
   // load path, so there is no re-encoding and no quality loss
   idbPut('image', { blob: blob, name: name || 'image', ts: Date.now() });
@@ -383,6 +386,7 @@ async function restoreSessionInner(rec) {
   if (loadToken !== before + 1) return;
   // settings applied after the image, since applyState triggers a render
   if (st && st.state) { try { applyState(st.state); } catch (e) {} }
+  if (typeof videoRestore === 'function') { try { await videoRestore(); } catch (e) {} }
 }
 
 /* Recent sessions come back automatically; older ones are offered.

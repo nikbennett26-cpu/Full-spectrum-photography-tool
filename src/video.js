@@ -107,6 +107,8 @@ function vidEta(t0, done, total) {
 /* Called first thing by loadFile: a video becomes a still frame (and is remembered); anything else clears the video. */
 async function videoIntercept(file) {
   if (!videoIsFile(file)) { if (videoSrc) { try { URL.revokeObjectURL(videoSrc.el.src); } catch (e) {} videoSrc = null; videoLogSet(''); videoUi(); } return file; }
+  /* take the bytes now: an Android picker's file can stop being readable later, and the session copy needs them */
+  try { if (file.size < 1.5e9) file = new File([await file.arrayBuffer()], file.name || 'video.mp4', { type: file.type || 'video/mp4', lastModified: file.lastModified }); } catch (e) {}
   let v;
   try { v = await videoLoad(file); } catch (e) { alert(e.message + '\n\nTry an H.264 MP4 (the usual phone and camera format).'); return null; }
   if (!v.videoWidth || !v.videoHeight) { alert('This browser can play the sound of that file but cannot decode its video (often 10-bit or HEVC/H.265). Re-save it as an H.264 MP4, or open it in Safari or a browser with HEVC support.'); URL.revokeObjectURL(v.src); return null; }
@@ -476,12 +478,32 @@ function videoLogLUT(kind, gamut) {
   }
   return { size: N, domainMin: [0, 0, 0], domainMax: [1, 1, 1], data };
 }
+/* The clip's own settings for session restore: frame, Camera log, colour space. */
+let videoSaveT = null;
+function videoSaveSoon() {
+  if (typeof sessionRestoring !== 'undefined' && sessionRestoring) return;
+  if (videoSaveT) clearTimeout(videoSaveT);
+  videoSaveT = setTimeout(() => {
+    if (!videoSrc || typeof idbPut !== 'function' || (typeof sessionRestoring !== 'undefined' && sessionRestoring)) return;
+    const sc = document.getElementById('vidScrub');
+    try { idbPut('vid', { name: videoSrc.file && videoSrc.file.name, t: videoSrc.dur * (sc ? +sc.value : 0) / 1000, log: videoLogKind, gamut: videoGamutKind, ts: Date.now() }); } catch (e) {}
+  }, 500);
+}
+async function videoRestore() {
+  if (!videoSrc || typeof idbGet !== 'function') return;
+  const r = await idbGet('vid'); if (!r || r.name !== (videoSrc.file && videoSrc.file.name)) return;
+  videoGamutKind = r.gamut || 'auto'; const gs = document.getElementById('vidGamut'); if (gs) gs.value = videoGamutKind;
+  videoLogSet(r.log || '');
+  const sc = document.getElementById('vidScrub');
+  if (sc && videoSrc.dur && r.t > 0) { sc.value = Math.round(1000 * Math.min(r.t, videoSrc.dur) / videoSrc.dur); videoScrubLabel(); await videoScrubTo(); }
+}
 function videoLogSet(kind) {
   videoLogKind = kind || '';
   const sel = document.getElementById('vidLog'); if (sel && sel.value !== videoLogKind) sel.value = videoLogKind;
   if (typeof engine === 'undefined' || !engine) { preLUTUser = null; return; }
   const gr = document.getElementById('vidGamutRow'); if (gr) gr.style.display = videoLogKind ? '' : 'none';
   preLUTUser = videoLogLUT(videoLogKind, videoGamutFor(videoLogKind));
+  if (videoSrc) videoSaveSoon();
   try { engine.setLUTPre(preLUTUser || decodeFilmLUT()); render(); } catch (e) {}
 }
 function videoScrubLabel() {
@@ -499,7 +521,7 @@ function videoPlayStop(keepAt) {
   videoPlaying = false; videoPlayTok++;
   const v = videoSrc && videoSrc.el;
   if (v) { try { v.pause(); } catch (e) {} v.muted = true; }
-  videoPlayUi();
+  videoPlayUi(); videoSaveSoon();
   if (v && videoSrc) {
     const sc = document.getElementById('vidScrub');
     if (sc && videoSrc.dur) { sc.value = Math.round(1000 * Math.min(v.currentTime, videoSrc.dur) / videoSrc.dur); videoScrubLabel(); }
@@ -609,7 +631,7 @@ async function videoCheckDevice() {
     const sel = document.getElementById('vidLog'), sc = document.getElementById('vidScrub');
     if (sel) sel.onchange = () => videoLogSet(sel.value);
     const gs = document.getElementById('vidGamut'); if (gs) gs.onchange = () => { videoGamutKind = gs.value || 'auto'; videoLogSet(videoLogKind); };
-    if (sc) { sc.oninput = () => { videoPlayStop(true); videoScrubLabel(); videoScrubTo(); }; }
+    if (sc) { sc.oninput = () => { videoPlayStop(true); videoScrubLabel(); videoScrubTo(); videoSaveSoon(); }; }
     const pb = document.getElementById('bVidPlay'); if (pb) pb.onclick = videoPlay;
     const ib = document.getElementById('bVidTab');
     if (ib) ib.onclick = () => { if (typeof dockGoTab === 'function' && document.documentElement.classList.contains('dockOn') || document.documentElement.classList.contains('studioOn')) dockGoTab('video'); else { const pn = document.getElementById('vidPanel'); if (pn) { pn.open = true; pn.scrollIntoView({ behavior: 'smooth', block: 'start' }); } } };
