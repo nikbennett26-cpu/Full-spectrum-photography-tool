@@ -546,9 +546,15 @@ async function videoPlay() {
   const step = () => {
     if (!videoPlaying || tok !== videoPlayTok) return;
     try {
-      cx.drawImage(v, 0, 0, cv.width, cv.height);
-      if (first || !(engine.updateFrame && engine.updateFrame(cv))) { engine.setImage(cv); first = false; }
-      engine.render(currentParams());
+      /* build 313: a clip already at the editing size goes straight from the <video> to the GPU, with no copy
+         through a 2D canvas, and the look is drawn at screen size (as during a slider drag), not full size */
+      const direct = !first && v.videoWidth === cv.width && v.videoHeight === cv.height && engine.updateFrame && engine.updateFrame(v, v.videoWidth, v.videoHeight);
+      if (!direct) {
+        cx.drawImage(v, 0, 0, cv.width, cv.height);
+        if (first || !(engine.updateFrame && engine.updateFrame(cv))) { engine.setImage(cv); first = false; }
+      }
+      const P = currentParams(), dsc = typeof draftScale === 'function' ? draftScale() : 1;
+      if (dsc < 0.98 && engine.renderScaled) engine.renderScaled(P, dsc); else engine.render(P);
       const now = performance.now();
       if (sc && now - lastLabel > 150) { lastLabel = now; sc.value = Math.round(1000 * Math.min(v.currentTime, videoSrc.dur) / videoSrc.dur); videoScrubLabel(); }
     } catch (e) {}

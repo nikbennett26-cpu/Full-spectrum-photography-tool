@@ -499,9 +499,9 @@ void main(){
 
   /* Build 299: the next frame of a video, same size as the picture already on the GPU: a sub-upload instead of the full
      setImage (no canvas resize, no texture re-creation). False when it can't, so the caller falls back to setImage. */
-  updateFrame(img) {
+  updateFrame(img, w, h) {   /* w, h: for a <video>, whose .width is not its picture size (build 313) */
     const gl = this.gl;
-    if (!this.texture || this.inputIsLinear || this.canvas.width !== img.width || this.canvas.height !== img.height) return false;
+    if (!this.texture || this.inputIsLinear || this.canvas.width !== (w || img.width) || this.canvas.height !== (h || img.height)) return false;
     gl.activeTexture(gl.TEXTURE0);
     gl.bindTexture(gl.TEXTURE_2D, this.texture);
     gl.texSubImage2D(gl.TEXTURE_2D, 0, 0, 0, gl.RGBA, gl.UNSIGNED_BYTE, img);
