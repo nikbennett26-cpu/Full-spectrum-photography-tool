@@ -34,27 +34,46 @@ function videoSeek(v, t) {
     v.currentTime = t;
   });
 }
+/* Draws a frame of v into canvas c and returns the time used. A frame grabbed the instant a seek finishes can come back
+   black (the picture has not been presented yet), and a clip can also open on black, so: wait for the frame to be shown,
+   and if it is black, try a few other moments and keep the first one with something in it. */
+async function videoGrab(v, c, dur) {
+  const w = c.width, h = c.height, x = c.getContext('2d', { willReadFrequently: true });
+  const lum = () => { try { const d = x.getImageData(0, 0, w, h).data; let s = 0, n = 0; for (let i = 0; i < d.length; i += 4 * 97) { s += d[i] + d[i + 1] + d[i + 2]; n += 3; } return s / n; } catch (e) { return 99; } };
+  const tries = [Math.min(0.5, dur / 2), dur * 0.25, dur * 0.5, dur * 0.1, dur * 0.75, 0];
+  let first = null;
+  for (const t0 of tries) {
+    const t = Math.max(0, Math.min(t0, Math.max(0, dur - 0.05)));
+    const shown = videoShownTime(v, t); await videoSeek(v, t); await shown;
+    x.drawImage(v, 0, 0, w, h);
+    let l = lum();
+    if (l < 2) { await vidSleep(250); x.drawImage(v, 0, 0, w, h); l = lum(); }
+    if (first === null) first = t;
+    if (l >= 2) return t;
+  }
+  return first === null ? 0 : first;
+}
 function videoUi() {
   const b = document.getElementById('bVid'), n = document.getElementById('vidNote');
   if (b) b.style.display = videoSrc ? '' : 'none';
   if (n) n.style.display = videoSrc ? '' : 'none';
   const t = document.getElementById('vidTools'); if (t) t.style.display = videoSrc ? '' : 'none';
-  const sc = document.getElementById('vidScrub'); if (sc && videoSrc) { sc.value = Math.round(1000 * Math.min(0.5, videoSrc.dur / 2) / (videoSrc.dur || 1)); videoScrubLabel(); }
+  const sc = document.getElementById('vidScrub'); if (sc && videoSrc) { sc.value = Math.round(1000 * (videoSrc.startT || 0) / (videoSrc.dur || 1)); videoScrubLabel(); }
 }
 /* Called first thing by loadFile: a video becomes a still frame (and is remembered); anything else clears the video. */
 async function videoIntercept(file) {
   if (!videoIsFile(file)) { if (videoSrc) { try { URL.revokeObjectURL(videoSrc.el.src); } catch (e) {} videoSrc = null; videoLogSet(''); videoUi(); } return file; }
   let v;
   try { v = await videoLoad(file); } catch (e) { alert(e.message + '\n\nTry an H.264 MP4 (the usual phone and camera format).'); return null; }
+  if (!v.videoWidth || !v.videoHeight) { alert('This browser can play the sound of that file but cannot decode its video (often 10-bit or HEVC/H.265). Re-save it as an H.264 MP4, or open it in Safari or a browser with HEVC support.'); URL.revokeObjectURL(v.src); return null; }
   const dur = isFinite(v.duration) ? v.duration : 0;
-  await videoSeek(v, Math.min(0.5, dur / 2));
   const [w, h] = videoSize(v);
   const c = document.createElement('canvas'); c.width = w; c.height = h;
-  c.getContext('2d').drawImage(v, 0, 0, w, h);
+  const g = await videoGrab(v, c, dur);
   const blob = await new Promise(r => c.toBlob(r, 'image/jpeg', 0.95));
   if (!blob) { URL.revokeObjectURL(v.src); alert('Could not read a frame from that video.'); return null; }
   if (videoSrc && videoSrc.el) { try { URL.revokeObjectURL(videoSrc.el.src); } catch (e) {} }
-  videoSrc = { file, w, h, dur, el: v };
+  videoSrc = { file, w, h, dur, el: v, startT: g };
   videoLogSet('');
   videoUi();
   if (typeof toast === 'function') toast('Video opened on one frame. Edit as usual, then Export video (Export tab).');
