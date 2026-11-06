@@ -3219,7 +3219,9 @@ uniform float u_skyL;          // the typical lightness of the sky; anything cle
     if (u_ortonOn > 0.5) {
       vec3 ox = clamp(srgb, 0.0, 1.0);
       vec3 oScr = 1.0 - (1.0 - ox) * (1.0 - ox);   // the picture screened onto itself: Orton's overexposed copy
-      if (u_ortonProbe > 0.5) { gl_FragColor = vec4(oScr, 1.0); return; }
+      /* build 321: alpha carries each pixel's highlight energy for Halation, worked out here at half size BEFORE any
+         blurring (see the Halation stage below for why) */
+      if (u_ortonProbe > 0.5) { float hL = dot(ox, LUMW); gl_FragColor = vec4(oScr, hL * smoothstep(0.55, 1.0, hL)); return; }
       vec2 ouv = gl_FragCoord.xy * u_ortonInv;
       if (u_orton > 0.0) {
       vec2 ost = exp2(u_ortonBias) * u_ortonTexel;
@@ -3243,19 +3245,30 @@ uniform float u_skyL;          // the typical lightness of the sky; anything cle
          worth the name, so bright edges glow warm red. Here: the bright part of the finished picture (recovered from
          the same half-size texture the Orton stage uses, by undoing its screen), blurred wider than Orton's, tinted
          red-orange and screened back on, so it can only brighten and never leaves 0..1. */
+      /* Build 321: every highlight glows, not just the sky. The highlight test used to be made AFTER the blur: the
+         texture was read at a coarse mip level, where a small bright thing (a car's roof, a windscreen glint, a
+         lamp) has already been averaged with the dark around it, falls under the 0.55 threshold, and so gave no
+         glow at all, while a big bright area like the sky stayed bright and glowed. Now each pixel's highlight
+         energy is decided first, at half size, in the texture's alpha (the Orton probe above), and only then
+         blurred, so a small highlight adds a glow in proportion to how bright and how big it is, as light
+         scattering in the film base would. And film halation is mostly a tight rim close to the source with a
+         fainter wide spread, so the glow is a tight ring (a quarter of the Spread radius) plus the wide one, weighted
+         so a large bright area glows about as strongly as it did before. */
       if (u_halation > 0.0) {
         vec2 hst = exp2(u_halBias) * u_ortonTexel;
-        vec3 hb = vec3(0.0); float hw = 0.0;
+        float hbT = max(u_halBias - 2.0, 0.0);
+        vec2 hstT = exp2(hbT) * u_ortonTexel;
+        float hwide = 0.0, htight = 0.0, hw = 0.0;
         for (int j = -2; j <= 2; j++) {
           for (int i = -2; i <= 2; i++) {
             float w = exp(-float(i * i + j * j) / 4.5);
-            vec3 hs = texture2D(u_ortonTex, ouv + vec2(float(i), float(j)) * hst, u_halBias + 1.0).rgb;
-            vec3 hx = 1.0 - sqrt(max(1.0 - hs, 0.0));
-            hb += hx * smoothstep(0.55, 1.0, dot(hx, LUMW)) * w; hw += w;
+            vec2 o = vec2(float(i), float(j));
+            hwide  += texture2D(u_ortonTex, ouv + o * hst,  u_halBias + 1.0).a * w;
+            htight += texture2D(u_ortonTex, ouv + o * hstT, hbT + 1.0).a * w;
+            hw += w;
           }
         }
-        hb /= hw;
-        float hl = dot(hb, LUMW);
+        float hl = (0.55 * hwide + 0.45 * htight) / hw;
         vec3 hglow = clamp(vec3(1.0, 0.22, 0.05) * hl * 2.4 * u_halation, 0.0, 1.0);
         srgb = 1.0 - (1.0 - clamp(srgb, 0.0, 1.0)) * (1.0 - hglow);
       }
