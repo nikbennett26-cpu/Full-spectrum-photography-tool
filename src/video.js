@@ -4,7 +4,7 @@
    writes an MP4. Decoding uses the browser's own <video>, encoding uses WebCodecs, and the MP4 container comes from
    the MIT-licensed mp4-muxer (vendor/mp4-muxer.js, loaded only when a video is exported). */
 let videoSrc = null;          /* { file, w, h, dur } while the open picture is a frame of a video, else null */
-let videoStop = false, videoBusy = false;
+let videoStop = false, videoBusy = false, videoPlaying = false, videoPlayTok = 0;
 let videoLogKind = '';
 const VID_MAX = 1920;         /* the longest side is brought down to this: the processing is per frame, in the browser */
 
@@ -62,6 +62,7 @@ async function videoGrab(v, c, dur) {
   return first === null ? 0 : first;
 }
 function videoUi() {
+  if (!videoSrc) { try { videoPlayStop(true); } catch (e) {} }
   const p = document.getElementById('vidPanel');
   if (p) p.style.display = videoSrc ? '' : 'none';
   const ib = document.getElementById('bVidTab'); if (ib) ib.style.display = videoSrc ? '' : 'none';
@@ -350,7 +351,7 @@ async function videoExport() {
   if (!window.VideoEncoder || !window.VideoFrame) {
     alert('This browser cannot write video (no WebCodecs). Use a recent Chrome, Edge or Safari.'); return;
   }
-  videoBusy = true; videoStop = false;
+  videoPlayStop(); videoBusy = true; videoStop = false;
   const label = btn ? btn.textContent : '';
   const say = t => { if (btn) btn.textContent = t; };
   let v = null, ok = false;
@@ -452,6 +453,53 @@ function videoScrubLabel() {
   if (sc && l && videoSrc) l.textContent = (videoSrc.dur * sc.value / 1000).toFixed(1) + ' s';
 }
 let videoScrubBusy = false, videoScrubAgain = false;
+/* Live preview: play the clip in the editor with the current look applied. Frames are drawn as the browser shows them
+   (requestVideoFrameCallback where it has it), so a slow device drops frames rather than falling behind. */
+function videoPlayUi() {
+  const b = document.getElementById('bVidPlay'); if (b) b.textContent = videoPlaying ? '❚❚ Pause' : '▶ Preview';
+}
+function videoPlayStop(keepAt) {
+  if (!videoPlaying) return;
+  videoPlaying = false; videoPlayTok++;
+  const v = videoSrc && videoSrc.el;
+  if (v) { try { v.pause(); } catch (e) {} v.muted = true; }
+  videoPlayUi();
+  if (v && videoSrc) {
+    const sc = document.getElementById('vidScrub');
+    if (sc && videoSrc.dur) { sc.value = Math.round(1000 * Math.min(v.currentTime, videoSrc.dur) / videoSrc.dur); videoScrubLabel(); }
+    try {
+      const cv = (typeof rawCanvas !== 'undefined') ? rawCanvas : null;
+      if (cv && !keepAt) { cv.getContext('2d').drawImage(v, 0, 0, cv.width, cv.height); engine.setImage(typeof dustPrepare === 'function' ? dustPrepare(cv) : cv); render(); }
+    } catch (e) {}
+  }
+}
+async function videoPlay() {
+  if (videoPlaying) { videoPlayStop(); return; }
+  if (!videoSrc || !videoSrc.el || videoBusy || typeof engine === 'undefined' || !engine) return;
+  const v = videoSrc.el, cv = (typeof rawCanvas !== 'undefined') ? rawCanvas : null; if (!cv) return;
+  const sc = document.getElementById('vidScrub');
+  if (sc && +sc.value >= 995) sc.value = 0;
+  try { await videoSeek(v, Math.min(videoSrc.dur * (sc ? sc.value : 0) / 1000, Math.max(0, videoSrc.dur - 0.05))); } catch (e) {}
+  v.muted = false;
+  try { await v.play(); } catch (e) { v.muted = true; try { await v.play(); } catch (e2) { toast('This browser would not play the clip', true); return; } }
+  videoPlaying = true; const tok = ++videoPlayTok; videoPlayUi();
+  const cx = cv.getContext('2d'); let first = true, lastLabel = 0;
+  const step = () => {
+    if (!videoPlaying || tok !== videoPlayTok) return;
+    try {
+      cx.drawImage(v, 0, 0, cv.width, cv.height);
+      if (first || !(engine.updateFrame && engine.updateFrame(cv))) { engine.setImage(cv); first = false; }
+      engine.render(currentParams());
+      const now = performance.now();
+      if (sc && now - lastLabel > 150) { lastLabel = now; sc.value = Math.round(1000 * Math.min(v.currentTime, videoSrc.dur) / videoSrc.dur); videoScrubLabel(); }
+    } catch (e) {}
+    if (v.ended) { videoPlayStop(); return; }
+    next();
+  };
+  const next = () => { if (v.requestVideoFrameCallback) v.requestVideoFrameCallback(step); else requestAnimationFrame(step); };
+  v.onended = () => videoPlayStop();
+  next();
+}
 async function videoScrubTo() {
   if (!videoSrc || !videoSrc.el || videoBusy) return;
   if (videoScrubBusy) { videoScrubAgain = true; return; }
@@ -505,7 +553,8 @@ function videoLookApply(name) {
     videoLooksFill();
     const sel = document.getElementById('vidLog'), sc = document.getElementById('vidScrub');
     if (sel) sel.onchange = () => videoLogSet(sel.value);
-    if (sc) { sc.oninput = () => { videoScrubLabel(); videoScrubTo(); }; }
+    if (sc) { sc.oninput = () => { videoPlayStop(true); videoScrubLabel(); videoScrubTo(); }; }
+    const pb = document.getElementById('bVidPlay'); if (pb) pb.onclick = videoPlay;
     const ib = document.getElementById('bVidTab');
     if (ib) ib.onclick = () => { if (typeof dockGoTab === 'function' && document.documentElement.classList.contains('dockOn') || document.documentElement.classList.contains('studioOn')) dockGoTab('video'); else { const pn = document.getElementById('vidPanel'); if (pn) { pn.open = true; pn.scrollIntoView({ behavior: 'smooth', block: 'start' }); } } };
   };
