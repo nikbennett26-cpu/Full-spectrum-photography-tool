@@ -32,7 +32,6 @@
   const MIN_SHEET = 0.27, FULL = 0.74, GAP = 8;
   let tab = 'looks', H = 0, rest = 'peek', inited = false;
   const px = f => Math.round(window.innerHeight * f);
-  let liftOn = false, liftT = 0, touchingZone = false, lastUser = 0;   // build 319: the sheet lifting while you scroll (see lift())
 
   function classify() {
     [...zone.children].forEach(el => {
@@ -152,7 +151,6 @@
     }
   }
   function apply() {
-    if (liftOn) { liftOn = false; root.classList.remove('sheetLift'); }
     root.style.setProperty('--sheetH', H + 'px');
     root.classList.toggle('sheetClosed', H < 28);
     layout();
@@ -221,34 +219,9 @@
   };
   grip.addEventListener('pointerup', endGrip); grip.addEventListener('pointercancel', endGrip);
 
-  /* Build 319: while you scroll through the tools, the sheet rises over part of the photo to show more of them, and
-     it drops back to its usual height once you stop (a moment after the last scroll, with no finger on it). Only a
-     scroll you make moves it, not one the app makes when it brings a card into view. A slider dragged while it is up
-     keeps it up until you let go, so nothing moves under your finger. The photo underneath is not resized, so it
-     does not jump either. */
-  liftT = 0;
-  const LIFT_TO = 0.66;   // of the screen height, at most; the top third of the photo stays in view
-  function liftTarget() { return Math.max(H, Math.round(window.innerHeight * LIFT_TO)); }
-  function lift() {
-    if (!root.classList.contains('dockOn') || root.classList.contains('sheetClosed') || H < 28) return;
-    if (zone.scrollHeight <= zone.clientHeight + 24) return;   // nothing more to show
-    const t = liftTarget(); if (t <= H + 24) return;
-    if (!liftOn) { liftOn = true; root.classList.add('sheetLift'); root.style.setProperty('--sheetH', t + 'px'); }
-    clearTimeout(liftT); liftT = setTimeout(dropSoon, 900);
-  }
-  function dropSoon() {
-    if (!liftOn) return;
-    if (touchingZone || (typeof sliderDragging !== 'undefined' && sliderDragging)) { liftT = setTimeout(dropSoon, 400); return; }
-    liftOn = false; root.classList.remove('sheetLift');
-    root.style.setProperty('--sheetH', H + 'px');
-  }
-  zone.addEventListener('touchstart', () => { touchingZone = true; lastUser = performance.now(); }, { passive: true });
-  ['touchend', 'touchcancel'].forEach(t => zone.addEventListener(t, () => { touchingZone = false; lastUser = performance.now(); if (liftOn) { clearTimeout(liftT); liftT = setTimeout(dropSoon, 900); } }, { passive: true }));
-  zone.addEventListener('wheel', () => { lastUser = performance.now(); }, { passive: true });
-  zone.addEventListener('scroll', () => {
-    // a scroll counts as yours while a finger is on the sheet, or just after one lifted (momentum), or after the wheel
-    if (touchingZone || performance.now() - lastUser < 1200) lift();
-  }, { passive: true });
+  /* Build 319 lifted the sheet over the photo while you scrolled the tools; build 322 takes that out again. A tap to
+     pick a tool usually moves the finger a little, which counted as a scroll, so the panel jumped up just as you went
+     to press something. */
 
   /* Build 242: the pull-down on the panel itself is gone. With the tools scrolled to the top, a downward swipe on any
      plain part of them pulled the whole sheet down, which is exactly the gesture of scrolling up to reach a tool, so it

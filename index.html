@@ -25,7 +25,7 @@
 <meta name="twitter:image" content="https://irlab.uk/og-card.png?v=112">
 <link rel="canonical" href="https://irlab.uk/">
 <meta name="theme-color" content="#141518">
-<meta name="irlab-build" content="321">
+<meta name="irlab-build" content="322">
 <link rel="manifest" href="/manifest.json">
 <link rel="icon" href="/favicon.ico?v=3" sizes="any">
 <link rel="icon" href="/favicon.svg?v=3" type="image/svg+xml">
@@ -54,15 +54,15 @@
 </script>
 
 <link rel="preload" href="fonts/inter-latin-400-normal.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="stylesheet" href="css/fonts.css?b=321">
+<link rel="stylesheet" href="css/fonts.css?b=322">
 
-<script src="i18n/tr.js?b=321"></script>
-<link rel="stylesheet" href="css/main.css?b=321">
-<link rel="stylesheet" id="uxRefresh" href="css/refresh.css?b=321">
-<link rel="stylesheet" href="css/trichrome.css?b=321">
-<link rel="stylesheet" id="uxDock" href="css/dock.css?b=321">
-<link rel="stylesheet" href="css/minimal.css?b=321">
-<link rel="preload" href="editor.js?b=321" as="script">
+<script src="i18n/tr.js?b=322"></script>
+<link rel="stylesheet" href="css/main.css?b=322">
+<link rel="stylesheet" id="uxRefresh" href="css/refresh.css?b=322">
+<link rel="stylesheet" href="css/trichrome.css?b=322">
+<link rel="stylesheet" id="uxDock" href="css/dock.css?b=322">
+<link rel="stylesheet" href="css/minimal.css?b=322">
+<link rel="preload" href="editor.js?b=322" as="script">
 </head>
 <body>
 
@@ -210,7 +210,8 @@
   <footer class="labFoot">
     <div id="whatsNew">
       <details>
-        <summary><span data-i18n="whatsNewLabel">What’s new</span><span class="wnLatest">Halation on every highlight</span></summary>
+        <summary><span data-i18n="whatsNewLabel">What’s new</span><span class="wnLatest">Panel stays put</span></summary>
+        <p style="margin:0 0 3px"><b style="color:var(--phosphor-dim)">Panel stays put.</b> The tools panel no longer rises over the photo while you scroll it (added in build 319): a tap to pick something usually moved the finger a little, so the panel jumped just as you went to press. The shorter rows stay.</p>
         <p style="margin:0 0 3px"><b style="color:var(--phosphor-dim)">Halation on every highlight.</b> Halation only ever glowed around the sky: it judged what counted as a highlight after blurring, by which point a small bright thing (a car roof, a windscreen glint, a lamp) had been averaged into its dark surroundings and no longer qualified. It now picks out highlights first and blurs after, so everything bright glows in proportion to how bright and how big it is, with a tight red rim close to the source and a softer spread around it, as on film. The sky glows about as much as before, and the faint stripes that sometimes ran beside a bright edge are gone.</p>
         <p style="margin:0 0 3px"><b style="color:var(--phosphor-dim)">Faster start, calmer messages.</b> The editor's code is about a quarter smaller to download: Triple Band Aerochrome's film data now loads on its own once the page is up, instead of inside the editor, and the editor starts downloading straight away. On a slow phone connection the start page is ready to open a file almost a second sooner. Messages (a file that cannot be read, an export that failed, anything unexpected) now appear in a card inside the app, with Copy and Close, instead of the browser's pop-up that froze the page. The thin red line at the edge of the picture is gone: the before/after divider only shows while it is somewhere inside the picture. Old style rules left behind by removed features are cleared out; the app looks exactly the same.</p>
         <p style="margin:0 0 3px"><b style="color:var(--phosphor-dim)">More room for the tools.</b> On a phone, the tool rows are shorter (one more fits on screen), and while you scroll through the tools the panel rises over part of the photo to show more of them, then drops back a moment after you stop. The photo is not resized, so it does not jump. With a mouse, resting on an icon in the top row now shows its name, as a long press already did on a phone.</p>
@@ -644,7 +645,7 @@
     <!-- Build 279: the people behind it, on the home page -->
     <div id="creditsHome">Made by <a href="https://www.instagram.com/irlab.uk" target="_blank" rel="noopener" style="color:var(--safelight);font-weight:600;text-decoration:none">Nik Bennett</a>
       &middot; Colour science &amp; RAW decode by <a href="https://philwarrenphotography.com" target="_blank" rel="noopener" style="color:var(--safelight);font-weight:600;text-decoration:none">Phil Warren</a></div>
-    <div id="buildStampHome">Version 2026-11-06 · build 321</div>
+    <div id="buildStampHome">Version 2026-11-06 · build 322</div>
   </footer>
 </div>
 
@@ -1857,7 +1858,7 @@
       <br><a href="privacy.html" target="_blank" rel="noopener" style="color:var(--muted);text-decoration:underline">Privacy</a>
       <br><a href="LICENSE.md" target="_blank" rel="noopener" style="color:var(--muted);text-decoration:underline">Source: AGPL-3.0</a>
       <br><a href="THIRD_PARTY_NOTICES.md" target="_blank" rel="noopener" style="color:var(--muted);text-decoration:underline">Third-party notices (LibRaw, RawTherapee)</a>
-<br><span id="buildStamp" style="color:var(--muted)" title="Which version of the app this is. Tap the arrow to check for a newer one and update.">Version 2026-11-06 · build 321</span>
+<br><span id="buildStamp" style="color:var(--muted)" title="Which version of the app this is. Tap the arrow to check for a newer one and update.">Version 2026-11-06 · build 322</span>
       <br><button id="btnInstall" type="button">Install as an app</button>
       <span id="kbHint">Ctrl+Z undo &middot; Ctrl+Shift+Z redo &middot; [ ] cycle presets &middot; F full quality view &middot; Space hold to compare</span>
     </footer>
@@ -1953,6 +1954,6 @@
 <!-- The editor's code: editor.js, BUILT from src/*.js by tools/build.py (see the README's Code layout). One script, so
      it all runs in one go, as the single inline block it came from did. ?b=<build> keeps the service worker's cached
      copy of an older editor.js from ever running under a newer page; tools/bump_build.py sets it. -->
-<script src="editor.js?b=321"></script>
+<script src="editor.js?b=322"></script>
 </body>
 </html>
