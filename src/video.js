@@ -56,6 +56,8 @@ async function videoGrab(v, c, dur) {
 function videoUi() {
   const p = document.getElementById('vidPanel');
   if (p) p.style.display = videoSrc ? '' : 'none';
+  const ib = document.getElementById('bVidTab'); if (ib) ib.style.display = videoSrc ? '' : 'none';
+  if (!videoSrc && document.documentElement.dataset.tab === 'video') { const lt = document.querySelector('#dock button[data-tab="looks"],.dock button[data-tab="looks"]'); if (lt) lt.click(); }
   const sc = document.getElementById('vidScrub'); if (sc && videoSrc) { sc.value = Math.round(1000 * (videoSrc.startT || 0) / (videoSrc.dur || 1)); videoScrubLabel(); }
   videoInfo();
 }
@@ -109,7 +111,7 @@ async function videoIntercept(file) {
   videoSrc = { file, w, h, dur, el: v, startT: g };
   videoLogSet('');
   videoUi();
-  if (typeof toast === 'function') toast('Video opened on one frame. Edit as usual, then Export video (Export tab).');
+  if (typeof toast === 'function') toast('Video opened on one frame. Edit as usual; the video icon at the top has Export video.');
   return new File([blob], (file.name || 'video').replace(/\.\w+$/, '') + '-frame.jpg', { type: 'image/jpeg' });
 }
 /* Frame rate: play a few frames and read their media times; falls back to 30. */
@@ -463,6 +465,8 @@ async function videoScrubTo() {
     const sel = document.getElementById('vidLog'), sc = document.getElementById('vidScrub');
     if (sel) sel.onchange = () => videoLogSet(sel.value);
     if (sc) { sc.oninput = () => { videoScrubLabel(); videoScrubTo(); }; }
+    const ib = document.getElementById('bVidTab');
+    if (ib) ib.onclick = () => { if (typeof dockGoTab === 'function' && document.documentElement.classList.contains('dockOn') || document.documentElement.classList.contains('studioOn')) dockGoTab('video'); else { const pn = document.getElementById('vidPanel'); if (pn) { pn.open = true; pn.scrollIntoView({ behavior: 'smooth', block: 'start' }); } } };
   };
   if (document.readyState !== 'loading') go(); else document.addEventListener('DOMContentLoaded', go);
 })();

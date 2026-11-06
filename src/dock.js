@@ -37,7 +37,8 @@
     [...zone.children].forEach(el => {
       let t = null, o = 0;
       const step = el.dataset && el.dataset.step;
-      if (step === 'swap') { t = 'looks'; o = 2; }
+      if (el.id === 'vidPanel') { t = 'video'; o = 1; }
+      else if (step === 'swap') { t = 'looks'; o = 2; }
       else if (step === 'light') { t = 'light'; o = 1; }
       else if (step === 'wb') { t = 'colour'; o = 1; }
       else if (step === 'colour') { t = 'colour'; o = 2; }
@@ -196,6 +197,11 @@
     else setTab(t);
     if (typeof haptic === 'function') haptic('select');
   }));
+  /* Build 304: the Video tab has no button in the bar (the bar is full); the video icon in the top row opens it here. */
+  window.dockGoTab = function (t) {
+    if (root.classList.contains('studioOn')) { setTab(t); return; }
+    if (H < 28) { setTab(t); setRest('peek'); } else setTab(t);
+  };
   let g = null;
   grip.addEventListener('pointerdown', e => { g = { y: e.clientY, h: H, moved: false, top: peekH() }; try { grip.setPointerCapture(e.pointerId); } catch (x) {} });
   grip.addEventListener('pointermove', e => {

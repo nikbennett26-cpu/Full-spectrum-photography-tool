@@ -36,6 +36,7 @@
   html.dockOn[data-tab="light"] body.has-image #reorderZone > [data-dock="light"]:not([style*="display: none"]),
   html.dockOn[data-tab="colour"] body.has-image #reorderZone > [data-dock="colour"]:not([style*="display: none"]),
   html.dockOn[data-tab="detail"] body.has-image #reorderZone > [data-dock="detail"]:not([style*="display: none"]),
+  html.dockOn[data-tab="video"] body.has-image #reorderZone > [data-dock="video"]:not([style*="display: none"]),
   html.dockOn[data-tab="export"] body.has-image #reorderZone > [data-dock="export"]:not([style*="display: none"]){display:block !important}
   html.dockOn body.has-image #reorderZone > .panel,html.dockOn body.has-image #reorderZone > details.panel{margin:0 0 12px;flex:none}
   html.dockOn body.has-image #reorderZone > [data-solo] > summary{display:none}
@@ -261,6 +262,7 @@ html.dockOn body.has-image,html.dockOn body.has-image #previewSticky,html.dockOn
   html.studioOn[data-tab="light"] body.has-image #reorderZone > [data-dock="light"]:not([style*="display: none"]),
   html.studioOn[data-tab="colour"] body.has-image #reorderZone > [data-dock="colour"]:not([style*="display: none"]),
   html.studioOn[data-tab="detail"] body.has-image #reorderZone > [data-dock="detail"]:not([style*="display: none"]),
+  html.studioOn[data-tab="video"] body.has-image #reorderZone > [data-dock="video"]:not([style*="display: none"]),
   html.studioOn[data-tab="export"] body.has-image #reorderZone > [data-dock="export"]:not([style*="display: none"]),
   html.studioOn body.has-image #reorderZone > [data-dock="all"]{display:block !important;flex:none;animation:stIn .24s cubic-bezier(.2,.8,.2,1)}
   @keyframes stIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
@@ -597,27 +599,28 @@ html.dockOn body.has-image .toolbar .keyBtn.keySm .kMore{display:none}
 html.dockOn body.has-image .toolbar{display:grid!important;grid-template-columns:none!important;grid-auto-flow:column!important;grid-auto-columns:minmax(0,1fr)!important;gap:2px!important;align-items:stretch!important;overflow:visible!important;padding:2px 0 4px!important}
 html.dockOn body.has-image .toolbar .ptTools{display:contents!important}
 html.dockOn body.has-image .toolbar > .toolbarDiv,html.dockOn body.has-image .toolbar > #lnkFilters{display:none!important}
-html.dockOn body.has-image .toolbar > :is(.filelabel,#bHome,#bReset,#filterDbBtn), html.dockOn body.has-image .toolbar .ptTools > button{position:relative!important;display:block!important;flex:none!important;width:auto!important;height:54px!important;min-height:0!important;min-width:0!important;margin:0!important;
+html.dockOn body.has-image .toolbar > :is(.filelabel,#bHome,#bReset,#bVidTab,#filterDbBtn), html.dockOn body.has-image .toolbar .ptTools > button{position:relative!important;display:block!important;flex:none!important;width:auto!important;height:54px!important;min-height:0!important;min-width:0!important;margin:0!important;
   padding:0!important;border:0!important;border-radius:6px!important;background:transparent!important;box-shadow:none!important;color:var(--paper)!important;
   font:15px/30px var(--font-body)!important;letter-spacing:0!important;text-align:center!important;text-decoration:none!important;transform:none!important;overflow:visible!important}
-html.dockOn body.has-image .toolbar > :is(#bHome,#bReset,#filterDbBtn)::before, html.dockOn body.has-image .toolbar .ptTools > button::before{content:'';position:absolute;left:50%;top:2px;width:30px;height:30px;margin-left:-15px;box-sizing:border-box;border:1px solid var(--line2);border-radius:4px;
+html.dockOn body.has-image .toolbar > :is(#bHome,#bReset,#bVidTab,#filterDbBtn)::before, html.dockOn body.has-image .toolbar .ptTools > button::before{content:'';position:absolute;left:50%;top:2px;width:30px;height:30px;margin-left:-15px;box-sizing:border-box;border:1px solid var(--line2);border-radius:4px;
   display:flex;align-items:center;justify-content:center;font:15px/1 var(--font-body);color:var(--paper);pointer-events:none}
 html.dockOn body.has-image .toolbar > #bHome::before{content:'\2302'}
 html.dockOn body.has-image .toolbar > #bReset::before{content:'\27F2'}
-html.dockOn body.has-image .toolbar > :is(#bHome,#bReset) > span{display:none!important}
+html.dockOn body.has-image .toolbar > #bVidTab::before{content:'\25B6'}
+html.dockOn body.has-image .toolbar > :is(#bHome,#bReset,#bVidTab) > span{display:none!important}
 html.dockOn body.has-image .toolbar > #filterDbBtn svg{display:block;width:18px;height:18px;margin:8px auto 0}
-html.dockOn body.has-image .toolbar > :is(.filelabel,#bHome,#bReset,#filterDbBtn)::after, html.dockOn body.has-image .toolbar .ptTools > button::after{content:attr(data-lbl);position:absolute;left:0;right:0;bottom:2px;font:500 10.5px/1 var(--font-mono);letter-spacing:-.01em;color:var(--paper-dim);
+html.dockOn body.has-image .toolbar > :is(.filelabel,#bHome,#bReset,#bVidTab,#filterDbBtn)::after, html.dockOn body.has-image .toolbar .ptTools > button::after{content:attr(data-lbl);position:absolute;left:0;right:0;bottom:2px;font:500 10.5px/1 var(--font-mono);letter-spacing:-.01em;color:var(--paper-dim);
   text-align:center;white-space:nowrap;pointer-events:none}
 html.dockOn body.has-image .toolbar > .keyBtn.keySm::before{position:absolute;left:50%;top:2px;margin-left:-15px;width:30px!important;height:30px!important}
 html.dockOn body.has-image .toolbar > .keyBtn.keySm{font-size:0!important}
 html.dockOn body.has-image .toolbar > .keyBtn.keySm > :is(.kTxt,.kMore){display:none!important}
 html.dockOn body.has-image .toolbar > .keyBtn.keySm::after{color:var(--paper)!important;font-weight:700}
 html.dockOn body.has-image .toolbar > :is(#bHome,#bReset), html.dockOn body.has-image .toolbar .ptTools > button{box-sizing:border-box!important;padding:0 0 21px!important}
-html.dockOn body.has-image .toolbar > :is(.filelabel,#bHome,#bReset,#filterDbBtn):active::before,html.dockOn body.has-image .toolbar .ptTools > button:active::before{border-color:var(--safelight)}
+html.dockOn body.has-image .toolbar > :is(.filelabel,#bHome,#bReset,#bVidTab,#filterDbBtn):active::before,html.dockOn body.has-image .toolbar .ptTools > button:active::before{border-color:var(--safelight)}
 /* ---- Build 129: icons only, no words under them; the rail shrinks to the icon height. The words stay as each control's
    accessible name and tooltip. ---- */
-html.dockOn body.has-image .toolbar > :is(.filelabel,#bHome,#bReset,#filterDbBtn)::after, html.dockOn body.has-image .toolbar .ptTools > button::after{content:none!important;display:none!important}
-html.dockOn body.has-image .toolbar > :is(.filelabel,#bHome,#bReset,#filterDbBtn), html.dockOn body.has-image .toolbar .ptTools > button{height:34px!important}
+html.dockOn body.has-image .toolbar > :is(.filelabel,#bHome,#bReset,#bVidTab,#filterDbBtn)::after, html.dockOn body.has-image .toolbar .ptTools > button::after{content:none!important;display:none!important}
+html.dockOn body.has-image .toolbar > :is(.filelabel,#bHome,#bReset,#bVidTab,#filterDbBtn), html.dockOn body.has-image .toolbar .ptTools > button{height:34px!important}
 html.dockOn body.has-image .toolbar > :is(#bHome,#bReset), html.dockOn body.has-image .toolbar .ptTools > button{padding:0!important;line-height:34px!important}
 /* ---- Build 130: Reset all is an eraser, so it no longer looks like the rotate arrows beside it. The svg is hidden
    everywhere except the phone rail. ---- */
@@ -831,3 +834,8 @@ b.fpMeas,span.fpMeas{background:var(--safelight)}
 
 #plainSharpenSub{display:none}
 body.rawOpen #plainSharpenSub{display:block}
+
+/* Build 304: the credits line under the histogram (a footer in the page, behind the controls sheet) peeked out above a
+   short picture such as a 16:9 video, with the sheet's handle across its last line. On the phone layout it stays hidden;
+   the credits and privacy links are on the home page. */
+html.dockOn body.has-image #main > footer{display:none!important}
