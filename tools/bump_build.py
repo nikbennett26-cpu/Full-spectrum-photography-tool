@@ -23,7 +23,7 @@ fp = os.path.join(os.path.dirname(p), 'filters.html')
 f = open(fp, encoding='utf-8').read()
 f, fa = re.subn(r'<meta name="irlab-build" content="\d+">', f'<meta name="irlab-build" content="{n}">', f)
 f, fc = re.subn(r'((?:i18n/tr|filters|css/filters|css/minimal|css/fonts)\.(?:js|css))\?b=\d+', rf'\g<1>?b={n}', f)
-assert fa == 1 and fc == 4, (fa, fc)   # build 203: css/minimal.css too
+assert fa == 1 and fc == 5, (fa, fc)   # build 203: css/minimal.css too; build 318: css/fonts.css
 open(fp, 'w', encoding='utf-8').write(f)
 print(f'build {n}: meta 1, stamps {b}, file URLs {c}')
 import subprocess, sys as _s
