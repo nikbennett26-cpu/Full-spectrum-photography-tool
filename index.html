@@ -150,7 +150,7 @@
            picker, and dropping a file anywhere on this section still works. -->
       <div class="labTerm">
         <span class="ltStatus" aria-live="polite"><span class="slIdle"><span data-i18n="ltReady">irlab ready &middot; RAW decoder:</span> <b id="ltDecoder">AMaZE</b></span><span class="slBusy" data-i18n="ltReading">reading photo&hellip;</span></span>
-        <label class="labGo ltPrompt" aria-label="Open a photo"><span class="ltCaret" aria-hidden="true">&rsaquo;</span><span class="ltCmd" data-i18n="ltOpen">open photo</span><span class="ltCursor" aria-hidden="true"></span><input type="file" id="fi" accept="image/jpeg,image/png,image/webp,image/avif,.jpg,.jpeg,.png,.webp,.avif,.cr2,.cr3,.nef,.arw,.sr2,.dng,.orf,.ori,.rw2,.pef,.raf,.srw,.nrw,.3fr,.iiq,.mrw,.kdc,.dcr,.x3f,.tif,.tiff" style="display:none"></label>
+        <label class="labGo ltPrompt" aria-label="Open a photo"><span class="ltCaret" aria-hidden="true">&rsaquo;</span><span class="ltCmd" data-i18n="ltOpen">open photo</span><span class="ltCursor" aria-hidden="true"></span><input type="file" id="fi" accept="video/mp4,video/quicktime,video/webm,.mp4,.m4v,.mov,.webm,image/jpeg,image/png,image/webp,image/avif,.jpg,.jpeg,.png,.webp,.avif,.cr2,.cr3,.nef,.arw,.sr2,.dng,.orf,.ori,.rw2,.pef,.raf,.srw,.nrw,.3fr,.iiq,.mrw,.kdc,.dcr,.x3f,.tif,.tiff" style="display:none"></label>
         <span class="ltHint" data-i18n="ltHint">tap, or drop a file</span>
         <!-- Build 137: the trichrome tool (src/trichrome.js) -->
         <button type="button" id="triStart" class="ltPrompt2"><span class="ltCaret" aria-hidden="true">&rsaquo;</span><span>Aerochrome trichrome tool</span><span class="triDots" aria-hidden="true"><i></i><i></i><i></i></span></button>
@@ -635,7 +635,7 @@
          divider costs nothing and reads instantly as "this one is different
          from the three after it," which used to take a beat of scanning. -->
     <div class="toolbar">
-      <label class="filelabel keyBtn keyPlus keySm" data-lbl="New" data-i18n-lbl="rNew" title="New image" aria-label="New image"><span class="kTxt">New</span><span class="kMore">&nbsp;image</span><input type="file" id="fi2" accept="image/jpeg,image/png,image/webp,image/avif,.jpg,.jpeg,.png,.webp,.avif,.cr2,.cr3,.nef,.arw,.sr2,.dng,.orf,.ori,.rw2,.pef,.raf,.srw,.nrw,.3fr,.iiq,.mrw,.kdc,.dcr,.x3f,.tif,.tiff" style="display:none"></label>
+      <label class="filelabel keyBtn keyPlus keySm" data-lbl="New" data-i18n-lbl="rNew" title="New image" aria-label="New image"><span class="kTxt">New</span><span class="kMore">&nbsp;image</span><input type="file" id="fi2" accept="video/mp4,video/quicktime,video/webm,.mp4,.m4v,.mov,.webm,image/jpeg,image/png,image/webp,image/avif,.jpg,.jpeg,.png,.webp,.avif,.cr2,.cr3,.nef,.arw,.sr2,.dng,.orf,.ori,.rw2,.pef,.raf,.srw,.nrw,.3fr,.iiq,.mrw,.kdc,.dcr,.x3f,.tif,.tiff" style="display:none"></label>
       <!-- Permanent, not just the prompt that follows an export. That prompt
            is a nine-second toast: miss it, or look away, and the opening
            screen is unreachable again — and with it the CR2 decode choice
@@ -1783,6 +1783,8 @@
       <!-- Outside the collapse, inside the section: format and resolution
            decide what this produces, but it has to stay one tap away. -->
       <button id="bDl" class="primary keyBtn keyDown" style="width:100%;margin-top:16px">Export Image</button>
+      <button id="bVid" class="primary keyBtn keyDown" style="width:100%;margin-top:8px;display:none">Export video</button>
+      <p class="note" id="vidNote" style="display:none;margin:4px 0 0">A video is open on one frame. Your edits are applied to every frame and saved as an MP4 (longest side 1920, audio kept where this browser can encode it). Long clips take a while; the screen should stay on.</p>
       <!-- Build 139: the share sheet (Instagram, Facebook, WhatsApp...), a before | after picture, and a link to the look.
            src/share.js. -->
       <div class="shareRow">

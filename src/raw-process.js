@@ -852,6 +852,7 @@ function canvasToBlobSafe(cv, label, timeoutMs = 30000, allowFullRes = false) {
 /* body.imgLoading is on for as long as a photo is being opened, so the home page's file slot can show work happening. */
 async function loadFile(file) {
   if (!file) return;
+  if (typeof videoIntercept === 'function') { file = await videoIntercept(file); if (!file) return; }   /* build 298: a video opens on one frame */
   // build 210: a RAW opened before any decode option was picked asks how to decode it first (src/decode-tip.js)
   if (typeof decodeTipAsk === 'function' && !(await decodeTipAsk(file))) return;
   document.body.classList.add('imgLoading');
