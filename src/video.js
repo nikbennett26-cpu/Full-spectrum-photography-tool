@@ -8,10 +8,18 @@ let videoStop = false, videoBusy = false;
 let videoLogKind = '';
 const VID_MAX = 1920;         /* the longest side is brought down to this: the processing is per frame, in the browser */
 
+/* Export options from the Video tab. res = longest side in pixels (0 = as shot), q = bits per pixel per frame, hevc = try H.265 first */
+function videoOpts() {
+  const g = id => { const e = document.getElementById(id); return e ? e.value : ''; };
+  const res = parseInt(g('vidRes') || '1920', 10), q = g('vidQ') || 'normal';
+  return { res: isNaN(res) ? 1920 : res, qk: ({ small: 0.07, normal: 0.12, high: 0.22 })[q] || 0.12, hevc: g('vidCodec') === 'hevc' };
+}
+function videoBitrate(w, h, fps) { return Math.max(1.5e6, Math.min(100e6, Math.round(w * h * fps * videoOpts().qk))); }
 function videoIsFile(f) { return !!f && (/^video\//.test(f.type || '') || /\.(mp4|m4v|mov|webm)$/i.test(f.name || '')); }
-function videoSize(v) {
+function videoSize(v, max) {
+  max = max === undefined ? VID_MAX : max;
   let w = v.videoWidth, h = v.videoHeight; const m = Math.max(w, h);
-  if (m > VID_MAX) { const k = VID_MAX / m; w = Math.round(w * k); h = Math.round(h * k); }
+  if (max > 0 && m > max) { const k = max / m; w = Math.round(w * k); h = Math.round(h * k); }
   return [Math.max(2, w - (w % 2)), Math.max(2, h - (h % 2))];
 }
 function videoLoad(file) {
@@ -59,7 +67,7 @@ function videoUi() {
   const ib = document.getElementById('bVidTab'); if (ib) ib.style.display = videoSrc ? '' : 'none';
   if (!videoSrc && document.documentElement.dataset.tab === 'video') { const lt = document.querySelector('#dock button[data-tab="looks"],.dock button[data-tab="looks"]'); if (lt) lt.click(); }
   const sc = document.getElementById('vidScrub'); if (sc && videoSrc) { sc.value = Math.round(1000 * (videoSrc.startT || 0) / (videoSrc.dur || 1)); videoScrubLabel(); }
-  videoInfo();
+  videoInfo(); videoLooksFill();
 }
 /* One line about the clip: size, length, file size, and (measured by playing a few frames) the frame rate. */
 async function videoInfo() {
@@ -155,7 +163,8 @@ function videoLoadMuxer() {
   });
 }
 async function videoPickCodec(w, h, fps, bitrate) {
-  const tries = [['avc1.640034', 'avc'], ['avc1.64002A', 'avc'], ['avc1.4D4028', 'avc'], ['avc1.42001F', 'avc'], ['vp09.00.40.08', 'vp9'], ['vp09.00.10.08', 'vp9']];
+  const hv = videoOpts().hevc ? [['hvc1.1.6.L153.B0', 'hevc'], ['hvc1.1.6.L123.B0', 'hevc'], ['hvc1.1.6.L93.B0', 'hevc']] : [];
+  const tries = hv.concat([['avc1.640034', 'avc'], ['avc1.64002A', 'avc'], ['avc1.4D4028', 'avc'], ['avc1.42001F', 'avc'], ['vp09.00.40.08', 'vp9'], ['vp09.00.10.08', 'vp9']]);
   for (const [codec, mux] of tries) {
     const cfg = { codec, width: w, height: h, bitrate, framerate: fps };
     try { const s = await VideoEncoder.isConfigSupported(cfg); if (s && s.supported) return { cfg, mux }; } catch (e) {}
@@ -258,12 +267,12 @@ async function videoExportDecoder(say) {
   const rot = ((Math.round(Math.atan2(m[1], m[0]) * 180 / Math.PI) % 360) + 360) % 360;
   const swap = rot === 90 || rot === 270;
   let sw = swap ? vt.video.height : vt.video.width, sh = swap ? vt.video.width : vt.video.height;
-  const mx = Math.max(sw, sh), k = mx > VID_MAX ? VID_MAX / mx : 1;
+  const RES = videoOpts().res, mx = Math.max(sw, sh), k = RES > 0 && mx > RES ? RES / mx : 1;
   const w = Math.max(2, Math.round(sw * k) - (Math.round(sw * k) % 2)), h = Math.max(2, Math.round(sh * k) - (Math.round(sh * k) % 2));
   const vs = out.v, ts = vt.timescale;
   const spanUs = (vs[vs.length - 1].cts + vs[vs.length - 1].duration - vs[0].cts) * 1e6 / ts;
   const fps = Math.max(1, vs.length / (spanUs / 1e6));
-  const bitrate = Math.max(2e6, Math.min(40e6, Math.round(w * h * fps * 0.12)));
+  const bitrate = videoBitrate(w, h, fps);
   const pick = await videoPickCodec(w, h, Math.round(fps), bitrate);
   if (!pick) throw new Error('No video encoder this browser supports at ' + w + '×' + h + '.');
   /* audio: AAC is copied as it is; anything else is decoded and encoded again if the browser can, else left out */
@@ -351,9 +360,9 @@ async function videoExport() {
     if (await videoExportDecoder(say)) { ok = true; return ok; }
     /* Fallback (WebM, or a browser that cannot decode this file itself): seek the <video> frame by frame. */
     v = await videoLoad(videoSrc.file);
-    const [w, h] = videoSize(v), dur = v.duration;
+    const [w, h] = videoSize(v, videoOpts().res), dur = v.duration;
     const fps = await videoFps(v), total = Math.max(1, Math.floor(dur * fps));
-    const bitrate = Math.max(2e6, Math.min(40e6, Math.round(w * h * fps * 0.12)));
+    const bitrate = videoBitrate(w, h, fps);
     const pick = await videoPickCodec(w, h, fps, bitrate);
     if (!pick) throw new Error('No video encoder this browser supports at ' + w + '×' + h + '.');
     const audio = await videoAudioPrep(videoSrc.file);
@@ -460,8 +469,40 @@ async function videoScrubTo() {
     } while (videoScrubAgain);
   } catch (e) {} finally { videoScrubBusy = false; }
 }
+/* Saved looks in the Video tab: the same My presets as for photos, plus the clip's Camera log setting. */
+function videoLooksFill() {
+  const row = document.getElementById('vidLookRow'), sel = document.getElementById('vidLook');
+  if (!row || !sel || typeof loadUserPresets !== 'function') return;
+  const p = loadUserPresets(), names = Object.keys(p);
+  sel.innerHTML = '<option value="">Pick a saved look…</option>' + names.map(n => '<option>' + n.replace(/[&<>"]/g, c => '&#' + c.charCodeAt(0) + ';') + '</option>').join('');
+  row.style.display = names.length ? '' : 'none';
+}
+async function videoLookSave() {
+  if (typeof captureLookForUserPreset !== 'function' || !loadedImage) return;
+  const ex = loadUserPresets(); let n = Object.keys(ex).length + 1; while (('Look ' + n) in ex) n++;
+  const raw = await askText('Name this look', 'Look ' + n, 'Save'); if (raw === null) return;
+  const name = raw.trim(); if (!name) return;
+  if (name in ex && !(await askConfirm('Replace “' + name + '”?', 'A look with that name already exists.', 'Replace'))) return;
+  const ps = loadUserPresets(), lg = document.getElementById('vidLog');
+  ps[name] = Object.assign(captureLookForUserPreset(), { vidLog: lg ? lg.value : '' });
+  saveUserPresetsToStorage(ps);
+  if (typeof renderUserPresetButtons === 'function') renderUserPresetButtons();
+  videoLooksFill(); toast('Saved “' + name + '”');
+}
+function videoLookApply(name) {
+  if (!name) return;
+  const look = loadUserPresets()[name]; if (!look) return;
+  applyUserPreset(look);
+  const lg = document.getElementById('vidLog');
+  if (lg) { lg.value = look.vidLog || ''; videoLogSet(lg.value); }
+  toast('Applied “' + name + '”');
+}
 (function videoWire() {
   const go = () => {
+    const lb = document.getElementById('bVidLut'); if (lb) lb.onclick = () => { const b = document.getElementById('btnExportLUT'); if (b) b.click(); };
+    const sb = document.getElementById('bVidSave'); if (sb) sb.onclick = videoLookSave;
+    const ls = document.getElementById('vidLook'); if (ls) ls.onchange = () => { videoLookApply(ls.value); ls.value = ''; };
+    videoLooksFill();
     const sel = document.getElementById('vidLog'), sc = document.getElementById('vidScrub');
     if (sel) sel.onchange = () => videoLogSet(sel.value);
     if (sc) { sc.oninput = () => { videoScrubLabel(); videoScrubTo(); }; }

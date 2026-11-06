@@ -57,12 +57,12 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500&family=Barlow+Condensed:wght@500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
 
-<script src="i18n/tr.js?b=306"></script>
-<link rel="stylesheet" href="css/main.css?b=306">
-<link rel="stylesheet" id="uxRefresh" href="css/refresh.css?b=306">
-<link rel="stylesheet" href="css/trichrome.css?b=306">
-<link rel="stylesheet" id="uxDock" href="css/dock.css?b=306">
-<link rel="stylesheet" href="css/minimal.css?b=306">
+<script src="i18n/tr.js?b=307"></script>
+<link rel="stylesheet" href="css/main.css?b=307">
+<link rel="stylesheet" id="uxRefresh" href="css/refresh.css?b=307">
+<link rel="stylesheet" href="css/trichrome.css?b=307">
+<link rel="stylesheet" id="uxDock" href="css/dock.css?b=307">
+<link rel="stylesheet" href="css/minimal.css?b=307">
 </head>
 <body>
 
@@ -210,7 +210,8 @@
   <footer class="labFoot">
     <div id="whatsNew">
       <details>
-        <summary><span data-i18n="whatsNewLabel">What’s new</span><span class="wnLatest">Video camera icon, cache fix</span></summary>
+        <summary><span data-i18n="whatsNewLabel">What’s new</span><span class="wnLatest">Video: size, quality, H.265, LUT, saved looks</span></summary>
+        <p style="margin:0 0 3px"><b style="color:var(--phosphor-dim)">More for video.</b> The Video tab now has export Size (720 up to 4K, or as shot), Quality and Codec (H.264, or smaller H.265 where the device can write it). Save look as LUT writes a .cube of your look, with the Camera log step included, for DaVinci Resolve and other editors. Save this look keeps a look and its Camera log setting, and My looks puts it on another clip.</p>
         <p style="margin:0 0 3px"><b style="color:var(--phosphor-dim)">Video button is now a camera.</b> The icon that opens the Video tab looked like a play button, so it seemed to do nothing. It is now a video-camera icon.</p>
         <p style="margin:0 0 3px"><b style="color:var(--phosphor-dim)">Your edits now come back after closing the app.</b> If you closed the tab or the app by accident, the photo came back but none of your edits did. That is fixed: reopen within 30 minutes and it picks up where you left off, edits included, and after that the Restore button on the start page brings back the photo and its edits.</p>
         <p style="margin:0 0 3px"><b style="color:var(--phosphor-dim)">Video has its own tab.</b> With a video open, a play icon appears in the top row and opens a Video tab with the clip info, Camera log, frame picker and Export video. Photos never show it. Also: the home button now says open file, and the credits line no longer pokes out above the controls on a short picture.</p>
@@ -630,7 +631,7 @@
     <!-- Build 279: the people behind it, on the home page -->
     <div id="creditsHome">Made by <a href="https://www.instagram.com/irlab.uk" target="_blank" rel="noopener" style="color:var(--safelight);font-weight:600;text-decoration:none">Nik Bennett</a>
       &middot; Colour science &amp; RAW decode by <a href="https://philwarrenphotography.com" target="_blank" rel="noopener" style="color:var(--safelight);font-weight:600;text-decoration:none">Phil Warren</a></div>
-    <div id="buildStampHome">Version 2026-11-06 · build 306</div>
+    <div id="buildStampHome">Version 2026-11-06 · build 307</div>
   </footer>
 </div>
 
@@ -1804,8 +1805,19 @@
         <p class="note" style="margin:2px 0 8px">Only for clips recorded in a log profile. It turns the flat picture into a normal one before anything else, so swaps and white balance act on real light. It shares the early stage with Triple Band Aerochrome, so use one or the other.</p>
         <div class="sl"><label>Frame to edit on <b id="v_vidScrub">0.0 s</b></label><input type="range" id="vidScrub" aria-label="Pick the frame to edit on" min="0" max="1000" value="0"></div>
         <p class="note" style="margin:2px 0 8px">Your edits stay when you move to another frame.</p>
+        <div class="ffRow" style="display:flex;gap:6px;flex-wrap:wrap;margin:6px 0 2px">
+          <label style="flex:1 1 30%">Size <select id="vidRes" aria-label="Longest side of the exported video"><option value="720">720</option><option value="1280">1280</option><option value="1920" selected>1920 (HD)</option><option value="2560">2560</option><option value="3840">3840 (4K)</option><option value="0">As shot</option></select></label>
+          <label style="flex:1 1 30%">Quality <select id="vidQ" aria-label="Video quality"><option value="small">Small file</option><option value="normal" selected>Normal</option><option value="high">High</option></select></label>
+          <label style="flex:1 1 30%">Codec <select id="vidCodec" aria-label="Video codec"><option value="avc" selected>H.264 (works everywhere)</option><option value="hevc">H.265 (smaller, if this device can)</option></select></label>
+        </div>
+        <p class="note" style="margin:2px 0 8px">Bigger sizes and High take longer. If this device cannot write H.265 it uses H.264 instead.</p>
         <button id="bVid" class="primary keyBtn keyDown" style="width:100%;margin-top:4px">Export video</button>
-        <p class="note" id="vidNote" style="margin:4px 0 0">Your edits are applied to every frame and saved as an MP4 (longest side 1920, audio kept where this browser can). Long clips take a while; the screen should stay on.</p>
+        <div class="ffRow" style="display:flex;gap:6px;margin:8px 0 2px">
+          <button id="bVidLut" style="flex:1" title="Saves this look as a .cube LUT you can use on the clip in DaVinci Resolve, Premiere, Final Cut and others. It includes the Camera log setting above, so for log footage put it on the clip as recorded, with no other log conversion before it.">Save look as LUT</button>
+          <button id="bVidSave" style="flex:1" title="Keeps this look, with the Camera log setting, so you can put it on another clip.">Save this look</button>
+        </div>
+        <label class="ffRow" id="vidLookRow" style="display:none">My looks <select id="vidLook" aria-label="Apply one of your saved looks"></select></label>
+        <p class="note" id="vidNote" style="margin:4px 0 0">Your edits are applied to every frame and saved as an MP4 (audio kept where this browser can). Long clips take a while; the screen should stay on.</p>
         </div>
       </details>
 
@@ -1830,7 +1842,7 @@
       <br><a href="privacy.html" target="_blank" rel="noopener" style="color:var(--muted);text-decoration:underline">Privacy</a>
       <br><a href="LICENSE.md" target="_blank" rel="noopener" style="color:var(--muted);text-decoration:underline">Source: AGPL-3.0</a>
       <br><a href="THIRD_PARTY_NOTICES.md" target="_blank" rel="noopener" style="color:var(--muted);text-decoration:underline">Third-party notices (LibRaw, RawTherapee)</a>
-<br><span id="buildStamp" style="color:var(--muted)" title="Which version of the app this is. Tap the arrow to check for a newer one and update.">Version 2026-11-06 · build 306</span>
+<br><span id="buildStamp" style="color:var(--muted)" title="Which version of the app this is. Tap the arrow to check for a newer one and update.">Version 2026-11-06 · build 307</span>
       <br><button id="btnInstall" type="button">Install as an app</button>
       <span id="kbHint">Ctrl+Z undo &middot; Ctrl+Shift+Z redo &middot; [ ] cycle presets &middot; F full quality view &middot; Space hold to compare</span>
     </footer>
@@ -1926,6 +1938,6 @@
 <!-- The editor's code: editor.js, BUILT from src/*.js by tools/build.py (see the README's Code layout). One script, so
      it all runs in one go, as the single inline block it came from did. ?b=<build> keeps the service worker's cached
      copy of an older editor.js from ever running under a newer page; tools/bump_build.py sets it. -->
-<script src="editor.js?b=306"></script>
+<script src="editor.js?b=307"></script>
 </body>
 </html>
