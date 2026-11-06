@@ -66,6 +66,7 @@ function videoUi() {
   const p = document.getElementById('vidPanel');
   if (p) p.style.display = videoSrc ? '' : 'none';
   const ib = document.getElementById('bVidTab'); if (ib) ib.style.display = videoSrc ? '' : 'none';
+  document.body.classList.toggle('has-video', !!videoSrc);   /* build 312: the dock CSS shows toolbar buttons with !important, so the inline none alone did not hide it */
   if (!videoSrc && document.documentElement.dataset.tab === 'video') { const lt = document.querySelector('#dock button[data-tab="looks"],.dock button[data-tab="looks"]'); if (lt) lt.click(); }
   const sc = document.getElementById('vidScrub'); if (sc && videoSrc) { sc.value = Math.round(1000 * (videoSrc.startT || 0) / (videoSrc.dur || 1)); videoScrubLabel(); }
   videoInfo(); videoLooksFill();

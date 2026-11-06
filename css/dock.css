@@ -839,3 +839,5 @@ body.rawOpen #plainSharpenSub{display:block}
    short picture such as a 16:9 video, with the sheet's handle across its last line. On the phone layout it stays hidden;
    the credits and privacy links are on the home page. */
 html.dockOn body.has-image #main > footer{display:none!important}
+/* Build 312: the video button only while a video is open (the toolbar rules above force display with !important) */
+html body:not(.has-video) #bVidTab, html.dockOn body.has-image:not(.has-video) .toolbar > #bVidTab, html.studioOn body.has-image:not(.has-video) .toolbar > #bVidTab{display:none!important}
