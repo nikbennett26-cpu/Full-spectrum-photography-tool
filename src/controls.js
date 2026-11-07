@@ -1635,27 +1635,69 @@ $('btnClearPreset').onclick = () => { armUndoCapture(); clearPreset(); commitUnd
 
 // 4. File Loading
 
-/* Build 315: tap a slider's number to type an exact value. On a phone a slider covers its whole range in a few
-   centimetres (Hue shift is about a degree per pixel), so landing on 9 or 128 by dragging is fiddly. The typed number
-   is the slider's own value, snapped to its step and kept in its range, and goes through the same input and change
-   events as a drag, so undo, presets and the session save all see it. */
-(function sliderTypeValue() {
-  document.addEventListener('click', async e => {
+/* Build 327: tap a slider's number for a fine-control row under it, instead of a pop-up box. A phone slider covers its
+   whole range in a few centimetres, so the row gives small steps (hold to repeat), a strip you drag at about one eighth
+   of the speed, and a number you can type straight into. Every change goes through the slider's own input and change
+   events, so undo, presets and the session save all see it. */
+(function sliderFineRow() {
+  let open = null;                                             // { el, row }
+  const lim = el => ({ min: +el.min || 0, max: el.max === '' ? 100 : +el.max, step: el.step === 'any' ? 0 : (+el.step || 1) });
+  function setVal(el, v, commit) {
+    const { min, max, step } = lim(el);
+    v = Math.max(min, Math.min(max, v));
+    if (step) v = Math.round((v - min) / step) * step + min;
+    v = +v.toFixed(6);
+    if (v !== +el.value) { el.value = String(v); el.dispatchEvent(new Event('input', { bubbles: true })); }
+    if (commit) el.dispatchEvent(new Event('change', { bubbles: true }));
+    return v;
+  }
+  function close() { if (open) { open.row.remove(); open.b.classList.remove('slOpen'); open = null; } }
+  function build(el, b) {
+    const { min, max, step } = lim(el), fine = step || (max - min) / 200, coarse = fine * 10;
+    const row = document.createElement('div'); row.className = 'slFine';
+    row.innerHTML = '<div class="slBtns"><button type="button" data-d="-10">\u2212' + +coarse.toFixed(3) + '</button><button type="button" data-d="-1">\u2212' + +fine.toFixed(3) + '</button>' +
+      '<input type="text" inputmode="decimal" aria-label="Value" class="slNum"><button type="button" data-d="1">+' + +fine.toFixed(3) + '</button><button type="button" data-d="10">+' + +coarse.toFixed(3) + '</button></div>' +
+      '<div class="slStrip" role="slider" aria-label="Fine adjust, drag sideways"><span>fine \u2194 drag here</span></div>' +
+      '<div class="slRowEnd"><button type="button" class="slReset">Reset</button><button type="button" class="slDone">Done</button></div>';
+    const num = row.querySelector('.slNum'), sync = () => { num.value = el.value; };
+    sync(); el.addEventListener('input', sync);
+    const bump = (d, commit) => { setVal(el, (+el.value || 0) + d * (Math.abs(d) >= 10 ? coarse / 10 : fine), commit); };
+    row.querySelectorAll('[data-d]').forEach(btn => {
+      let t = null, t2 = null;
+      const d = +btn.dataset.d, one = () => { bump(d > 0 ? Math.max(d, 1) : Math.min(d, -1), false); haptic('tick'); };
+      const stop = () => { clearTimeout(t); clearInterval(t2); if (t !== null) { el.dispatchEvent(new Event('change', { bubbles: true })); } t = null; };
+      btn.addEventListener('pointerdown', e => { e.preventDefault(); armUndoCapture(); one(); t = setTimeout(() => { t2 = setInterval(one, 70); }, 350); });
+      ['pointerup', 'pointerleave', 'pointercancel'].forEach(ev => btn.addEventListener(ev, stop));
+    });
+    num.addEventListener('focus', () => num.select());
+    num.addEventListener('keydown', e => { if (e.key === 'Enter') { num.blur(); } });
+    num.addEventListener('change', () => {
+      const v = parseFloat(String(num.value).replace(',', '.').replace(/[^\d.+-]/g, ''));
+      if (isFinite(v)) { armUndoCapture(); setVal(el, v, true); } sync();
+    });
+    const strip = row.querySelector('.slStrip'); let g = null;
+    strip.addEventListener('pointerdown', e => { g = { x: e.clientX, y: e.clientY, v: +el.value || 0, on: false }; });
+    strip.addEventListener('pointermove', e => {
+      if (!g) return;
+      const dx = e.clientX - g.x, dy = e.clientY - g.y;
+      if (!g.on) { if (Math.abs(dy) > Math.abs(dx) && Math.abs(dy) > 6) { g = null; return; } if (Math.abs(dx) < 4) return; g.on = true; armUndoCapture(); strip.setPointerCapture(e.pointerId); }
+      const perPx = (max - min) / Math.max(200, strip.clientWidth * 8);
+      setVal(el, g.v + dx * perPx, false); e.preventDefault();
+    });
+    const end = e => { if (g && g.on) { el.dispatchEvent(new Event('change', { bubbles: true })); } g = null; };
+    strip.addEventListener('pointerup', end); strip.addEventListener('pointercancel', end);
+    row.querySelector('.slReset').addEventListener('click', () => { armUndoCapture(); setVal(el, +(el.defaultValue || 0), true); });
+    row.querySelector('.slDone').addEventListener('click', close);
+    return row;
+  }
+  document.addEventListener('click', e => {
     const b = e.target && e.target.closest && e.target.closest('.sl label b[id^="v_"]');
     if (!b) return;
     const el = document.getElementById(b.id.slice(2));
     if (!el || el.type !== 'range' || el.disabled) return;
     e.preventDefault(); e.stopPropagation();
-    const name = ((b.parentElement && b.parentElement.firstChild && b.parentElement.firstChild.textContent) || '').trim() || 'Value';
-    const min = +el.min || 0, max = el.max === '' ? 100 : +el.max, step = el.step === 'any' ? 0 : (+el.step || 1);
-    const raw = await askText(name + ' (' + min + ' to ' + max + ')', String(el.value), 'Set');
-    if (raw === null) return;
-    let v = parseFloat(String(raw).replace(',', '.').replace(/[^\d.+-]/g, ''));
-    if (!isFinite(v)) return;
-    v = Math.max(min, Math.min(max, v));
-    if (step) v = Math.round((v - min) / step) * step + min;
-    el.value = String(+v.toFixed(6));
-    el.dispatchEvent(new Event('input', { bubbles: true }));
-    el.dispatchEvent(new Event('change', { bubbles: true }));
+    const same = open && open.el === el; close(); if (same) return;
+    const holder = b.closest('.sl'); if (!holder) return;
+    const row = build(el, b); holder.after(row); b.classList.add('slOpen'); open = { el, row, b };
   }, true);
 })();
