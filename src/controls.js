@@ -1634,6 +1634,7 @@ function presetMixApply(pct) {
    a mouse still uses it directly. */
 (function wbSliderShield() {
   if (!window.matchMedia || !matchMedia('(pointer: coarse)').matches) return;
+  const EASED = { sat: 1, vibrance: 1, satPreserve: 1 };         // slow for the first few millimetres, then close to normal speed, so one swipe still covers the range
   const SLOWER = { hue: 4 };                                    // hue shift: a degree or so per pixel natively
   ['rawTemp', 'rawGreen', 'temp', 'tint', 'hue', 'sat', 'vibrance', 'satPreserve'].forEach(id => {
     const SLOW = SLOWER[id] || 3;
@@ -1656,8 +1657,13 @@ function presetMixApply(pct) {
         g.on = true; armUndoCapture(); try { sh.setPointerCapture(e.pointerId); } catch (err) {}
       }
       const min = +el.min, max = +el.max, step = +el.step || 1;
-      const perPx = (max - min) / Math.max(120, el.offsetWidth) / SLOW;
-      let v = Math.max(min, Math.min(max, g.v + dx * perPx));
+      const W = Math.max(120, el.offsetWidth);
+      let moved;
+      if (EASED[id]) {                                            // 0.4x over the first 40 px, then enough to reach the full range across one slider width
+        const d = Math.abs(dx), s2 = (1.03 * W - 16) / Math.max(1, W - 40);
+        moved = Math.sign(dx) * (d <= 40 ? d * 0.4 : 16 + (d - 40) * s2) / W * (max - min);
+      } else moved = dx * (max - min) / W / SLOW;
+      let v = Math.max(min, Math.min(max, g.v + moved));
       v = Math.round((v - min) / step) * step + min;
       if (v !== +el.value) { el.value = String(v); el.dispatchEvent(new Event('input', { bubbles: true })); }
       e.preventDefault();
