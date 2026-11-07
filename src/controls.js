@@ -1591,6 +1591,42 @@ function presetMixApply(pct) {
   e.addEventListener('change', () => { presetMixApply(+e.value); commitUndoCapture(); });
 })();
 
+/* Build 326: a finger that lands on a slider while scrolling the panel must not move it.
+   On touch, a range input jumps to wherever it is first touched, and only afterwards does the browser decide
+   the gesture is a scroll (pointercancel) -- so scrolling past White balance changed the picture. Remember the value
+   at touch-down; put it back if the gesture turns out to be a scroll, is cancelled, or is a tap with no drag. */
+(function guardSlidersAgainstScroll() {
+  let g = null;
+  const restore = () => {
+    if (!g) return;
+    const el = g.el, v = g.start;
+    g = null;
+    if (+el.value !== v) { el.value = v; el.dispatchEvent(new Event('input', { bubbles: true })); el.dispatchEvent(new Event('change', { bubbles: true })); }
+  };
+  document.addEventListener('pointerdown', e => {
+    const el = e.target;
+    if (!el || el.tagName !== 'INPUT' || el.type !== 'range') return;
+    if (e.pointerType !== 'touch' && e.pointerType !== 'pen') return;
+    g = { el, id: e.pointerId, x: e.clientX, y: e.clientY, start: +el.value, drag: false };
+  }, true);
+  document.addEventListener('pointermove', e => {
+    if (!g || e.pointerId !== g.id) return;
+    const dx = Math.abs(e.clientX - g.x), dy = Math.abs(e.clientY - g.y);
+    if (g.drag) return;
+    if (dy > 8 && dy > dx * 1.2) { restore(); return; }          // moving up or down: a scroll
+    if (dx > 6) g.drag = true;                                    // clearly sideways: the user is adjusting it
+  }, true);
+  document.addEventListener('pointercancel', e => { if (g && e.pointerId === g.id) restore(); }, true);
+  document.addEventListener('pointerup', e => {
+    if (!g || e.pointerId !== g.id) return;
+    if (!g.drag && Math.abs(e.clientX - g.x) < 6 && Math.abs(e.clientY - g.y) < 6) {
+      const el = g.el, jumped = Math.abs(+el.value - g.start) > (+el.max - +el.min) * 0.03;
+      if (jumped) { restore(); return; }                          // a tap on the track, not a drag from the thumb
+    }
+    g = null;
+  }, true);
+})();
+
 function updateClearPresetBtn() {
   const btn = $('btnClearPreset');
   if (btn) btn.style.display = document.querySelector('.pb.on') ? 'inline-block' : 'none';
