@@ -348,6 +348,7 @@ let ffBehindChosen = false;   // once the person picks the film's filter themsel
 function ffSensors() {
   const sel = $('ffSensor');
   if (sel && fpData && !sel.options.length) Object.keys(fpData.sensors).forEach(k => { const o = document.createElement('option'); o.value = o.textContent = k; sel.appendChild(o); });
+  if (sel && sel.options.length && !sel.dataset.defSet) { sel.dataset.defSet = '1'; const g = [].find.call(sel.options, o => /^Generic CMOS/.test(o.value)); if (g) sel.value = g.value; }   // build 324: the sensor most people shoot with when theirs is not listed
   const fb = $('ffBehind');
   if (fb && !fb.options.length) FF_FILM_FILTERS.forEach(([id, n]) => { const o = document.createElement('option'); o.value = id; o.textContent = n; fb.appendChild(o); });
   if (fb && !ffBehindChosen) fb.value = ffFilmFilterDefault(fpStack);
