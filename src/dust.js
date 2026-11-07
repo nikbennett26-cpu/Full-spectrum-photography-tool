@@ -323,6 +323,13 @@ function dustDetectPixels(px, W, H, sensitivity) {
       const v = l[py2 * w + px2]; ringN++; ringSum += v; ringSq += v * v; if (v > floorV) ringAbove++;
     }
     if (ringN < 16) continue;
+    /* build 323: dust is only worth healing where it reads, on bright smooth ground. Dark brick, hedge shadow or the underside
+       of a car passes the tests above (it is smooth in a dark frame) and was offered as dust. Require a reasonably bright
+       surround, a soft dip (dust dims by a fraction, a hole in a hedge dims by most), and a calm wider ring as well. */
+    { const ca = around[Math.round(cy) * w + Math.round(cx)]; if (ca < 0.2 || peak > 0.5 * ca) continue;
+      const R3 = Math.max(r * 4.2, r + 6); let n3 = 0, s3 = 0, q3 = 0;
+      for (let a = 0; a < 24; a++) { const qx = Math.round(cx + R3 * Math.cos(a * Math.PI / 12)), qy = Math.round(cy + R3 * Math.sin(a * Math.PI / 12)); if (qx < 0 || qx >= w || qy < 0 || qy >= h) continue; const v = l[qy * w + qx]; n3++; s3 += v; q3 += v * v; }
+      if (n3 < 16) continue; const m3 = s3 / n3, sd3 = Math.sqrt(Math.max(0, q3 / n3 - m3 * m3)); if (sd3 > 0.35 * peak + 0.006) continue; }
     const rm = ringSum / ringN, rsd = Math.sqrt(Math.max(0, ringSq / ringN - rm * rm));
     if (ringAbove < 0.85 * ringN || rsd > 0.45 * peak + 0.004) continue;
     { let wt = 0, wn = 0; const wr = Math.max(r * 5, r + 8);
