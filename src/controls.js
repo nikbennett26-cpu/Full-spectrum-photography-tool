@@ -1627,15 +1627,16 @@ function presetMixApply(pct) {
   }, true);
 })();
 
-/* Build 331: the white balance sliders are slow and steady on touch. Temperature and tint run over a huge range in one
+/* Build 332 adds hue shift, saturation, vibrance and keep saturation to the list. Build 331: the white balance sliders are slow and steady on touch. Temperature and tint run over a huge range in one
    phone width, so a light brush or a tiny sideways slip on the thumb swung the whole picture. On a touch screen a shield
    sits over each of them: a tap does nothing, a vertical swipe scrolls the panel, and a sideways drag moves the slider
    at a third of its normal speed, from wherever it started. The slider underneath still works from the keyboard, and
    a mouse still uses it directly. */
 (function wbSliderShield() {
   if (!window.matchMedia || !matchMedia('(pointer: coarse)').matches) return;
-  const SLOW = 3;
-  ['rawTemp', 'rawGreen', 'temp', 'tint'].forEach(id => {
+  const SLOWER = { hue: 4 };                                    // hue shift: a degree or so per pixel natively
+  ['rawTemp', 'rawGreen', 'temp', 'tint', 'hue', 'sat', 'vibrance', 'satPreserve'].forEach(id => {
+    const SLOW = SLOWER[id] || 3;
     const el = $(id); if (!el || !el.parentElement) return;
     const host = el.parentElement;
     if (getComputedStyle(host).position === 'static') host.style.position = 'relative';
