@@ -1298,3 +1298,6 @@ html.studioOn body.has-image #reorderZone > #modeBar{display:flex !important;ord
 .slRowEnd{display:flex;justify-content:flex-end;gap:8px;margin-top:8px}
 .slRowEnd button{min-height:34px;padding:0 14px;border:1px solid var(--line2);border-radius:var(--radius-sm);background:transparent;color:var(--paper)}
 .sl label b.slOpen{background:rgba(194,67,27,.3)}
+
+/* Build 331: shield over the white balance sliders on touch screens */
+.wbShield{position:absolute;z-index:3;touch-action:pan-y;background:transparent}

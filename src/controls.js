@@ -1627,6 +1627,45 @@ function presetMixApply(pct) {
   }, true);
 })();
 
+/* Build 331: the white balance sliders are slow and steady on touch. Temperature and tint run over a huge range in one
+   phone width, so a light brush or a tiny sideways slip on the thumb swung the whole picture. On a touch screen a shield
+   sits over each of them: a tap does nothing, a vertical swipe scrolls the panel, and a sideways drag moves the slider
+   at a third of its normal speed, from wherever it started. The slider underneath still works from the keyboard, and
+   a mouse still uses it directly. */
+(function wbSliderShield() {
+  if (!window.matchMedia || !matchMedia('(pointer: coarse)').matches) return;
+  const SLOW = 3;
+  ['rawTemp', 'rawGreen', 'temp', 'tint'].forEach(id => {
+    const el = $(id); if (!el || !el.parentElement) return;
+    const host = el.parentElement;
+    if (getComputedStyle(host).position === 'static') host.style.position = 'relative';
+    const sh = document.createElement('div');
+    sh.className = 'wbShield'; sh.setAttribute('aria-hidden', 'true');
+    host.appendChild(sh);
+    const place = () => { sh.style.left = el.offsetLeft + 'px'; sh.style.top = (el.offsetTop - 8) + 'px'; sh.style.width = el.offsetWidth + 'px'; sh.style.height = (el.offsetHeight + 16) + 'px'; };
+    place(); addEventListener('resize', place); new ResizeObserver(place).observe(host);
+    let g = null;
+    sh.addEventListener('pointerdown', e => { place(); g = { x: e.clientX, y: e.clientY, v: +el.value, on: false }; });
+    sh.addEventListener('pointermove', e => {
+      if (!g) return;
+      const dx = e.clientX - g.x, dy = e.clientY - g.y;
+      if (!g.on) {
+        if (Math.abs(dy) > 8 && Math.abs(dy) > Math.abs(dx)) { g = null; return; }   // a scroll
+        if (Math.abs(dx) < 8) return;
+        g.on = true; armUndoCapture(); try { sh.setPointerCapture(e.pointerId); } catch (err) {}
+      }
+      const min = +el.min, max = +el.max, step = +el.step || 1;
+      const perPx = (max - min) / Math.max(120, el.offsetWidth) / SLOW;
+      let v = Math.max(min, Math.min(max, g.v + dx * perPx));
+      v = Math.round((v - min) / step) * step + min;
+      if (v !== +el.value) { el.value = String(v); el.dispatchEvent(new Event('input', { bubbles: true })); }
+      e.preventDefault();
+    });
+    const end = e => { if (g && g.on) el.dispatchEvent(new Event('change', { bubbles: true })); g = null; };
+    sh.addEventListener('pointerup', end); sh.addEventListener('pointercancel', end);
+  });
+})();
+
 function updateClearPresetBtn() {
   const btn = $('btnClearPreset');
   if (btn) btn.style.display = document.querySelector('.pb.on') ? 'inline-block' : 'none';
