@@ -21,7 +21,13 @@ function fpLoad() {
   if (!fpLoading) {
     const b = (document.querySelector('meta[name="irlab-build"]') || {}).content || '';
     fpLoading = fetch('filter-data.json?b=' + b).then(r => { if (!r.ok) throw new Error(r.status); return r.json(); })
-      .then(d => { fpData = d; d.byId = Object.fromEntries(d.filters.map(f => [f[0], f])); return d; });
+      .then(d => { fpData = d; d.byId = Object.fromEntries(d.filters.map(f => [f[0], f]));
+        /* build 325: Canon 1200D, estimated rather than measured. Clouds, white walls and pale render in sun and overcast (about ten
+           frames, Wratten 12 + GRB1 + didymium) read 1.30-1.43 red to green against 1.04 predicted for the generic sensor, a steady
+           1.33 times redder, while blue to green agreed within 2%. So it is the generic sensor with its red scaled. */
+        const gk = Object.keys(d.sensors).find(k => /^Generic CMOS/.test(k));
+        if (gk && !d.sensors['Canon 1200D (estimated from cloud and wall shots)']) { const g = d.sensors[gk]; d.sensors['Canon 1200D (estimated from cloud and wall shots)'] = { ...g, R: g.R.map(v => v * 1.33) }; }
+        return d; });
   }
   return fpLoading;
 }

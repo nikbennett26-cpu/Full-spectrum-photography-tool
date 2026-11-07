@@ -73,7 +73,7 @@ const FF_FILMS = [['1443', 'Aerochrome III 1443 (Kodak AS-77)'], ['eir', 'Ektach
    air mass 1.5, a sun-facing surface tilted 37 degrees, rural aerosol): open shade is global minus direct beam, that is
    sky light plus a little light bounced off the ground (the standard models a light soil); low sun is the G173 direct
    beam taken from 1.5 to 5 atmospheres by Beer-Lambert scaling of its own transmission (direct / extraterrestrial), plus
-   half that sky light. Overcast is still a model, cloud-scattered light leaning slightly blue (lambda^-0.6). Shapes
+   half that sky light. Overcast is still a model, cloud-scattered light leaning blue (lambda^-1.0 since build 325, checked against cloud shots in sun and overcast). Shapes
    only: every use here normalises the overall level away. 10nm averages, 300 to 1100nm. */
 const FF_G173 = {
   shade: [0.0049, 0.106, 0.3474, 0.6695, 0.7015, 0.7278, 0.6977, 0.8004, 0.7233, 0.6737, 0.8609, 1.0, 0.9786, 0.8421, 0.9346, 0.9823, 0.965, 0.9034, 0.8793, 0.7891, 0.7774, 0.753, 0.6936, 0.6914, 0.6729, 0.6586, 0.6278, 0.5992, 0.5887, 0.5571, 0.5504, 0.5462, 0.5308, 0.5094, 0.5226, 0.5038, 0.4805, 0.5034, 0.4951, 0.4184, 0.4492, 0.4568, 0.3733, 0.3654, 0.4038, 0.4038, 0.2523, 0.3248, 0.3586, 0.3361, 0.3192, 0.3004, 0.2402, 0.2553, 0.2756, 0.2632, 0.2635, 0.25, 0.2447, 0.2338, 0.1714, 0.1635, 0.1673, 0.1117, 0.0635, 0.0718, 0.0865, 0.135, 0.1436, 0.1665, 0.165, 0.1583, 0.153, 0.1485, 0.1436, 0.1376, 0.1316, 0.1259, 0.1207, 0.1124, 0.0962],
@@ -83,7 +83,7 @@ const FF_LIGHTS = [['sun', 'Sun, midday'], ['low', 'Low sun (G173, air mass 5)']
 function ffIll(wl, light) {
   const base = fpData.ill;
   if ((light === 'shade' || light === 'low') && FF_G173[light].length === base.length) return FF_G173[light].slice();
-  if (light === 'overcast') return base.map((v, i) => v * Math.pow(wl[i] / 550, -0.6));
+  if (light === 'overcast') return base.map((v, i) => v * Math.pow(wl[i] / 550, -1.0));
   return base.slice();
 }
 function ffFilm(wl, behind, film, light) {
@@ -348,7 +348,7 @@ let ffBehindChosen = false;   // once the person picks the film's filter themsel
 function ffSensors() {
   const sel = $('ffSensor');
   if (sel && fpData && !sel.options.length) Object.keys(fpData.sensors).forEach(k => { const o = document.createElement('option'); o.value = o.textContent = k; sel.appendChild(o); });
-  if (sel && sel.options.length && !sel.dataset.defSet) { sel.dataset.defSet = '1'; const g = [].find.call(sel.options, o => /^Generic CMOS/.test(o.value)); if (g) sel.value = g.value; }   // build 324: the sensor most people shoot with when theirs is not listed
+  if (sel && sel.options.length && !sel.dataset.defSet) { sel.dataset.defSet = '1'; const g = [].find.call(sel.options, o => /^Canon 1200D/.test(o.value)) || [].find.call(sel.options, o => /^Generic CMOS/.test(o.value)); if (g) sel.value = g.value; }   // build 324: the sensor most people shoot with when theirs is not listed
   const fb = $('ffBehind');
   if (fb && !fb.options.length) FF_FILM_FILTERS.forEach(([id, n]) => { const o = document.createElement('option'); o.value = id; o.textContent = n; fb.appendChild(o); });
   if (fb && !ffBehindChosen) fb.value = ffFilmFilterDefault(fpStack);
