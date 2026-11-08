@@ -310,7 +310,11 @@ function ffFit(stack, sensor, maxGain, behind, film, light, noVegCal) {   // noV
   const irShare = r => { let ir = 0, all = 0; for (let c = 0; c < 3; c++) for (let i = 0; i < wl.length; i++) { const v = Kn[c][i] * r[i]; all += v; if (wl[i] >= 700) ir += v; } return all > 0 ? ir / all : 0; };
   const irGrey = irShare(wl.map(() => 1));
   const IRY = train.map(irShare).concat(gx.map(() => irGrey));
-  const IRC = ffPolySolve(PF, IRY, PW, 1e-3, N);
+  /* The share does not depend on how bright a surface is, so the fit sees colour only: each pixel is divided by its own
+     mean. A leaf in shadow then reads like the same leaf in sun, instead of drifting towards grey. */
+  const nrm = x => { const m = Math.max((x[0] + x[1] + x[2]) / 3, 1e-6); return [x[0] / m, x[1] / m, x[2] / m]; };
+  const IRF = X.map(x => ffPolyFeat(nrm(x), FF_POLY_EPS)).concat(gx.map(() => ffPolyFeat([1, 1, 1], FF_POLY_EPS)));
+  const IRC = ffPolySolve(IRF, IRY, PW, 1e-4, N);
   const camQ = x => fromLin(PC.map(c => Math.max(0, ffDot(c, ffPolyFeat(x, FF_POLY_EPS)))));
   const surfaces = Object.keys(FF_SURF_NAMES).filter(k => FF_SURF[k] && FF_SURF[k].length === wl.length).map(k => {
     const r = FF_SURF[k], filmOut = slide(r, vegCal && FF_VEG_KEYS.indexOf(k) >= 0), x = Kn.map(c => ffDot(c, r)), cam = fromLin(A.map(a => ffDot(a, x))), cq = camQ(x);
@@ -320,7 +324,7 @@ function ffFit(stack, sensor, maxGain, behind, film, light, noVegCal) {   // noV
   // where the light it records comes from: blue the film never saw, and infrared past the film's reach
   const tot = g.reduce((a, b) => a + b, 0);
   const share = (lo, hi) => K.reduce((a, k) => a + k.reduce((s, v, i) => s + (wl[i] >= lo && wl[i] < hi ? v : 0), 0), 0) / tot;
-  return { A, r2, surfaces, meanDE, meanDEQ, poly: { c: PC, eps: FF_POLY_EPS }, irc: { c: IRC.map(v => Math.round(v * 1e5) / 1e5), eps: FF_POLY_EPS }, blue: share(0, 490), farIR: share(910, 2000), behind: behind || 'w12', film, light, sensor, filmGrey: F.grey.slice(), filmOutGrey: R.render(F.grey.map(v => 0.18 * v)) };
+  return { A, r2, surfaces, meanDE, meanDEQ, poly: { c: PC, eps: FF_POLY_EPS }, irc: { c: IRC.map(v => Math.round(v * 1e5) / 1e5), eps: FF_POLY_EPS, norm: true }, blue: share(0, 490), farIR: share(910, 2000), behind: behind || 'w12', film, light, sensor, filmGrey: F.grey.slice(), filmOutGrey: R.render(F.grey.map(v => 0.18 * v)) };
 }
 
 function ffSwatch(rgb) {
