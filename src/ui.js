@@ -82,6 +82,7 @@ function resetAllControls() {
   window.__hhPrev = null; window.__eirOn = false;   // no recipe is in force after a full reset (its other settings are reset below)
   if (typeof presetMixClear === 'function') presetMixClear();
   if (typeof PRESET_LAYER !== 'undefined') PRESET_LAYER = null;   // build 236
+  if (typeof FF_POLY !== 'undefined') FF_POLY = null;   // build 334
   mxSync();
   preWB = [1, 1, 1]; postWB = [1, 1, 1]; preWBM = IDENTITY3; postWBM = IDENTITY3;
   resetAutoGainSliders();
@@ -1449,6 +1450,7 @@ function captureState() {
     lutStatusText: $('lutStatus').textContent,
     activePreset: (document.querySelector('.pb.on b') || {}).textContent || null,
     presetLayer: (typeof PRESET_LAYER !== 'undefined') ? PRESET_LAYER : null,   // build 236: what is under the preset in force (src/controls.js)
+    ffPoly: (typeof FF_POLY !== 'undefined' && FF_POLY) ? JSON.parse(JSON.stringify(FF_POLY)) : null,   // build 334: the curved Digital Aerochrome mapping (src/film-fit.js)
   };
 }
 function applyState(snap) {
@@ -1463,6 +1465,7 @@ function applyState(snap) {
   // writing undefined into the cells
   MOFFCELLS.forEach((id, i) => $(id).value = (snap.mOff && snap.mOff[i]) || 0);
   mxSync();
+  if (typeof FF_POLY !== 'undefined') FF_POLY = snap.ffPoly ? JSON.parse(JSON.stringify(snap.ffPoly)) : null;   // build 334
   HASH_SLIDERS.forEach((id, i) => {
     const el = $(id); if (!el) return;
     // snap.s[i] can be undefined when restoring a session saved before this

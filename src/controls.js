@@ -534,7 +534,7 @@ const epdState = { base: null, norm: 1, key: '', gen: -1, imgGen: -1, refEV: 0 }
 const EPD_ITERATES = 5, EPD_WORK_EDGE = 1024;
 function epdStrength() { return 0; }   // build 202: tone mapping removed (too slow on a phone); saved edits that used it now open without it
 function epdKey(P) {
-  return JSON.stringify([P.matrix, P.mOffset, P.preWB, P.postWB, P.preWBM, P.postWBM, P.camCoef, P.wbMethod, P.lumPreserve, P.filmOn, P.lumaW, P.tempTint,
+  return JSON.stringify([P.matrix, P.mOffset, P.poly ? P.poly.c : 0, P.preWB, P.postWB, P.preWBM, P.postWBM, P.camCoef, P.wbMethod, P.lumPreserve, P.filmOn, P.lumaW, P.tempTint,
     P.noiseReduction, P.noiseColour, P.deband, P.sharpen, P.clarity, P.dehaze, (typeof dustSpots !== "undefined" ? JSON.stringify(dustSpots) : ""), P.swapSpace, P.swapWiden, P.indexMode, P.hotspot, P.hotSize, P.caR, P.caB,
     P.calRH, P.calGH, P.calBH, P.calRS, P.calGS, P.calBS, P.calST, P.bands, P.hueSpace,
     $('epdEdge') ? $('epdEdge').value : '', $('epdScale') ? $('epdScale').value : '',
@@ -730,6 +730,7 @@ function currentParams() {
   return {
     matrix: getMatrixUI(),
     mOffset: getMatrixOffsetUI(),
+    poly: (typeof ffPolyActive === 'function' && ffPolyActive()) ? FF_POLY : null,   // build 334: the curved Digital Aerochrome mapping, while the matrix is as it was applied
     bands: targetedBands,
     preWB: rtwbPreWB(preWB),   // build 197: a RAW white balance mid-change, previewed as gains until the rebuild lands
     postWB: postWB,

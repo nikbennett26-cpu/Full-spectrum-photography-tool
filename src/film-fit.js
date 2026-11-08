@@ -225,6 +225,42 @@ function ffVegCal(lin) {
   const d = ffVegDelta(), [h, s, l] = ffToHsl(lin);
   return ffFromHsl((h + d.dh + 360) % 360, Math.min(1, s * d.ds), Math.max(0.02, Math.min(0.98, l + d.dl)));
 }
+/* Build 334: the curved mapping. The fit above is a straight 3x3 mix of the camera's channels. Film is not linear (it
+   compresses highlights and crushes darks, and two colours the camera sees alike can land apart on film), so a second
+   fit is made that bends: nine terms per output channel, the three channels, their square roots, and the three pairs of
+   those roots. Against the film model, for a Canon 1200D behind a Wratten 12, GRB1 and didymium, it cuts the error on
+   foliage and grass by more than half (sun: foliage 4.0 to 1.9, grass 5.8 to 2.1; overcast: foliage 5.5 to 2.5, grass 5.7
+   to 2.7) and keeps neutrals neutral. The root is softened (FF_POLY_EPS) so that it does not climb steeply at black,
+   where it would amplify sensor noise: at 0.1 the shadow noise gain is about 2.4 against the straight mix's 2.0; an
+   unsoftened root gave 5 to 7. It runs in linear light at the same step as the matrix (src/shaders.js), and is only in
+   force while the matrix cells hold the values it was applied with (ffPolySig): change a cell, pick another preset or
+   reset, and the straight mix is back, so it can never act on a matrix it was not fitted for. */
+var FF_POLY = null;        // { c: 3 rows of 9, eps, sig } while the curved mapping is applied; null otherwise
+let ffCurveOn = true;
+const FF_POLY_EPS = 0.1;
+function ffPolyFeat(x, e) {
+  const se = Math.sqrt(e), s0 = Math.sqrt(Math.max(x[0], 0) + e) - se, s1 = Math.sqrt(Math.max(x[1], 0) + e) - se, s2 = Math.sqrt(Math.max(x[2], 0) + e) - se;
+  return [s0, s1, s2, x[0], x[1], x[2], s0 * s1, s0 * s2, s1 * s2];
+}
+function ffPolySolve(F, y, w, lam, n0) {   // weighted ridge least squares for one output channel
+  const n = F[0].length, M = [];
+  for (let i = 0; i < n; i++) M.push(new Array(n + 1).fill(0));
+  F.forEach((f, m) => { const ww = w[m]; for (let i = 0; i < n; i++) { for (let j = 0; j < n; j++) M[i][j] += ww * f[i] * f[j]; M[i][n] += ww * f[i] * y[m]; } });
+  for (let i = 0; i < n; i++) M[i][i] += lam * n0;
+  for (let i = 0; i < n; i++) {
+    let pv = i; for (let k = i + 1; k < n; k++) if (Math.abs(M[k][i]) > Math.abs(M[pv][i])) pv = k;
+    const t = M[i]; M[i] = M[pv]; M[pv] = t;
+    for (let k = i + 1; k < n; k++) { const q = M[k][i] / M[i][i]; for (let j = i; j <= n; j++) M[k][j] -= q * M[i][j]; }
+  }
+  const x = new Array(n).fill(0);
+  for (let i = n - 1; i >= 0; i--) { let s = M[i][n]; for (let j = i + 1; j < n; j++) s -= M[i][j] * x[j]; x[i] = s / M[i][i]; }
+  return x;
+}
+function ffPolySig() {
+  if (typeof MCELLS === 'undefined' || typeof MOFFCELLS === 'undefined') return '';
+  return MCELLS.map(id => +($(id) && $(id).value) || 0).concat(MOFFCELLS.map(id => +($(id) && $(id).value) || 0)).join(',');
+}
+function ffPolyActive() { return !!(FF_POLY && FF_POLY.sig === ffPolySig()); }
 function ffFit(stack, sensor, maxGain, behind, film, light, noVegCal) {   // noVegCal: the self-test's way to judge the filter match alone
   maxGain = maxGain || 2.0;
   film = film || '1443'; light = light || 'sun';
@@ -262,15 +298,22 @@ function ffFit(stack, sensor, maxGain, behind, film, light, noVegCal) {   // noV
     X.forEach((x, n) => { const p = ffDot(A[l], x); se += (p - Y[n][l]) ** 2; st += (Y[n][l] - mean) ** 2; });
     return 1 - se / st;
   });
+  // the curved mapping: the same training spectra, plus a ramp of flat greys held tight so that neutrals stay neutral
+  const gx = [], gy = [];
+  for (let i = 0; i < 14; i++) { const c = 0.005 * Math.pow(1.2 / 0.005, i / 13); gx.push([c, c, c]); gy.push(filmLin(wl.map(() => c))); }
+  const PF = X.map(x => ffPolyFeat(x, FF_POLY_EPS)).concat(gx.map(x => ffPolyFeat(x, FF_POLY_EPS))), PY = Y.concat(gy);
+  const PW = new Array(N).fill(1).concat(new Array(gx.length).fill(60));
+  const PC = [0, 1, 2].map(l => ffPolySolve(PF, PY.map(y => y[l]), PW, 1e-6, N));
+  const camQ = x => fromLin(PC.map(c => Math.max(0, ffDot(c, ffPolyFeat(x, FF_POLY_EPS)))));
   const surfaces = Object.keys(FF_SURF_NAMES).filter(k => FF_SURF[k] && FF_SURF[k].length === wl.length).map(k => {
-    const r = FF_SURF[k], filmOut = slide(r, vegCal && FF_VEG_KEYS.indexOf(k) >= 0), x = Kn.map(c => ffDot(c, r)), cam = fromLin(A.map(a => ffDot(a, x)));
-    return { key: k, name: FF_SURF_NAMES[k], film: filmOut, cam, de: ffDE(filmOut, cam) };
+    const r = FF_SURF[k], filmOut = slide(r, vegCal && FF_VEG_KEYS.indexOf(k) >= 0), x = Kn.map(c => ffDot(c, r)), cam = fromLin(A.map(a => ffDot(a, x))), cq = camQ(x);
+    return { key: k, name: FF_SURF_NAMES[k], film: filmOut, cam, de: ffDE(filmOut, cam), camQ: cq, deQ: ffDE(filmOut, cq) };
   });
-  const meanDE = surfaces.reduce((a, s) => a + s.de, 0) / surfaces.length;
+  const meanDE = surfaces.reduce((a, s) => a + s.de, 0) / surfaces.length, meanDEQ = surfaces.reduce((a, s) => a + s.deQ, 0) / surfaces.length;
   // where the light it records comes from: blue the film never saw, and infrared past the film's reach
   const tot = g.reduce((a, b) => a + b, 0);
   const share = (lo, hi) => K.reduce((a, k) => a + k.reduce((s, v, i) => s + (wl[i] >= lo && wl[i] < hi ? v : 0), 0), 0) / tot;
-  return { A, r2, surfaces, meanDE, blue: share(0, 490), farIR: share(910, 2000), behind: behind || 'w12', film, light, sensor, filmGrey: F.grey.slice(), filmOutGrey: R.render(F.grey.map(v => 0.18 * v)) };
+  return { A, r2, surfaces, meanDE, meanDEQ, poly: { c: PC, eps: FF_POLY_EPS }, blue: share(0, 490), farIR: share(910, 2000), behind: behind || 'w12', film, light, sensor, filmGrey: F.grey.slice(), filmOutGrey: R.render(F.grey.map(v => 0.18 * v)) };
 }
 
 function ffSwatch(rgb) {
@@ -285,7 +328,9 @@ function ffRender() {
   if (!ffLast) { out.hidden = true; return; }
   const f = ffLast; out.hidden = false;
   if (f.error) { out.innerHTML = '<p class="note">' + f.error + '</p>'; return; }
-  const verdict = f.meanDE < 2.5 ? 'Close to the film model' : f.meanDE < 4.5 ? 'A fair match to the film model' : 'A loose match to the film model';   // build 285: it is judged against the model, not against scans
+  // build 334: with the curved mapping ticked, the swatches and the score are the curve's, not the straight mix's
+  const useQ = ffCurveOn && !!f.poly, meanDE = useQ ? f.meanDEQ : f.meanDE, surfs = useQ ? f.surfaces.map(s => Object.assign({}, s, { cam: s.camQ, de: s.deQ })) : f.surfaces;
+  const verdict = meanDE < 2.5 ? 'Close to the film model' : meanDE < 4.5 ? 'A fair match to the film model' : 'A loose match to the film model';   // build 285: it is judged against the model, not against scans
   const pct = v => Math.max(0, Math.round(v * 100)) + '%';
   const warn = [];
   if (!fpStack.length) warn.push('No filters set. The film was always used behind a yellow filter; without one, blue light reaches every channel.');
@@ -296,20 +341,22 @@ function ffRender() {
   if (f.farIR > 0.25) warn.push('A lot of what the camera records is infrared beyond 900nm, past where the film could see.');
   const esc = s => String(s).replace(/[<>&]/g, c => ({ '<': '&lt;', '>': '&gt;', '&': '&amp;' }[c]));
   out.innerHTML =
-    '<p style="margin:6px 0 2px"><b>' + verdict + '</b> · average difference ' + f.meanDE.toFixed(1) + ' over the test surfaces of the film model, against ' + (f.film === '8443' ? '8443' : f.film === 'eir' ? 'EIR' : 'Aerochrome III') + ' behind a ' + esc(((FF_FILM_FILTERS.find(x => x[0] === f.behind) || [, 'Wratten 12'])[1]).replace(/ \(.*\)/, '')) + (f.light && f.light !== 'sun' ? ', ' + esc(((FF_LIGHTS.find(x => x[0] === f.light) || [, ''])[1]).replace(/ \(.*\)/, '').toLowerCase()) : '') + '</p>' +
+    '<p style="margin:6px 0 2px"><b>' + verdict + '</b> · average difference ' + meanDE.toFixed(1) + ' over the test surfaces of the film model, against ' + (f.film === '8443' ? '8443' : f.film === 'eir' ? 'EIR' : 'Aerochrome III') + ' behind a ' + esc(((FF_FILM_FILTERS.find(x => x[0] === f.behind) || [, 'Wratten 12'])[1]).replace(/ \(.*\)/, '')) + (f.light && f.light !== 'sun' ? ', ' + esc(((FF_LIGHTS.find(x => x[0] === f.light) || [, ''])[1]).replace(/ \(.*\)/, '').toLowerCase()) : '') + '</p>' +
     '<p class="note" style="margin:0 0 4px">How well your camera can follow each film layer: infrared ' + pct(f.r2[0]) + ', red ' + pct(f.r2[1]) + ', green ' + pct(f.r2[2]) + '</p>' +
     warn.map(w => '<p class="note ffWarn" style="margin:0 0 4px">' + esc(w) + '</p>').join('') +
     '<div class="ffGrid"><span></span><span class="ffH">Film</span><span class="ffH">Yours</span><span class="ffH">Diff.</span>' +
-    f.surfaces.map(s => '<span class="ffN">' + esc(s.name) + '</span><span class="ffSw" style="background:' + ffSwatch(s.film) + '"></span><span class="ffSw" style="background:' + ffSwatch(s.cam) + '"></span><span class="ffD">' + s.de.toFixed(1) + '</span>').join('') +
+    surfs.map(s => '<span class="ffN">' + esc(s.name) + '</span><span class="ffSw" style="background:' + ffSwatch(s.film) + '"></span><span class="ffSw" style="background:' + ffSwatch(s.cam) + '"></span><span class="ffD">' + s.de.toFixed(1) + '</span>').join('') +
     '</div>' +
     ((fpData && fpData.sensorNotes && f.sensor && fpData.sensorNotes[f.sensor]) ? '<p class="note" style="margin:4px 0 2px">Sensor: ' + esc(fpData.sensorNotes[f.sensor]) + '</p>' : '') +
     '<p class="note" style="margin:4px 0 2px">Film swatches are the slide as printed: Kodak&rsquo;s characteristic curves and dyes. The fit matches its colours; tick the box below to take the film&rsquo;s contrast too.</p>' +
     '<p class="note" style="margin:4px 0 6px">Surfaces are measured (USGS Spectral Library; skin from NIST&rsquo;s skin reflectance data; the clear sky from Kider et al. 2014, Cornell; the grey card is flat). The sensor curve is a model unless your camera matches it, so take this as the shape of the answer.</p>' +
+    '<label class="ffRow" title="Fits a curve instead of a straight mix of the three channels. It follows the film&rsquo;s own colours more closely, most for foliage and grass and most under cloud, and keeps neutrals neutral. Takes effect when you apply it. Change a matrix number afterwards and the straight mix takes over."><input type="checkbox" id="ffCurve"' + (ffCurveOn ? ' checked' : '') + '> Curved colour mapping</label>' +
     '<label class="ffRow" title="Sets the tone curve (R, G and B) to the film&rsquo;s own characteristic curve, so the photo takes the slide&rsquo;s contrast as well as its colours. Edit or flatten it in Curves afterwards."><input type="checkbox" id="ffTone"' + (ffToneOn ? ' checked' : '') + '> Include the film&rsquo;s contrast</label>' +
     '<div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:4px"><button type="button" id="ffApply" class="btnGhost">Apply to the photo</button>' +
     (ffApplied() ? '<button type="button" id="ffOff" class="btnGhost">Take it off</button>' : '') + '</div>';
   $('ffApply').onclick = ffApply;
   if ($('ffTone')) $('ffTone').onchange = e => { ffToneOn = e.target.checked; };
+  if ($('ffCurve')) $('ffCurve').onchange = e => { ffCurveOn = e.target.checked; ffRender(); };
   if ($('ffOff')) $('ffOff').onclick = () => { armUndoCapture(); clearPreset(); commitUndoCapture(); ffRender(); };
 }
 function ffStale() { ffLast = null; if (fpData) ffSensors(); ffRender(); }
@@ -330,7 +377,8 @@ function ffApply() {
   if (!ffLast || ffLast.error) return;
   if (!loadedImage) { toast('Open a photo first'); return; }
   const m = [].concat(...ffLast.A).map(v => Math.round(v * 1000) / 10);
-  applyUserPreset({ tv: 4, m, mOff: [0, 0, 0], sliders: {} }, {
+  const poly = (ffCurveOn && ffLast.poly) ? { c: ffLast.poly.c.map(r => r.map(v => Math.round(v * 1e5) / 1e5)), eps: ffLast.poly.eps } : undefined;   // build 334
+  applyUserPreset({ tv: 4, m, mOff: [0, 0, 0], sliders: {}, poly }, {
     extra: () => {
       if ($('swapSpace')) { $('swapSpace').value = '0'; if (typeof syncWidenFromSelect === 'function') syncWidenFromSelect(); }
       setCamNativeDecode('Digital Aerochrome applied. Now use grey picker 1, Before swap, in White Balance, and tap something grey to finish.');

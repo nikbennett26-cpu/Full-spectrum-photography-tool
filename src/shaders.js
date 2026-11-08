@@ -173,6 +173,13 @@ uniform float u_debandRad;  // reach, in source texels, at full strength
   uniform vec3 u_lutDomainMin;
   uniform vec3 u_lutDomainMax;
   uniform mat3 u_matrix;
+  /* Build 334: the curved Digital Aerochrome mapping (src/film-fit.js). u_polyMix is 1 only while it is in force. For each
+     output channel: three softened square roots of the channels, the channels themselves, and the three pairs of roots. */
+  uniform float u_polyMix;
+  uniform float u_polyEps;
+  uniform mat3 u_polyS;
+  uniform mat3 u_polyL;
+  uniform mat3 u_polyX;
   /* Per-output-channel constant, added after the mix. This is the fourth
      column of a 4x4: a 3x3 can only redistribute light that is already in
      the channels, so it can never lift one that is near zero. The offset
@@ -2690,8 +2697,14 @@ uniform float u_skyL;          // the typical lightness of the sky; anything cle
       enc = clamp(u_matrix * enc + u_mOffset, vec3(0.0), vec3(1.0));
       rgb = srgbToLinear(enc);
     } else if (u_swapSpace == 0) {
+      vec3 polyIn = max(rgb, vec3(0.0));
       rgb = u_matrix * rgb;
       rgb += u_mOffset;
+      if (u_polyMix > 0.0) {
+        vec3 ps = sqrt(polyIn + vec3(u_polyEps)) - vec3(sqrt(u_polyEps));
+        vec3 pc = u_polyS * ps + u_polyL * polyIn + u_polyX * vec3(ps.x * ps.y, ps.x * ps.z, ps.y * ps.z);
+        rgb = mix(rgb, pc, u_polyMix);
+      }
     } else {
       /* Build 186: wide-space swaps without the extra noise. Swapping in a wider space is, seen from sRGB, a mix that
          pulls channels against each other: R<->B in ProPhoto makes red = 1.7 blue - 0.5 green - 0.2 red, which raises

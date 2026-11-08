@@ -1283,6 +1283,7 @@ function resetLookBeforeRecipe() {
      afterwards, so clearing first is always safe. */
   MCELLS.forEach((id, i) => { const el = $(id); if (el) el.value = (i % 4 === 0) ? 100 : 0; });
   MOFFCELLS.forEach(id => { const el = $(id); if (el) el.value = 0; });
+  if (typeof FF_POLY !== 'undefined') FF_POLY = null;   // build 334
   document.querySelectorAll('.pb').forEach(x => x.classList.remove('on'));
   if (typeof activePresetName !== 'undefined') activePresetName = null;
   mxSync();
@@ -1345,6 +1346,7 @@ function captureLookForUserPreset() {
     // already documents for why post-swap WB travels with a recipe and
     // pre-swap WB never does
     postWB: [...postWB], postWBM: [...postWBM],
+    poly: (typeof ffPolyActive === 'function' && ffPolyActive()) ? { c: FF_POLY.c, eps: FF_POLY.eps } : undefined,   // build 334: the curved Digital Aerochrome mapping, when it is in force
   };
 }
 
@@ -1362,6 +1364,9 @@ function applyUserPreset(look, opts) {
   MCELLS.forEach((id, i) => { const el = $(id); if (el && look.m) el.value = look.m[i]; });
   MOFFCELLS.forEach((id, i) => { const el = $(id); if (el && look.mOff) el.value = look.mOff[i]; });
   mxSync();
+  /* build 334: a look carries the curved mapping only if it was made with one; either way what was there is replaced, and it
+     is tied to the matrix cells as they stand now (ffPolySig), so anything that changes a cell later switches it off */
+  if (typeof FF_POLY !== 'undefined') FF_POLY = (look.poly && typeof ffPolySig === 'function') ? { c: look.poly.c, eps: look.poly.eps, sig: ffPolySig() } : null;
   Object.keys(look.sliders || {}).forEach(id => {
     const el = $(id); if (!el) return;
     let pv = look.sliders[id];

@@ -213,6 +213,11 @@ class WebGLEngine {
       lutDomainMax: gl.getUniformLocation(this.program, 'u_lutDomainMax'),
       matrix: gl.getUniformLocation(this.program, 'u_matrix'),
       mOffset: gl.getUniformLocation(this.program, 'u_mOffset'),
+      polyMix: gl.getUniformLocation(this.program, 'u_polyMix'),
+      polyEps: gl.getUniformLocation(this.program, 'u_polyEps'),
+      polyS: gl.getUniformLocation(this.program, 'u_polyS'),
+      polyL: gl.getUniformLocation(this.program, 'u_polyL'),
+      polyX: gl.getUniformLocation(this.program, 'u_polyX'),
       camFit: gl.getUniformLocation(this.program, 'u_camFit'),
       camCoef: gl.getUniformLocation(this.program, 'u_camCoef'),
       bandCount: gl.getUniformLocation(this.program, 'u_bandCount'),
@@ -924,6 +929,16 @@ void main(){
 
     gl.uniformMatrix3fv(this.uLocs.matrix, false, new Float32Array(transposed));
     gl.uniform3fv(this.uLocs.mOffset, new Float32Array(p.mOffset || [0,0,0]));
+    // Build 334: the curved mapping. Each of its three 3x3 blocks has one row per output channel, sent column-major like u_matrix.
+    const pl = p.poly && p.poly.c && p.poly.c.length === 3 ? p.poly : null;
+    gl.uniform1f(this.uLocs.polyMix, pl ? 1 : 0);
+    if (pl) {
+      const c = pl.c, blk = o => new Float32Array([c[0][o], c[1][o], c[2][o], c[0][o + 1], c[1][o + 1], c[2][o + 1], c[0][o + 2], c[1][o + 2], c[2][o + 2]]);
+      gl.uniform1f(this.uLocs.polyEps, pl.eps || 0.1);
+      gl.uniformMatrix3fv(this.uLocs.polyS, false, blk(0));
+      gl.uniformMatrix3fv(this.uLocs.polyL, false, blk(3));
+      gl.uniformMatrix3fv(this.uLocs.polyX, false, blk(6));
+    }
     // 20 vec3s, flattened — see u_camCoef in the shader
     gl.uniform1f(this.uLocs.camFit, p.camCoef ? 1 : 0);
     gl.uniform3fv(this.uLocs.camCoef, new Float32Array(p.camCoef || new Array(60).fill(0)));

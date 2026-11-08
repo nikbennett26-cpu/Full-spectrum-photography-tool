@@ -113,6 +113,7 @@ function packLook() {
   if (L.targetedBands.length) o.b = L.targetedBands;
   if (L.filmOn) o.f = 1;
   if (L.filmToneOn) o.t = 1;
+  if (L.poly) o.p = { c: L.poly.c.map(r => r.map(LOOK_ROUND)), e: L.poly.eps };   // build 334: the curved Digital Aerochrome mapping
   if (L.postWBM.some((v, i) => Math.abs(v - IDENTITY3[i]) > 1e-6)) { o.w = L.postWBM.map(LOOK_ROUND); o.g = L.postWB.map(LOOK_ROUND); }
   return o;
 }
@@ -127,6 +128,8 @@ function unpackLook(o) {
     sliders,
     targetedBands: Array.isArray(o.b) ? o.b : [],
     filmOn: !!o.f, filmToneOn: !!o.t,
+    // build 334: 3 rows of 9 coefficients; they go straight to the shader, so each must be a plain number in a sane range
+    poly: (o.p && Array.isArray(o.p.c) && o.p.c.length === 3 && o.p.c.every(r => Array.isArray(r) && r.length === 9 && r.every(v => Number.isFinite(+v) && Math.abs(+v) < 100))) ? { c: o.p.c.map(r => r.map(Number)), eps: (+o.p.e > 0 && +o.p.e < 1) ? +o.p.e : 0.1 } : undefined,
     postWB: Array.isArray(o.g) ? o.g.map(Number) : [1, 1, 1],
     postWBM: Array.isArray(o.w) && o.w.length === 9 ? o.w.map(Number) : [...IDENTITY3],
   };
