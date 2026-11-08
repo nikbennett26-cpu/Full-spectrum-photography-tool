@@ -1301,3 +1301,13 @@ html.studioOn body.has-image #reorderZone > #modeBar{display:flex !important;ord
 
 /* Build 331: shield over the white balance sliders on touch screens */
 .wbShield{position:absolute;z-index:3;touch-action:pan-y;background:transparent}
+
+/* shoot planner */
+#plOut{font-size:13px;color:var(--paper-dim);margin-top:8px}
+#plOut .plFol{margin:0 0 10px;color:var(--paper)}
+#plOut .plRow{display:flex;align-items:baseline;gap:12px;padding:8px 0;border-top:1px solid var(--line)}
+#plOut .plDay{width:44px;font:500 12px/1 var(--font-mono);color:var(--muted);text-transform:uppercase}
+#plOut .plRate{width:46px;font-weight:500}
+#plOut .plGood{color:var(--phosphor)}#plOut .plFair{color:var(--paper)}#plOut .plPoor{color:var(--muted)}
+#plOut .plInfo{flex:1;min-width:0}
+#plOut .plNote{font-size:11px;color:var(--muted);margin-top:8px}
