@@ -1657,9 +1657,14 @@ function presetMixApply(pct) {
   if (!window.matchMedia || !matchMedia('(pointer: coarse)').matches) return;
   const EASED = { sat: 1, vibrance: 1, satPreserve: 1 };         // slow for the first few millimetres, then close to normal speed, so one swipe still covers the range
   const SLOWER = { hue: 4 };                                    // hue shift: a degree or so per pixel natively
-  ['rawTemp', 'rawGreen', 'temp', 'tint', 'hue', 'sat', 'vibrance', 'satPreserve'].forEach(id => {
-    const SLOW = SLOWER[id] || 3;
-    const el = $(id); if (!el || !el.parentElement) return;
+  const SPECIAL = ['rawTemp', 'rawGreen', 'temp', 'tint', 'hue', 'sat', 'vibrance', 'satPreserve'];
+  /* Build 342: every other labelled slider gets the same shield, at normal speed. Without it a finger landing on the track
+     (the usual way to start a scroll down a column of sliders) made the thumb jump to that spot, drew the preview there,
+     and only then did the scroll put it back: the light sliders flickered to one end as you scrolled past them. */
+  function shield(el, id) {
+    const SLOW = SLOWER[id] || (SPECIAL.indexOf(id) >= 0 ? 3 : 1);
+    if (!el || !el.parentElement || el.dataset.shielded) return;
+    el.dataset.shielded = '1';
     const host = el.parentElement;
     if (getComputedStyle(host).position === 'static') host.style.position = 'relative';
     const sh = document.createElement('div');
@@ -1691,7 +1696,12 @@ function presetMixApply(pct) {
     });
     const end = e => { if (g && g.on) el.dispatchEvent(new Event('change', { bubbles: true })); g = null; };
     sh.addEventListener('pointerup', end); sh.addEventListener('pointercancel', end);
-  });
+  }
+  SPECIAL.forEach(id => shield($(id), id));
+  const sweep = () => document.querySelectorAll('.sl input[type=range]').forEach(el => shield(el, el.id));
+  sweep();
+  // sliders built later (colour bands, panels opened for the first time) get the same treatment
+  new MutationObserver(() => { clearTimeout(sweep.t); sweep.t = setTimeout(sweep, 60); }).observe(document.body, { childList: true, subtree: true });
 })();
 
 function updateClearPresetBtn() {

@@ -142,19 +142,6 @@ function ffOklab(c) {
   const l = Math.cbrt(0.4122214708 * r + 0.5363325363 * g + 0.0514459929 * b), m = Math.cbrt(0.2119034982 * r + 0.6806995451 * g + 0.1073969566 * b), s = Math.cbrt(0.0883024619 * r + 0.2817188376 * g + 0.6299787005 * b);
   return [0.2104542553 * l + 0.7936177850 * m - 0.0040720468 * s, 1.9779984951 * l - 2.4285922050 * m + 0.4505937099 * s, 0.0259040371 * l + 0.7827717662 * m - 0.8086757660 * s];
 }
-function ffOklabInv(L, a, b) {
-  const l = Math.pow(L + 0.3963377774 * a + 0.2158037573 * b, 3), m = Math.pow(L - 0.1055613458 * a - 0.0638541728 * b, 3), s = Math.pow(L - 0.0894841775 * a - 1.2914855480 * b, 3);
-  return [4.0767416621 * l - 3.3077115913 * m + 0.2309699292 * s, -1.2684380046 * l + 2.6097574011 * m - 0.3413193965 * s, -0.0041960863 * l - 0.7034186147 * m + 1.7076147010 * s];
-}
-/* Build 341. The film renders light skin as a pale yellow-green (OKLab hue about 120 in sun, 140 under cloud), which its
-   own users call unflattering. This takes a colour a good part of the way towards a light straw yellow (hue 90) and
-   lifts its chroma a little. Used only for the skin spectra, and only when the box is ticked. */
-function ffWarmSkin(o) {
-  const [L, a, b] = ffOklab(o), C = Math.hypot(a, b);
-  let h = Math.atan2(b, a) * 180 / Math.PI; if (h < 0) h += 360;
-  const dh = Math.max(-40, Math.min(0, 0.7 * (90 - h))), h2 = (h + dh) * Math.PI / 180, C2 = C * 1.15;
-  return ffOklabInv(L, C2 * Math.cos(h2), C2 * Math.sin(h2));
-}
 function ffDE(a, b) { const p = ffOklab(a), q = ffOklab(b); return Math.hypot(p[0] - q[0], p[1] - q[1], p[2] - q[2]) * 100; }
 
 /* ---------- The film as it printed (build 250) ----------
@@ -250,7 +237,6 @@ function ffVegCal(lin) {
    reset, and the straight mix is back, so it can never act on a matrix it was not fitted for. */
 var FF_POLY = null;        // { c: 3 rows of 9, eps, sig } while the curved mapping is applied; null otherwise
 let ffCurveOn = true;
-let ffSkinOn = false;   // build 341: fit the curved mapping so skin comes out straw yellow instead of the film's pale green-yellow
 const FF_POLY_EPS = 0.1;
 function ffPolyFeat(x, e) {
   const se = Math.sqrt(e), s0 = Math.sqrt(Math.max(x[0], 0) + e) - se, s1 = Math.sqrt(Math.max(x[1], 0) + e) - se, s2 = Math.sqrt(Math.max(x[2], 0) + e) - se;
@@ -317,11 +303,7 @@ function ffFit(stack, sensor, maxGain, behind, film, light, noVegCal) {   // noV
   for (let i = 0; i < 14; i++) { const c = 0.005 * Math.pow(1.2 / 0.005, i / 13); gx.push([c, c, c]); gy.push(filmLin(wl.map(() => c))); }
   const PF = X.map(x => ffPolyFeat(x, FF_POLY_EPS)).concat(gx.map(x => ffPolyFeat(x, FF_POLY_EPS))), PY = Y.concat(gy);
   const PW = new Array(N).fill(1).concat(new Array(gx.length).fill(60));
-  // the skin spectra again, aimed at the warmer colour (only when ticked); the straight mix and the infrared map are left as they were
-  const skinKeys = ffSkinOn ? ['skinL', 'skinM', 'skinD'].filter(k => FF_SURF[k] && FF_SURF[k].length === wl.length) : [];
-  const SF = [], SY = [], SW = [];
-  skinKeys.forEach(k => { for (let j = 0; j < 12; j++) { const r = FF_SURF[k]; SF.push(ffPolyFeat(Kn.map(c => ffDot(c, r)), FF_POLY_EPS)); SY.push(toLin(ffWarmSkin(slide(r, false)))); SW.push(40); } });
-  const PC = [0, 1, 2].map(l => ffPolySolve(PF.concat(SF), PY.concat(SY).map(y => y[l]), PW.concat(SW), 1e-6, N));
+  const PC = [0, 1, 2].map(l => ffPolySolve(PF, PY.map(y => y[l]), PW, 1e-6, N));
   /* Build 337, the infrared map: the same curve, fitted to a different target -- the share of what each channel records
      that comes from beyond 700 nm. A flat grey sets the ramp's value. Three channels cannot separate infrared exactly, so
      this is an estimate for this stack and sensor, good for seeing where infrared dominates, not for measuring it. */
@@ -380,13 +362,11 @@ function ffRender() {
     '<p class="note" style="margin:4px 0 2px">Film swatches are the slide as printed: Kodak&rsquo;s characteristic curves and dyes. The fit matches its colours; tick the box below to take the film&rsquo;s contrast too.</p>' +
     '<p class="note" style="margin:4px 0 6px">Surfaces are measured (USGS Spectral Library; skin from NIST&rsquo;s skin reflectance data; the clear sky from Kider et al. 2014, Cornell; the grey card is flat). The sensor curve is a model unless your camera matches it, so take this as the shape of the answer.</p>' +
     '<label class="ffRow" title="Fits a curve instead of a straight mix of the three channels. It follows the film&rsquo;s own colours more closely, most for foliage and grass and most under cloud, and keeps neutrals neutral. Takes effect when you apply it. Change a matrix number afterwards and the straight mix takes over."><input type="checkbox" id="ffCurve"' + (ffCurveOn ? ' checked' : '') + '> Curved colour mapping</label>' +
-    '<label class="ffRow" title="The film renders light skin as a pale yellow-green. This fits the curved mapping to give skin a light straw yellow instead, as film users do by hand, and leaves leaves, sky and everything else alone. Needs the curved mapping, and takes effect when you apply it. The skin rows in the table below then differ from the film on purpose."><input type="checkbox" id="ffSkin"' + (ffSkinOn ? ' checked' : '') + '> Warm skin tones (straw yellow)</label>' +
     '<label class="ffRow" title="Sets the tone curve (R, G and B) to the film&rsquo;s own characteristic curve, so the photo takes the slide&rsquo;s contrast as well as its colours. Edit or flatten it in Curves afterwards."><input type="checkbox" id="ffTone"' + (ffToneOn ? ' checked' : '') + '> Include the film&rsquo;s contrast</label>' +
     '<div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:4px"><button type="button" id="ffApply" class="btnGhost">Apply to the photo</button>' +
     (ffApplied() ? '<button type="button" id="ffOff" class="btnGhost">Take it off</button>' : '') + '</div>';
   $('ffApply').onclick = ffApply;
   if ($('ffTone')) $('ffTone').onchange = e => { ffToneOn = e.target.checked; };
-  if ($('ffSkin')) $('ffSkin').onchange = e => { ffSkinOn = e.target.checked; ffRun(); };
   if ($('ffCurve')) $('ffCurve').onchange = e => { ffCurveOn = e.target.checked; ffRender(); };
   if ($('ffOff')) $('ffOff').onclick = () => { armUndoCapture(); clearPreset(); commitUndoCapture(); ffRender(); };
 }
