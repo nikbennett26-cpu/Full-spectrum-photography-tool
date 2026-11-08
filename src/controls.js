@@ -897,7 +897,7 @@ document.addEventListener('pointerdown', e => {
 /* Build 337: the infrared map is a view, never part of an export, so only the live preview adds it. */
 function previewParams() {
   const P = currentParams();
-  if (typeof ffIrOn !== 'undefined' && ffIrOn && typeof ffLast !== 'undefined' && ffLast && ffLast.irc) P.irmap = ffLast.irc;
+  if (indexMode === 3 && typeof ffLast !== 'undefined' && ffLast && ffLast.irc) P.irmap = ffLast.irc;
   return P;
 }
 function render(fromSlider) {
@@ -1055,15 +1055,29 @@ document.querySelectorAll('.swapBtn[data-perm]').forEach(b => {
    colour controls stop meaning anything while it is on. Rather than disable
    them all, the mode is a visible three-way switch that reads as a different
    view, and it is excluded from export the same way the clipping overlay is. */
+/* The legend and the point sampler follow the mode: NDVI and NGB are measurements you can sample; the infrared map is an estimate. */
+function idxLegendSync() {
+  if ($('idxLegend')) $('idxLegend').style.display = indexMode ? 'inline-flex' : 'none';
+  if ($('idxTools')) $('idxTools').style.display = (indexMode === 1 || indexMode === 2) ? 'block' : 'none';
+  if ($('idxBar')) $('idxBar').style.background = indexMode === 3 ? 'linear-gradient(to right,#1a409e,#f5db4d,#db2424)' : 'linear-gradient(to right,#0d0d40,#1a598c,#a69973,#f2d940,#59b326,#0d4d0d)';
+  if ($('idxLbl')) $('idxLbl').textContent = indexMode === 3 ? 'visible → infrared (estimate)' : 'bare → dense';
+}
 document.querySelectorAll('.idxBtn').forEach(b => {
   b.addEventListener('click', () => {
     if (indexMode === +b.dataset.idx) return;
     armUndoCapture();
     indexMode = +b.dataset.idx;
     document.querySelectorAll('.idxBtn').forEach(x => x.classList.toggle('on', x === b));
-    $('idxLegend').style.display = indexMode ? 'inline-flex' : 'none';
-    $('idxTools').style.display = indexMode ? 'block' : 'none';
+    idxLegendSync();
     indexSamples = []; renderIndexSamples();   // values are mode-specific
+    if (indexMode === 3 && !(typeof ffLast !== 'undefined' && ffLast && ffLast.irc) && typeof ffRun === 'function') {
+      // the map needs the fit for the chosen camera and filters; run it, and draw once it is there
+      ffRun(); let tries = 0;
+      const t = setInterval(() => {
+        const ok = typeof ffLast !== 'undefined' && ffLast && ffLast.irc;
+        if (ok || ++tries > 25) { clearInterval(t); if (!ok) toast('Could not fit this camera and filter stack', true); render(); }
+      }, 150);
+    }
     if (!indexMode && pickMode === 'index') exitPick();
     render();
     commitUndoCapture();

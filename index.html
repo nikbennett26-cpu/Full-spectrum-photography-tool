@@ -25,7 +25,7 @@
 <meta name="twitter:image" content="https://irlab.uk/og-card.png?v=330">
 <link rel="canonical" href="https://irlab.uk/">
 <meta name="theme-color" content="#141518">
-<meta name="irlab-build" content="337">
+<meta name="irlab-build" content="338">
 <link rel="manifest" href="/manifest.json">
 <link rel="icon" href="/favicon.ico?v=3" sizes="any">
 <link rel="icon" href="/favicon.svg?v=3" type="image/svg+xml">
@@ -54,15 +54,15 @@
 </script>
 
 <link rel="preload" href="fonts/inter-latin-400-normal.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="stylesheet" href="css/fonts.css?b=337">
+<link rel="stylesheet" href="css/fonts.css?b=338">
 
-<script src="i18n/tr.js?b=337"></script>
-<link rel="stylesheet" href="css/main.css?b=337">
-<link rel="stylesheet" id="uxRefresh" href="css/refresh.css?b=337">
-<link rel="stylesheet" href="css/trichrome.css?b=337">
-<link rel="stylesheet" id="uxDock" href="css/dock.css?b=337">
-<link rel="stylesheet" href="css/minimal.css?b=337">
-<link rel="preload" href="editor.js?b=337" as="script">
+<script src="i18n/tr.js?b=338"></script>
+<link rel="stylesheet" href="css/main.css?b=338">
+<link rel="stylesheet" id="uxRefresh" href="css/refresh.css?b=338">
+<link rel="stylesheet" href="css/trichrome.css?b=338">
+<link rel="stylesheet" id="uxDock" href="css/dock.css?b=338">
+<link rel="stylesheet" href="css/minimal.css?b=338">
+<link rel="preload" href="editor.js?b=338" as="script">
 </head>
 <body>
 
@@ -654,7 +654,7 @@
     <!-- Build 279: the people behind it, on the home page -->
     <div id="creditsHome">Made by <a href="https://www.instagram.com/irlab.uk" target="_blank" rel="noopener" style="color:var(--safelight);font-weight:600;text-decoration:none">Nik Bennett</a>
       &middot; Colour science &amp; RAW decode by <a href="https://philwarrenphotography.com" target="_blank" rel="noopener" style="color:var(--safelight);font-weight:600;text-decoration:none">Phil Warren</a></div>
-    <div id="buildStampHome">Version 2026-11-08 · build 337</div>
+    <div id="buildStampHome">Version 2026-11-08 · build 338</div>
   </footer>
 </div>
 
@@ -924,9 +924,10 @@
           <button type="button" class="swapBtn idxBtn on" data-idx="0">Photo</button>
           <button type="button" class="swapBtn idxBtn" data-idx="1" title="(NIR − Green) / (NIR + Green)">NDVI</button>
           <button type="button" class="swapBtn idxBtn" data-idx="2" title="(NIR − Blue) / (NIR + Blue)">NGB</button>
+          <button type="button" class="swapBtn idxBtn" data-idx="3" title="The share of the signal that is infrared, estimated for the camera and filters chosen under Digital Aerochrome. Blue is mostly visible light, red mostly infrared. An estimate from three channels, and a view only.">IR map</button>
           <span id="idxLegend" style="display:none;align-items:center;gap:6px;font-family:var(--font-mono);font-size:10px;color:var(--muted)">
-            <span style="width:60px;height:10px;border-radius:2px;display:inline-block;background:linear-gradient(to right,#0d0d40,#1a598c,#a69973,#f2d940,#59b326,#0d4d0d)"></span>
-            bare → dense
+            <span id="idxBar" style="width:60px;height:10px;border-radius:2px;display:inline-block;background:linear-gradient(to right,#0d0d40,#1a598c,#a69973,#f2d940,#59b326,#0d4d0d)"></span>
+            <span id="idxLbl">bare → dense</span>
           </span>
         </div>
         <div id="idxTools" style="display:none;margin-top:8px">
@@ -1868,7 +1869,7 @@
       <br><a href="privacy.html" target="_blank" rel="noopener" style="color:var(--muted);text-decoration:underline">Privacy</a>
       <br><a href="LICENSE.md" target="_blank" rel="noopener" style="color:var(--muted);text-decoration:underline">Source: AGPL-3.0</a>
       <br><a href="THIRD_PARTY_NOTICES.md" target="_blank" rel="noopener" style="color:var(--muted);text-decoration:underline">Third-party notices (LibRaw, RawTherapee)</a>
-<br><span id="buildStamp" style="color:var(--muted)" title="Which version of the app this is. Tap the arrow to check for a newer one and update.">Version 2026-11-08 · build 337</span>
+<br><span id="buildStamp" style="color:var(--muted)" title="Which version of the app this is. Tap the arrow to check for a newer one and update.">Version 2026-11-08 · build 338</span>
       <br><button id="btnInstall" type="button">Install as an app</button>
       <span id="kbHint">Ctrl+Z undo &middot; Ctrl+Shift+Z redo &middot; [ ] cycle presets &middot; F full quality view &middot; Space hold to compare</span>
     </footer>
@@ -1964,6 +1965,6 @@
 <!-- The editor's code: editor.js, BUILT from src/*.js by tools/build.py (see the README's Code layout). One script, so
      it all runs in one go, as the single inline block it came from did. ?b=<build> keeps the service worker's cached
      copy of an older editor.js from ever running under a newer page; tools/bump_build.py sets it. -->
-<script src="editor.js?b=337"></script>
+<script src="editor.js?b=338"></script>
 </body>
 </html>

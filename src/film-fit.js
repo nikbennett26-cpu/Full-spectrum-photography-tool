@@ -237,7 +237,6 @@ function ffVegCal(lin) {
    reset, and the straight mix is back, so it can never act on a matrix it was not fitted for. */
 var FF_POLY = null;        // { c: 3 rows of 9, eps, sig } while the curved mapping is applied; null otherwise
 let ffCurveOn = true;
-let ffIrOn = false;   // build 337: show the infrared map in the preview
 const FF_POLY_EPS = 0.1;
 function ffPolyFeat(x, e) {
   const se = Math.sqrt(e), s0 = Math.sqrt(Math.max(x[0], 0) + e) - se, s1 = Math.sqrt(Math.max(x[1], 0) + e) - se, s2 = Math.sqrt(Math.max(x[2], 0) + e) - se;
@@ -360,16 +359,14 @@ function ffRender() {
     '<p class="note" style="margin:4px 0 6px">Surfaces are measured (USGS Spectral Library; skin from NIST&rsquo;s skin reflectance data; the clear sky from Kider et al. 2014, Cornell; the grey card is flat). The sensor curve is a model unless your camera matches it, so take this as the shape of the answer.</p>' +
     '<label class="ffRow" title="Fits a curve instead of a straight mix of the three channels. It follows the film&rsquo;s own colours more closely, most for foliage and grass and most under cloud, and keeps neutrals neutral. Takes effect when you apply it. Change a matrix number afterwards and the straight mix takes over."><input type="checkbox" id="ffCurve"' + (ffCurveOn ? ' checked' : '') + '> Curved colour mapping</label>' +
     '<label class="ffRow" title="Sets the tone curve (R, G and B) to the film&rsquo;s own characteristic curve, so the photo takes the slide&rsquo;s contrast as well as its colours. Edit or flatten it in Curves afterwards."><input type="checkbox" id="ffTone"' + (ffToneOn ? ' checked' : '') + '> Include the film&rsquo;s contrast</label>' +
-    '<label class="ffRow" title="Shows where infrared dominates the signal in this photo, for this filter stack and sensor: blue is mostly visible light, yellow a mix, red mostly infrared. An estimate from three channels. Preview only; it is never saved or shared."><input type="checkbox" id="ffIr"' + (ffIrOn ? ' checked' : '') + '> Show infrared map (estimate)</label>' +
     '<div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:4px"><button type="button" id="ffApply" class="btnGhost">Apply to the photo</button>' +
     (ffApplied() ? '<button type="button" id="ffOff" class="btnGhost">Take it off</button>' : '') + '</div>';
   $('ffApply').onclick = ffApply;
   if ($('ffTone')) $('ffTone').onchange = e => { ffToneOn = e.target.checked; };
-  if ($('ffIr')) $('ffIr').onchange = e => { ffIrOn = e.target.checked; render(); };
   if ($('ffCurve')) $('ffCurve').onchange = e => { ffCurveOn = e.target.checked; ffRender(); };
   if ($('ffOff')) $('ffOff').onclick = () => { armUndoCapture(); clearPreset(); commitUndoCapture(); ffRender(); };
 }
-function ffStale() { ffLast = null; if (fpData) ffSensors(); ffRender(); }
+function ffStale() { ffLast = null; if (fpData) ffSensors(); ffRender(); if (typeof indexMode !== 'undefined' && indexMode === 3) ffRun(); }
 /* Build 251: the film's contrast, as irlab tone curves. The fit leaves the camera's output in the film's own linear terms
    (an 18% grey at 0.18); the slide is that pushed through the film's characteristic curve and dyes. So each channel
    gets a curve from display value in to display value out: decode, run through the film's grey-scale response for that
@@ -421,6 +418,7 @@ function ffRun() {
     const film = ($('ffFilm') && $('ffFilm').value) || '1443', light = ($('ffLight') && $('ffLight').value) || 'sun';
     try { ffLast = ffFit(fpStack.slice(), sensor, 0, behind, film, light, !($('ffVeg') && $('ffVeg').checked)); } /* build 287: the pink calibration is a tick, off by default */ catch (e) { console.error(e); ffLast = { error: 'The fit failed: ' + (e && e.message || e) }; }
     ffRender();
+    if (typeof indexMode !== 'undefined' && indexMode === 3) render();   // the infrared map follows the fit
   }).catch(() => { ffLast = { error: 'Could not load the filter database.' }; ffRender(); });
 }
 (function ffWire() {

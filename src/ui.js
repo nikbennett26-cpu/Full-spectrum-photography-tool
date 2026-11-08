@@ -1520,8 +1520,7 @@ function applyState(snap) {
   }
   indexMode = snap.indexMode || 0;
   document.querySelectorAll('.idxBtn').forEach(x => x.classList.toggle('on', +x.dataset.idx === indexMode));
-  if ($('idxLegend')) $('idxLegend').style.display = indexMode ? 'inline-flex' : 'none';
-  if ($('idxTools')) $('idxTools').style.display = indexMode ? 'block' : 'none';
+  if (typeof idxLegendSync === 'function') idxLegendSync();
   if (snap.vigCentre) {
     vigCentre = [...snap.vigCentre];
     const isDefault = vigCentre[0] === 0.5 && vigCentre[1] === 0.5;

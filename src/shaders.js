@@ -96,7 +96,7 @@ const FS_SOURCE = `
   // domain, so it needs none of their size/mix/domain uniforms -- just the
   // texture itself, always bound, always sampled the same way.
   uniform sampler2D u_hellwigVW;
-  uniform int u_indexMode;   // 0 off, 1 NDVI (R vs G), 2 NGB (R vs B)
+  uniform int u_indexMode;   // 0 off, 1 NDVI (R vs G), 2 NGB (R vs B), 3 infrared map (build 337)
 
   /* Normalised difference index, false-coloured by VALUE rather than by
      channel mix. (NIR - X) / (NIR + X) is a ratio, and the channel matrix is
@@ -2669,7 +2669,7 @@ uniform float u_skyL;          // the typical lightness of the sky; anything cle
         g_ngbM = sb > 0.0001 ? (sm.r - sm.b) / sb : 0.0;
       } else { g_ndviM = g_ndvi; g_ngbM = g_ngb; }
     }
-    if (u_indexMode > 0) {
+    if (u_indexMode == 1 || u_indexMode == 2) {
       vec3 wb = rgb * u_preWB;
       float nir = max(wb.r, 0.0);
       float other = max(u_indexMode == 1 ? wb.g : wb.b, 0.0);
@@ -2682,7 +2682,7 @@ uniform float u_skyL;          // the typical lightness of the sky; anything cle
     rgb = u_wbMethod == 1 ? u_preWBM * rgb : rgb * u_preWB;
     /* Build 337: the infrared map. The fitted share of the signal from beyond 700 nm (src/film-fit.js), drawn as a ramp over a
        dimmed grey picture: blue mostly visible, yellow mixed, red mostly infrared. Preview only. */
-    if (u_irMix > 0.0) {
+    if (u_indexMode == 3 && u_irMix > 0.0) {
       /* the map is read from a 7x7 spread of the source (about 13 pixels across), so grain does not turn it into noise */
       vec3 acc = vec3(0.0);
       for (int jy = -3; jy <= 3; jy++) for (int jx = -3; jx <= 3; jx++) {
