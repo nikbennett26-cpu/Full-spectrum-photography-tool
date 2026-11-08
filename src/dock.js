@@ -314,6 +314,7 @@
     setTimeout(layout, 60);
   }).observe(document.body, { attributes: true, attributeFilter: ['class'] });
   window.addEventListener('load', () => setTimeout(layout, 300));
+  window.dockRelayout = layout;   // build 343: the engine calls this once the canvas has the photo's own shape
 
   /* ---------- desktop studio ----------
      At 1100px and wider the same tabs drive a three-part layout: tool rail, stage, inspector.

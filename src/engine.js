@@ -376,6 +376,7 @@ class WebGLEngine {
     const gl = this.gl;
     this.canvas.width = img.width;
     this.canvas.height = img.height;
+    try { if (window.dockRelayout) window.dockRelayout(); } catch (err) {}   // measure the photo's room now, not on a timer the decode may starve
     this._tenBitApply();
     gl.viewport(0, 0, img.width, img.height);
 
