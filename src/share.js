@@ -94,6 +94,72 @@ async function runShare(btn, build, name) {
 if ($('bShare')) $('bShare').onclick = () => runShare($('bShare'), shareAfterCanvas, 'irlab');
 if ($('bPair')) $('bPair').onclick = () => runShare($('bPair'), beforeAfterCanvas, 'irlab-before-after');
 
+/* ---------- recipe card ----------
+   Before and after side by side with the settings written underneath, so a shot can be reproduced from the picture alone. */
+function recipeLines() {
+  const L = [];
+  let filt = []; try { filt = fpStackNames(); } catch (e) {}
+  if (filt.length) L.push(['Filters', filt.join(' + ')]);
+  let cam = ''; try { cam = irlCameraModel(); } catch (e) {}
+  if (cam) L.push(['Camera', cam]);
+  const look = (typeof lookNameNow === 'function') ? lookNameNow() : '';
+  if (look && look !== 'Custom') L.push(['Look', look]);
+  try {
+    if (typeof ffPolyActive === 'function' && ffPolyActive() && $('ffSensor') && $('ffLight'))
+      L.push(['Light', String(($('ffSensor').selectedOptions[0] || {}).text || '').replace(/\s*\(.*$/, '') + ' · ' + ($('ffLight').selectedOptions[0] || {}).text]);
+  } catch (e) {}
+  const names = { hue: 'Hue', sat: 'Saturation', vibrance: 'Vibrance', bright: 'Exposure' };
+  const ch = [];
+  Object.keys(names).forEach(id => {
+    const el = $(id); if (!el) return;
+    const v = Number(el.value), d = Number(el.defaultValue);
+    if (v !== d) ch.push(names[id] + ' ' + (v > d ? '+' : '') + Math.round(v - d));
+  });
+  if (ch.length) L.push(['Tweaks', ch.join('  ')]);
+  return L;
+}
+function recipeCardCanvas() {
+  const after = shareAfterCanvas();
+  const before = shareBeforeCanvas($('preview').width, $('preview').height);
+  const W = 1600, pad = 56, gap = 16, colW = (W - pad * 2 - gap) / 2;
+  const ih = Math.round(colW * after.height / after.width);
+  const rows = recipeLines();
+  const head = 96, rowH = 46, foot = 70;
+  const H = head + ih + 36 + rows.length * rowH + foot;
+  const c = document.createElement('canvas'); c.width = W; c.height = H;
+  const x = c.getContext('2d');
+  x.fillStyle = '#0b0c0e'; x.fillRect(0, 0, W, H);
+  // ring mark and wordmark
+  x.strokeStyle = '#d63a3a'; x.lineWidth = 4; x.beginPath(); x.arc(pad + 20, 50, 16, 0, 7); x.stroke();
+  x.fillStyle = '#eceae4'; x.textBaseline = 'middle';
+  x.font = '500 30px Inter, system-ui, sans-serif'; x.fillText('irlab.uk', pad + 52, 50);
+  x.textAlign = 'right'; x.fillStyle = '#918d84'; x.font = '400 22px ui-monospace, Menlo, Consolas, monospace';
+  x.fillText('RECIPE', W - pad, 50); x.textAlign = 'left';
+  const y0 = head;
+  x.drawImage(before, pad, y0, colW, ih);
+  x.drawImage(after, pad + colW + gap, y0, colW, ih);
+  x.font = '500 20px ui-monospace, Menlo, Consolas, monospace'; x.textBaseline = 'top';
+  [['BEFORE', pad], ['AFTER', pad + colW + gap]].forEach(([t, ox]) => {
+    const tw = x.measureText(t).width;
+    x.fillStyle = 'rgba(5,5,6,.72)'; x.fillRect(ox + 14, y0 + 14, tw + 24, 34);
+    x.fillStyle = '#eceae4'; x.fillText(t, ox + 26, y0 + 21);
+  });
+  let y = y0 + ih + 36;
+  x.textBaseline = 'middle';
+  rows.forEach(([k, v]) => {
+    x.strokeStyle = '#2a2d33'; x.lineWidth = 1; x.beginPath(); x.moveTo(pad, y); x.lineTo(W - pad, y); x.stroke();
+    x.fillStyle = '#918d84'; x.font = '400 20px ui-monospace, Menlo, Consolas, monospace'; x.fillText(k.toUpperCase(), pad, y + rowH / 2);
+    x.fillStyle = '#eceae4'; x.font = '300 28px Inter, system-ui, sans-serif';
+    let t = v; while (x.measureText(t).width > W - pad * 2 - 220 && t.length > 4) t = t.slice(0, -2);
+    x.fillText(t === v ? t : t + '…', pad + 220, y + rowH / 2);
+    y += rowH;
+  });
+  x.fillStyle = '#918d84'; x.font = '300 20px Inter, system-ui, sans-serif'; x.textAlign = 'right';
+  x.fillText('Darkroom for light you can’t see', W - pad, H - 34); x.textAlign = 'left';
+  return c;
+}
+if ($('bRecipe')) $('bRecipe').onclick = () => runShare($('bRecipe'), recipeCardCanvas, 'irlab-recipe');
+
 /* ---------- look links ----------
    #look=<code>. The code is the look as compact JSON (only what differs from a fresh start), deflated and written in
    URL-safe base64, prefixed "z". Browsers without CompressionStream write it undeflated, prefixed "j". */
