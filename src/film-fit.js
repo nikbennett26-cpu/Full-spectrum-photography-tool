@@ -237,6 +237,7 @@ function ffVegCal(lin) {
    reset, and the straight mix is back, so it can never act on a matrix it was not fitted for. */
 var FF_POLY = null;        // { c: 3 rows of 9, eps, sig } while the curved mapping is applied; null otherwise
 let ffCurveOn = true;
+let ffIrOn = false;   // build 337: show the infrared map in the preview
 const FF_POLY_EPS = 0.1;
 function ffPolyFeat(x, e) {
   const se = Math.sqrt(e), s0 = Math.sqrt(Math.max(x[0], 0) + e) - se, s1 = Math.sqrt(Math.max(x[1], 0) + e) - se, s2 = Math.sqrt(Math.max(x[2], 0) + e) - se;
@@ -304,6 +305,13 @@ function ffFit(stack, sensor, maxGain, behind, film, light, noVegCal) {   // noV
   const PF = X.map(x => ffPolyFeat(x, FF_POLY_EPS)).concat(gx.map(x => ffPolyFeat(x, FF_POLY_EPS))), PY = Y.concat(gy);
   const PW = new Array(N).fill(1).concat(new Array(gx.length).fill(60));
   const PC = [0, 1, 2].map(l => ffPolySolve(PF, PY.map(y => y[l]), PW, 1e-6, N));
+  /* Build 337, the infrared map: the same curve, fitted to a different target -- the share of what each channel records
+     that comes from beyond 700 nm. A flat grey sets the ramp's value. Three channels cannot separate infrared exactly, so
+     this is an estimate for this stack and sensor, good for seeing where infrared dominates, not for measuring it. */
+  const irShare = r => { let ir = 0, all = 0; for (let c = 0; c < 3; c++) for (let i = 0; i < wl.length; i++) { const v = Kn[c][i] * r[i]; all += v; if (wl[i] >= 700) ir += v; } return all > 0 ? ir / all : 0; };
+  const irGrey = irShare(wl.map(() => 1));
+  const IRY = train.map(irShare).concat(gx.map(() => irGrey));
+  const IRC = ffPolySolve(PF, IRY, PW, 1e-3, N);
   const camQ = x => fromLin(PC.map(c => Math.max(0, ffDot(c, ffPolyFeat(x, FF_POLY_EPS)))));
   const surfaces = Object.keys(FF_SURF_NAMES).filter(k => FF_SURF[k] && FF_SURF[k].length === wl.length).map(k => {
     const r = FF_SURF[k], filmOut = slide(r, vegCal && FF_VEG_KEYS.indexOf(k) >= 0), x = Kn.map(c => ffDot(c, r)), cam = fromLin(A.map(a => ffDot(a, x))), cq = camQ(x);
@@ -313,7 +321,7 @@ function ffFit(stack, sensor, maxGain, behind, film, light, noVegCal) {   // noV
   // where the light it records comes from: blue the film never saw, and infrared past the film's reach
   const tot = g.reduce((a, b) => a + b, 0);
   const share = (lo, hi) => K.reduce((a, k) => a + k.reduce((s, v, i) => s + (wl[i] >= lo && wl[i] < hi ? v : 0), 0), 0) / tot;
-  return { A, r2, surfaces, meanDE, meanDEQ, poly: { c: PC, eps: FF_POLY_EPS }, blue: share(0, 490), farIR: share(910, 2000), behind: behind || 'w12', film, light, sensor, filmGrey: F.grey.slice(), filmOutGrey: R.render(F.grey.map(v => 0.18 * v)) };
+  return { A, r2, surfaces, meanDE, meanDEQ, poly: { c: PC, eps: FF_POLY_EPS }, irc: { c: IRC.map(v => Math.round(v * 1e5) / 1e5), eps: FF_POLY_EPS }, blue: share(0, 490), farIR: share(910, 2000), behind: behind || 'w12', film, light, sensor, filmGrey: F.grey.slice(), filmOutGrey: R.render(F.grey.map(v => 0.18 * v)) };
 }
 
 function ffSwatch(rgb) {
@@ -352,10 +360,12 @@ function ffRender() {
     '<p class="note" style="margin:4px 0 6px">Surfaces are measured (USGS Spectral Library; skin from NIST&rsquo;s skin reflectance data; the clear sky from Kider et al. 2014, Cornell; the grey card is flat). The sensor curve is a model unless your camera matches it, so take this as the shape of the answer.</p>' +
     '<label class="ffRow" title="Fits a curve instead of a straight mix of the three channels. It follows the film&rsquo;s own colours more closely, most for foliage and grass and most under cloud, and keeps neutrals neutral. Takes effect when you apply it. Change a matrix number afterwards and the straight mix takes over."><input type="checkbox" id="ffCurve"' + (ffCurveOn ? ' checked' : '') + '> Curved colour mapping</label>' +
     '<label class="ffRow" title="Sets the tone curve (R, G and B) to the film&rsquo;s own characteristic curve, so the photo takes the slide&rsquo;s contrast as well as its colours. Edit or flatten it in Curves afterwards."><input type="checkbox" id="ffTone"' + (ffToneOn ? ' checked' : '') + '> Include the film&rsquo;s contrast</label>' +
+    '<label class="ffRow" title="Shows where infrared dominates the signal in this photo, for this filter stack and sensor: blue is mostly visible light, yellow a mix, red mostly infrared. An estimate from three channels. Preview only; it is never saved or shared."><input type="checkbox" id="ffIr"' + (ffIrOn ? ' checked' : '') + '> Show infrared map (estimate)</label>' +
     '<div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:4px"><button type="button" id="ffApply" class="btnGhost">Apply to the photo</button>' +
     (ffApplied() ? '<button type="button" id="ffOff" class="btnGhost">Take it off</button>' : '') + '</div>';
   $('ffApply').onclick = ffApply;
   if ($('ffTone')) $('ffTone').onchange = e => { ffToneOn = e.target.checked; };
+  if ($('ffIr')) $('ffIr').onchange = e => { ffIrOn = e.target.checked; render(); };
   if ($('ffCurve')) $('ffCurve').onchange = e => { ffCurveOn = e.target.checked; ffRender(); };
   if ($('ffOff')) $('ffOff').onclick = () => { armUndoCapture(); clearPreset(); commitUndoCapture(); ffRender(); };
 }

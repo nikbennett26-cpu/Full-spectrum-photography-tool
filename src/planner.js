@@ -20,12 +20,24 @@ function plFoliage(lat, doyNow, history) {
     if (gdd < 250) return { state: 'Leaves coming out', score: 1 };
     return { state: 'Full leaf', score: 2 };
   }
-  let cool = 0; const from = Math.max(0, temps.length - (doy - 244));
-  temps.slice(from).forEach(t => { if (t < 10) cool += 10 - t; });
-  if (doy < 244 || cool < 40) return { state: 'Full leaf', score: 2 };
-  if (cool < 120) return { state: 'Starting to turn', score: 2 };
-  if (cool < 220) return { state: 'Turning and dropping', score: 1 };
-  return { state: 'Mostly bare', score: 0 };
+  /* Autumn is led by day length, which is what the trees respond to: past the autumn equinox, leaves start to turn
+     below about 12 hours of daylight, are dropping below about 10, and are mostly gone below about 8.3. A cold spell
+     (the last fortnight averaging under 4 C) moves the state on one step; a mild one does not hold it back. */
+  const hrs = plDaylight(lat, doyNow);
+  let step = hrs >= 12 ? 0 : hrs >= 9.8 ? 1 : hrs >= 8.3 ? 2 : 3;
+  const recent = temps.slice(-14);
+  if (recent.length > 7 && recent.reduce((a, b) => a + b, 0) / recent.length < 4 && step > 0 && step < 3) step++;
+  return [
+    { state: 'Full leaf', score: 2 },
+    { state: 'Starting to turn', score: 2 },
+    { state: 'Turning and dropping', score: 1 },
+    { state: 'Mostly bare', score: 0 }
+  ][step];
+}
+function plDaylight(lat, doy) {
+  const dec = 23.44 * Math.sin(2 * Math.PI * (doy - 81) / 365) * Math.PI / 180, la = lat * Math.PI / 180;
+  const c = -Math.tan(la) * Math.tan(dec);
+  return c >= 1 ? 0 : c <= -1 ? 24 : 2 * Math.acos(c) * 12 / Math.PI;
 }
 function plRate(d, lat) {
   const frac = d.daylight > 0 ? d.sun / d.daylight : 0;
@@ -67,7 +79,7 @@ async function plRun() {
       rows.push(Object.assign({ label: i === 7 ? 'Today' : PL_DAYS[dt.getDay()], when: dt }, plRate({
         sun: f.sunshine_duration[i], daylight: f.daylight_duration[i], rain: f.precipitation_sum[i], doy: plDoy(dt) }, lat)));
     }
-    let h = '<p class="plFol"><b>Foliage (estimate):</b> ' + fol.state + (fol.score === 0 ? ' — not much for infrared to work with yet.' : fol.score === 2 ? ' — good for the red-leaf look.' : '.') + '</p><div class="plRows">';
+    let h = '<p class="plFol"><b>Foliage (estimate):</b> ' + fol.state + (fol.score === 0 ? ' — little leaf left, though grass and evergreens still work.' : fol.score === 2 ? ' — plenty of leaf for the red look.' : ' — patchy, so favour evergreens, grass and sheltered trees.') + '</p><div class="plRows">';
     rows.forEach(r => {
       h += '<div class="plRow"><span class="plDay">' + r.label + '</span><span class="plRate pl' + r.rating + '">' + r.rating + '</span>'
         + '<span class="plInfo">' + Math.round(r.frac * 100) + '% sun · noon sun ' + Math.round(r.high) + '° · light: ' + r.light + '</span></div>';

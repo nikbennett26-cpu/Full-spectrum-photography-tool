@@ -214,6 +214,10 @@ class WebGLEngine {
       matrix: gl.getUniformLocation(this.program, 'u_matrix'),
       mOffset: gl.getUniformLocation(this.program, 'u_mOffset'),
       polyMix: gl.getUniformLocation(this.program, 'u_polyMix'),
+      irMix: gl.getUniformLocation(this.program, 'u_irMix'),
+      irS: gl.getUniformLocation(this.program, 'u_irS'),
+      irL: gl.getUniformLocation(this.program, 'u_irL'),
+      irX: gl.getUniformLocation(this.program, 'u_irX'),
       polyEps: gl.getUniformLocation(this.program, 'u_polyEps'),
       polyS: gl.getUniformLocation(this.program, 'u_polyS'),
       polyL: gl.getUniformLocation(this.program, 'u_polyL'),
@@ -938,6 +942,15 @@ void main(){
       gl.uniformMatrix3fv(this.uLocs.polyS, false, blk(0));
       gl.uniformMatrix3fv(this.uLocs.polyL, false, blk(3));
       gl.uniformMatrix3fv(this.uLocs.polyX, false, blk(6));
+    }
+    // Build 337: the infrared map (preview only). Nine coefficients: roots, linear, cross terms.
+    const ir = p.irmap && p.irmap.c && p.irmap.c.length === 9 ? p.irmap : null;
+    gl.uniform1f(this.uLocs.irMix, ir ? 1 : 0);
+    if (ir) {
+      gl.uniform1f(this.uLocs.polyEps, ir.eps || 0.1);
+      gl.uniform3fv(this.uLocs.irS, new Float32Array(ir.c.slice(0, 3)));
+      gl.uniform3fv(this.uLocs.irL, new Float32Array(ir.c.slice(3, 6)));
+      gl.uniform3fv(this.uLocs.irX, new Float32Array(ir.c.slice(6, 9)));
     }
     // 20 vec3s, flattened — see u_camCoef in the shader
     gl.uniform1f(this.uLocs.camFit, p.camCoef ? 1 : 0);

@@ -881,7 +881,7 @@ function settleFullRes() {
   if (draftIdleTimer) { clearTimeout(draftIdleTimer); draftIdleTimer = null; }
   if ((!draftShown && !gamutWarnShown) || !engine || !loadedImage) { draftShown = false; gamutWarnShown = false; return; }
   draftShown = false; gamutWarnShown = false;
-  engine.render(currentParams());
+  engine.render(previewParams());
   scheduleHistogram();
 }
 document.addEventListener('pointerdown', e => {
@@ -894,6 +894,12 @@ document.addEventListener('pointerdown', e => {
   draggedSliderId = '';
 }, true));
 
+/* Build 337: the infrared map is a view, never part of an export, so only the live preview adds it. */
+function previewParams() {
+  const P = currentParams();
+  if (typeof ffIrOn !== 'undefined' && ffIrOn && typeof ffLast !== 'undefined' && ffLast && ffLast.irc) P.irmap = ffLast.irc;
+  return P;
+}
 function render(fromSlider) {
   /* Slider listeners already synced their own track; every other caller
      (undo, reset, preset, load) may have changed many sliders at once. */
@@ -909,7 +915,7 @@ function renderNow() {
   updateImplicitStamp();
   if (!engine || !loadedImage) return;
   const dsc = sliderDragging ? draftScale() : 1;
-  const P = currentParams();
+  const P = previewParams();
   epdWatch(P);
   if (dsc < 1 && engine.renderScaled) {
     engine.renderScaled(P, dsc);

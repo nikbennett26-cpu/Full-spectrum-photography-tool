@@ -175,6 +175,10 @@ uniform float u_debandRad;  // reach, in source texels, at full strength
   uniform mat3 u_matrix;
   /* Build 334: the curved Digital Aerochrome mapping (src/film-fit.js). u_polyMix is 1 only while it is in force. For each
      output channel: three softened square roots of the channels, the channels themselves, and the three pairs of roots. */
+  uniform float u_irMix;
+  uniform vec3 u_irS;
+  uniform vec3 u_irL;
+  uniform vec3 u_irX;
   uniform float u_polyMix;
   uniform float u_polyEps;
   uniform mat3 u_polyS;
@@ -2676,6 +2680,24 @@ uniform float u_skyL;          // the typical lightness of the sky; anything cle
     }
 
     rgb = u_wbMethod == 1 ? u_preWBM * rgb : rgb * u_preWB;
+    /* Build 337: the infrared map. The fitted share of the signal from beyond 700 nm (src/film-fit.js), drawn as a ramp over a
+       dimmed grey picture: blue mostly visible, yellow mixed, red mostly infrared. Preview only. */
+    if (u_irMix > 0.0) {
+      /* the map is read from a 7x7 spread of the source (about 13 pixels across), so grain does not turn it into noise */
+      vec3 acc = vec3(0.0);
+      for (int jy = -3; jy <= 3; jy++) for (int jx = -3; jx <= 3; jx++) {
+        vec3 tc = srcLin(v_texCoord + vec2(float(jx), float(jy)) * u_texelSize * 2.0);
+        acc += max(u_wbMethod == 1 ? u_preWBM * tc : tc * u_preWB, vec3(0.0));
+      }
+      vec3 ii = acc / 49.0;
+      vec3 is = sqrt(ii + vec3(u_polyEps)) - vec3(sqrt(u_polyEps));
+      float f = clamp(dot(u_irS, is) + dot(u_irL, ii) + dot(u_irX, vec3(is.x * is.y, is.x * is.z, is.y * is.z)), 0.0, 1.0);
+      f = clamp((f - 0.1) / 0.6, 0.0, 1.0);   // real surfaces span about 0.1 (sky) to 0.7 (healthy foliage)
+      vec3 ramp = f < 0.5 ? mix(vec3(0.10, 0.25, 0.62), vec3(0.96, 0.86, 0.30), f * 2.0) : mix(vec3(0.96, 0.86, 0.30), vec3(0.86, 0.14, 0.14), (f - 0.5) * 2.0);
+      float yy = clamp(dot(ii, u_lumaW), 0.0, 1.0);
+      gl_FragColor = vec4(mix(vec3(linearToSrgb(vec3(yy)).x) * 0.7, ramp, 0.62), texColor.a);
+      return;
+    }
     float yPreSwap = dot(rgb, u_lumaW);   // Phil's step 2: record before the swap, with the ADAPTIVE weight
     /* Working space for the channel swap. Defaults to ProPhoto (u_swapSpace
        == 2), matching the always-on behaviour this replaced -- see the

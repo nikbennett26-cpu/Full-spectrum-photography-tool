@@ -347,3 +347,6 @@ html.dockOn body.has-image #reorderZone .dGrp > summary{min-height:47px!importan
 #irNotice .irnActs{display:flex;justify-content:flex-end;gap:8px;padding:8px 12px 12px}
 #irNotice button{min-height:36px;padding:0 14px;border-radius:6px;border:1px solid var(--line2,#3d4048);background:transparent;color:inherit;font:inherit;cursor:pointer}
 #irNotice .irnClose{border-color:#d63a3a}
+/* shoot planner: after the tools, not above the title */
+#emptyStateGroup.lab #planner{order:3;margin-top:24px;padding:0!important;border:0!important}
+#emptyStateGroup.lab #planner .labHd{display:none!important}
