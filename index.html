@@ -25,7 +25,7 @@
 <meta name="twitter:image" content="https://irlab.uk/og-card.png?v=330">
 <link rel="canonical" href="https://irlab.uk/">
 <meta name="theme-color" content="#141518">
-<meta name="irlab-build" content="354">
+<meta name="irlab-build" content="356">
 <link rel="manifest" href="/manifest.json">
 <link rel="icon" href="/favicon.ico?v=3" sizes="any">
 <link rel="icon" href="/favicon.svg?v=3" type="image/svg+xml">
@@ -54,15 +54,15 @@
 </script>
 
 <link rel="preload" href="fonts/inter-latin-400-normal.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="stylesheet" href="css/fonts.css?b=354">
+<link rel="stylesheet" href="css/fonts.css?b=356">
 
-<script src="i18n/tr.js?b=354"></script>
-<link rel="stylesheet" href="css/main.css?b=354">
-<link rel="stylesheet" id="uxRefresh" href="css/refresh.css?b=354">
-<link rel="stylesheet" href="css/trichrome.css?b=354">
-<link rel="stylesheet" id="uxDock" href="css/dock.css?b=354">
-<link rel="stylesheet" href="css/minimal.css?b=354">
-<link rel="preload" href="editor.js?b=354" as="script">
+<script src="i18n/tr.js?b=356"></script>
+<link rel="stylesheet" href="css/main.css?b=356">
+<link rel="stylesheet" id="uxRefresh" href="css/refresh.css?b=356">
+<link rel="stylesheet" href="css/trichrome.css?b=356">
+<link rel="stylesheet" id="uxDock" href="css/dock.css?b=356">
+<link rel="stylesheet" href="css/minimal.css?b=356">
+<link rel="preload" href="editor.js?b=356" as="script">
 </head>
 <body>
 
@@ -667,9 +667,8 @@
     </svg> Discord</span><span class="dcGo">Join →</span>
     </a>
     <!-- Build 279: the people behind it, on the home page -->
-    <div id="creditsHome">Made by <a href="https://www.instagram.com/irlab.uk" target="_blank" rel="noopener" style="color:var(--safelight);font-weight:600;text-decoration:none">Nik Bennett</a>
-      &middot; Colour science &amp; RAW decode by <a href="https://philwarrenphotography.com" target="_blank" rel="noopener" style="color:var(--safelight);font-weight:600;text-decoration:none">Phil Warren</a></div>
-    <div id="buildStampHome">Version 2026-11-09 · build 354</div>
+    <div id="creditsHome">Made by <a href="https://www.instagram.com/irlab.uk" target="_blank" rel="noopener">Nik Bennett</a> · Colour science &amp; RAW decode by <a href="https://philwarrenphotography.com" target="_blank" rel="noopener">Phil Warren</a><br>Film reference scans by <a href="https://www.robwalwyn.com/aerochrome" target="_blank" rel="noopener">Rob Walwyn</a></div>
+    <div id="buildStampHome">Version 2026-11-09 · build 356</div>
   </footer>
 </div>
 
@@ -1873,18 +1872,30 @@
         </div>
       </details>
 
-    <footer style="text-align:center;padding:10px 0;font-size:11px;color:var(--muted)">
-      Tool by <a href="https://www.instagram.com/irlab.uk" target="_blank" rel="noopener" style="color:var(--safelight);font-weight:600;text-decoration:none">Nik Bennett</a>
-      &amp; <a href="https://philwarrenphotography.com" target="_blank" rel="noopener" style="color:var(--safelight);font-weight:600;text-decoration:none">Phil Warren</a>
-      &middot; tested &amp; contributed by <a href="https://www.instagram.com/fedialebarboc" target="_blank" rel="noopener" style="color:var(--safelight);font-weight:600;text-decoration:none">@fedialebarboc</a>
-      <br>Colour science &amp; RAW decode by <a href="https://philwarrenphotography.com" target="_blank" rel="noopener" style="color:var(--safelight);font-weight:600;text-decoration:none">Phil Warren</a>
-      <br><a id="lnkFilters2" href="filters.html" target="_blank" rel="noopener" style="display:none;color:var(--safelight);font-weight:600;text-decoration:none">Filter curves ↗</a>
-      <br><a href="?selftest" id="selfTestLink" data-i18n="selfTest" title="Runs a built-in colour check on two generated test images, on this device, and reports whether anything has changed" style="color:var(--muted);text-decoration:underline">Self-test</a>
-      <br><a href="#" id="consentReopen" style="color:var(--muted);text-decoration:underline">Cookie notice</a>
-      <br><a href="privacy.html" target="_blank" rel="noopener" style="color:var(--muted);text-decoration:underline">Privacy</a>
-      <br><a href="LICENSE.md" target="_blank" rel="noopener" style="color:var(--muted);text-decoration:underline">Source: AGPL-3.0</a>
-      <br><a href="THIRD_PARTY_NOTICES.md" target="_blank" rel="noopener" style="color:var(--muted);text-decoration:underline">Third-party notices (LibRaw, RawTherapee)</a>
-<br><span id="buildStamp" style="color:var(--muted)" title="Which version of the app this is. Tap the arrow to check for a newer one and update.">Version 2026-11-09 · build 354</span>
+    <footer id="edCredits">
+      <style>
+      #edCredits{padding:18px 0 10px;font-size:12px;line-height:1.5;color:#8c8984;text-align:center}
+      #edCredits a{color:#c9c6bf;text-decoration:none;font-weight:500}
+      #edCredits .crd{display:grid;grid-template-columns:auto 1fr;gap:5px 14px;max-width:340px;margin:0 auto 16px;text-align:left}
+      #edCredits .crd span{color:#6f6b64}
+      #edCredits .crl{display:flex;flex-wrap:wrap;justify-content:center;gap:4px 14px;padding-top:12px;border-top:1px solid #23252a;max-width:340px;margin:0 auto 12px}
+      #edCredits .crl a{color:#8c8984;font-weight:400;text-decoration:underline;text-underline-offset:3px}
+      </style>
+      <div class="crd">
+        <span>Made by</span><div><a href="https://www.instagram.com/irlab.uk" target="_blank" rel="noopener">Nik Bennett</a> and <a href="https://philwarrenphotography.com" target="_blank" rel="noopener">Phil Warren</a></div>
+        <span>Colour science</span><div><a href="https://philwarrenphotography.com" target="_blank" rel="noopener">Phil Warren</a>, RAW decoding</div>
+        <span>Testing</span><div><a href="https://www.instagram.com/fedialebarboc" target="_blank" rel="noopener">@fedialebarboc</a></div>
+        <span>Film reference</span><div><a href="https://www.robwalwyn.com/aerochrome" target="_blank" rel="noopener">Rob Walwyn</a>, Aerochrome scans</div>
+      </div>
+      <div class="crl">
+        <a id="lnkFilters2" href="filters.html" target="_blank" rel="noopener" style="display:none">Filter curves</a>
+        <a href="?selftest" id="selfTestLink" data-i18n="selfTest" title="Runs a built-in colour check on two generated test images, on this device, and reports whether anything has changed">Self-test</a>
+        <a href="#" id="consentReopen">Cookie notice</a>
+        <a href="privacy.html" target="_blank" rel="noopener">Privacy</a>
+        <a href="LICENSE.md" target="_blank" rel="noopener">Source: AGPL-3.0</a>
+        <a href="THIRD_PARTY_NOTICES.md" target="_blank" rel="noopener">Third-party notices</a>
+      </div>
+<br><span id="buildStamp" style="color:var(--muted)" title="Which version of the app this is. Tap the arrow to check for a newer one and update.">Version 2026-11-09 · build 356</span>
       <br><button id="btnInstall" type="button">Install as an app</button>
       <span id="kbHint">Ctrl+Z undo &middot; Ctrl+Shift+Z redo &middot; [ ] cycle presets &middot; F full quality view &middot; Space hold to compare</span>
     </footer>
@@ -1980,7 +1991,7 @@
 <!-- The editor's code: editor.js, BUILT from src/*.js by tools/build.py (see the README's Code layout). One script, so
      it all runs in one go, as the single inline block it came from did. ?b=<build> keeps the service worker's cached
      copy of an older editor.js from ever running under a newer page; tools/bump_build.py sets it. -->
-<script src="editor.js?b=354"></script>
+<script src="editor.js?b=356"></script>
 <script>
 (function(){var x=document.getElementById('baDemo');if(!x)return;var d=0;
 function set(e){var r=x.getBoundingClientRect(),p=Math.max(0,Math.min(100,(e.clientX-r.left)/r.width*100));x.style.setProperty('--ba',p+'%')}
