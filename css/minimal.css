@@ -353,3 +353,12 @@ html.dockOn body.has-image #reorderZone .dGrp > summary{min-height:47px!importan
 /* the Photo / NDVI / NGB / IR map switch: four across, its legend on a line of its own underneath */
 #matrixDetails .swapRow:has(.idxBtn){grid-template-columns:repeat(4,minmax(0,1fr))}
 #matrixDetails .swapRow:has(.idxBtn) #idxLegend{grid-column:1/-1;padding:10px 4px 0;border:0}
+
+/* build 363: touch sizes and legibility found in the audit (measured on a phone-sized screen) */
+@media (pointer:coarse){
+  body.has-image .toolbar button,body.has-image .toolbar a{min-height:44px!important}
+  body.has-image #reorderZone button[aria-label^="Reset"],body.has-image #reorderZone button[title^="Reset"],body.has-image #reorderZone .rstBtn{min-width:44px!important;min-height:44px!important}
+  body.has-image #reorderZone select{min-height:40px!important}
+  body.has-image #zoomBadge button{min-height:36px}
+}
+body.has-image #holdHint,body.has-image #cmpBar .cmpBarLabels span{font-size:11px!important}
