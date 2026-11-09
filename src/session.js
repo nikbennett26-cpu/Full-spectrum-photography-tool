@@ -424,8 +424,14 @@ async function offerSessionRestore() {
   const rec = await idbGet('image');
   if (!rec || !rec.blob) return;
   const age = Date.now() - (rec.ts || 0);
+  /* Build 365: closing the app always lands on the home screen with a button to reopen the last photo. Only a
+     page that is carrying on goes straight back in: a reload, a tab the phone discarded while another app was in
+     front, or coming back from the filter calculator. sessionStorage is the tell: the browser keeps it for all of
+     those and drops it when the tab or app is closed. */
+  let carrying = false;
+  try { carrying = sessionStorage.getItem('irlab.alive') === '1' || document.wasDiscarded === true; sessionStorage.setItem('irlab.alive', '1'); } catch (e) {}
 
-  if (age < SESSION_AUTO_MS) {
+  if (carrying && age < SESSION_AUTO_MS) {
     await restoreSession(rec);
     toast('Picked up where you left off \u2014 use New image to start fresh');
     haptic('confirm');
@@ -439,8 +445,8 @@ async function offerSessionRestore() {
   const btn = document.createElement('button');
   btn.id = 'btnRestore';
   btn.type = 'button';
-  btn.innerHTML = '<span>\u21ba Restore</span><span class="rsWhen">' + when + '</span>';
-  btn.setAttribute('aria-label', 'Restore last image (' + when + ')');
+  btn.innerHTML = '<span>\u21ba Reopen last image</span><span class="rsWhen">' + when + '</span>';
+  btn.setAttribute('aria-label', 'Reopen last image (' + when + ')');
   btn.onclick = async () => {
     btn.disabled = true;
     btn.textContent = 'Restoring\u2026';
