@@ -337,9 +337,18 @@ function saveSessionState() {
   if (sessionSaveTimer) clearTimeout(sessionSaveTimer);
   sessionSaveTimer = setTimeout(() => {
     if (!loadedImage) return;
-    try { idbPut('state', { state: captureState(), ts: Date.now() }); } catch (e) {}
+    try { idbPut('state', { state: captureState(), ts: Date.now(), id: sessionImgId }); } catch (e) {}
   }, 800);
 }
+/* Build 364: edits are also written the moment the page is hidden or closed. Android can freeze or discard a
+   background app before the short save delay above has run, and the next visit then came back with an older edit. */
+function flushSessionState() {
+  if (SELFTEST || !loadedImage) return;
+  if (sessionSaveTimer) { clearTimeout(sessionSaveTimer); sessionSaveTimer = null; }
+  try { idbPut('state', { state: captureState(), ts: Date.now(), id: sessionImgId }); } catch (e) {}
+}
+document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'hidden') flushSessionState(); });
+window.addEventListener('pagehide', flushSessionState);
 function saveSessionImage(blob, name) {
   if (SELFTEST) return;
   /* Build 311: for a video the saved copy is the clip itself, not the one frame it opened on, so coming back (after an
@@ -347,8 +356,15 @@ function saveSessionImage(blob, name) {
   if (typeof videoSrc !== 'undefined' && videoSrc && videoSrc.file) { blob = videoSrc.file; name = videoSrc.file.name || 'video.mp4'; }
   // the SOURCE blob, not the rendered canvas: restoring then runs the normal
   // load path, so there is no re-encoding and no quality loss
-  idbPut('image', { blob: blob, name: name || 'image', ts: Date.now() });
+  /* Build 364: every saved photo gets an id, and the edits saved beside it carry the same id. Before this, opening a
+     new photo saved it but left the PREVIOUS photo's edits in the store until the first slider moved, so a restore in
+     that window put an older edit on the new photo. A new photo now clears the stored edits; a restore keeps its id. */
+  const id = (sessionRestoring && sessionRestoreId) ? sessionRestoreId : (Date.now().toString(36) + Math.random().toString(36).slice(2, 8));
+  if (!(sessionRestoring && sessionRestoreId)) idbPut('state', { state: null, ts: Date.now(), id: id });
+  sessionImgId = id;
+  idbPut('image', { blob: blob, name: name || 'image', ts: Date.now(), id: id });
 }
+var sessionImgId = null, sessionRestoreId = null;
 
 async function restoreSession(rec) {
   /* loadToken is bumped once per loadFile() call (see loadFile's own
@@ -364,8 +380,8 @@ async function restoreSession(rec) {
      up to 30 minutes ago could land on top of a brand-new image the user
      had just picked themselves, appearing as an unexplained single undo
      entry and a colour cast on a file that should have opened untouched. */
-  sessionRestoring = true;
-  try { await restoreSessionInner(rec); } finally { sessionRestoring = false; }
+  sessionRestoring = true; sessionRestoreId = rec.id || null;
+  try { await restoreSessionInner(rec); } finally { sessionRestoring = false; sessionRestoreId = null; }
   // a look opened from a shared link goes on top of the restored photo (src/share.js)
   if (typeof applyPendingLook === 'function') applyPendingLook();
 }
@@ -385,7 +401,9 @@ async function restoreSessionInner(rec) {
   await loading;
   if (loadToken !== before + 1) return;
   // settings applied after the image, since applyState triggers a render
-  if (st && st.state) { try { applyState(st.state); } catch (e) {} }
+  /* only edits that belong to THIS photo (same id); a saved photo from before ids existed takes edits no older than it */
+  const mine = st && st.state && (rec.id ? st.id === rec.id : (st.ts || 0) >= (rec.ts || 0));
+  if (mine) { try { applyState(st.state); } catch (e) {} saveSessionState(); }
   if (typeof videoRestore === 'function') { try { await videoRestore(); } catch (e) {} }
 }
 
@@ -400,7 +418,7 @@ async function restoreSessionInner(rec) {
 
    Thirty minutes is the cutoff, and an automatic restore always says so and
    offers a way out, so it is never a surprise you cannot undo. */
-const SESSION_AUTO_MS = 30 * 60 * 1000;
+const SESSION_AUTO_MS = 12 * 60 * 60 * 1000;   // build 364: was 30 minutes; coming back to the app later the same day now reopens the photo
 
 async function offerSessionRestore() {
   const rec = await idbGet('image');
