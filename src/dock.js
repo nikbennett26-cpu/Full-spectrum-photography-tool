@@ -239,7 +239,8 @@
     layout(); setTimeout(layout, 120);
     if (on) setTimeout(() => { if (typeof drawHistogram === 'function') drawHistogram(); }, 160);
   }
-  let scopesPref = true; try { scopesPref = localStorage.getItem(SC_KEY) !== '0'; } catch (e) {}
+  /* build 361: the histogram starts hidden, so a first-time visitor sees the photo and the controls and nothing else; the toggle remembers a choice to show it */
+  let scopesPref = false; try { scopesPref = localStorage.getItem(SC_KEY) === '1'; } catch (e) {}
   if (scBtn) scBtn.addEventListener('click', () => { setScopes(root.classList.contains('scopesOff'), true); if (typeof haptic === 'function') haptic('select'); });
 
   /* The Looks tab holds three long groups (the channel matrix, the swap presets, and the film

@@ -167,7 +167,7 @@ html.studioOn body.has-image #dock button.on::before{border-radius:0!important;w
    are words with a red line over the one you're on. */
 body.has-image .dGrp > summary .dS{display:none!important}
 body.has-image #reorderZone p.note:not([id]){display:none!important}
-body.has-image #reorderZone .dGrp > summary .dT{font-size:11px!important;font-weight:400!important;letter-spacing:.12em;text-transform:uppercase;color:var(--paper-dim)!important}
+body.has-image #reorderZone .dGrp > summary .dT{font-size:14px!important;font-weight:500!important;letter-spacing:.005em!important;text-transform:none!important;color:var(--paper-dim)!important}
 body.has-image #reorderZone .dGrp[open] > summary .dT{color:var(--paper)!important}
 body.has-image .slStep .stepBtn{display:none!important}
 body.has-image #rawWbBox .wbStepCard .sl .slStep .stepBtn{display:none!important}
