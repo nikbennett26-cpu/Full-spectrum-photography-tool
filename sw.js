@@ -17,7 +17,7 @@
    You do NOT need to bump it just to deploy a new index.html — network-first
    handles that on its own. */
 
-const CACHE_VERSION = 'irlab-v13';   // v11: new logo (red ring, thinner), icons requested as ?v=3 and -v3 files
+const CACHE_VERSION = 'irlab-v14';   // v11: new logo (red ring, thinner), icons requested as ?v=3 and -v3 files
 // transient hand-off storage for Web Share Target, deliberately not versioned
 const SHARE_CACHE = 'irlab-share';
 const SHARE_KEY = '/__shared-image';
@@ -106,7 +106,7 @@ self.addEventListener('fetch', event => {
   if (req.mode === 'navigate' || (req.headers.get('accept') || '').includes('text/html')) {
     event.respondWith((async () => {
       try {
-        const fresh = await fetch(req);
+        const fresh = await fetch(req, { cache: 'no-cache' });  // revalidate: GitHub Pages sends max-age=600, which left phones on a 10 minute old page
         /* Only a genuinely OK response is worth keeping. Without this check a
            404 page counts as a successful fetch — it resolves, it doesn't
            throw — so a moment when a file is missing or half-uploaded gets
