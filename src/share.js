@@ -105,8 +105,20 @@ function recipeLines() {
   const look = (typeof lookNameNow === 'function') ? lookNameNow() : '';
   if (look && look !== 'Custom') L.push(['Look', look]);
   try {
-    if (typeof ffPolyActive === 'function' && ffPolyActive() && $('ffSensor') && $('ffLight'))
-      L.push(['Light', String(($('ffSensor').selectedOptions[0] || {}).text || '').replace(/\s*\(.*$/, '') + ' · ' + ($('ffLight').selectedOptions[0] || {}).text]);
+    if (typeof ffPolyActive === 'function' && ffPolyActive() && $('ffSensor') && $('ffLight')) {
+      const opt = id => { const e = $(id); return e && e.selectedOptions[0] ? e.selectedOptions[0].text : ''; };
+      const film = opt('ffFilm').replace(/\s*\(.*$/, ''), behind = opt('ffBehind').replace(/\s*\(.*$/, '');
+      const extra = [];
+      if ($('ffVeg') && $('ffVeg').checked) extra.push('pink healthy foliage');
+      if ($('ffCurve') && !$('ffCurve').checked) extra.push('film contrast off');
+      L.push(['Aerochrome', 'Digital Aerochrome' + (film ? ' · ' + film : '') + (behind ? ' behind ' + behind : '') + (extra.length ? ' · ' + extra.join(', ') : '')]);
+      L.push(['Sensor', opt('ffSensor').replace(/\s*\(.*$/, '')]);
+      L.push(['Light', opt('ffLight').replace(/\s*\(.*$/, '')]);
+      if (typeof ffLast !== 'undefined' && ffLast && !ffLast.error) {
+        const de = (ffCurveOn && ffLast.poly ? ffLast.meanDEQ : ffLast.meanDE);
+        if (isFinite(de)) L.push(['Match', 'Average difference ' + de.toFixed(1) + ' from the film model']);
+      }
+    }
   } catch (e) {}
   const names = { hue: 'Hue', sat: 'Saturation', vibrance: 'Vibrance', bright: 'Exposure' };
   const ch = [];
