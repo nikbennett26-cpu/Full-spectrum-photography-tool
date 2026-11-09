@@ -93,6 +93,16 @@
          and five fading through deep red into near infrared. They light up in order, then the shimmer runs once. -->
     <div id="spectrumBar" aria-hidden="true"><span style="background:#6b3fd1"></span><span style="background:#2f7de1"></span><span style="background:#36b06a"></span><span style="background:#e6c02f"></span><span style="background:#e0452a"></span><span style="background:#a8241c"></span><span style="background:#7a1428"></span><span style="background:#561020"></span><span style="background:#3a0b16"></span><span style="background:#26080f"></span></div>
     <div id="spectrumTicks" aria-hidden="true"><span>400</span><span>550</span><span>700</span><span>850</span><span>1000nm</span></div>
+    <figure class="baDemo" id="baDemo">
+      <div class="baBox">
+        <img src="example-after.jpg" alt="The same photo after the colour swap: red foliage and pink grass" width="1200" height="799" decoding="async">
+        <img class="baTop" src="example-before.jpg" alt="Straight out of the camera, a converted infrared photo with purple foliage" width="1200" height="799" decoding="async">
+        <span class="baHandle" aria-hidden="true"></span>
+        <span class="baTag baL">Before</span><span class="baTag baR">After</span>
+        <input type="range" min="0" max="100" value="50" aria-label="Drag to compare before and after">
+      </div>
+      <figcaption>Converted Canon 1200D, Wratten 12 filter. Straight from the camera, then swapped in irlab.</figcaption>
+    </figure>
   </header>
 
   <!-- Build 128: Decode comes first again, because opening a photo goes straight into the editor and the decode
@@ -658,7 +668,7 @@
     <!-- Build 279: the people behind it, on the home page -->
     <div id="creditsHome">Made by <a href="https://www.instagram.com/irlab.uk" target="_blank" rel="noopener" style="color:var(--safelight);font-weight:600;text-decoration:none">Nik Bennett</a>
       &middot; Colour science &amp; RAW decode by <a href="https://philwarrenphotography.com" target="_blank" rel="noopener" style="color:var(--safelight);font-weight:600;text-decoration:none">Phil Warren</a></div>
-    <div id="buildStampHome">Version 2026-11-09 · build 351</div>
+    <div id="buildStampHome">Version 2026-11-09 · build 352</div>
   </footer>
 </div>
 
@@ -1873,7 +1883,7 @@
       <br><a href="privacy.html" target="_blank" rel="noopener" style="color:var(--muted);text-decoration:underline">Privacy</a>
       <br><a href="LICENSE.md" target="_blank" rel="noopener" style="color:var(--muted);text-decoration:underline">Source: AGPL-3.0</a>
       <br><a href="THIRD_PARTY_NOTICES.md" target="_blank" rel="noopener" style="color:var(--muted);text-decoration:underline">Third-party notices (LibRaw, RawTherapee)</a>
-<br><span id="buildStamp" style="color:var(--muted)" title="Which version of the app this is. Tap the arrow to check for a newer one and update.">Version 2026-11-09 · build 351</span>
+<br><span id="buildStamp" style="color:var(--muted)" title="Which version of the app this is. Tap the arrow to check for a newer one and update.">Version 2026-11-09 · build 352</span>
       <br><button id="btnInstall" type="button">Install as an app</button>
       <span id="kbHint">Ctrl+Z undo &middot; Ctrl+Shift+Z redo &middot; [ ] cycle presets &middot; F full quality view &middot; Space hold to compare</span>
     </footer>
@@ -1970,5 +1980,9 @@
      it all runs in one go, as the single inline block it came from did. ?b=<build> keeps the service worker's cached
      copy of an older editor.js from ever running under a newer page; tools/bump_build.py sets it. -->
 <script src="editor.js?b=351"></script>
+<script>
+(function(){var b=document.getElementById('baDemo');if(!b)return;var i=b.querySelector('input'),x=b.querySelector('.baBox');
+function s(){x.style.setProperty('--ba',i.value+'%')}i.addEventListener('input',s);s();})();
+</script>
 </body>
 </html>
