@@ -94,27 +94,16 @@
     <div id="spectrumBar" aria-hidden="true"><span style="background:#6b3fd1"></span><span style="background:#2f7de1"></span><span style="background:#36b06a"></span><span style="background:#e6c02f"></span><span style="background:#e0452a"></span><span style="background:#a8241c"></span><span style="background:#7a1428"></span><span style="background:#561020"></span><span style="background:#3a0b16"></span><span style="background:#26080f"></span></div>
     <div id="spectrumTicks" aria-hidden="true"><span>400</span><span>550</span><span>700</span><span>850</span><span>1000nm</span></div>
     <style>
-.baDemo{margin:22px auto 0;max-width:640px;padding:0}
-.baBox{position:relative;aspect-ratio:3/2;overflow:hidden;background:#111;touch-action:pan-y;user-select:none}
-.baBox img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block}
-.baBox .baTop{clip-path:inset(0 calc(100% - var(--ba,50%)) 0 0)}
-.baHandle{position:absolute;top:0;bottom:0;left:var(--ba,50%);width:2px;margin-left:-1px;background:#fff;box-shadow:0 0 6px rgba(0,0,0,.5);pointer-events:none}
-.baHandle::after{content:"\2194";position:absolute;top:50%;left:50%;width:34px;height:34px;margin:-17px 0 0 -17px;border-radius:50%;background:#fff;color:#222;font:16px/34px sans-serif;text-align:center;box-shadow:0 1px 6px rgba(0,0,0,.4)}
-.baTag{position:absolute;bottom:8px;padding:2px 7px;font:11px/1.5 system-ui,sans-serif;letter-spacing:.04em;text-transform:uppercase;color:#fff;background:rgba(0,0,0,.55)}
-.baL{left:8px}.baR{right:8px}
-.baBox input{position:absolute;inset:0;width:100%;height:100%;margin:0;opacity:0;cursor:ew-resize;touch-action:pan-y}
-.baDemo figcaption{margin-top:8px;font-size:12px;color:#8a857d;text-align:center}
+#baDemo{position:relative;width:100%;max-width:560px;margin:18px auto 6px;aspect-ratio:16/10;overflow:hidden;border:1px solid #2a2d33;border-radius:6px;background:#000;user-select:none;-webkit-user-select:none;touch-action:pan-y;cursor:ew-resize}
+#baDemo img{position:absolute!important;top:0;left:0;width:100%!important;height:100%!important;max-width:none!important;object-fit:cover;pointer-events:none;-webkit-user-drag:none}
+#baDemo .baAfter{clip-path:inset(0 0 0 var(--ba,50%))}
+#baDemo .baBar{position:absolute;top:0;bottom:0;left:var(--ba,50%);width:2px;margin-left:-1px;background:#eceae4;box-shadow:0 0 12px rgba(0,0,0,.6)}
+#baDemo .baKnob{position:absolute;top:50%;left:var(--ba,50%);width:38px;height:38px;margin:-19px 0 0 -19px;border-radius:50%;background:#0b0c0e;border:2px solid #eceae4;color:#eceae4;display:flex;align-items:center;justify-content:center;font:600 13px ui-monospace,monospace}
+#baDemo .baTag{position:absolute;top:10px;font:500 11px ui-monospace,monospace;letter-spacing:.08em;padding:4px 8px;background:rgba(5,5,6,.72);color:#eceae4}
+#baCap{max-width:560px;margin:0 auto 12px;font:300 13px Inter,system-ui,sans-serif;color:#918d84;text-align:center}
 </style>
-    <figure class="baDemo" id="baDemo">
-      <div class="baBox">
-        <img src="example-after.jpg" alt="The same photo after the colour swap: red foliage and pink grass" width="1200" height="799" decoding="async">
-        <img class="baTop" src="example-before.jpg" alt="Straight out of the camera, a converted infrared photo with purple foliage" width="1200" height="799" decoding="async">
-        <span class="baHandle" aria-hidden="true"></span>
-        <span class="baTag baL">Before</span><span class="baTag baR">After</span>
-        <input type="range" min="0" max="100" value="50" aria-label="Drag to compare before and after">
-      </div>
-      <figcaption>Converted Canon 1200D, Wratten 12 filter. Straight from the camera, then swapped and graded in irlab.</figcaption>
-    </figure>
+    <div id="baDemo"><img src="example-before.jpg" alt="Converted infrared photo straight from the camera, purple foliage" width="1200" height="799" decoding="async"><img class="baAfter" src="example-after.jpg" alt="The same photo after the colour swap, red foliage and pink grass" width="1200" height="799" decoding="async"><span class="baTag" style="left:10px">BEFORE</span><span class="baTag" style="right:10px">AFTER</span><div class="baBar"></div><div class="baKnob">&#8596;</div></div>
+    <div id="baCap">Converted Canon 1200D, Wratten 12 filter. Straight from the camera, then swapped and graded in irlab.</div>
   </header>
 
   <!-- Build 128: Decode comes first again, because opening a photo goes straight into the editor and the decode
@@ -1993,8 +1982,11 @@
      copy of an older editor.js from ever running under a newer page; tools/bump_build.py sets it. -->
 <script src="editor.js?b=352"></script>
 <script>
-(function(){var b=document.getElementById('baDemo');if(!b)return;var i=b.querySelector('input'),x=b.querySelector('.baBox');
-function s(){x.style.setProperty('--ba',i.value+'%')}i.addEventListener('input',s);s();})();
+(function(){var x=document.getElementById('baDemo');if(!x)return;var d=0;
+function set(e){var r=x.getBoundingClientRect(),p=Math.max(0,Math.min(100,(e.clientX-r.left)/r.width*100));x.style.setProperty('--ba',p+'%')}
+x.addEventListener('pointerdown',function(e){d=1;try{x.setPointerCapture(e.pointerId)}catch(_){}set(e)});
+x.addEventListener('pointermove',function(e){if(d)set(e)});
+['pointerup','pointercancel'].forEach(function(n){x.addEventListener(n,function(){d=0})});})();
 </script>
 </body>
 </html>

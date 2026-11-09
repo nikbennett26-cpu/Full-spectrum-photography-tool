@@ -17,7 +17,7 @@
    You do NOT need to bump it just to deploy a new index.html — network-first
    handles that on its own. */
 
-const CACHE_VERSION = 'irlab-v12';   // v11: new logo (red ring, thinner), icons requested as ?v=3 and -v3 files
+const CACHE_VERSION = 'irlab-v13';   // v11: new logo (red ring, thinner), icons requested as ?v=3 and -v3 files
 // transient hand-off storage for Web Share Target, deliberately not versioned
 const SHARE_CACHE = 'irlab-share';
 const SHARE_KEY = '/__shared-image';
