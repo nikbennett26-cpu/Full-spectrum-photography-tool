@@ -138,8 +138,13 @@ function recipeCardCanvas() {
   const rows = recipeLines();
   const head = 96, rowH = 46, foot = 70;
   const H = head + ih + 36 + rows.length * rowH + foot;
-  const c = document.createElement('canvas'); c.width = W; c.height = H;
+  /* build 351: the card used to be a fixed 1600 px wide, so each photo was squeezed to 744 px. It is drawn at the same
+     layout but scaled up to the photo's own size (up to 4x, and no more than 36 megapixels), like Before | after. */
+  let k = Math.max(1, Math.min(4, after.width / colW));
+  while (W * k * H * k > 36e6 && k > 1) k -= 0.25;
+  const c = document.createElement('canvas'); c.width = Math.round(W * k); c.height = Math.round(H * k);
   const x = c.getContext('2d');
+  x.scale(c.width / W, c.height / H); x.imageSmoothingEnabled = true; x.imageSmoothingQuality = 'high';
   x.fillStyle = '#0b0c0e'; x.fillRect(0, 0, W, H);
   // ring mark and wordmark
   x.strokeStyle = '#d63a3a'; x.lineWidth = 4; x.beginPath(); x.arc(pad + 20, 50, 16, 0, 7); x.stroke();
