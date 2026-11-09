@@ -25,7 +25,7 @@
 <meta name="twitter:image" content="https://irlab.uk/og-card.png?v=330">
 <link rel="canonical" href="https://irlab.uk/">
 <meta name="theme-color" content="#141518">
-<meta name="irlab-build" content="347">
+<meta name="irlab-build" content="348">
 <link rel="manifest" href="/manifest.json">
 <link rel="icon" href="/favicon.ico?v=3" sizes="any">
 <link rel="icon" href="/favicon.svg?v=3" type="image/svg+xml">
@@ -54,15 +54,15 @@
 </script>
 
 <link rel="preload" href="fonts/inter-latin-400-normal.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="stylesheet" href="css/fonts.css?b=347">
+<link rel="stylesheet" href="css/fonts.css?b=348">
 
-<script src="i18n/tr.js?b=347"></script>
-<link rel="stylesheet" href="css/main.css?b=347">
-<link rel="stylesheet" id="uxRefresh" href="css/refresh.css?b=347">
-<link rel="stylesheet" href="css/trichrome.css?b=347">
-<link rel="stylesheet" id="uxDock" href="css/dock.css?b=347">
-<link rel="stylesheet" href="css/minimal.css?b=347">
-<link rel="preload" href="editor.js?b=347" as="script">
+<script src="i18n/tr.js?b=348"></script>
+<link rel="stylesheet" href="css/main.css?b=348">
+<link rel="stylesheet" id="uxRefresh" href="css/refresh.css?b=348">
+<link rel="stylesheet" href="css/trichrome.css?b=348">
+<link rel="stylesheet" id="uxDock" href="css/dock.css?b=348">
+<link rel="stylesheet" href="css/minimal.css?b=348">
+<link rel="preload" href="editor.js?b=348" as="script">
 </head>
 <body>
 
@@ -219,7 +219,11 @@
   <footer class="labFoot">
     <div id="whatsNew">
       <details>
-        <summary><span data-i18n="whatsNewLabel">What’s new</span><span class="wnLatest">Panel stays put</span></summary>
+        <summary><span data-i18n="whatsNewLabel">What’s new</span><span class="wnLatest">Scrolling past sliders</span></summary>
+        <p style="margin:0 0 3px"><b style="color:var(--phosphor-dim)">Scrolling past sliders.</b> A finger that lands on a slider and then moves up or down to scroll no longer moves it or flashes the preview. Drag sideways on a slider to change it; tapping the bar no longer jumps the value.</p>
+        <p style="margin:0 0 3px"><b style="color:var(--phosphor-dim)">Infrared map.</b> The Photo, NDVI and NGB switch has a fourth choice, IR map. It colours each pixel by how much of its light comes from infrared beyond 700 nm, using the Digital Aerochrome fit for your camera and filters, so live foliage stands out in red and shade stays readable. It is a preview only and is not exported.</p>
+        <p style="margin:0 0 3px"><b style="color:var(--phosphor-dim)">Recipe card.</b> Export now has a Recipe card button next to the before and after picture. It saves one picture with the before and after side by side and the settings behind the look: filters, camera, look, light and any tweaks, so a result can be repeated or passed on.</p>
+        <p style="margin:0 0 3px"><b style="color:var(--phosphor-dim)">Shoot planner.</b> A new tool on the home page asks where you are (once, and only to look up the weather) and shows the coming days with a rating for each, a suggested Light setting (low sun, midday sun or overcast) and a guess at how much leaf is on the trees, worked out from the recent weather and the day length. It is a guide, not a forecast of the colours.</p>
         <p style="margin:0 0 3px"><b style="color:var(--phosphor-dim)">Panel stays put.</b> The tools panel no longer rises over the photo while you scroll it (added in build 319): a tap to pick something usually moved the finger a little, so the panel jumped just as you went to press. The shorter rows stay.</p>
         <p style="margin:0 0 3px"><b style="color:var(--phosphor-dim)">Halation on every highlight.</b> Halation only ever glowed around the sky: it judged what counted as a highlight after blurring, by which point a small bright thing (a car roof, a windscreen glint, a lamp) had been averaged into its dark surroundings and no longer qualified. It now picks out highlights first and blurs after, so everything bright glows in proportion to how bright and how big it is, with a tight red rim close to the source and a softer spread around it, as on film. The sky glows about as much as before, and the faint stripes that sometimes ran beside a bright edge are gone.</p>
         <p style="margin:0 0 3px"><b style="color:var(--phosphor-dim)">Faster start, calmer messages.</b> The editor's code is about a quarter smaller to download: Triple Band Aerochrome's film data now loads on its own once the page is up, instead of inside the editor, and the editor starts downloading straight away. On a slow phone connection the start page is ready to open a file almost a second sooner. Messages (a file that cannot be read, an export that failed, anything unexpected) now appear in a card inside the app, with Copy and Close, instead of the browser's pop-up that froze the page. The thin red line at the edge of the picture is gone: the before/after divider only shows while it is somewhere inside the picture. Old style rules left behind by removed features are cleared out; the app looks exactly the same.</p>
@@ -654,7 +658,7 @@
     <!-- Build 279: the people behind it, on the home page -->
     <div id="creditsHome">Made by <a href="https://www.instagram.com/irlab.uk" target="_blank" rel="noopener" style="color:var(--safelight);font-weight:600;text-decoration:none">Nik Bennett</a>
       &middot; Colour science &amp; RAW decode by <a href="https://philwarrenphotography.com" target="_blank" rel="noopener" style="color:var(--safelight);font-weight:600;text-decoration:none">Phil Warren</a></div>
-    <div id="buildStampHome">Version 2026-11-09 · build 347</div>
+    <div id="buildStampHome">Version 2026-11-09 · build 348</div>
   </footer>
 </div>
 
@@ -1869,7 +1873,7 @@
       <br><a href="privacy.html" target="_blank" rel="noopener" style="color:var(--muted);text-decoration:underline">Privacy</a>
       <br><a href="LICENSE.md" target="_blank" rel="noopener" style="color:var(--muted);text-decoration:underline">Source: AGPL-3.0</a>
       <br><a href="THIRD_PARTY_NOTICES.md" target="_blank" rel="noopener" style="color:var(--muted);text-decoration:underline">Third-party notices (LibRaw, RawTherapee)</a>
-<br><span id="buildStamp" style="color:var(--muted)" title="Which version of the app this is. Tap the arrow to check for a newer one and update.">Version 2026-11-09 · build 347</span>
+<br><span id="buildStamp" style="color:var(--muted)" title="Which version of the app this is. Tap the arrow to check for a newer one and update.">Version 2026-11-09 · build 348</span>
       <br><button id="btnInstall" type="button">Install as an app</button>
       <span id="kbHint">Ctrl+Z undo &middot; Ctrl+Shift+Z redo &middot; [ ] cycle presets &middot; F full quality view &middot; Space hold to compare</span>
     </footer>
@@ -1965,6 +1969,6 @@
 <!-- The editor's code: editor.js, BUILT from src/*.js by tools/build.py (see the README's Code layout). One script, so
      it all runs in one go, as the single inline block it came from did. ?b=<build> keeps the service worker's cached
      copy of an older editor.js from ever running under a newer page; tools/bump_build.py sets it. -->
-<script src="editor.js?b=347"></script>
+<script src="editor.js?b=348"></script>
 </body>
 </html>
