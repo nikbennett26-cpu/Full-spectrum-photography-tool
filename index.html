@@ -54,15 +54,15 @@
 </script>
 
 <link rel="preload" href="fonts/inter-latin-400-normal.woff2" as="font" type="font/woff2" crossorigin>
-<link rel="stylesheet" href="css/fonts.css?b=351">
+<link rel="stylesheet" href="css/fonts.css?b=352">
 
-<script src="i18n/tr.js?b=351"></script>
-<link rel="stylesheet" href="css/main.css?b=351">
-<link rel="stylesheet" id="uxRefresh" href="css/refresh.css?b=351">
-<link rel="stylesheet" href="css/trichrome.css?b=351">
-<link rel="stylesheet" id="uxDock" href="css/dock.css?b=351">
-<link rel="stylesheet" href="css/minimal.css?b=351">
-<link rel="preload" href="editor.js?b=351" as="script">
+<script src="i18n/tr.js?b=352"></script>
+<link rel="stylesheet" href="css/main.css?b=352">
+<link rel="stylesheet" id="uxRefresh" href="css/refresh.css?b=352">
+<link rel="stylesheet" href="css/trichrome.css?b=352">
+<link rel="stylesheet" id="uxDock" href="css/dock.css?b=352">
+<link rel="stylesheet" href="css/minimal.css?b=352">
+<link rel="preload" href="editor.js?b=352" as="script">
 </head>
 <body>
 
@@ -93,6 +93,18 @@
          and five fading through deep red into near infrared. They light up in order, then the shimmer runs once. -->
     <div id="spectrumBar" aria-hidden="true"><span style="background:#6b3fd1"></span><span style="background:#2f7de1"></span><span style="background:#36b06a"></span><span style="background:#e6c02f"></span><span style="background:#e0452a"></span><span style="background:#a8241c"></span><span style="background:#7a1428"></span><span style="background:#561020"></span><span style="background:#3a0b16"></span><span style="background:#26080f"></span></div>
     <div id="spectrumTicks" aria-hidden="true"><span>400</span><span>550</span><span>700</span><span>850</span><span>1000nm</span></div>
+    <style>
+.baDemo{margin:22px auto 0;max-width:640px;padding:0}
+.baBox{position:relative;aspect-ratio:3/2;overflow:hidden;background:#111;touch-action:pan-y;user-select:none}
+.baBox img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block}
+.baBox .baTop{clip-path:inset(0 calc(100% - var(--ba,50%)) 0 0)}
+.baHandle{position:absolute;top:0;bottom:0;left:var(--ba,50%);width:2px;margin-left:-1px;background:#fff;box-shadow:0 0 6px rgba(0,0,0,.5);pointer-events:none}
+.baHandle::after{content:"\2194";position:absolute;top:50%;left:50%;width:34px;height:34px;margin:-17px 0 0 -17px;border-radius:50%;background:#fff;color:#222;font:16px/34px sans-serif;text-align:center;box-shadow:0 1px 6px rgba(0,0,0,.4)}
+.baTag{position:absolute;bottom:8px;padding:2px 7px;font:11px/1.5 system-ui,sans-serif;letter-spacing:.04em;text-transform:uppercase;color:#fff;background:rgba(0,0,0,.55)}
+.baL{left:8px}.baR{right:8px}
+.baBox input{position:absolute;inset:0;width:100%;height:100%;margin:0;opacity:0;cursor:ew-resize;touch-action:pan-y}
+.baDemo figcaption{margin-top:8px;font-size:12px;color:#8a857d;text-align:center}
+</style>
     <figure class="baDemo" id="baDemo">
       <div class="baBox">
         <img src="example-after.jpg" alt="The same photo after the colour swap: red foliage and pink grass" width="1200" height="799" decoding="async">
@@ -1979,7 +1991,7 @@
 <!-- The editor's code: editor.js, BUILT from src/*.js by tools/build.py (see the README's Code layout). One script, so
      it all runs in one go, as the single inline block it came from did. ?b=<build> keeps the service worker's cached
      copy of an older editor.js from ever running under a newer page; tools/bump_build.py sets it. -->
-<script src="editor.js?b=351"></script>
+<script src="editor.js?b=352"></script>
 <script>
 (function(){var b=document.getElementById('baDemo');if(!b)return;var i=b.querySelector('input'),x=b.querySelector('.baBox');
 function s(){x.style.setProperty('--ba',i.value+'%')}i.addEventListener('input',s);s();})();

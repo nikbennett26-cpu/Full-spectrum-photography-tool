@@ -353,15 +353,3 @@ html.dockOn body.has-image #reorderZone .dGrp > summary{min-height:47px!importan
 /* the Photo / NDVI / NGB / IR map switch: four across, its legend on a line of its own underneath */
 #matrixDetails .swapRow:has(.idxBtn){grid-template-columns:repeat(4,minmax(0,1fr))}
 #matrixDetails .swapRow:has(.idxBtn) #idxLegend{grid-column:1/-1;padding:10px 4px 0;border:0}
-
-/* Home page before/after example */
-.baDemo{margin:22px auto 0;max-width:640px;padding:0}
-.baBox{position:relative;aspect-ratio:3/2;overflow:hidden;background:#111;touch-action:pan-y;user-select:none}
-.baBox img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block}
-.baBox .baTop{clip-path:inset(0 calc(100% - var(--ba,50%)) 0 0)}
-.baHandle{position:absolute;top:0;bottom:0;left:var(--ba,50%);width:2px;margin-left:-1px;background:#fff;box-shadow:0 0 6px rgba(0,0,0,.5);pointer-events:none}
-.baHandle::after{content:"\2194";position:absolute;top:50%;left:50%;width:34px;height:34px;margin:-17px 0 0 -17px;border-radius:50%;background:#fff;color:#222;font:16px/34px sans-serif;text-align:center;box-shadow:0 1px 6px rgba(0,0,0,.4)}
-.baTag{position:absolute;bottom:8px;padding:2px 7px;font:11px/1.5 system-ui,sans-serif;letter-spacing:.04em;text-transform:uppercase;color:#fff;background:rgba(0,0,0,.55)}
-.baL{left:8px}.baR{right:8px}
-.baBox input{position:absolute;inset:0;width:100%;height:100%;margin:0;opacity:0;cursor:ew-resize;touch-action:pan-y}
-.baDemo figcaption{margin-top:8px;font-size:12px;color:#8a857d;text-align:center}
