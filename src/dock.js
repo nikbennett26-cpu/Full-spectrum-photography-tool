@@ -314,6 +314,7 @@
     setTimeout(layout, 60);
   }).observe(document.body, { attributes: true, attributeFilter: ['class'] });
   window.addEventListener('load', () => setTimeout(layout, 300));
+  window.dockLooks = () => setTab('looks');   // build 347: a new photo starts back on Looks
   window.dockRelayout = layout;   // build 343: the engine calls this once the canvas has the photo's own shape
 
   /* ---------- desktop studio ----------

@@ -855,6 +855,7 @@ async function loadFile(file) {
   if (typeof videoIntercept === 'function') { file = await videoIntercept(file); if (!file) return; }   /* build 298: a video opens on one frame */
   // build 210: a RAW opened before any decode option was picked asks how to decode it first (src/decode-tip.js)
   if (typeof decodeTipAsk === 'function' && !(await decodeTipAsk(file))) return;
+  try { if (window.dockLooks) window.dockLooks(); } catch (e) {}   /* build 347: each new photo starts back on Looks */
   document.body.classList.add('imgLoading');
   try { return await loadFileInner(file); }
   finally { document.body.classList.remove('imgLoading'); }
