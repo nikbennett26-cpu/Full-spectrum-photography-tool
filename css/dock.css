@@ -1271,3 +1271,37 @@ html:not(.studioOn):not(.dockOn) [data-step="wb"] .stepChip + span{margin-left:.
   /* 7. the canvas as a framed mat */
   html.studioOn body.has-image #cw{border-radius:12px !important;box-shadow:inset 0 0 0 1px rgba(255,255,255,.04) !important}
 }
+
+/* Build 386: the lists and forms inside the groups */
+@media (min-width:1000px){
+  /* look and preset cards: rounded, quiet, a clear selected state */
+  html.studioOn body.has-image #reorderZone#reorderZone .pb{border:1px solid var(--st-hair2) !important;border-left:1px solid var(--st-hair2) !important;border-radius:9px !important;background:rgba(255,255,255,.02) !important;box-shadow:none !important;padding:10px 12px !important;transition:border-color .16s ease,background-color .16s ease}
+  html.studioOn body.has-image #reorderZone#reorderZone .pb:hover{border-color:#5a5852 !important}
+  html.studioOn body.has-image #reorderZone#reorderZone .pb.on{border-color:rgba(214,58,58,.7) !important;background:rgba(214,58,58,.1) !important}
+  html.studioOn body.has-image #reorderZone#reorderZone .pgrid{gap:8px !important}
+  /* dropdowns: dark, rounded, our own chevron */
+  html.studioOn body.has-image #reorderZone select{-webkit-appearance:none;appearance:none;height:34px;padding:0 32px 0 12px;border:1px solid var(--st-hair2);border-radius:8px;color:#e4e0d8;font:400 13px/1 Inter,system-ui,sans-serif;cursor:pointer;
+    background:#101114 url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1.5 1.5 6 6l4.5-4.5' fill='none' stroke='%238a867d' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") no-repeat right 12px center;transition:border-color .16s ease}
+  html.studioOn body.has-image #reorderZone select:hover{border-color:#5a5852}
+  html.studioOn body.has-image #reorderZone select:focus-visible{outline:2px solid rgba(214,58,58,.6);outline-offset:1px}
+  /* tick boxes and radios everywhere in the right panel, not only Export */
+  html.studioOn body.has-image #reorderZone input[type=radio],html.studioOn body.has-image #reorderZone input[type=checkbox]{-webkit-appearance:none;appearance:none;width:16px;height:16px;margin:0 8px 0 0;flex:none;border:1.5px solid #5a5852;background:transparent;display:inline-grid;place-content:center;vertical-align:-3px;cursor:pointer;transition:border-color .16s ease,background-color .16s ease}
+  html.studioOn body.has-image #reorderZone input[type=radio]{border-radius:50%}
+  html.studioOn body.has-image #reorderZone input[type=checkbox]{border-radius:4px}
+  html.studioOn body.has-image #reorderZone input[type=radio]::after{content:'';width:8px;height:8px;border-radius:50%;background:#d63a3a;transform:scale(0);transition:transform .14s ease}
+  html.studioOn body.has-image #reorderZone input[type=checkbox]::after{content:'';width:9px;height:5px;border:solid #f1ede6;border-width:0 0 2px 2px;transform:rotate(-45deg) translate(1px,-1px) scale(0);transition:transform .14s ease}
+  html.studioOn body.has-image #reorderZone input[type=radio]:checked{border-color:#d63a3a}
+  html.studioOn body.has-image #reorderZone input[type=radio]:checked::after{transform:scale(1)}
+  html.studioOn body.has-image #reorderZone input[type=checkbox]:checked{border-color:#d63a3a;background:#d63a3a}
+  html.studioOn body.has-image #reorderZone input[type=checkbox]:checked::after{transform:rotate(-45deg) translate(1px,-1px) scale(1)}
+  html.studioOn body.has-image #reorderZone input[type=radio]:hover,html.studioOn body.has-image #reorderZone input[type=checkbox]:hover{border-color:#8a867d}
+  /* Aerochrome form: even rows, a clear gap under the button rows */
+  html.studioOn body.has-image #ffDetails .ffRow{display:flex;align-items:center;gap:10px;margin:0 0 8px}
+  html.studioOn body.has-image #ffDetails .ffRow:has(select){display:grid;grid-template-columns:84px minmax(0,1fr)}
+  html.studioOn body.has-image #ffDetails .ffRow select{min-width:0;width:100%}
+  html.studioOn body.has-image #ffDetails button{height:30px !important;min-height:30px !important;padding:0 14px !important;border:1px solid var(--st-hair2) !important;border-radius:8px !important;background:rgba(255,255,255,.025) !important;color:#e4e0d8 !important;font:500 12.5px/1 Inter,system-ui,sans-serif;cursor:pointer;transition:border-color .16s ease}
+  html.studioOn body.has-image #ffDetails button:hover{border-color:#5a5852}
+  html.studioOn body.has-image #dustDetails .dBody > :first-child{margin-bottom:12px}
+  /* a little less air between a group header and its first control */
+  html.studioOn body.has-image #reorderZone .dGrp > .dBody{padding-top:6px}
+}
