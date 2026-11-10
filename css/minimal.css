@@ -362,3 +362,34 @@ html.dockOn body.has-image #reorderZone .dGrp > summary{min-height:47px!importan
   body.has-image #zoomBadge button{min-height:36px}
 }
 body.has-image #holdHint,body.has-image #cmpBar .cmpBarLabels span{font-size:11px!important}
+
+/* Build 390: the filter database on a wide screen, in the studio's layout: a top bar, the chart filling the left, the
+   filter list as a panel on the right with its own scroll. Narrow screens are unchanged. */
+#fBar{display:none}
+@media (min-width:1100px){
+  body.fltPage{max-width:none!important;padding:0!important;margin:0!important;height:100vh;overflow:hidden;--radius:10px;-webkit-font-smoothing:antialiased}
+  body.fltPage #fBar{display:flex;align-items:center;justify-content:space-between;height:48px;padding:0 16px 0 12px;border-bottom:1px solid #1f2024;box-sizing:border-box}
+  body.fltPage .fBrand{display:flex;align-items:center;gap:10px;text-decoration:none;font:400 15px/1 Inter,ui-sans-serif,system-ui,sans-serif;color:#f1ede6}
+  body.fltPage .fMark{display:grid;place-content:center;width:24px;height:24px;border:1.5px solid #d63a3a;border-radius:50%;font:700 9.5px/1 Inter,ui-sans-serif,system-ui,sans-serif;color:#f1ede6}
+  body.fltPage .fSub{color:#8a867d}
+  body.fltPage .fBack{display:inline-flex;align-items:center;gap:6px;height:34px;padding:0 14px 0 10px;border:1px solid #2c2d33;border-radius:8px;background:rgba(255,255,255,.025);color:#e4e0d8;text-decoration:none;font:500 13px/1 Inter,ui-sans-serif,system-ui,sans-serif;transition:border-color .16s ease,background-color .16s ease}
+  body.fltPage .fBack:hover{border-color:#5a5852;background:rgba(255,255,255,.05)}
+  body.fltPage .fBack svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+  body.fltPage #fShell{display:grid!important;grid-template-columns:minmax(0,1fr) 480px!important;gap:0!important;padding:0!important;max-width:none!important;margin:0!important;height:calc(100vh - 48px)}
+  body.fltPage #fLeft{position:static!important;align-self:stretch!important;padding:16px 24px 24px!important;overflow-y:auto;scrollbar-width:thin;scrollbar-color:#2c2d33 transparent;
+    background:radial-gradient(ellipse 70% 62% at 50% 40%,#131317 0%,#0c0c0f 62%,#08080a 100%)}
+  body.fltPage #fRight{border-left:1px solid #1f2024;padding:12px 16px 24px!important;overflow-y:auto;scrollbar-width:thin;scrollbar-color:#2c2d33 transparent;height:100%;box-sizing:border-box}
+  body.fltPage #chart{height:min(62vh,calc(100vh - 330px))!important}
+  body.fltPage #railEditor{display:none!important}
+  body.fltPage #fShell#fShell .panel,body.fltPage #fShell#fShell #fChart,body.fltPage #fShell#fShell #filterList,body.fltPage #fShell#fShell #fTabs,body.fltPage #fShell#fShell #chart{border-radius:12px!important}
+  body.fltPage #fShell#fShell #filterList{overflow:hidden}
+  body.fltPage #fShell#fShell #fChart{background:rgba(0,0,0,.35)!important;border-color:#23242a!important}
+  body.fltPage #fShell#fShell #fTabs{position:sticky!important;top:0;z-index:5;background:#000!important}
+  body.fltPage #fShell#fShell button,body.fltPage #fShell#fShell .chip,body.fltPage #fShell#fShell .fb,body.fltPage #fShell#fShell .advice,body.fltPage #fShell#fShell .warnbox{border-radius:8px!important;transition:border-color .16s ease,background-color .16s ease,color .16s ease}
+  body.fltPage #fShell#fShell .chip:hover,body.fltPage #fShell#fShell button:hover{border-color:#5a5852!important}
+  body.fltPage #fShell#fShell #fTabs button,body.fltPage #fShell#fShell .rk{border-radius:10px!important}
+  body.fltPage #fShell#fShell input[type=search],body.fltPage #fShell#fShell input[type=text],body.fltPage #fShell#fShell select{border-radius:9px!important}
+  body.fltPage #fShell#fShell .grpHead .gcount{border-radius:6px!important}
+  body.fltPage #cookieBanner{left:auto!important;right:16px!important;bottom:16px!important;width:auto!important;border:1px solid #2c2d33!important;border-radius:12px!important;background:#141518!important;box-shadow:0 20px 50px -16px rgba(0,0,0,.8)!important}
+  body.fltPage #cookieBanner#cookieBanner button#cookieAck{border-radius:8px!important}
+}
