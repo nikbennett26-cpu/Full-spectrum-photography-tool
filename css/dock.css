@@ -1081,3 +1081,18 @@ html body:not(.has-video) #bVidTab, html.dockOn body.has-image:not(.has-video) .
   #studioLeft .stCards{margin-bottom:10px}
   #studioLeft .stComp{gap:6px}
 }
+
+/* Build 379: left panel denser, Aerochrome trichrome open */
+@media (min-width:1000px){
+  #studioLeft .stLead{font-size:12.5px;line-height:1.4;margin-bottom:8px}
+  #studioLeft .stCards{gap:4px;margin-bottom:8px}
+  #studioLeft .stCards div{padding:5px 2px 4px}
+  #studioLeft .stCards small{margin-bottom:2px;font-size:9.5px}
+  #studioLeft .stComp{gap:5px}
+  #studioLeft #stSpecCv{height:84px}
+  #studioLeft .stKey{margin-top:6px;gap:3px 10px}
+  #studioLeft .stHist{max-height:112px}
+  #studioLeft .stBtns{margin-top:2px}
+  #studioLeft .stBtns button#stReset{padding:2px 0}
+  #studioLeft #stSpecPick > details{margin-bottom:8px}
+}

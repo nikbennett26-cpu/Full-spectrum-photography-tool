@@ -187,7 +187,7 @@
       sec('stSecInfo', 'What this stack does', '', '<div id="stSpecInfo"><p class="stLead">Loading the filter data…</p></div>', true) +
       '<div id="stChanHome"></div>' +
       sec('stSecHist', 'History', '<span class="stN" id="stHistN">0</span>', '<div id="stHist" class="stHist" role="list"></div><div class="stBtns"><button type="button" id="stReset">Reset all</button></div>', true) +
-      sec('stSecTri', 'Aerochrome trichrome', '', '<p class="stNote" style="margin:0 0 8px">Red Aerochrome from three shots: infrared, red-filter and green-filter.</p><button type="button" id="stTri" class="stWide">Open the trichrome tool</button>', false);
+      sec('stSecTri', 'Aerochrome trichrome', '', '<p class="stNote" style="margin:0 0 8px">Red Aerochrome from three shots: infrared, red-filter and green-filter.</p><button type="button" id="stTri" class="stWide">Open the trichrome tool</button>', true);
     document.body.appendChild(left);
     $('stHist').addEventListener('click', e => { const b = e.target.closest('.stHI'); if (b) histJump(+b.dataset.i); });
     $('stReset').addEventListener('click', () => { const b = $('bReset'); if (b) b.click(); });
