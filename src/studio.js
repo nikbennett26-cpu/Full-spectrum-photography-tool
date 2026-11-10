@@ -206,6 +206,11 @@
   function panelToggle(side) { root.classList.toggle(side === 'l' ? 'stNoL' : 'stNoR'); panelsSave(); setTimeout(() => { window.dispatchEvent(new Event('resize')); refreshSpectrum(); }, 60); }
   function addToggles() {
     const ps = $('previewSticky'); if (!ps || $('stTogL')) return;
+    const tb = document.querySelector('.toolbar');
+    if (tb && !$('stHdrL')) [['l', 'stHdrL', 'Hide or show the left panel ( [ )', '<rect x="2.5" y="3.5" width="15" height="13" rx="2"/><path d="M8 3.5v13"/>'], ['r', 'stHdrR', 'Hide or show the right panel ( ] )', '<rect x="2.5" y="3.5" width="15" height="13" rx="2"/><path d="M12 3.5v13"/>']].forEach(a => {
+      const b = document.createElement('button'); b.type = 'button'; b.id = a[1]; b.className = 'stHdrTog'; b.title = a[2]; b.setAttribute('aria-label', a[2]);
+      b.innerHTML = '<svg viewBox="0 0 20 20" aria-hidden="true">' + a[3] + '</svg>'; b.addEventListener('click', () => panelToggle(a[0])); tb.appendChild(b);
+    });
     [['l', 'stTogL', 'Hide or show the left panel ( [ )', 'M7 2L3 5l4 3'], ['r', 'stTogR', 'Hide or show the right panel ( ] )', 'M3 2l4 3-4 3']].forEach(a => {
       const b = document.createElement('button'); b.type = 'button'; b.id = a[1]; b.className = 'stTog'; b.title = a[2]; b.setAttribute('aria-label', a[2]);
       b.innerHTML = '<svg viewBox="0 0 10 10" aria-hidden="true"><path d="' + a[3] + '"/></svg>'; b.addEventListener('click', () => panelToggle(a[0])); ps.appendChild(b);
@@ -241,7 +246,7 @@
   };
   window.studioLeftOff = function () {
     if (!built) return;
-    ['stTogL', 'stTogR'].forEach(id => { const b = $(id); if (b) b.remove(); });
+    ['stTogL', 'stTogR', 'stHdrL', 'stHdrR'].forEach(id => { const b = $(id); if (b) b.remove(); });
     const fd = $('filtersDetails'); if (fd) unpark(fd, 'filters');
     const cd = $('channelDetails'); if (cd) { cd.classList.remove('stSec'); unpark(cd, 'channels'); }
   };
