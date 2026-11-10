@@ -289,30 +289,6 @@
   function openColour() { if (colourOpened || !root.classList.contains('studioOn')) return; const g = $('wbTempGrp'); if (g) { colourOpened = true; g.open = true; } }
   new MutationObserver(() => { const t = root.getAttribute('data-tab'); if (t === 'light') openLight(); else if (t === 'colour') openColour(); }).observe(root, { attributes: true, attributeFilter: ['data-tab'] });
 
-  /* Build 380: choosing a look, swap or preset dissolves from the old picture to the new one over about a fifth of a second
-     instead of cutting. A snapshot of the picture as it was is laid over the canvas and faded out once the new render is
-     in place. Skipped when reduced motion is asked for, or when the canvas does not keep its pixels (the snapshot would be blank). */
-  (function lookDissolve() {
-    let live = null;
-    document.addEventListener('click', e => {
-      if (!root.classList.contains('studioOn') || !e.target.closest) return;
-      if (!e.target.closest('.pb, .swapBtn[data-perm]')) return;
-      try {
-        if (window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-        const pv = $('preview'), wrap = $('previewWrap');
-        if (!pv || !wrap || !pv.width || typeof engine === 'undefined' || !engine || !engine.gl) return;
-        const at = engine.gl.getContextAttributes && engine.gl.getContextAttributes();
-        if (!at || !at.preserveDrawingBuffer) return;
-        const snap = document.createElement('canvas'); snap.width = pv.width; snap.height = pv.height;
-        snap.getContext('2d').drawImage(pv, 0, 0);
-        snap.setAttribute('aria-hidden', 'true');
-        snap.style.cssText = 'position:absolute;left:0;top:0;width:100%;height:100%;pointer-events:none;z-index:3;opacity:1;transition:opacity .22s ease;border-radius:inherit';
-        if (live) live.remove(); live = snap; wrap.appendChild(snap);
-        setTimeout(() => { snap.style.opacity = '0'; setTimeout(() => { snap.remove(); if (live === snap) live = null; }, 280); }, 80);
-      } catch (err) {}
-    }, true);
-  })();
-
   /* after the whole bundle has run (fpStack and the rest are declared later in it) */
   setTimeout(() => { if (root.classList.contains('studioOn')) window.studioLeftOn(); }, 0);
 })();
