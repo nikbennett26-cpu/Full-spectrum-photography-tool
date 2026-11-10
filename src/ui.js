@@ -1678,7 +1678,7 @@ function refreshCompareRef() {
     refSource = src;
   }
   refIsOriginal = !src;
-  const lbl = $('cmpRefLabel'); if (lbl) lbl.textContent = '\u25c0 ' + (refIsOriginal ? 'Original' : 'Before');
+  const lbl = $('cmpRefLabel'); if (lbl) lbl.textContent = '\u25c0 ' + (compareMode === 'last' ? 'Before' : 'Original');
 }
 function toggleCompareRef() {
   compareMode = compareMode === 'last' ? 'original' : 'last';
