@@ -396,9 +396,12 @@
     const on = mqS.matches;
     root.classList.toggle('studioOn', on);
     if (!on) { fromStudio(); looksAccordion(false); return; }
+    const firstStudio = !studioInit;
     if (!studioInit) { studioInit = true; classify(); setTab('looks'); }
     toStudio();
     looksAccordion(true, true);
+    /* build 377: Swap & mix starts open on desktop (an earlier layout pass may already have closed it), so the Looks tab opens filled */
+    if (firstStudio) { const m = $('matrixDetails'); if (m) m.open = true; }
   }
   if (mqS.addEventListener) mqS.addEventListener('change', syncStudio); else mqS.addListener(syncStudio);
   window.addEventListener('resize', () => { if (root.classList.contains('studioOn')) studioHistSize(); });

@@ -1337,7 +1337,9 @@ async function loadFileInner(file) {
     if (stale()) return;
     /* A new photo starts with every tool folded shut (build 229). The dock layouts open a panel with its tab, so there only the groups inside are folded. */
     try { const dock = document.documentElement.classList.contains('dockOn') || document.documentElement.classList.contains('studioOn');
-      document.querySelectorAll(dock ? 'details.dGrp' : 'details.stepPanel, details.dGrp').forEach(d => { if (d.id !== 'resPanel' && d.id !== 'fmtGrp' && d.id !== 'exportSection') d.open = false; }); } catch (e) {}
+      document.querySelectorAll(dock ? 'details.dGrp' : 'details.stepPanel, details.dGrp').forEach(d => { if (d.id !== 'resPanel' && d.id !== 'fmtGrp' && d.id !== 'exportSection') d.open = false; });
+      /* build 377: on the desktop studio the first Looks group (Swap & mix) stays open, so the right panel opens filled */
+      if (document.documentElement.classList.contains('studioOn')) { const m = document.getElementById('matrixDetails'); if (m) m.open = true; } } catch (e) {}
     undoStack = []; redoStack = []; preChangeSnapshot = null; undoBmps = []; redoBmps = []; preChangeBmp = null; refSource = undefined;
     if (typeof updateUndoButton === 'function') updateUndoButton();
     /* The interactive WB panel's own state (preWBM) is otherwise completely
