@@ -1185,3 +1185,45 @@ html body:not(.has-video) #bVidTab, html.dockOn body.has-image:not(.has-video) .
   html.studioOn body.has-image #reorderZone#reorderZone .stepPanel > summary .stepChip{display:none !important}
   html.studioOn body.has-image #exportSection#exportSection > summary.secHead,html.studioOn body.has-image #exportSection#exportSection > summary.secHead > span{color:#b9b5ac !important}
 }
+
+/* Build 384: left panel headers match the right, one-row scopes control, rounded swap buttons, grouped top bar */
+html:not(.studioOn):not(.dockOn) [data-step="wb"] .stepChip + span{margin-left:.4em}
+@media (min-width:1000px){
+  /* 1. left panel: the same header as the right panel */
+  #studioLeft .stH,#studioLeft #stChanHome > details > summary{height:40px !important;padding:0 16px !important;background:transparent !important;border:0 !important;border-top:1px solid var(--st-hair) !important;box-shadow:none !important;
+    font:600 11.5px/1 ui-sans-serif,system-ui,sans-serif !important;letter-spacing:.11em !important;color:#b9b5ac !important}
+  #studioLeft details[open] > .stH,#studioLeft #stChanHome > details[open] > summary,#studioLeft .stH:hover{color:#f1ede6 !important}
+  #studioLeft details.stSec:first-of-type > .stH{border-top:0 !important}
+  #studioLeft .stH::before,#studioLeft #stChanHome > details > summary::before{order:5;width:6px !important;height:6px !important;border:solid #6f6c66 !important;border-width:0 1.5px 1.5px 0 !important;margin:0 4px 3px 8px;transform:rotate(45deg) !important;transition:transform .16s ease,border-color .16s ease}
+  #studioLeft details[open] > .stH::before,#studioLeft #stChanHome > details[open] > summary::before{transform:rotate(-135deg) !important;margin-bottom:-1px;border-color:#b9b5ac !important}
+  #studioLeft .stN{margin-left:auto}
+  #studioLeft .stN + *{margin-left:0}
+  #studioLeft #stChanHome > details > summary{display:flex}
+  #studioLeft .stH:not(:has(.stN))::before,#studioLeft #stChanHome > details > summary::before{margin-left:auto}
+  /* 3. scopes: Histogram | Parade as one joined control, then two small toggles, all on one row */
+  html.studioOn body.has-image #scopeMeta{flex-wrap:nowrap !important;gap:8px !important}
+  html.studioOn body.has-image #scopeModeRow{gap:0 !important;margin:0 !important}
+  html.studioOn body.has-image #scopeModeRow button.btnGhostSmall{border-radius:0 !important;min-height:28px;padding:4px 12px;margin-left:-1px}
+  html.studioOn body.has-image #scopeModeRow button.btnGhostSmall:first-child{border-radius:7px 0 0 7px !important;margin-left:0}
+  html.studioOn body.has-image #scopeModeRow button.btnGhostSmall:last-child{border-radius:0 7px 7px 0 !important}
+  html.studioOn body.has-image #scopeModeRow button.btnGhostSmall.on{position:relative;z-index:1}
+  html.studioOn body.has-image #clipToggle,html.studioOn body.has-image #cmykToggle{padding:4px 10px !important;white-space:nowrap}
+  /* 4. swap and view buttons: rounded cards with a clear selected state */
+  html.studioOn body.has-image #matrixDetails .swapRow{gap:6px !important;border:0 !important;margin:8px 0 14px !important}
+  html.studioOn body.has-image #matrixDetails .swapRow .swapBtn{min-height:44px;border:1px solid var(--st-hair2) !important;border-radius:9px !important;background:rgba(255,255,255,.02) !important;box-shadow:none !important;color:#b9b5ac !important;transition:border-color .16s ease,background-color .16s ease,color .16s ease}
+  html.studioOn body.has-image #matrixDetails .swapRow .swapBtn:hover{border-color:#5a5852 !important;color:#f1ede6 !important}
+  html.studioOn body.has-image #matrixDetails .swapRow .swapBtn.on{background:rgba(214,58,58,.12) !important;border-color:rgba(214,58,58,.7) !important;color:#f1ede6 !important;box-shadow:none !important}
+  /* 5. top bar: tools grouped with a hairline between groups */
+  html.studioOn body.has-image .toolbar #bReset{margin-left:20px}
+  html.studioOn body.has-image .toolbar .ptTools{margin-left:20px}
+  html.studioOn body.has-image .toolbar #filterDbBtn{margin-left:20px}
+  html.studioOn body.has-image .toolbar #stHdrR{margin-left:20px}
+  html.studioOn body.has-image .toolbar #bReset,html.studioOn body.has-image .toolbar .ptTools,html.studioOn body.has-image .toolbar #filterDbBtn,html.studioOn body.has-image .toolbar #stHdrR{position:relative}
+  html.studioOn body.has-image .toolbar #bReset::before,html.studioOn body.has-image .toolbar .ptTools::before,html.studioOn body.has-image .toolbar #filterDbBtn::before,html.studioOn body.has-image .toolbar #stHdrR::before{content:'';position:absolute;left:-11px;top:7px;bottom:7px;width:1px;background:var(--st-hair2)}
+  /* the big step headers use the same thin chevron as the groups */
+  html.studioOn body.has-image #reorderZone#reorderZone .stepPanel > summary .stepArrow{display:none !important}
+  html.studioOn body.has-image #reorderZone#reorderZone .stepPanel > summary.stepHdr::after{content:'' !important;display:block !important;margin-left:auto;width:6px;height:6px;border:solid #6f6c66;border-width:0 1.5px 1.5px 0;transform:rotate(45deg);transition:transform .16s ease,border-color .16s ease;position:static !important}
+  html.studioOn body.has-image #reorderZone#reorderZone .stepPanel[open] > summary.stepHdr::after{transform:rotate(-135deg);border-color:#b9b5ac;margin-top:5px}
+  html.studioOn body.has-image #reorderZone#reorderZone .stepPanel > summary.stepHdr{align-items:center !important}
+  html.studioOn body.has-image #reorderZone#reorderZone .stepPanel > summary.stepHdr::after{background:none !important;box-shadow:none !important;opacity:1 !important;top:auto !important;right:auto !important;left:auto !important;bottom:auto !important;animation:none !important;border-radius:0 !important}
+}
