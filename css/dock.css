@@ -908,7 +908,7 @@ html body:not(.has-video) #bVidTab, html.dockOn body.has-image:not(.has-video) .
   html.studioOn body.has-image #reorderZone .dGrp > summary .dT,html.studioOn body.has-image #reorderZone .stepPanel > summary.stepHdr,html.studioOn body.has-image #reorderZone .stepPanel > summary.stepHdr > span{font-size:13px !important;font-weight:500 !important;letter-spacing:0 !important;text-transform:none !important}
   html.studioOn body.has-image #reorderZone .stepPanel > summary.stepHdr{color:var(--st-text);padding-top:0 !important;padding-bottom:0 !important}
   html.studioOn body.has-image #reorderZone .stepPanel > summary.stepHdr button{width:28px;height:28px;min-height:0;padding:0;border-radius:8px}
-  html.studioOn body.has-image #reorderZone > [data-solo] > summary{display:none !important}
+  html.studioOn body.has-image #reorderZone > [data-solo] > summary{display:flex !important}
   html.studioOn body.has-image .sl label{justify-content:flex-start;gap:4px}
   html.studioOn body.has-image .sl label b{margin-left:auto}
 }
