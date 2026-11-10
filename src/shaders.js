@@ -751,7 +751,17 @@ uniform sampler2D u_epdBase;   // the smooth, edge-stopping base layer of the lo
   /* The prepared picture is drawn through the same vertex shader as the screen, which flips v, so it is stored the other
      way up from the original texture; reading it flips back. */
   vec2 prepUV(vec2 uv) { return vec2(uv.x, 1.0 - uv.y); }
+  /* Build 375: SRC_LITE (macOS only, see engine.js) reads the prepared picture, or the raw photo, and never inlines the source
+     stages at each of the ~60 call sites; the engine makes sure a prepared picture exists whenever those stages are active. */
+#ifdef SRC_LITE
+  vec3 srcEnc(vec2 uv) {
+    if (u_prepped > 0.5) return texture2D(u_image, prepUV(uv)).rgb;
+    vec3 t = texture2D(u_image, uv).rgb;
+    return u_inputLinear > 0.5 ? linearToSrgb(clamp(max(t, vec3(0.0)), 0.0, 1.0)) : clamp(t, 0.0, 1.0);
+  }
+#else
   vec3 srcEnc(vec2 uv) { return u_prepped > 0.5 ? texture2D(u_image, prepUV(uv)).rgb : stage1At(uv); }
+#endif
   vec3 srcLin(vec2 uv) { return srgbToLinear(srcEnc(uv)); }
   /* Build 374: the same reading as srcLin without the source stages. The infrared map takes 49 of these; through srcLin each
      one pulled the whole stage-1 code (several 5x5 loops) into the shader 49 times over, and Apple's Metal compiler gave up

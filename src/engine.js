@@ -161,7 +161,7 @@ class WebGLEngine {
       return sh;
     };
     const vs = compile(gl.VERTEX_SHADER, VS_SOURCE, 'vertex');
-    const fs = compile(gl.FRAGMENT_SHADER, FS_SOURCE, 'fragment');
+    const fs = compile(gl.FRAGMENT_SHADER, fsSource(), 'fragment');
 
     this.program = gl.createProgram();
     gl.attachShader(this.program, vs);
@@ -1222,7 +1222,8 @@ void main(){
     const hasBands = !!(p.bands && p.bands.length);
     const need = (p.noiseReduction > 0) || (p.noiseColour > 0) || (p.sharpen > 0) || (p.clarity || 0) !== 0 ||
                  (p.dehaze || 0) !== 0 || (p.highlights || 0) !== 0 || (p.shadows || 0) !== 0 || hasBands;
-    if (!need) return false;
+    const needS1 = SRC_LITE_ON && ((p.exposure || 0) !== 0 || (p.hlRecover || 0) !== 0 || p.caR || p.caB || (p.hotspot && (p.hotspot[0] || p.hotspot[1] || p.hotspot[2])) || p.deband);
+    if (!need && !needS1) return false;
     const W = this.canvas.width, H = this.canvas.height;
     try {
       if (!this._prep || this._prep.w !== W || this._prep.h !== H) {
@@ -1402,6 +1403,15 @@ function linearToSrgbF(c){c=Math.max(0,Math.min(1,c));return c<=0.0031308?c*12.9
    keyed by their source, so the real compile when a photo opens is then mostly a cache hit. Nothing in the editor
    is touched; the context is dropped as soon as the compile is done. Skipped where the extension is missing (there
    it would block the page instead), when a photo is already open, and on the self-test. */
+/* Apple's Metal compiler drops the connection on the full fragment shader (seen on a Mac Studio M4 Max, Chrome and Safari), so
+   macOS builds a lighter variant (see SRC_LITE in shaders.js). ?lite=1 / ?lite=0 forces it either way for testing. */
+const SRC_LITE_ON = (function () {
+  try {
+    const q = /[?&]lite=([01])/.exec(location.search); if (q) return q[1] === '1';
+    return /Macintosh|Mac OS X/.test(navigator.userAgent);
+  } catch (e) { return false; }
+})();
+function fsSource() { return SRC_LITE_ON ? '#define SRC_LITE\n' + FS_SOURCE : FS_SOURCE; }
 (function shaderPrewarm() {
   if (typeof window === 'undefined' || typeof FS_SOURCE !== 'string') return;
   const start = () => {
@@ -1415,7 +1425,7 @@ function linearToSrgbF(c){c=Math.max(0,Math.min(1,c));return c<=0.0031308?c*12.9
       const drop = () => { try { if (lose) lose.loseContext(); } catch (e) {} };
       if (!par) { drop(); return; }
       const mk = (t, src) => { const sh = gl.createShader(t); gl.shaderSource(sh, src); gl.compileShader(sh); return sh; };
-      const vs = mk(gl.VERTEX_SHADER, VS_SOURCE), fs = mk(gl.FRAGMENT_SHADER, FS_SOURCE);
+      const vs = mk(gl.VERTEX_SHADER, VS_SOURCE), fs = mk(gl.FRAGMENT_SHADER, fsSource());
       const pr = gl.createProgram(); gl.attachShader(pr, vs); gl.attachShader(pr, fs); gl.linkProgram(pr);
       const t0 = performance.now();
       const poll = () => {
