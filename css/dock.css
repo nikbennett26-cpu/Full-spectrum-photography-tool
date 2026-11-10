@@ -1037,3 +1037,27 @@ html body:not(.has-video) #bVidTab, html.dockOn body.has-image:not(.has-video) .
   html.studioOn body.has-image #cmpBar#cmpBar #cmpRange::-webkit-slider-runnable-track{height:3px !important}
   html.studioOn body.has-image #cmpBar#cmpBar #cmpRange::-moz-range-track{height:3px !important}
 }
+
+/* Build 376: studio polish */
+@media (min-width:1000px){
+  /* histogram chips: one tidy row */
+  html.studioOn body.has-image #scopeMeta{flex-wrap:wrap !important;gap:6px 8px;align-items:center}
+  html.studioOn body.has-image #scopeModeRow,html.studioOn body.has-image #clipToggle,html.studioOn body.has-image #cmykToggle{margin:0 !important}
+  html.studioOn body.has-image #scopeMeta > *{flex:0 0 auto}
+  html.studioOn body.has-image #scopeModeRow{order:1}
+  html.studioOn body.has-image #clipToggle{order:2}
+  html.studioOn body.has-image #cmykToggle{order:3}
+  html.studioOn body.has-image #clipKey{order:4}
+  /* one Reset all: the header's. The History one is a quiet link */
+  #studioLeft .stBtns{margin-top:6px}
+  #studioLeft .stBtns button#stReset{flex:0 0 auto;height:auto;padding:4px 0;border:0;background:none;color:var(--st-faint);font-size:12px;text-decoration:underline;text-underline-offset:3px}
+  #studioLeft .stBtns button#stReset:hover{background:none;color:var(--st-text)}
+  /* section reset icons: no box, appear on hover */
+  html.studioOn body.has-image .stepHdr .ptResetBtn{border:0 !important;background:transparent !important;box-shadow:none !important;opacity:0;transition:opacity .15s}
+  html.studioOn body.has-image .stepHdr:hover .ptResetBtn,html.studioOn body.has-image .stepHdr .ptResetBtn:focus-visible{opacity:.7}
+  /* canvas sits on a lifted mat so the photo has an edge against the black panels */
+  html.studioOn body.has-image #cw{background:#0e0e11 !important}
+  html.studioOn body.has-image #holdHint{background:transparent !important}
+  /* header: file name centred between the left and right tools */
+  html.studioOn body.has-image .toolbar #studioFile{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);order:unset;margin:0;pointer-events:none;text-align:center}
+}
