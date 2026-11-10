@@ -120,59 +120,96 @@ function recipeLines() {
       }
     }
   } catch (e) {}
+  try {   // build 380: the channel swap is the heart of most recipes and was never written on the card
+    const sb = document.querySelector('.swapBtn[data-perm].on');
+    if (sb && sb.dataset.perm !== '012') L.unshift(['Channel swap', sb.textContent.trim().replace(/\s+/g, ' ')]);
+  } catch (e) {}
   const names = { hue: 'Hue', sat: 'Saturation', vibrance: 'Vibrance', bright: 'Exposure' };
   const ch = [];
   Object.keys(names).forEach(id => {
     const el = $(id); if (!el) return;
     const v = Number(el.value), d = Number(el.defaultValue);
-    if (v !== d) ch.push(names[id] + ' ' + (v > d ? '+' : '') + Math.round(v - d));
+    const dv = v - d, txt = id === 'bright' ? (Math.round(dv * 100) / 100) + ' EV' : String(Math.round(dv));
+    if (Math.abs(dv) > (id === 'bright' ? 0.004 : 0.5)) ch.push(names[id] + ' ' + (dv > 0 ? '+' : '') + txt);
   });
   if (ch.length) L.push(['Tweaks', ch.join('  ')]);
   return L;
 }
 function recipeCardCanvas() {
+  /* build 380: drawn as a 4:5 feed post (1080 x 1350, scaled up to the photo's own size) in the same style as the irlab posts:
+     the IR mark, the look as the headline, the finished photo large with the original inset (side by side for an upright
+     photo), the settings underneath, and the spectrum line. The old card was 2.2:1, wider than Instagram shows. */
   const after = shareAfterCanvas();
   const before = shareBeforeCanvas($('preview').width, $('preview').height);
-  const W = 1600, pad = 56, gap = 16, colW = (W - pad * 2 - gap) / 2;
-  const ih = Math.round(colW * after.height / after.width);
-  const rows = recipeLines();
-  const head = 96, rowH = 46, foot = 70;
-  const H = head + ih + 36 + rows.length * rowH + foot;
-  /* build 351: the card used to be a fixed 1600 px wide, so each photo was squeezed to 744 px. It is drawn at the same
-     layout but scaled up to the photo's own size (up to 4x, and no more than 36 megapixels), like Before | after. */
-  let k = Math.max(1, Math.min(4, after.width / colW));
+  const W = 1080, H = 1350, pad = 56, inner = W - pad * 2;
+  const rows = recipeLines().slice(0, 6);
+  const look = (typeof lookNameNow === 'function') ? lookNameNow() : '';
+  const swap = rows.find(r => r[0] === 'Channel swap');
+  const title = (look && look !== 'Custom') ? look : swap ? 'Channel swap ' + swap[1] : 'My recipe';
+  const rowH = 54, rowsH = rows.length * rowH;
+  const photoTop = 300, photoMaxH = H - photoTop - rowsH - 190;   // the room the photo gets
+  const portrait = after.height > after.width * 0.95;
+  let k = Math.max(1, Math.min(4, after.width / (portrait ? inner / 2 : inner)));
   while (W * k * H * k > 36e6 && k > 1) k -= 0.25;
   const c = document.createElement('canvas'); c.width = Math.round(W * k); c.height = Math.round(H * k);
   const x = c.getContext('2d');
   x.scale(c.width / W, c.height / H); x.imageSmoothingEnabled = true; x.imageSmoothingQuality = 'high';
   x.fillStyle = '#0b0c0e'; x.fillRect(0, 0, W, H);
-  // ring mark and wordmark
-  x.strokeStyle = '#d63a3a'; x.lineWidth = 4; x.beginPath(); x.arc(pad + 20, 50, 16, 0, 7); x.stroke();
-  x.fillStyle = '#eceae4'; x.textBaseline = 'middle';
-  x.font = '500 30px Inter, system-ui, sans-serif'; x.fillText('irlab.uk', pad + 52, 50);
-  x.textAlign = 'right'; x.fillStyle = '#918d84'; x.font = '400 22px ui-monospace, Menlo, Consolas, monospace';
-  x.fillText('RECIPE', W - pad, 50); x.textAlign = 'left';
-  const y0 = head;
-  x.drawImage(before, pad, y0, colW, ih);
-  x.drawImage(after, pad + colW + gap, y0, colW, ih);
-  x.font = '500 20px ui-monospace, Menlo, Consolas, monospace'; x.textBaseline = 'top';
-  [['BEFORE', pad], ['AFTER', pad + colW + gap]].forEach(([t, ox]) => {
-    const tw = x.measureText(t).width;
-    x.fillStyle = 'rgba(5,5,6,.72)'; x.fillRect(ox + 14, y0 + 14, tw + 24, 34);
-    x.fillStyle = '#eceae4'; x.fillText(t, ox + 26, y0 + 21);
-  });
-  let y = y0 + ih + 36;
-  x.textBaseline = 'middle';
-  rows.forEach(([k, v]) => {
+  const font = (w, px) => w + ' ' + px + 'px Inter, system-ui, sans-serif', mono = px => '500 ' + px + 'px ui-monospace, Menlo, Consolas, monospace';
+  // mark + wordmark
+  x.strokeStyle = '#d63a3a'; x.lineWidth = 4; x.beginPath(); x.arc(pad + 30, 84, 30, 0, 7); x.stroke();
+  x.fillStyle = '#eceae4'; x.textAlign = 'center'; x.textBaseline = 'middle'; x.font = font(700, 26); x.fillText('IR', pad + 30, 85);
+  x.textAlign = 'left'; x.font = font(400, 40); x.fillText('irlab', pad + 78, 84);
+  const wl = x.measureText('irlab ').width; x.fillStyle = '#918d84'; x.fillText('/ darkroom', pad + 78 + wl, 84);
+  // eyebrow + headline
+  x.fillStyle = '#d63a3a'; x.font = mono(22); x.textBaseline = 'alphabetic';
+  if (x.letterSpacing !== undefined) x.letterSpacing = '8px'; x.fillText('RECIPE', pad, 178); if (x.letterSpacing !== undefined) x.letterSpacing = '0px';
+  x.fillStyle = '#f1ede6'; let fs = 66; x.font = font(400, fs);
+  while (x.measureText(title).width > inner && fs > 36) { fs -= 2; x.font = font(400, fs); }
+  x.fillText(title, pad, 250);
+  // photos
+  const fit = (cv, bw, bh) => { const r = Math.min(bw / cv.width, bh / cv.height); return [cv.width * r, cv.height * r]; };
+  const tag = (t, ox, oy) => {
+    x.font = mono(18); x.textBaseline = 'middle'; const tw = x.measureText(t).width;
+    x.fillStyle = 'rgba(5,5,6,.78)'; x.fillRect(ox, oy, tw + 24, 32); x.fillStyle = '#eceae4'; x.fillText(t, ox + 12, oy + 17);
+  };
+  /* the photo and the settings read as one block, centred between the headline and the spectrum line */
+  const dims = portrait ? fit(after, (inner - 16) / 2, photoMaxH) : fit(after, inner, photoMaxH);
+  const blockH = dims[1] + 40 + rowsH, free = H - 150 - photoTop;
+  const off = Math.max(0, Math.min(60, (free - blockH) / 2));
+  x.save(); x.translate(0, off);
+  let photoBottom;
+  if (portrait) {
+    const cw = (inner - 16) / 2, [bw, bh] = fit(after, cw, photoMaxH), y0 = photoTop + (photoMaxH - bh) / 2;
+    x.drawImage(before, pad + (cw - bw) / 2, y0, bw, bh); x.drawImage(after, pad + cw + 16 + (cw - bw) / 2, y0, bw, bh);
+    tag('BEFORE', pad + (cw - bw) / 2 + 12, y0 + 12); tag('AFTER', pad + cw + 16 + (cw - bw) / 2 + 12, y0 + 12);
+    photoBottom = y0 + bh;
+  } else {
+    const [bw, bh] = fit(after, inner, photoMaxH), px = pad + (inner - bw) / 2;
+    x.drawImage(after, px, photoTop, bw, bh); tag('AFTER', px + 14, photoTop + 14);
+    const iw = bw * 0.34, ih = iw * before.height / before.width;
+    x.fillStyle = '#0b0c0e'; x.fillRect(px + 14 - 4, photoTop + bh - ih - 14 - 4, iw + 8, ih + 8);
+    x.drawImage(before, px + 14, photoTop + bh - ih - 14, iw, ih);
+    tag('BEFORE', px + 14, photoTop + bh - ih - 14);
+    photoBottom = photoTop + bh;
+  }
+  // settings
+  let y = photoBottom + 40;
+  rows.forEach(([kk, v]) => {
     x.strokeStyle = '#2a2d33'; x.lineWidth = 1; x.beginPath(); x.moveTo(pad, y); x.lineTo(W - pad, y); x.stroke();
-    x.fillStyle = '#918d84'; x.font = '400 20px ui-monospace, Menlo, Consolas, monospace'; x.fillText(k.toUpperCase(), pad, y + rowH / 2);
-    x.fillStyle = '#eceae4'; x.font = '300 28px Inter, system-ui, sans-serif';
-    let t = v; while (x.measureText(t).width > W - pad * 2 - 220 && t.length > 4) t = t.slice(0, -2);
-    x.fillText(t === v ? t : t + '…', pad + 220, y + rowH / 2);
+    x.textBaseline = 'middle'; x.fillStyle = '#918d84'; x.font = mono(19); x.fillText(kk.toUpperCase(), pad, y + rowH / 2);
+    x.fillStyle = '#eceae4'; x.font = font(300, 28);
+    let t = v; while (x.measureText(t).width > inner - 230 && t.length > 4) t = t.slice(0, -2);
+    x.fillText(t === v ? t : t + '…', pad + 230, y + rowH / 2);
     y += rowH;
   });
-  x.fillStyle = '#918d84'; x.font = '300 20px Inter, system-ui, sans-serif'; x.textAlign = 'right';
-  x.fillText('Darkroom for light you can’t see', W - pad, H - 34); x.textAlign = 'left';
+  x.restore();
+  // spectrum line + footer
+  const g = x.createLinearGradient(pad, 0, W - pad, 0);
+  ['#7a5ad6', '#3b6fd6', '#2fa36b', '#d9c63a', '#e8872c', '#d63a3a'].forEach((cl, i, a) => g.addColorStop(i / (a.length - 1), cl));
+  x.fillStyle = g; x.fillRect(pad, H - 112, inner, 3);
+  x.textBaseline = 'middle'; x.fillStyle = '#918d84'; x.font = font(300, 30); x.fillText('Free · runs in your browser', pad, H - 62);
+  x.textAlign = 'right'; x.fillText('irlab.uk', W - pad, H - 62); x.textAlign = 'left';
   return c;
 }
 if ($('bRecipe')) $('bRecipe').onclick = () => runShare($('bRecipe'), recipeCardCanvas, 'irlab-recipe');
