@@ -753,6 +753,14 @@ uniform sampler2D u_epdBase;   // the smooth, edge-stopping base layer of the lo
   vec2 prepUV(vec2 uv) { return vec2(uv.x, 1.0 - uv.y); }
   vec3 srcEnc(vec2 uv) { return u_prepped > 0.5 ? texture2D(u_image, prepUV(uv)).rgb : stage1At(uv); }
   vec3 srcLin(vec2 uv) { return srgbToLinear(srcEnc(uv)); }
+  /* Build 374: the same reading as srcLin without the source stages. The infrared map takes 49 of these; through srcLin each
+     one pulled the whole stage-1 code (several 5x5 loops) into the shader 49 times over, and Apple's Metal compiler gave up
+     on the result (context lost on a Mac Studio / M4 Max). With no exposure or highlight fix active the two are identical. */
+  vec3 srcLinRaw(vec2 uv) {
+    if (u_prepped > 0.5) return srgbToLinear(texture2D(u_image, prepUV(uv)).rgb);
+    vec3 t = texture2D(u_image, uv).rgb;
+    return u_inputLinear > 0.5 ? max(t, vec3(0.0)) : srgbToLinear(clamp(t, 0.0, 1.0));
+  }
 
   /* Edge-aware average of the source around this pixel: a 5x5 local pass on the guide (noise inside one material is
      averaged, a real edge is kept), then the colour (a,b) from a much wider 5x5 of the guide's mipmap, again counting only
@@ -2686,7 +2694,7 @@ uniform float u_skyL;          // the typical lightness of the sky; anything cle
       /* the map is read from a 7x7 spread of the source (about 13 pixels across), so grain does not turn it into noise */
       vec3 acc = vec3(0.0);
       for (int jy = -3; jy <= 3; jy++) for (int jx = -3; jx <= 3; jx++) {
-        vec3 tc = srcLin(v_texCoord + vec2(float(jx), float(jy)) * u_texelSize * 2.0);
+        vec3 tc = srcLinRaw(v_texCoord + vec2(float(jx), float(jy)) * u_texelSize * 2.0);
         acc += max(u_wbMethod == 1 ? u_preWBM * tc : tc * u_preWB, vec3(0.0));
       }
       vec3 ii = acc / 49.0;
