@@ -1096,3 +1096,27 @@ html body:not(.has-video) #bVidTab, html.dockOn body.has-image:not(.has-video) .
   #studioLeft .stBtns button#stReset{padding:2px 0}
   #studioLeft #stSpecPick > details{margin-bottom:8px}
 }
+
+/* Build 380: depth, type and motion polish for the studio */
+@media (min-width:1000px){
+  html.studioOn body.has-image{-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
+  /* the canvas: a soft pool of light behind the photo instead of a flat fill */
+  html.studioOn body.has-image #cw{background:radial-gradient(ellipse 70% 62% at 50% 46%,#17171c 0%,#0f0f12 62%,#0a0a0c 100%) !important}
+  html.studioOn body.has-image #previewWrap{box-shadow:0 40px 90px -26px rgba(0,0,0,.85),0 14px 30px -14px rgba(0,0,0,.6),0 0 0 1px rgba(255,255,255,.07) !important}
+  /* panels read as layers: a hairline of light on the edge facing the photo, and on each section header */
+  html.studioOn body.has-image #studioLeft{box-shadow:inset -1px 0 0 rgba(255,255,255,.05)}
+  html.studioOn body.has-image #studioHead{box-shadow:0 1px 0 rgba(255,255,255,.03),0 10px 18px -14px rgba(0,0,0,.8)}
+  #studioLeft .stH,html.studioOn body.has-image .stepHdr,html.studioOn body.has-image details.dGrp > summary{box-shadow:inset 0 1px 0 rgba(255,255,255,.035)}
+  /* numbers keep their width so a slider readout does not jitter while you drag */
+  html.studioOn body.has-image .sl label b,html.studioOn body.has-image .stCP,html.studioOn body.has-image .stCards span,html.studioOn body.has-image #zoomLevel,#stZoom button{font-variant-numeric:tabular-nums}
+  /* one easing for every hover and press */
+  html.studioOn body.has-image button,html.studioOn body.has-image summary,html.studioOn body.has-image .stHI,html.studioOn body.has-image .pb{transition:background-color .16s ease,border-color .16s ease,color .16s ease,box-shadow .16s ease,opacity .16s ease}
+  html.studioOn body.has-image button:active:not(:disabled){transform:translateY(.5px)}
+  html.studioOn body.has-image input[type=range]::-webkit-slider-thumb{transition:transform .12s ease,box-shadow .12s ease}
+  html.studioOn body.has-image input[type=range]:hover::-webkit-slider-thumb{transform:scale(1.12)}
+  html.studioOn body.has-image input[type=range]:active::-webkit-slider-thumb{transform:scale(1.2);box-shadow:0 0 0 6px rgba(214,58,58,.18)}
+  /* panels open and close with a short fade rather than snapping */
+  @keyframes stOpen{from{opacity:0;transform:translateY(-3px)}to{opacity:1;transform:none}}
+  html.studioOn body.has-image details[open] > :not(summary){animation:stOpen .18s ease both}
+}
+@media (prefers-reduced-motion:reduce){html.studioOn body.has-image *{animation:none !important;transition:none !important}}
