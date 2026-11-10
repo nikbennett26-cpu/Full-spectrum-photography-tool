@@ -994,3 +994,14 @@ html body:not(.has-video) #bVidTab, html.dockOn body.has-image:not(.has-video) .
 @media (min-width:1000px) and (orientation:landscape), (min-width:1100px){
   html.studioOn body.has-image .toolbar .filelabel,html.studioOn body.has-image .toolbar #bHome,html.studioOn body.has-image .toolbar #btnUndo,html.studioOn body.has-image .toolbar #btnRedo{width:34px !important;height:34px !important;min-height:0 !important;align-self:center}
 }
+@media (min-width:1000px) and (orientation:landscape), (min-width:1100px){
+  html.studioOn body.has-image .toolbar .filelabel,html.studioOn body.has-image .toolbar #bHome,html.studioOn body.has-image .toolbar #btnUndo,html.studioOn body.has-image .toolbar #btnRedo{padding:0 !important;justify-content:center !important}
+  /* Reset all stays in the header as well as under History */
+  html.studioOn body.has-image .toolbar #bReset{display:inline-flex !important;align-items:center;order:11;height:34px;padding:0 12px;margin-left:12px;border-radius:8px;border:1px solid var(--st-hair);background:var(--st-raise);color:var(--st-text);font:500 13px/1 ui-sans-serif,system-ui,sans-serif;white-space:nowrap}
+  html.studioOn body.has-image .toolbar #bReset:hover{background:var(--st-raise2);border-color:var(--st-hair2)}
+}
+@media (min-width:1000px) and (orientation:landscape), (min-width:1100px){
+  html.studioOn body.has-image .toolbar #btnUndo{order:8}
+  html.studioOn body.has-image .toolbar #btnRedo{order:9}
+  html.studioOn body.has-image .toolbar #bReset{order:10}
+}
