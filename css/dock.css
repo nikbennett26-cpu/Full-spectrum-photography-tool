@@ -1227,3 +1227,47 @@ html:not(.studioOn):not(.dockOn) [data-step="wb"] .stepChip + span{margin-left:.
   html.studioOn body.has-image #reorderZone#reorderZone .stepPanel > summary.stepHdr{align-items:center !important}
   html.studioOn body.has-image #reorderZone#reorderZone .stepPanel > summary.stepHdr::after{background:none !important;box-shadow:none !important;opacity:1 !important;top:auto !important;right:auto !important;left:auto !important;bottom:auto !important;animation:none !important;border-radius:0 !important}
 }
+
+/* Build 385: top of the right panel as one block, quieter buttons, grey pickers flattened, Export tab finished */
+@media (min-width:1000px){
+  /* 1. histogram, controls and tabs read as one unit */
+  html.studioOn body.has-image #studioHead #histogram,html.studioOn body.has-image #studioHead canvas#histogram{border-radius:9px;border:1px solid var(--st-hair2)}
+  html.studioOn body.has-image #studioHead > #dock{background:transparent !important;border:0 !important;border-top:1px solid var(--st-hair) !important;border-bottom:1px solid var(--st-hair) !important;margin-top:10px}
+  html.studioOn body.has-image #studioHead > #dock button.on::before,html.studioOn body.has-image #dock button.on::before{left:18px !important;right:18px !important;top:auto !important;bottom:0 !important;width:auto !important;height:2px !important;border-radius:2px 2px 0 0 !important}
+  html.studioOn body.has-image #studioHead > #dock button{color:#8a867d}
+  html.studioOn body.has-image #studioHead > #dock button:hover{color:#d6d2c9;background:transparent}
+  html.studioOn body.has-image #studioHead > #dock button.on{color:#f1ede6 !important;background:transparent !important}
+  /* 2. the small ghost buttons share one look */
+  html.studioOn body.has-image .ptAutoBtn,html.studioOn body.has-image .ptResetBtn,html.studioOn body.has-image #btnAuto,html.studioOn body.has-image .btnGhostSmall:not(#scopeModeRow .btnGhostSmall){height:28px;min-height:28px;padding:0 11px;border:1px solid var(--st-hair2) !important;border-radius:7px !important;background:rgba(255,255,255,.025) !important;color:#c9c5bc !important;font:500 12px/1 ui-sans-serif,system-ui,sans-serif;box-shadow:none !important}
+  html.studioOn body.has-image .ptAutoBtn:hover,html.studioOn body.has-image #btnAuto:hover{border-color:#5a5852 !important;color:#f1ede6 !important}
+  /* 3. grey pickers: rows on the panel, not a card inside a card */
+  html.studioOn body.has-image #reorderZone#reorderZone .wbSlim{border:0 !important;background:transparent !important;margin:6px 0 4px !important;padding:0 16px !important}
+  html.studioOn body.has-image #reorderZone#reorderZone .wbSlim .wbSlimHd{margin:6px 0 8px}
+  html.studioOn body.has-image #reorderZone#reorderZone .wbSlim .wbSlimT{font:600 11.5px/1 ui-sans-serif,system-ui,sans-serif;letter-spacing:.11em;text-transform:uppercase;color:#b9b5ac}
+  html.studioOn body.has-image #reorderZone#reorderZone .wbSlim .wbRow{border:0 !important;border-top:1px solid var(--st-hair) !important;padding:10px 0 !important}
+  html.studioOn body.has-image #reorderZone#reorderZone .wbSlim .wbIco{width:34px !important;height:34px !important;border:1px solid var(--st-hair2) !important;border-radius:8px !important;background:rgba(255,255,255,.025) !important}
+  html.studioOn body.has-image #reorderZone#reorderZone .wbSlim > .dGrp,html.studioOn body.has-image #reorderZone#reorderZone .wbSlim > #wbTempGrp{border:0 !important;border-radius:0 !important;margin:4px -16px 0 !important}
+  /* 4. Export: custom radios and checkboxes, calmer help text, one strong button */
+  html.studioOn body.has-image #exportSection input[type=radio],html.studioOn body.has-image #exportSection input[type=checkbox]{-webkit-appearance:none;appearance:none;width:16px;height:16px;margin:0 8px 0 0;flex:none;border:1.5px solid #5a5852;background:transparent;display:inline-grid;place-content:center;vertical-align:-3px;cursor:pointer;transition:border-color .16s ease,background-color .16s ease}
+  html.studioOn body.has-image #exportSection input[type=radio]{border-radius:50%}
+  html.studioOn body.has-image #exportSection input[type=checkbox]{border-radius:4px}
+  html.studioOn body.has-image #exportSection input[type=radio]::after{content:'';width:8px;height:8px;border-radius:50%;background:#d63a3a;transform:scale(0);transition:transform .14s ease}
+  html.studioOn body.has-image #exportSection input[type=checkbox]::after{content:'';width:9px;height:5px;border:solid #f1ede6;border-width:0 0 2px 2px;transform:rotate(-45deg) translate(1px,-1px) scale(0);transition:transform .14s ease}
+  html.studioOn body.has-image #exportSection input[type=radio]:checked{border-color:#d63a3a}
+  html.studioOn body.has-image #exportSection input[type=radio]:checked::after{transform:scale(1)}
+  html.studioOn body.has-image #exportSection input[type=checkbox]:checked{border-color:#d63a3a;background:#d63a3a}
+  html.studioOn body.has-image #exportSection input[type=checkbox]:checked::after{transform:rotate(-45deg) translate(1px,-1px) scale(1)}
+  html.studioOn body.has-image #exportSection input[type=radio]:hover,html.studioOn body.has-image #exportSection input[type=checkbox]:hover{border-color:#8a867d}
+  html.studioOn body.has-image #exportSection .note,html.studioOn body.has-image #exportSection p.note{font-size:11.5px !important;line-height:1.5 !important;color:#7f7b73 !important}
+  html.studioOn body.has-image #bDl.keyBtn{background:#d63a3a !important;border-color:#d63a3a !important;color:#fff !important;border-radius:10px !important;transition:background-color .16s ease,border-color .16s ease}
+  html.studioOn body.has-image #bDl.keyBtn:hover{background:#e04a4a !important;border-color:#e04a4a !important}
+  html.studioOn body.has-image #bDl.keyBtn svg{stroke:#fff}
+  /* 5. the two pills as a pair */
+  html.studioOn body.has-image #cw > #cmpBar#cmpBar,html.studioOn body.has-image #stZoom{border:1px solid rgba(255,255,255,.1) !important;background:rgba(10,10,12,.84) !important;height:36px}
+  /* 6. history: a clearer current step */
+  #studioLeft .stHI{height:30px}
+  #studioLeft .stHI.on{font-weight:600;color:#f1ede6}
+  #studioLeft .stHI i{color:#6f6c66}
+  /* 7. the canvas as a framed mat */
+  html.studioOn body.has-image #cw{border-radius:12px !important;box-shadow:inset 0 0 0 1px rgba(255,255,255,.04) !important}
+}
