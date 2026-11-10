@@ -327,6 +327,7 @@
   const mqS = window.matchMedia('(min-width:1000px) and (orientation:landscape), (min-width:1100px)');
   let studioInit = false, studioScopesWere = false;
   const movedS = {};
+  let dockHome = null;
   /* Build 127: the same IR badge and 'irlab / darkroom' wordmark as the home page header. */
   const BRAND = '<svg class="labBadge" viewBox="0 0 64 64" width="24" height="24" aria-hidden="true"><circle cx="32" cy="32" r="24" fill="none" stroke="#d63a3a" stroke-width="3"/><path d="M21.95 42.14V21.86Q21.95 21.71 22.05 21.61Q22.16 21.5 22.3 21.5H25.81Q25.96 21.5 26.07 21.61Q26.18 21.71 26.18 21.86V42.14Q26.18 42.29 26.07 42.39Q25.96 42.5 25.81 42.5H22.3Q22.16 42.5 22.05 42.39Q21.95 42.29 21.95 42.14ZM37.7 42.2 35.39 33.92Q35.34 33.8 35.24 33.8H34.23Q34.07 33.8 34.07 33.95V42.14Q34.07 42.29 33.97 42.39Q33.86 42.5 33.71 42.5H30.2Q30.05 42.5 29.95 42.39Q29.84 42.29 29.84 42.14V21.86Q29.84 21.71 29.95 21.61Q30.05 21.5 30.2 21.5H36.27Q37.91 21.5 39.2 22.3Q40.49 23.09 41.2 24.53Q41.91 25.97 41.91 27.83Q41.91 29.6 41.23 30.95Q40.55 32.3 39.35 33.05Q39.3 33.08 39.27 33.12Q39.23 33.17 39.27 33.23L42.02 42.08L42.05 42.2Q42.05 42.5 41.72 42.5H38.12Q37.8 42.5 37.7 42.2ZM34.07 25.28V30.41Q34.07 30.56 34.23 30.56H35.57Q36.5 30.56 37.09 29.83Q37.67 29.09 37.67 27.86Q37.67 26.6 37.09 25.87Q36.5 25.13 35.57 25.13H34.23Q34.07 25.13 34.07 25.28Z" fill="#eceae4"/></svg><span class="sbWord"><b>ir</b>lab <span class="sbPath">/ darkroom</span></span>';
   function studioHistSize() {
@@ -342,6 +343,7 @@
       e.addEventListener('click', () => { const t = dock.querySelector('button[data-tab="export"]'); if (t) t.click(); });
       tb.appendChild(e);
     }
+    if (tb && !$('studioFile')) { const f = document.createElement('div'); f.id = 'studioFile'; tb.appendChild(f); }
     const undo = $('btnUndo'), redo = $('btnRedo');
     if (tb && undo && redo && !movedS.ur) { movedS.ur = true; tb.insertBefore(undo, theme || null); tb.insertBefore(redo, theme || null); }
     const tools = document.querySelector('#previewTools .ptTools');
@@ -356,6 +358,15 @@
     }
     // decode / WB readouts go under the histogram in the inspector's sticky header, not over the photo
     if (sc && st && !movedS.stamps) { movedS.stamps = true; sc.appendChild(st); }
+    /* build 366: the tabs and the histogram share one sticky head at the top of the inspector (they were a rail on the left) */
+    if (!movedS.head) {
+      movedS.head = true; dockHome = { parent: dock.parentNode, next: dock.nextSibling };
+      const head = document.createElement('div'); head.id = 'studioHead'; head.setAttribute('data-dock', 'all');
+      zone.insertBefore(head, zone.firstChild);
+      if (sc) head.appendChild(sc);
+      head.appendChild(dock);
+    }
+    if (window.studioLeftOn) window.studioLeftOn();
     setTimeout(studioHistSize, 80);
   }
   function fromStudio() {
@@ -374,6 +385,12 @@
       setTimeout(() => { if (typeof drawHistogram === 'function') drawHistogram(); }, 150);
     }
     if (movedS.cmp && cmp && ps) { ps.insertBefore(cmp, sc && sc.parentElement === ps ? sc : null); movedS.cmp = false; }
+    if (movedS.head) {
+      if (dockHome && dockHome.parent) dockHome.parent.insertBefore(dock, dockHome.next);
+      const head = $('studioHead'); if (head) head.remove();
+      movedS.head = false;
+    }
+    if (window.studioLeftOff) window.studioLeftOff();
   }
   function syncStudio() {
     const on = mqS.matches;

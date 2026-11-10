@@ -793,3 +793,197 @@ body.rawOpen #plainSharpenSub{display:block}
 html.dockOn body.has-image #main > footer{display:none!important}
 /* Build 312: the video button only while a video is open (the toolbar rules above force display with !important) */
 html body:not(.has-video) #bVidTab, html.dockOn body.has-image:not(.has-video) .toolbar > #bVidTab, html.studioOn body.has-image:not(.has-video) .toolbar > #bVidTab{display:none!important}
+
+/* ================= Build 366: desktop studio, second pass =================
+   Left panel (spectrum, what the stack does, channels, history), tabs and histogram in one head on the right, a plainer
+   top bar. Same palette and tokens as before; only the structure and the density change. */
+#studioLeft,#studioFile{display:none}
+@media (min-width:1000px) and (orientation:landscape), (min-width:1100px){
+  html.studioOn body.has-image{--stL:clamp(236px,16.5vw,300px);--stR:clamp(316px,22.5vw,396px);grid-template-columns:var(--stL) minmax(0,1fr) var(--stR);grid-template-rows:48px minmax(0,1fr)}
+  html.studioOn body.has-image #preview{max-height:calc(100vh - 48px - 26px - 60px) !important;max-height:calc(100dvh - 48px - 26px - 60px) !important}
+
+  /* ---- top bar: brand, back, file | undo redo, tools, filter database ---- */
+  html.studioOn body.has-image .toolbar{height:48px;padding:0 12px;gap:6px}
+  html.studioOn body.has-image #studioBrand{margin-right:10px;font-size:15px;font-weight:600;letter-spacing:0}
+  html.studioOn body.has-image #studioBrand b{font-weight:400;opacity:.65;margin-left:4px}
+  html.studioOn body.has-image .toolbar #bReset,html.studioOn body.has-image .toolbar #btnStudioExport,html.studioOn body.has-image .toolbar #bVidTab[style*="display: none"]{display:none !important}
+  html.studioOn body.has-image .toolbar .filelabel,html.studioOn body.has-image .toolbar #bHome,
+  html.studioOn body.has-image .toolbar #btnUndo,html.studioOn body.has-image .toolbar #btnRedo{font-size:0 !important;line-height:0;width:34px;height:34px;padding:0;border-radius:8px;border:1px solid var(--st-hair);background:var(--st-raise);gap:0}
+  html.studioOn body.has-image .toolbar .filelabel>span,html.studioOn body.has-image .toolbar #bHome>span,html.studioOn body.has-image .toolbar #bHome>svg{display:none}
+  html.studioOn body.has-image .toolbar .filelabel::before,html.studioOn body.has-image .toolbar #bHome::before,
+  html.studioOn body.has-image .toolbar #btnUndo::before,html.studioOn body.has-image .toolbar #btnRedo::before{content:'';flex:none;width:18px !important;height:18px !important;margin:0;position:static;border-radius:0;filter:none !important;background:currentColor !important;background-color:currentColor !important;
+    -webkit-mask:var(--ic) center/contain no-repeat;mask:var(--ic) center/contain no-repeat}
+  html.studioOn body.has-image .toolbar #bHome{--ic:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='none' stroke='black' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 4l-6 6 6 6'/%3E%3C/svg%3E");order:2}
+  html.studioOn body.has-image .toolbar .filelabel{--ic:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='none' stroke='black' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M10 4v12M4 10h12'/%3E%3C/svg%3E");order:1}
+  html.studioOn body.has-image .toolbar #btnUndo{--ic:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='none' stroke='black' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M7 4L3 8l4 4M3 8h8a5 5 0 010 10'/%3E%3C/svg%3E");margin-left:auto;border-radius:8px 3px 3px 8px;margin-right:-4px}
+  html.studioOn body.has-image .toolbar #btnRedo{--ic:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='none' stroke='black' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M13 4l4 4-4 4M17 8H9a5 5 0 000 10'/%3E%3C/svg%3E");border-radius:3px 8px 8px 3px}
+  html.studioOn body.has-image #studioFile{display:flex;align-items:baseline;gap:10px;order:4;margin-left:10px;min-width:0;white-space:nowrap;overflow:hidden;font:500 13px/1 ui-sans-serif,system-ui,sans-serif;color:var(--st-text)}
+  html.studioOn body.has-image #studioFile .sfN{overflow:hidden;text-overflow:ellipsis;max-width:34vw}
+  html.studioOn body.has-image #studioFile small{font:400 11.5px/1 ui-sans-serif,system-ui,sans-serif;color:var(--st-faint)}
+  html.studioOn body.has-image .toolbar .ptTools{margin-left:12px;gap:4px;order:12}
+  html.studioOn body.has-image .toolbar .ptIconBtn{width:34px;height:34px;border-radius:8px;border:1px solid var(--st-hair);background:var(--st-raise);font-size:15px}
+  html.studioOn body.has-image .toolbar .ptIconBtn:hover,html.studioOn body.has-image .toolbar #bHome:hover,html.studioOn body.has-image .toolbar .filelabel:hover,
+  html.studioOn body.has-image .toolbar #btnUndo:hover,html.studioOn body.has-image .toolbar #btnRedo:hover{background:var(--st-raise2);border-color:var(--st-hair2)}
+  html.studioOn body.has-image .toolbar #filterDbBtn{order:14;width:auto;height:34px;padding:0 13px 0 11px;gap:8px;margin-left:12px;border-radius:8px;border:1px solid var(--st-hair);background:var(--st-raise);color:var(--st-text);
+    font:500 13px/1 ui-sans-serif,system-ui,sans-serif;white-space:nowrap}
+  html.studioOn body.has-image .toolbar #filterDbBtn svg{width:18px;height:18px;color:var(--safelight)}
+  html.studioOn body.has-image .toolbar #filterDbBtn::after{content:'Filter database'}
+  html.studioOn body.has-image .toolbar #filterDbBtn:hover{background:var(--st-raise2);border-color:var(--st-hair2)}
+
+  /* ---- left panel ---- */
+  html.studioOn body.has-image #studioLeft{display:block;grid-column:1;grid-row:2;min-height:0;overflow-y:auto;overflow-x:hidden;background:var(--st-panel);border-right:1px solid var(--st-hair);
+    scrollbar-width:thin;scrollbar-color:var(--st-hair2) transparent;font:400 12.5px/1.4 ui-sans-serif,system-ui,sans-serif;color:var(--st-dim)}
+  #studioLeft details.stSec,#studioLeft #stChanHome > details{display:block;margin:0;padding:0;border:0;border-bottom:1px solid var(--st-hair);background:transparent;border-radius:0}
+  #studioLeft .stH,#studioLeft #stChanHome > details > summary{display:flex;align-items:center;gap:8px;height:34px;padding:0 14px;margin:0;list-style:none;cursor:pointer;
+    background:#101114;border-bottom:1px solid var(--st-hair);font:600 10.5px/1 ui-sans-serif,system-ui,sans-serif;letter-spacing:.13em;text-transform:uppercase;color:var(--st-dim)}
+  #studioLeft #stChanHome > details > summary .dS,#studioLeft #stChanHome > details > summary .dDot{display:none}
+  #studioLeft #stChanHome > details > summary .dT{font:inherit;letter-spacing:inherit;text-transform:inherit;color:inherit}
+  #studioLeft .stH::after,#studioLeft #stChanHome > details > summary::after,#studioLeft #stSpecPick > details > summary::before{display:none !important}
+  #studioLeft .stH::-webkit-details-marker,#studioLeft #stChanHome > details > summary::-webkit-details-marker{display:none}
+  #studioLeft .stH::before,#studioLeft #stChanHome > details > summary::before{content:'';width:0;height:0;border:4px solid transparent;border-left:5px solid var(--st-faint);border-right:0;transition:transform .15s}
+  #studioLeft details[open] > .stH::before,#studioLeft #stChanHome > details[open] > summary::before{transform:rotate(90deg)}
+  #studioLeft .stN{margin-left:auto;font:500 11px/1 var(--font-mono,ui-monospace,monospace);color:var(--st-faint);letter-spacing:0}
+  #studioLeft .stB,#studioLeft #stChanHome > details > .dBody{padding:12px 14px 14px}
+  #studioLeft .stNote{margin:6px 0 0;font-size:11px;line-height:1.4;color:var(--st-faint)}
+  #studioLeft #stSpecPick > details{border:0;background:transparent;margin:0 0 10px;padding:0}
+  #studioLeft #stSpecPick > details > summary{display:flex;align-items:center;gap:8px;height:34px;padding:0 10px;list-style:none;cursor:pointer;background:var(--st-raise);border:1px solid var(--st-hair2);border-radius:8px}
+  #studioLeft #stSpecPick > details > summary .dT{font:500 12.5px/1 ui-sans-serif,system-ui,sans-serif;color:var(--st-text);flex:none}
+  #studioLeft #stSpecPick > details > summary .dS{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:11.5px;color:var(--st-faint);text-align:right}
+  #studioLeft #stSpecPick > details > summary .dDot{display:none}
+  #studioLeft #stSpecPick > details > summary::after{content:'' !important;width:7px;height:7px;border:solid var(--st-dim);border-width:0 1.5px 1.5px 0;margin:0 3px 3px 4px;transform:rotate(45deg) !important;transition:transform .15s}
+  #studioLeft #stSpecPick > details[open] > summary::after{transform:rotate(-135deg) !important;margin-top:4px}
+  #studioLeft #stSpecPick > details[open] > summary{border-color:var(--safelight)}
+  #studioLeft #stSpecPick .dBody{padding:10px 0 0}
+  #studioLeft #stSpecPick .dBody > p.note{display:none}
+  #studioLeft #stSpecCv{display:block;width:100%;height:112px;border:1px solid var(--st-hair);border-radius:8px;background:#0a0b0d}
+  #studioLeft .stKey{display:flex;flex-wrap:wrap;align-items:center;gap:4px 12px;margin-top:8px;font-size:11px;color:var(--st-faint)}
+  #studioLeft .stKey i{display:inline-block;width:9px;height:3px;border-radius:2px;margin-right:5px;vertical-align:middle}
+  #studioLeft .stKey .f{background:var(--safelight)}#studioLeft .stKey .cr{background:#d63a3a}#studioLeft .stKey .cg{background:#6fae7f}#studioLeft .stKey .cb{background:#6f9fc7}
+  #studioLeft .stKey .u{background:#7a5ad6}#studioLeft .stKey .v{background:#6fae7f}#studioLeft .stKey .r{background:var(--safelight)}
+  #studioLeft .stKey em{flex-basis:100%;font-style:normal;margin-top:1px}
+  #studioLeft .stLead{margin:0 0 10px;font-size:13px;line-height:1.45;color:var(--st-text)}
+  #studioLeft .stCards{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;margin-bottom:12px}
+  #studioLeft .stCards div{background:var(--st-raise);border:1px solid var(--st-hair);border-radius:8px;padding:7px 4px 6px;text-align:center;min-width:0}
+  #studioLeft .stCards small{display:block;font-size:10px;letter-spacing:.04em;color:var(--st-faint);margin-bottom:4px;white-space:nowrap}
+  #studioLeft .stCards span{display:block;font:500 12px/1.1 var(--font-mono,ui-monospace,monospace);color:var(--st-text);white-space:nowrap}
+  #studioLeft .stComp{display:grid;gap:8px}
+  #studioLeft .stCR{display:grid;grid-template-columns:8px 12px minmax(0,1fr) 54px;align-items:center;gap:8px;color:var(--st-text)}
+  #studioLeft .stCR b{width:8px;height:8px;border-radius:50%}
+  #studioLeft .stBar{display:flex;height:6px;border-radius:3px;overflow:hidden;background:#0a0b0d}
+  #studioLeft .stBar i{display:block;height:100%}
+  #studioLeft .stBar .u{background:#7a5ad6}#studioLeft .stBar .v{background:#6fae7f}#studioLeft .stBar .r{background:var(--safelight)}
+  #studioLeft .stCP{font:400 11px/1 var(--font-mono,ui-monospace,monospace);color:var(--st-dim);text-align:right;white-space:nowrap}
+  #studioLeft .stHist{display:flex;flex-direction:column;max-height:240px;overflow-y:auto;margin:-12px -14px 0;padding:4px 0;scrollbar-width:thin;scrollbar-color:var(--st-hair2) transparent}
+  #studioLeft .stHI{display:grid;grid-template-columns:22px minmax(0,1fr);align-items:center;gap:6px;height:28px;padding:0 14px;border:0;border-left:3px solid transparent;border-radius:0;background:transparent;color:var(--st-dim);cursor:pointer;text-align:left;font:inherit}
+  #studioLeft .stHI i{font:400 11px/1 var(--font-mono,ui-monospace,monospace);font-style:normal;color:var(--st-faint);text-align:right}
+  #studioLeft .stHI span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  #studioLeft .stHI:hover{background:var(--st-raise)}
+  #studioLeft .stHI.on{background:var(--st-raise2);border-left-color:var(--safelight);color:var(--st-text)}
+  #studioLeft .stHI.fut{opacity:.5}
+  #studioLeft .stBtns{display:flex;gap:8px;margin-top:12px}
+  #studioLeft .stBtns button,#studioLeft .stWide{flex:1;height:32px;border:1px solid var(--st-hair2);border-radius:8px;background:var(--st-raise);color:var(--st-text);font:500 12.5px/1 ui-sans-serif,system-ui,sans-serif;cursor:pointer}
+  #studioLeft .stBtns button:hover,#studioLeft .stWide:hover{background:var(--st-raise2)}
+  #studioLeft .stWide{width:100%;border-color:var(--safelight)}
+
+  /* ---- right: one sticky head holds the histogram and the five tabs ---- */
+  html.studioOn body.has-image #reorderZone{padding:0 16px 56px}
+  html.studioOn body.has-image #studioHead{position:sticky;top:0;z-index:6;margin:0 -16px 4px;background:var(--st-panel);border-bottom:1px solid var(--st-hair)}
+  html.studioOn body.has-image #studioHead > #scopeDetails{position:static;margin:0;padding:12px 16px 10px;border:0;background:transparent}
+  html.studioOn body.has-image #studioHead > #dock{display:flex;flex-direction:row;align-items:stretch;justify-content:stretch;gap:0;position:static;grid-column:auto;padding:0;
+    background:#101114;border:0;border-top:1px solid var(--st-hair)}
+  html.studioOn body.has-image #studioHead > #dock button{flex:1;width:auto;height:50px;gap:4px;border-radius:0;font-size:10.5px;letter-spacing:.03em;background:transparent;box-shadow:none}
+  html.studioOn body.has-image #studioHead > #dock button svg{width:19px;height:19px}
+  html.studioOn body.has-image #studioHead > #dock button:hover{background:var(--st-raise)}
+  html.studioOn body.has-image #studioHead > #dock button.on{background:var(--st-panel);color:var(--st-text);box-shadow:none}
+  html.studioOn body.has-image #studioHead > #dock button.on svg{color:var(--safelight)}
+  html.studioOn body.has-image #studioHead > #dock button.on::before{left:14px;right:14px;top:auto;bottom:0;width:auto;height:2px;border-radius:2px 2px 0 0}
+  html.studioOn body.has-image #histogram{height:84px;border-radius:8px}
+
+  /* ---- modules: compact bars with the modified dot at the left ---- */
+  html.studioOn body.has-image #reorderZone summary.stepHdr{padding:14px 0 8px}
+
+  html.studioOn body.has-image #reorderZone .dGrp > summary,html.studioOn body.has-image #reorderZone .stepPanel > summary.stepHdr{display:flex;align-items:center;gap:10px;min-height:40px !important;padding:0 6px 0 2px !important}
+  html.studioOn body.has-image #reorderZone .dGrp > summary .dDot,html.studioOn body.has-image #reorderZone .stepPanel > summary .dDot{order:-1;opacity:1;width:8px;height:8px;background:transparent;border:1.5px solid #6b6962;box-sizing:border-box}
+  html.studioOn body.has-image #reorderZone .dGrp.mod > summary .dDot{background:var(--safelight);border-color:var(--safelight);box-shadow:0 0 8px var(--accent-glow)}
+  html.studioOn body.has-image #reorderZone .dGrp > summary .dT,html.studioOn body.has-image #reorderZone .stepPanel > summary.stepHdr,html.studioOn body.has-image #reorderZone .stepPanel > summary.stepHdr > span{font-size:13px !important;font-weight:500 !important;letter-spacing:0 !important;text-transform:none !important}
+  html.studioOn body.has-image #reorderZone .stepPanel > summary.stepHdr{color:var(--st-text);padding-top:0 !important;padding-bottom:0 !important}
+  html.studioOn body.has-image #reorderZone .stepPanel > summary.stepHdr button{width:28px;height:28px;min-height:0;padding:0;border-radius:8px}
+  html.studioOn body.has-image #reorderZone > [data-solo] > summary{display:none !important}
+  html.studioOn body.has-image .sl label{justify-content:flex-start;gap:4px}
+  html.studioOn body.has-image .sl label b{margin-left:auto}
+}
+@media (min-width:1000px) and (orientation:landscape), (min-width:1100px){
+  /* ---- the stage: the photo takes all the room there is ---- */
+  html.stNoL.studioOn body.has-image{grid-template-columns:0 minmax(0,1fr) var(--stR)}
+  html.stNoR.studioOn body.has-image{grid-template-columns:var(--stL) minmax(0,1fr) 0}
+  html.stNoL.stNoR.studioOn body.has-image{grid-template-columns:0 minmax(0,1fr) 0}
+  html.stNoL.studioOn body.has-image #studioLeft,html.stNoR.studioOn body.has-image #reorderZone{display:none !important}
+  html.studioOn body.has-image #previewSticky{padding:14px 16px 12px;background:radial-gradient(120% 90% at 50% 40%,#17181c 0%,var(--st-bg) 100%)}
+  html.studioOn body.has-image #previewWrap{border-radius:6px;box-shadow:0 0 0 1px var(--st-hair2),0 28px 70px -24px rgba(0,0,0,.75)}
+  html.studioOn body.has-image #preview,html.studioOn body.has-image #previewOrig{border-radius:6px}
+  html.studioOn body.has-image #cw > #cmpBar{width:min(440px,70%);padding:5px 16px;bottom:2px;column-gap:12px}
+  html.studioOn body.has-image #holdHint{bottom:52px}
+  .stTog{position:absolute;top:50%;width:16px;height:64px;margin-top:-32px;padding:0;border:1px solid var(--st-hair);background:var(--st-raise);color:var(--st-faint);cursor:pointer;z-index:14;
+    display:grid;place-items:center;opacity:.55;transition:opacity .15s,background .15s}
+  .stTog:hover{opacity:1;background:var(--st-raise2);color:var(--st-text)}
+  .stTog svg{width:10px;height:10px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+  #stTogL{left:0;border-left:0;border-radius:0 8px 8px 0}#stTogR{right:0;border-right:0;border-radius:8px 0 0 8px}
+  html.stNoL #stTogL svg,html.stNoR #stTogR svg{transform:scaleX(-1)}
+
+  /* ---- histogram head ---- */
+  html.studioOn body.has-image #studioHead > #scopeDetails{padding:12px 16px 10px}
+  html.studioOn body.has-image #scopeMeta{gap:6px;margin-top:8px}
+  html.studioOn body.has-image #scopeModeRow{margin:0 4px 0 0;gap:4px}
+  html.studioOn body.has-image #scopeModeRow button.btnGhostSmall{min-height:26px;height:26px;padding:0 11px;border-radius:6px;font-size:11.5px}
+  html.studioOn body.has-image #scopeMeta > label{position:relative;height:26px;padding:0 10px;border:1px solid var(--st-hair);border-radius:6px;background:var(--st-raise);font-size:11.5px;white-space:nowrap}
+  html.studioOn body.has-image #scopeMeta > label input[type=checkbox]{position:absolute;opacity:0;width:100%;height:100%;left:0;top:0;margin:0;cursor:pointer}
+  html.studioOn body.has-image #scopeMeta > label:has(input:checked){border-color:var(--safelight);color:var(--st-text)}
+  html.studioOn body.has-image #scopeMeta > label:has(input:focus-visible){outline:2px solid var(--safelight);outline-offset:1px}
+
+  /* ---- sliders: a real fill, from the centre on the ones that go both ways ---- */
+  html.studioOn body.has-image #reorderZone .sl:not(.wb) input[type=range]::-webkit-slider-runnable-track{height:4px !important;border-radius:2px !important;
+    background:linear-gradient(to right,var(--st-hair2) 0,var(--st-hair2) calc(var(--lo,0) * 1%),var(--safelight) calc(var(--lo,0) * 1%),var(--safelight) calc(var(--hi,var(--val,50)) * 1%),var(--st-hair2) calc(var(--hi,var(--val,50)) * 1%),var(--st-hair2) 100%) !important}
+  html.studioOn body.has-image #reorderZone .sl:not(.wb) input[type=range]::-moz-range-track{height:4px !important;border-radius:2px !important;background:var(--st-hair2) !important}
+  html.studioOn body.has-image #reorderZone .sl:not(.wb) input[type=range]::-moz-range-progress{height:4px;background:var(--safelight)}
+  html.studioOn body.has-image #reorderZone .sl:not(.wb) input[type=range]::-webkit-slider-thumb{width:14px !important;height:14px !important;margin-top:-5px !important;border-radius:50% !important;
+    background:#f1eee8 !important;border:0 !important;box-shadow:0 0 0 2px var(--st-panel),0 1px 6px rgba(0,0,0,.5) !important}
+  html.studioOn body.has-image #reorderZone .sl:not(.wb) input[type=range]::-moz-range-thumb{width:14px !important;height:14px !important;border-radius:50% !important;background:#f1eee8 !important;border:0 !important;box-shadow:0 0 0 2px var(--st-panel) !important}
+  html.studioOn body.has-image #reorderZone .sl:not(.wb) input[type=range]:hover::-webkit-slider-thumb{box-shadow:0 0 0 2px var(--st-panel),0 0 0 5px rgba(194,67,27,.35) !important}
+}
+@media (min-width:1000px) and (orientation:landscape), (min-width:1100px){
+  /* ---- one header style on both sides: small capitals on a darker bar, full width ---- */
+  html.studioOn body.has-image #reorderZone{padding:0 0 56px}
+  html.studioOn body.has-image #studioHead{margin:0 0 0}
+  html.studioOn body.has-image #reorderZone > .panel > *:not(summary):not(.dGrp):not(details),html.studioOn body.has-image #reorderZone > details > *:not(summary):not(.dGrp):not(details){margin-left:14px;margin-right:14px}
+  html.studioOn body.has-image #reorderZone .dGrp{border:0 !important;border-bottom:1px solid var(--st-hair) !important;margin:0 !important}
+  html.studioOn body.has-image #reorderZone .dGrp > summary,html.studioOn body.has-image #reorderZone .stepPanel > summary.stepHdr{height:34px;min-height:34px !important;padding:0 14px !important;background:#101114;border-bottom:1px solid var(--st-hair);gap:9px}
+  html.studioOn body.has-image #reorderZone .dGrp > summary .dT,html.studioOn body.has-image #reorderZone .stepPanel > summary.stepHdr,html.studioOn body.has-image #reorderZone .stepPanel > summary.stepHdr > span{
+    font:600 10.5px/1 ui-sans-serif,system-ui,sans-serif !important;letter-spacing:.13em !important;text-transform:uppercase !important;color:var(--st-dim) !important}
+  html.studioOn body.has-image #reorderZone .dGrp[open] > summary .dT{color:var(--st-text) !important}
+  html.studioOn body.has-image #reorderZone .dGrp > .dBody,html.studioOn body.has-image #reorderZone .dGrp > div:not(.dBody){padding:12px 14px 14px}
+  html.studioOn body.has-image #reorderZone .dGrp > summary::after{font-size:9px;color:var(--st-faint)}
+}
+@media (min-width:1000px) and (orientation:landscape), (min-width:1100px){
+  html.studioOn body.has-image #reorderZone .dGrp > .dBody,html.studioOn body.has-image #reorderZone .dGrp > div:not(.dBody){padding:8px 14px 12px}
+  html.studioOn body.has-image #reorderZone .dBody > .sl,html.studioOn body.has-image #reorderZone .dGrp > .sl{margin:0 0 8px !important;padding:0}
+  html.studioOn body.has-image #reorderZone .dBody .sl label{margin-bottom:5px}
+  html.studioOn body.has-image #reorderZone .dBody .sl input[type=range]{height:20px}
+}
+@media (min-width:1000px) and (orientation:landscape), (min-width:1100px){
+  html.studioOn body.has-image #reorderZone .wbSlim{margin:10px 14px 4px;padding:0 12px 4px}
+  html.studioOn body.has-image #reorderZone .wbSlim > .dGrp,html.studioOn body.has-image #reorderZone .wbSlim > #wbTempGrp{border:1px solid var(--st-hair) !important;border-radius:10px !important;margin:12px 0 8px !important;overflow:hidden;padding:0}
+  html.studioOn body.has-image #reorderZone .wbSlim > .dGrp > summary{border-bottom:0}
+  html.studioOn body.has-image #reorderZone .wbSlim > .dGrp[open] > summary{border-bottom:1px solid var(--st-hair)}
+}
+@media (min-width:1000px) and (orientation:landscape), (min-width:1100px){
+  html.studioOn body.has-image #reorderZone > .panel > summary button,html.studioOn body.has-image #reorderZone > .panel > summary .miniBtn{white-space:nowrap !important;flex:none}
+}
+@media (min-width:1000px) and (orientation:landscape), (min-width:1100px){
+  html.studioOn body.has-image #reorderZone > .panel > summary{gap:8px}
+  html.studioOn body.has-image #reorderZone > .panel > summary > *{margin-left:0 !important}
+  html.studioOn body.has-image #reorderZone > .panel > summary button{padding-left:10px !important;padding-right:10px !important;width:auto !important;min-width:34px;height:28px !important;font-size:12px !important;letter-spacing:0 !important;text-transform:none !important}
+  html.studioOn body.has-image #reorderZone > .panel > summary .stepHdr,html.studioOn body.has-image #reorderZone > .panel > summary > span:first-of-type{margin-right:auto}
+}
+@media (min-width:1000px) and (orientation:landscape), (min-width:1100px){
+  html.studioOn body.has-image #reorderZone > .panel > summary.stepHdr > :last-child{margin-left:auto !important}
+}
