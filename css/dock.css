@@ -1028,3 +1028,12 @@ html body:not(.has-video) #bVidTab, html.dockOn body.has-image:not(.has-video) .
   html.studioOn body.has-image #cmpBar#cmpBar #cmpRange::-webkit-slider-runnable-track{background:#4a4a50 !important;height:4px !important;border-radius:2px}
   html.studioOn body.has-image #cmpBar#cmpBar #cmpRange::-moz-range-track{background:#4a4a50 !important;height:4px !important;border-radius:2px}
 }
+/* Build 372: slimmer before/after pill */
+@media (min-width:1000px) and (orientation:landscape), (min-width:1100px){
+  html.studioOn body.has-image #cw > #cmpBar#cmpBar{width:min(330px,62%) !important;height:36px !important;padding:0 16px !important;bottom:14px !important;border-radius:18px !important;column-gap:10px !important;box-shadow:0 6px 18px rgba(0,0,0,.55) !important}
+  html.studioOn body.has-image #cmpBar#cmpBar .cmpBarLabels span{font-size:9.5px !important;letter-spacing:.12em !important}
+  html.studioOn body.has-image #cmpBar#cmpRange,html.studioOn body.has-image #cmpBar #cmpRange{height:18px}
+  html.studioOn body.has-image #cmpBar #cmpRange::-webkit-slider-thumb{width:16px !important;height:16px !important;border-width:2px !important;margin-top:-6px !important}
+  html.studioOn body.has-image #cmpBar#cmpBar #cmpRange::-webkit-slider-runnable-track{height:3px !important}
+  html.studioOn body.has-image #cmpBar#cmpBar #cmpRange::-moz-range-track{height:3px !important}
+}
