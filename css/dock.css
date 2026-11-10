@@ -1344,3 +1344,40 @@ html.dockOn body.has-image #exportSection .note,html.dockOn body.has-image #expo
 html.dockOn body.has-image #bDl.keyBtn{background:#d63a3a !important;border-color:#d63a3a !important;color:#fff !important;border-radius:12px !important}
 html.dockOn body.has-image #bDl.keyBtn svg{stroke:#fff}
 html.dockOn body.has-image #ffDetails button{min-height:44px !important;padding:0 18px !important;border:1px solid #2c2d33 !important;border-radius:10px !important;background:rgba(255,255,255,.025) !important;color:#e4e0d8 !important}
+
+/* Build 388: pop-ups in the studio style. The RAW decode card, messages. */
+#decodeTipVeil{background:rgba(5,6,8,.62) !important;-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)}
+#decodeTip#decodeTip{width:min(430px,calc(100vw - 32px));padding:24px 24px 20px;background:#141518;border:1px solid #2c2d33;border-top:1px solid #2c2d33;border-radius:16px;box-shadow:0 30px 80px -20px rgba(0,0,0,.8);font:400 13px/1.5 Inter,ui-sans-serif,system-ui,sans-serif;scrollbar-width:thin}
+#decodeTip#decodeTip #decodeTipT{font-size:17px;font-weight:600;letter-spacing:-.005em;color:#f1ede6}
+#decodeTip#decodeTip .dtFile{margin-top:4px;font:500 11.5px/1.3 ui-monospace,Menlo,monospace;color:#8a867d}
+#decodeTip#decodeTip .dtRow{margin-top:18px;padding-top:16px;border-top:1px solid #23242a}
+#decodeTip#decodeTip .dtLbl{font-size:13.5px;font-weight:500;color:#e4e0d8}
+#decodeTip#decodeTip .dtSeg{border:1px solid #2c2d33;border-radius:9px;padding:2px;background:#0d0e10;gap:2px}
+#decodeTip#decodeTip .dtSeg button{min-height:32px;padding:0 13px;border-radius:7px;color:#8a867d;font-weight:500;transition:background-color .16s ease,color .16s ease}
+#decodeTip#decodeTip .dtSeg button:hover{color:#e4e0d8}
+#decodeTip#decodeTip .dtSeg button[aria-pressed="true"]{background:#2a2b31;color:#f1ede6;box-shadow:none}
+#decodeTip#decodeTip .dtHint{margin-top:8px;font-size:12px;line-height:1.5;color:#7f7b73}
+#decodeTip#decodeTip .dtNever{margin-top:16px;color:#a8a49b}
+#decodeTip#decodeTip .dtNever input{-webkit-appearance:none;appearance:none;width:18px;height:18px;flex:none;border:1.5px solid #5a5852;border-radius:5px;background:transparent;display:inline-grid;place-content:center;cursor:pointer}
+#decodeTip#decodeTip .dtNever input::after{content:'';width:10px;height:5px;border:solid #f1ede6;border-width:0 0 2px 2px;transform:rotate(-45deg) translate(1px,-1px) scale(0)}
+#decodeTip#decodeTip .dtNever input:checked{border-color:#d63a3a;background:#d63a3a}
+#decodeTip#decodeTip .dtNever input:checked::after{transform:rotate(-45deg) translate(1px,-1px) scale(1)}
+#decodeTip#decodeTip .dtBtns{margin-top:20px;gap:10px}
+#decodeTip#decodeTip .dtBtns button{min-width:96px;min-height:44px;padding:0 20px;border:1px solid #3d4048;border-radius:10px;font:600 14px/1 Inter,ui-sans-serif,system-ui,sans-serif;transition:background-color .16s ease,border-color .16s ease}
+#decodeTip#decodeTip .dtBtns button:hover{border-color:#5a5852}
+#decodeTip#decodeTip .dtBtns button.dtOk{background:#d63a3a;border-color:#d63a3a;color:#fff}
+#decodeTip#decodeTip .dtBtns button.dtOk:hover{background:#e04a4a;border-color:#e04a4a}
+#decodeTip#decodeTip button:focus-visible{outline:2px solid rgba(214,58,58,.7);outline-offset:2px}
+#toast#toast{bottom:28px;padding:11px 18px;border:1px solid #2c2d33;border-left:1px solid #2c2d33;border-radius:10px;background:rgba(20,21,24,.94);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);box-shadow:0 14px 40px -12px rgba(0,0,0,.8);font:500 13px/1.4 Inter,ui-sans-serif,system-ui,sans-serif;color:#f1ede6;max-width:min(560px,calc(100vw - 32px))}
+/* the RAW decode progress card: larger, in the studio style, with the three stages drawn as three bars */
+#rawProg#rawProg{min-width:0;width:min(360px,calc(100vw - 32px));box-sizing:border-box;padding:20px 22px 20px;border:1px solid #2c2d33;border-radius:16px;background:#141518;color:#f1ede6;font:400 13px/1.45 Inter,ui-sans-serif,system-ui,sans-serif;box-shadow:0 30px 80px -20px rgba(0,0,0,.85),0 0 0 100vmax rgba(5,6,8,.5)}
+#rawProg#rawProg .rpStage{font-size:15px;font-weight:600}
+#rawProg#rawProg .rpTime{opacity:1;color:#8a867d;font:500 12px/1.6 ui-monospace,Menlo,monospace}
+#rawProg#rawProg .rpSteps{opacity:1;color:#8a867d;font-size:12px;margin-top:3px}
+#rawProg#rawProg .rpBar{display:none}
+#rawProg .rpSeg{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:16px}
+#rawProg .rpSeg i{display:block;height:4px;border-radius:2px;background:#2a2b31;position:relative;overflow:hidden}
+#rawProg[data-step="1"] .rpSeg i:nth-child(1),#rawProg[data-step="2"] .rpSeg i:nth-child(-n+2){background:#b9b5ac}
+#rawProg[data-step="0"] .rpSeg i:nth-child(1)::after,#rawProg[data-step="1"] .rpSeg i:nth-child(2)::after,#rawProg[data-step="2"] .rpSeg i:nth-child(3)::after{content:'';position:absolute;top:0;bottom:0;width:45%;border-radius:2px;background:#d63a3a;animation:rpSlide 1.2s ease-in-out infinite}
+@media (prefers-reduced-motion:reduce){#rawProg .rpSeg i::after{animation:none !important;left:0;width:100% !important;opacity:.7}}
+@media (min-width:1000px){html.studioOn body.has-image #toast#toast{bottom:66px}}

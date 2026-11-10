@@ -1775,7 +1775,7 @@ function rawProgStart(step, detail) {
   let el = $('rawProg');
   if (!el) {
     el = document.createElement('div'); el.id = 'rawProg'; el.setAttribute('role', 'status'); el.setAttribute('aria-live', 'polite');
-    el.innerHTML = '<div class="rpTop"><b class="rpStage"></b><span class="rpTime"></span></div><div class="rpSteps"></div><div class="rpBar"></div>';
+    el.innerHTML = '<div class="rpTop"><b class="rpStage"></b><span class="rpTime"></span></div><div class="rpSteps"></div><div class="rpBar"></div><div class="rpSeg" aria-hidden="true"><i></i><i></i><i></i></div>';
     document.body.appendChild(el);
   }
   if (!rawProgS || rawProgS.token !== loadToken) {
@@ -1783,6 +1783,7 @@ function rawProgStart(step, detail) {
     rawProgS = { token: loadToken, t0: performance.now(), iv: setInterval(rawProgTick, 250) };
   }
   rawProgS.step = step;
+  el.dataset.step = step;   // build 388: the three-part bar shows which stage this is
   el.querySelector('.rpStage').textContent = RAWPROG_STEPS[step] + '…';
   // two nodes so the page translator can match 'step N of 3' (an existing template); the detail (file or decoder name) stays as is
   const st = el.querySelector('.rpSteps'); st.textContent = '';

@@ -466,7 +466,7 @@ function stDialog(opts) {
     wrap.setAttribute('role', 'dialog'); wrap.setAttribute('aria-modal', 'true');
     wrap.style.cssText = 'position:fixed;inset:0;z-index:100000;display:flex;align-items:center;justify-content:center;padding:20px;background:rgba(5,6,8,.62);-webkit-backdrop-filter:blur(6px);backdrop-filter:blur(6px)';
     const card = document.createElement('div');
-    card.style.cssText = 'width:100%;max-width:380px;background:var(--bg,#141518);color:var(--paper,#eceae4);border:1px solid var(--line2,#3d4048);border-radius:16px;padding:22px 22px 18px;box-shadow:0 30px 80px -20px rgba(0,0,0,.7);font:500 15px/1.4 ui-sans-serif,system-ui,sans-serif';
+    card.style.cssText = 'width:100%;max-width:380px;background:#141518;color:var(--paper,#eceae4);border:1px solid #2c2d33;border-radius:16px;padding:22px 22px 18px;box-shadow:0 30px 80px -20px rgba(0,0,0,.7);font:500 15px/1.4 ui-sans-serif,system-ui,sans-serif';
     const h = document.createElement('div'); h.textContent = opts.title; h.style.cssText = 'font-weight:600;font-size:16px;margin-bottom:' + (opts.input ? '14px' : '8px');
     card.appendChild(h);
     if (opts.message) { const m = document.createElement('div'); m.textContent = opts.message; m.style.cssText = 'color:var(--paper-dim,#a3a097);font-size:13.5px;margin-bottom:16px;white-space:pre-wrap'; card.appendChild(m); }
@@ -480,7 +480,7 @@ function stDialog(opts) {
     }
     const row = document.createElement('div'); row.style.cssText = 'display:flex;gap:10px;justify-content:flex-end';
     const mk = (label, primary) => { const b = document.createElement('button'); b.type = 'button'; b.textContent = label;
-      b.style.cssText = 'min-width:92px;height:44px;padding:0 20px;border-radius:999px;cursor:pointer;font:600 14px ui-sans-serif,system-ui,sans-serif;' + (primary ? 'border:none;color:#fff;background:linear-gradient(180deg,#f0702f,#c9461a)' : 'border:1px solid var(--line2,#3d4048);background:transparent;color:var(--paper,#eceae4)'); return b; };
+      b.style.cssText = 'min-width:92px;height:44px;padding:0 20px;border-radius:10px;cursor:pointer;font:600 14px ui-sans-serif,system-ui,sans-serif;' + (primary ? 'border:none;color:#fff;background:#d63a3a' : 'border:1px solid var(--line2,#3d4048);background:transparent;color:var(--paper,#eceae4)'); return b; };
     const cancel = mk(opts.cancelLabel || 'Cancel', false), ok = mk(opts.okLabel || 'OK', true);
     row.appendChild(cancel); row.appendChild(ok); card.appendChild(row); wrap.appendChild(card);
     const prevFocus = document.activeElement;
