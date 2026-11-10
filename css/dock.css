@@ -1158,3 +1158,30 @@ html body:not(.has-video) #bVidTab, html.dockOn body.has-image:not(.has-video) .
  #emptyStateGroup#emptyStateGroup.lab #landingLinks a.labTool .flTitle{color:#e4e0d8 !important;font-weight:500 !important}
  #emptyStateGroup#emptyStateGroup.lab .labGo.ltPrompt .ltCmd{text-align:center;display:block}
 }
+
+/* Build 383: right panel calmer. Section headers lose their heavy bars, tabs and header icons share one weight */
+@media (min-width:1000px){
+  html.studioOn body.has-image #reorderZone#reorderZone .dGrp > summary,html.studioOn body.has-image #reorderZone#reorderZone .stepPanel > summary.stepHdr,html.studioOn body.has-image #reorderZone#reorderZone details > summary.secHead{
+    background:transparent !important;border:0 !important;border-top:1px solid var(--st-hair) !important;box-shadow:none !important;height:40px !important;min-height:40px !important;padding:0 16px !important}
+  html.studioOn body.has-image #reorderZone#reorderZone .dGrp{border:0 !important;background:transparent !important}
+  html.studioOn body.has-image #reorderZone#reorderZone .dGrp > summary .dT,html.studioOn body.has-image #reorderZone#reorderZone .stepPanel > summary.stepHdr,html.studioOn body.has-image #reorderZone#reorderZone .stepPanel > summary.stepHdr > span{
+    font:600 11.5px/1 ui-sans-serif,system-ui,sans-serif !important;letter-spacing:.11em !important;text-transform:uppercase !important;color:#b9b5ac !important}
+  html.studioOn body.has-image #reorderZone#reorderZone .dGrp[open] > summary .dT,html.studioOn body.has-image #reorderZone#reorderZone .stepPanel[open] > summary.stepHdr > span{color:#f1ede6 !important}
+  html.studioOn body.has-image #reorderZone#reorderZone .dGrp > summary:hover .dT{color:#f1ede6 !important}
+  /* one thin chevron, turning when open, in place of the filled triangles */
+  html.studioOn body.has-image #reorderZone#reorderZone .dGrp > summary::after{content:'' !important;width:6px !important;height:6px !important;border:solid #6f6c66 !important;border-width:0 1.5px 1.5px 0 !important;margin:0 4px 3px 8px !important;font-size:0 !important;transform:rotate(45deg) !important;transition:transform .16s ease,border-color .16s ease !important}
+  html.studioOn body.has-image #reorderZone#reorderZone .dGrp[open] > summary::after{transform:rotate(-135deg) !important;margin-bottom:-1px !important;border-color:#b9b5ac !important}
+  /* the little state ring: smaller and quieter until the group has something changed in it */
+  html.studioOn body.has-image #reorderZone#reorderZone .dGrp > summary .dDot{width:7px !important;height:7px !important;border-width:1.5px !important;border-color:#55534e !important}
+  /* sliders: slimmer track, softer thumb, readout without the dotted underline until hovered */
+  html.studioOn body.has-image #reorderZone#reorderZone .sl:not(.wb) input[type=range]::-webkit-slider-runnable-track{height:3px !important}
+  html.studioOn body.has-image #reorderZone#reorderZone .sl label b{text-decoration:none !important;border-bottom:1px dotted transparent !important;transition:border-color .16s ease}
+  html.studioOn body.has-image #reorderZone#reorderZone .sl label b:hover{border-bottom-color:#8a867d !important}
+  html.studioOn body.has-image #reorderZone#reorderZone .sl label{font-size:13px;color:#a8a49b}
+  /* icons: the tab icons and the top-bar icons at one size and weight */
+  #dock button svg,.toolbar .stHdrTog svg,.toolbar button svg{stroke-width:1.6 !important}
+  #dock button svg{width:20px;height:20px}
+  html.studioOn body.has-image #reorderZone#reorderZone .stepPanel > summary .stepArrow{font-size:9px !important;color:#6f6c66 !important}
+  html.studioOn body.has-image #reorderZone#reorderZone .stepPanel > summary .stepChip{display:none !important}
+  html.studioOn body.has-image #exportSection#exportSection > summary.secHead,html.studioOn body.has-image #exportSection#exportSection > summary.secHead > span{color:#b9b5ac !important}
+}
