@@ -1120,3 +1120,41 @@ html body:not(.has-video) #bVidTab, html.dockOn body.has-image:not(.has-video) .
   html.studioOn body.has-image details[open] > :not(summary){animation:stOpen .18s ease both}
 }
 @media (prefers-reduced-motion:reduce){html.studioOn body.has-image *{animation:none !important;transition:none !important}}
+
+/* Build 382: landing page, desktop: a real drop zone and matching secondary rows */
+@media (min-width:1000px){
+ /* drop zone */
+ #emptyStateGroup#emptyStateGroup.lab .labTerm{display:flex !important;flex-direction:column;gap:10px;align-items:stretch}
+ #emptyStateGroup#emptyStateGroup.lab .labGo.ltPrompt{display:flex !important;flex-direction:column;align-items:center;justify-content:center;gap:6px;height:150px !important;border:1.5px dashed rgba(255,255,255,.22) !important;border-radius:14px !important;background:rgba(255,255,255,.02) !important;color:#f1ede6 !important;cursor:pointer;transition:border-color .16s,background .16s}
+ #emptyStateGroup#emptyStateGroup.lab .labGo.ltPrompt:hover{border-color:#d63a3a !important;background:rgba(214,58,58,.06) !important}
+ #emptyStateGroup#emptyStateGroup.lab .labGo.ltPrompt .ltCmd{font:500 20px/1.1 Inter,system-ui,sans-serif !important;letter-spacing:0 !important;text-transform:none !important}
+ #emptyStateGroup#emptyStateGroup.lab .labGo.ltPrompt::after{content:'or drop a photo here';font:400 13px/1 Inter,system-ui,sans-serif;color:#8a867d}
+ #emptyStateGroup#emptyStateGroup.lab .labFmtChip{margin-top:12px;text-align:left !important;font:500 11.5px/1 ui-monospace,Menlo,monospace;letter-spacing:.08em;color:#8a867d}
+ /* secondary rows: one style */
+ #emptyStateGroup#emptyStateGroup.lab #triStart,#emptyStateGroup#emptyStateGroup.lab #plGo{display:flex !important;align-items:center;justify-content:space-between;width:100%;height:50px;padding:0 16px !important;border:1px solid rgba(255,255,255,.12) !important;border-radius:10px !important;background:rgba(255,255,255,.02) !important;color:#e4e0d8 !important;font:500 14px/1 Inter,system-ui,sans-serif !important;text-align:left !important;cursor:pointer}
+ #emptyStateGroup#emptyStateGroup.lab #triStart:hover,#emptyStateGroup#emptyStateGroup.lab #plGo:hover{border-color:rgba(255,255,255,.3) !important;background:rgba(255,255,255,.05) !important}
+ #emptyStateGroup#emptyStateGroup.lab #triStart::after,#emptyStateGroup#emptyStateGroup.lab #plGo::after{content:'\2192';color:#8a867d}
+ #emptyStateGroup#emptyStateGroup.lab #landingLinks a.labTool{display:flex !important;align-items:center;justify-content:space-between;height:50px;padding:0 16px !important;border:1px solid rgba(255,255,255,.12) !important;border-radius:10px !important;background:rgba(255,255,255,.02) !important;color:#e4e0d8 !important;text-align:left !important;text-decoration:none}
+ #emptyStateGroup#emptyStateGroup.lab #landingLinks a.labTool .flTitle{display:flex !important;width:100%;justify-content:space-between !important;font:500 14px/1 Inter,system-ui,sans-serif !important}
+
+ #emptyStateGroup#emptyStateGroup.lab #landingLinks a.labTool .flArrow{display:inline !important;color:#8a867d}
+ #emptyStateGroup#emptyStateGroup.lab #landingLinks a.labTool .flTitle::after,#emptyStateGroup#emptyStateGroup.lab #triStart .triDots,#emptyStateGroup#emptyStateGroup.lab #plGo::before{display:none !important}
+ #emptyStateGroup#emptyStateGroup.lab .labTerm{margin-bottom:6px}
+
+ #emptyStateGroup#emptyStateGroup.lab .labTerm{display:contents !important}
+ #emptyStateGroup#emptyStateGroup.lab #dropzone .labPanel{display:flex !important;flex-direction:column !important;gap:10px !important;height:auto !important}
+ #emptyStateGroup#emptyStateGroup.lab .labGo.ltPrompt{order:1}
+ #emptyStateGroup#emptyStateGroup.lab .labLoadRow{order:2;margin:0 !important;height:auto !important}
+ #emptyStateGroup#emptyStateGroup.lab .labFmtChip{height:auto !important;margin:2px 0 6px !important;padding:0 !important;justify-content:flex-start !important}
+ #emptyStateGroup#emptyStateGroup.lab #triStart{order:3;margin:0 !important}
+ #emptyStateGroup#emptyStateGroup.lab .labGo.ltPrompt::after{display:block !important}
+ #emptyStateGroup#emptyStateGroup.lab #landingLinks a.labTool{flex-direction:row !important}
+ #emptyStateGroup#emptyStateGroup.lab #triStart > *{--x:1}
+
+ #emptyStateGroup#emptyStateGroup.lab #triStart::after,#emptyStateGroup#emptyStateGroup.lab #plGo::after{position:static !important;width:auto !important;height:auto !important;background:none !important;border-radius:0 !important;box-shadow:none !important;animation:none !important;margin:0 !important;font-size:14px}
+ #emptyStateGroup#emptyStateGroup.lab .labGo.ltPrompt .ltCmd::after{content:'or drop a photo here';display:block;margin-top:8px;font:400 13px/1 Inter,system-ui,sans-serif;color:#8a867d;text-align:center}
+ #emptyStateGroup#emptyStateGroup.lab #landingLinks{margin-top:10px !important}
+
+ #emptyStateGroup#emptyStateGroup.lab #landingLinks a.labTool .flTitle{color:#e4e0d8 !important;font-weight:500 !important}
+ #emptyStateGroup#emptyStateGroup.lab .labGo.ltPrompt .ltCmd{text-align:center;display:block}
+}
