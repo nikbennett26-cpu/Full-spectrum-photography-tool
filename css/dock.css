@@ -813,7 +813,7 @@ html body:not(.has-video) #bVidTab, html.dockOn body.has-image:not(.has-video) .
   html.studioOn body.has-image .toolbar .filelabel::before,html.studioOn body.has-image .toolbar #bHome::before,
   html.studioOn body.has-image .toolbar #btnUndo::before,html.studioOn body.has-image .toolbar #btnRedo::before{content:'';flex:none;width:18px !important;height:18px !important;margin:0;position:static;border-radius:0;filter:none !important;background:currentColor !important;background-color:currentColor !important;
     -webkit-mask:var(--ic) center/contain no-repeat;mask:var(--ic) center/contain no-repeat}
-  html.studioOn body.has-image .toolbar #bHome{--ic:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='none' stroke='black' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 4l-6 6 6 6'/%3E%3C/svg%3E");order:2}
+  html.studioOn body.has-image .toolbar #bHome{--ic:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='none' stroke='black' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M3 9.5L10 3.5l7 6M5 8.5V16h3.5v-4.5h3V16H15V8.5'/%3E%3C/svg%3E");order:2}
   html.studioOn body.has-image .toolbar .filelabel{--ic:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='none' stroke='black' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M10 4v12M4 10h12'/%3E%3C/svg%3E");order:1}
   html.studioOn body.has-image .toolbar #btnUndo{--ic:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='none' stroke='black' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M7 4L3 8l4 4M3 8h8a5 5 0 010 10'/%3E%3C/svg%3E");margin-left:auto;border-radius:8px 3px 3px 8px;margin-right:-4px}
   html.studioOn body.has-image .toolbar #btnRedo{--ic:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='none' stroke='black' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M13 4l4 4-4 4M17 8H9a5 5 0 000 10'/%3E%3C/svg%3E");border-radius:3px 8px 8px 3px}
@@ -986,4 +986,11 @@ html body:not(.has-video) #bVidTab, html.dockOn body.has-image:not(.has-video) .
 }
 @media (min-width:1000px) and (orientation:landscape), (min-width:1100px){
   html.studioOn body.has-image #reorderZone > .panel > summary.stepHdr > :last-child{margin-left:auto !important}
+}
+@media (min-width:1000px) and (orientation:landscape), (min-width:1100px){
+  html.studioOn body.has-image .toolbar .filelabel,html.studioOn body.has-image .toolbar #bHome,html.studioOn body.has-image .toolbar #btnUndo,html.studioOn body.has-image .toolbar #btnRedo{display:inline-flex !important;align-items:center;justify-content:center;box-sizing:border-box}
+  html.studioOn body.has-image .toolbar .filelabel::before{margin:0 !important}
+}
+@media (min-width:1000px) and (orientation:landscape), (min-width:1100px){
+  html.studioOn body.has-image .toolbar .filelabel,html.studioOn body.has-image .toolbar #bHome,html.studioOn body.has-image .toolbar #btnUndo,html.studioOn body.has-image .toolbar #btnRedo{width:34px !important;height:34px !important;min-height:0 !important;align-self:center}
 }
