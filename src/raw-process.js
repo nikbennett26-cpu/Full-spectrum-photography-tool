@@ -1339,7 +1339,7 @@ async function loadFileInner(file) {
     try { const dock = document.documentElement.classList.contains('dockOn') || document.documentElement.classList.contains('studioOn');
       document.querySelectorAll(dock ? 'details.dGrp' : 'details.stepPanel, details.dGrp').forEach(d => { if (d.id !== 'resPanel' && d.id !== 'fmtGrp' && d.id !== 'exportSection') d.open = false; });
       /* build 377: on the desktop studio the first Looks group (Swap & mix) stays open, so the right panel opens filled */
-      if (document.documentElement.classList.contains('studioOn')) { const m = document.getElementById('matrixDetails'); if (m) m.open = true; } } catch (e) {}
+      if (document.documentElement.classList.contains('studioOn')) { for (const id of ['matrixDetails', 'sharpenGrp']) { const m = document.getElementById(id); if (m) m.open = true; } } } catch (e) {}
     undoStack = []; redoStack = []; preChangeSnapshot = null; undoBmps = []; redoBmps = []; preChangeBmp = null; refSource = undefined;
     if (typeof updateUndoButton === 'function') updateUndoButton();
     /* The interactive WB panel's own state (preWBM) is otherwise completely

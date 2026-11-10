@@ -237,8 +237,21 @@
   new MutationObserver(ms => { if (ms.some(m => m.target.matches && m.target.matches('input[type=range]') && !(m.oldValue || '').includes('--lo'))) fillSoon(); else if (ms.some(m => m.target.matches && m.target.matches('input[type=range]'))) fillSoon(); })
     .observe(document.getElementById('reorderZone') || document.body, { attributes: true, attributeFilter: ['style', 'value'], subtree: true });
 
+  /* Build 378: a visible zoom control on the photo (the mouse wheel already zooms; nothing on screen said so) */
+  function addZoom() {
+    const cw = $('cw'); if (!cw || $('stZoom')) return;
+    const d = document.createElement('div'); d.id = 'stZoom';
+    d.innerHTML = '<button type="button" id="stZm" aria-label="Zoom out" title="Zoom out">\u2212</button><button type="button" id="stZf" title="Fit the whole photo (double-click the photo)">Fit</button><button type="button" id="stZp" aria-label="Zoom in" title="Zoom in (or scroll over the photo)">+</button>';
+    cw.appendChild(d);
+    const mid = f => { const r = $('preview').getBoundingClientRect(); zoomAt(f, r.left + r.width / 2, r.top + r.height / 2); };
+    $('stZm').addEventListener('click', () => mid(1 / 1.5));
+    $('stZp').addEventListener('click', () => mid(1.5));
+    $('stZf').addEventListener('click', () => { zoom = 1; panX = panY = 0; applyZoom(); });
+    window.stZoomSync = z => { const f = $('stZf'); if (f) f.textContent = z <= 1.001 ? 'Fit' : (z < 10 ? z.toFixed(1) : Math.round(z)) + '\u00d7'; };
+    window.stZoomSync(zoom);
+  }
   window.studioLeftOn = function () {
-    panelsLoad(); addToggles(); fillAll();
+    panelsLoad(); addToggles(); addZoom(); fillAll();
     if (!built) build();
     const fd = $('filtersDetails'); if (fd) { park(fd, 'filters'); $('stSpecPick').appendChild(fd); }
     const cd = $('channelDetails'); if (cd) { park(cd, 'channels'); $('stChanHome').appendChild(cd); cd.classList.add('stSec'); }
@@ -246,7 +259,7 @@
   };
   window.studioLeftOff = function () {
     if (!built) return;
-    ['stTogL', 'stTogR', 'stHdrL', 'stHdrR'].forEach(id => { const b = $(id); if (b) b.remove(); });
+    ['stTogL', 'stTogR', 'stHdrL', 'stHdrR', 'stZoom'].forEach(id => { const b = $(id); if (b) b.remove(); });
     const fd = $('filtersDetails'); if (fd) unpark(fd, 'filters');
     const cd = $('channelDetails'); if (cd) { cd.classList.remove('stSec'); unpark(cd, 'channels'); }
   };

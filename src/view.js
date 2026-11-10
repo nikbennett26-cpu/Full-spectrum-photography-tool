@@ -1094,6 +1094,7 @@ function applyZoom() {
      horizontal gestures and pinch are claimed. Once zoomed in, every direction
      belongs to panning. */
   $('cw').style.touchAction = zoom === 1 ? 'pan-y' : 'none';
+  if (window.stZoomSync) window.stZoomSync(zoom);
 }
 function clampPan() {
   const pv = $('preview');

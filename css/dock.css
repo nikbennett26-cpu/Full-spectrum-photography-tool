@@ -1061,3 +1061,23 @@ html body:not(.has-video) #bVidTab, html.dockOn body.has-image:not(.has-video) .
   /* header: file name centred between the left and right tools */
   html.studioOn body.has-image .toolbar #studioFile{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);order:unset;margin:0;pointer-events:none;text-align:center}
 }
+
+/* Build 378: zoom control, export tab, tighter left panel */
+@media (min-width:1000px){
+  html.studioOn body.has-image #zoomBadge{display:none !important}
+  #stZoom{display:none}
+  html.studioOn body.has-image #stZoom{display:flex;position:absolute;right:14px;bottom:14px;z-index:12;height:36px;border-radius:18px;background:rgba(10,10,12,.84);border:1px solid var(--st-hair2);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);box-shadow:0 6px 18px rgba(0,0,0,.55);overflow:hidden}
+  #stZoom button{min-width:36px;padding:0 10px;border:0;background:none;color:var(--st-dim);font:500 15px/1 ui-sans-serif,system-ui,sans-serif;cursor:pointer}
+  #stZoom button#stZf{min-width:52px;font-size:12px;letter-spacing:.04em;border-left:1px solid var(--st-hair);border-right:1px solid var(--st-hair)}
+  #stZoom button:hover{color:var(--st-text);background:rgba(255,255,255,.06)}
+  /* Export tab: a section header like the others, and a button that fits the panel */
+  html.studioOn body.has-image #exportSection#exportSection > summary.secHead{font:600 11px/1 ui-sans-serif,system-ui,sans-serif !important;letter-spacing:.14em !important;text-transform:uppercase !important;color:var(--st-dim) !important;min-height:34px !important;padding:0 14px !important}
+  html.studioOn body.has-image #exportSection#exportSection > summary.secHead > span{text-transform:uppercase !important;letter-spacing:.14em !important;font:inherit !important}
+  html.studioOn body.has-image #bDl.keyBtn{width:calc(100% - 28px) !important;max-width:none !important;box-sizing:border-box !important;margin-left:14px !important;margin-right:14px !important}
+  /* left panel: a little tighter, so the Aerochrome section clears the fold on a laptop */
+  #studioLeft #stSpecCv{height:96px}
+  #studioLeft .stB,#studioLeft #stChanHome > details > .dBody{padding:10px 14px 12px}
+  #studioLeft .stLead{margin-bottom:8px}
+  #studioLeft .stCards{margin-bottom:10px}
+  #studioLeft .stComp{gap:6px}
+}
