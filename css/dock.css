@@ -1435,3 +1435,28 @@ html.studioOn body.has-image #reorderZone#reorderZone .pgrid .pb,html.dockOn bod
   /* the file line in the top bar ran under the undo buttons in narrow windows */
   html.studioOn body.has-image #studioFile{display:none}
 }
+
+/* Build 396: phone home page gets the desktop's menu rows (trichrome, filter database, planner) */
+@media (max-width:999px){
+  #emptyStateGroup#emptyStateGroup.lab #triStart,#emptyStateGroup#emptyStateGroup.lab #plGo,#emptyStateGroup#emptyStateGroup.lab #landingLinks a.labTool{display:flex !important;flex-direction:row !important;align-items:center;justify-content:space-between !important;width:100%;box-sizing:border-box;height:54px;min-height:0 !important;margin:0 !important;padding:0 16px !important;border:1px solid rgba(255,255,255,.12) !important;border-radius:12px !important;background:rgba(255,255,255,.025) !important;color:#e4e0d8 !important;font:500 15px/1 Inter,system-ui,sans-serif !important;text-align:left !important;text-decoration:none;cursor:pointer}
+  #emptyStateGroup#emptyStateGroup.lab #triStart:active,#emptyStateGroup#emptyStateGroup.lab #plGo:active,#emptyStateGroup#emptyStateGroup.lab #landingLinks a.labTool:active{background:rgba(255,255,255,.07) !important;border-color:rgba(255,255,255,.3) !important}
+  #emptyStateGroup#emptyStateGroup.lab #triStart::after,#emptyStateGroup#emptyStateGroup.lab #plGo::after{content:'\2192' !important;position:static !important;display:inline !important;width:auto !important;height:auto !important;margin:0 !important;background:none !important;border-radius:0 !important;box-shadow:none !important;animation:none !important;color:#8a867d;font-size:15px}
+  #emptyStateGroup#emptyStateGroup.lab #triStart .triDots,#emptyStateGroup#emptyStateGroup.lab #triStart .ltCaret,#emptyStateGroup#emptyStateGroup.lab #plGo .ltCaret,#emptyStateGroup#emptyStateGroup.lab #plGo::before,#emptyStateGroup#emptyStateGroup.lab #landingLinks a.labTool .flTitle::after{display:none !important}
+  #emptyStateGroup#emptyStateGroup.lab #landingLinks a.labTool .flTitle{display:flex !important;width:100%;align-items:center;justify-content:space-between !important;font:500 15px/1 Inter,system-ui,sans-serif !important;color:#e4e0d8 !important}
+  #emptyStateGroup#emptyStateGroup.lab #landingLinks a.labTool .flArrow{display:inline !important;color:#8a867d}
+  #emptyStateGroup#emptyStateGroup.lab #triStart{margin-top:22px !important}
+  #emptyStateGroup#emptyStateGroup.lab #landingLinks{margin:10px 0 0 !important;padding:0 !important}
+  #emptyStateGroup#emptyStateGroup.lab #planner{margin-top:10px !important;padding-top:0 !important}
+}
+
+/* Build 396: phone before/after control matches the desktop bar: one translucent pill, small caps labels, ring thumb */
+@media (max-width:999px){
+  html.dockOn body.has-image #previewSticky > #cmpBar#cmpBar{box-sizing:border-box;height:42px;margin:8px 12px 8px !important;padding:0 8px 0 16px !important;border:1px solid rgba(255,255,255,.1) !important;border-radius:21px !important;background:rgba(255,255,255,.035) !important;column-gap:12px !important}
+  html.dockOn body.has-image #cmpBar#cmpBar .cmpBarLabels span{font:600 10px/1 ui-sans-serif,system-ui,sans-serif !important;letter-spacing:.12em !important;text-transform:uppercase;color:#d9d5cc !important}
+  html.dockOn body.has-image #cmpBar#cmpBar #cmpRange{height:24px}
+  html.dockOn body.has-image #cmpBar#cmpBar #cmpRange::-webkit-slider-runnable-track{background:#4a4a50 !important;height:3px !important;border-radius:2px}
+  html.dockOn body.has-image #cmpBar#cmpBar #cmpRange::-moz-range-track{background:#4a4a50 !important;height:3px !important;border-radius:2px}
+  html.dockOn body.has-image #cmpBar#cmpBar #cmpRange::-webkit-slider-thumb{width:20px !important;height:20px !important;border:2px solid #efe9e2 !important;border-radius:50% !important;background:#0a0a0b !important;margin-top:-8.5px !important}
+  html.dockOn body.has-image #cmpBar#cmpBar #cmpRange::-moz-range-thumb{width:16px !important;height:16px !important;border:2px solid #efe9e2 !important;border-radius:50% !important;background:#0a0a0b !important}
+  html.dockOn body.has-image #cmpBar#cmpBar #btnScopesToggle{width:32px;height:32px;border:0 !important;border-radius:16px !important;background:none !important}
+}

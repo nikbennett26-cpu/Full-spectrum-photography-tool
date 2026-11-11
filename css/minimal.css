@@ -446,3 +446,42 @@ body.has-image #holdHint,body.has-image #cmpBar .cmpBarLabels span{font-size:11p
   body.fltPage #fShell#fShell .fb.on .fbadd{background:#d63a3a!important;border-color:#d63a3a!important;color:#fff!important}
   body.fltPage #fShell#fShell .fb:hover{background:rgba(255,255,255,.03)!important}
 }
+
+/* Build 396: filter database on a phone picks up the desktop look: rounded cards, pill chips, stat tiles, one-style buttons */
+@media (max-width:1099px){
+  body.fltPage #fShell#fShell #fChart,body.fltPage #fShell#fShell .panel{border:1px solid #23242a!important;border-radius:14px!important;background:rgba(255,255,255,.02)!important}
+  body.fltPage #fShell#fShell #filterSearch{height:44px!important;border:1px solid #2c2d33!important;border-radius:10px!important;background:rgba(255,255,255,.03)!important}
+  body.fltPage #fShell#fShell #filterSearch:focus{border-color:#d63a3a!important;outline:0}
+  body.fltPage #fShell#fShell #advToggle{height:44px!important;border:1px solid #2c2d33!important;border-radius:10px!important;background:rgba(255,255,255,.025)!important;color:#c9c5bc!important}
+  body.fltPage #fShell#fShell .chiprow .chip{height:34px!important;padding:0 14px!important;border:1px solid #2c2d33!important;border-radius:999px!important;background:rgba(255,255,255,.025)!important;color:#c9c5bc!important;font:500 13px/1 Inter,ui-sans-serif,system-ui,sans-serif!important}
+  body.fltPage #fShell#fShell .chiprow .chip.on,body.fltPage #fShell#fShell .chiprow .chip[aria-pressed="true"]{border-color:rgba(214,58,58,.7)!important;background:rgba(214,58,58,.14)!important;color:#f1ede6!important}
+  body.fltPage #fShell#fShell #filterList{border:1px solid #23242a!important;border-radius:12px!important;overflow:hidden}
+  body.fltPage #fShell#fShell #filterList .grp{border:0!important;border-bottom:1px solid #1c1d21!important;border-radius:0!important}
+  body.fltPage #fShell#fShell #filterList .grp:last-child{border-bottom:0!important}
+  /* filter cards */
+  body.fltPage #fShell#fShell .fb{margin:0!important;padding:0!important;border:0!important;border-top:1px solid #1c1d21!important;border-radius:0!important;background:none!important}
+  body.fltPage #fShell#fShell .fb .fbrow{display:flex!important;align-items:center;gap:10px;min-height:56px;padding:8px 10px 8px 14px}
+  body.fltPage #fShell#fShell .fb .fbinfo{flex:1;min-width:0;display:grid;grid-template-columns:minmax(0,auto) auto;justify-content:start;align-items:center;column-gap:8px;row-gap:3px}
+  body.fltPage #fShell#fShell .fb .fbinfo b{font:500 14.5px/1.2 Inter,ui-sans-serif,system-ui,sans-serif!important;color:#e4e0d8;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  body.fltPage #fShell#fShell .fb .fbinfo small{grid-column:1/-1;font-size:12px!important;line-height:1.3!important;color:#7f7b73!important;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin:0!important}
+  body.fltPage #fShell#fShell .fb .fbconf{font:600 9.5px/1 ui-sans-serif,system-ui,sans-serif!important;letter-spacing:.06em;padding:3px 7px!important;border-radius:999px!important;justify-self:start;width:auto!important}
+  body.fltPage #fShell#fShell .fb .fbactions{display:flex!important;gap:6px;flex:none}
+  body.fltPage #fShell#fShell .fb .fbactions button{height:38px!important;min-height:38px!important;padding:0 12px!important;border:1px solid #2c2d33!important;border-radius:9px!important;background:rgba(255,255,255,.025)!important;color:#c9c5bc!important;font:500 13px/1 Inter,ui-sans-serif,system-ui,sans-serif!important}
+  body.fltPage #fShell#fShell .fb .fbactions .fbcurve{width:38px;padding:0!important;font-size:0!important}
+  body.fltPage #fShell#fShell .fb .fbactions .fbcurve::before{content:'\2248';font-size:16px}
+  body.fltPage #fShell#fShell .fb .fbactions .fbadd{border-color:#3d4048!important;color:#f1ede6!important}
+  body.fltPage #fShell#fShell .fb.on{background:rgba(214,58,58,.07)!important}
+  body.fltPage #fShell#fShell .fb.on .fbadd{background:#d63a3a!important;border-color:#d63a3a!important;color:#fff!important}
+  /* measurements as tiles, stack chips as pills */
+  body.fltPage #fShell#fShell #readout{gap:8px!important}
+  body.fltPage #fShell#fShell #readout .ro{padding:11px 12px 10px!important;border:1px solid #23242a!important;border-radius:12px!important;background:rgba(255,255,255,.02)!important;min-width:0}
+  body.fltPage #fShell#fShell #readout .ro .k{font:500 10.5px/1.2 ui-sans-serif,system-ui,sans-serif!important;letter-spacing:.08em!important;text-transform:uppercase;color:#8a867d!important}
+  body.fltPage #fShell#fShell #readout .ro .v{margin-top:6px;font:500 19px/1.15 Inter,ui-sans-serif,system-ui,sans-serif!important;color:#f1ede6!important;font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
+  body.fltPage #fShell#fShell .ssChip{border:1px solid #2c2d33!important;border-radius:999px!important;background:rgba(255,255,255,.04)!important;padding:5px 8px 5px 12px!important}
+  body.fltPage #fShell#fShell .fb .fbinfo{grid-template-columns:minmax(0,1fr) auto!important}
+  body.fltPage #fShell#fShell .fb .fbinfo b{white-space:normal}
+  body.fltPage #fShell#fShell .fb .fbactions .fbclear{width:38px;padding:0!important;font-size:0!important}
+  body.fltPage #fShell#fShell .fb .fbactions .fbclear::before{content:'\00d7';font-size:18px}
+  body.fltPage #fShell#fShell .grpHead .gcount{border-radius:999px!important;padding:3px 10px!important}
+  body.fltPage #fTabs#fTabs{background:rgba(10,10,12,.94)!important;-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);border-top:1px solid #23242a!important}
+}
