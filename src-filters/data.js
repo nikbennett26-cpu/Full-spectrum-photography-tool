@@ -1433,8 +1433,6 @@ const FILTERS=[
   same:'REAL DATA \u2014 Hoya\u2019s own datasheet table for this glass at 2.5mm (hoyaoptics.com/eo_pdf), read 2026-11-11; surface reflection is included, which is why it levels off near 90%. IR83N glass: 15% at 820nm, 50% at about 836nm, 83% by 860nm. Build 391: replaces a curve digitised from Hoya\u2019s series chart.'},
  {id:'hy_r85',g:'B9',n:'Hoya R85',d:'IR long-pass \u00b7 Hoya\u2019s own table (IR85N)',c:'#a34423',type:'absorptive',
   same:'REAL DATA \u2014 Hoya\u2019s own datasheet table for this glass at 2.5mm (hoyaoptics.com/eo_pdf), read 2026-11-11; surface reflection is included, which is why it levels off near 90%. IR85N glass: 16% at 840nm, 50% at about 855nm, 80% by 880nm. Build 391: replaces a curve digitised from Hoya\u2019s series chart, whose edge sat about 3nm early.'},
- {id:'hy_rm86',g:'B9',n:'Hoya RM86',d:'Deep IR long-pass',c:'#943c1e',
-  bands:[{lo:860,ls:6,T:.90}]},
  {id:'hy_rt830',g:'B9',n:'Hoya RT830',d:'Real chart \u00b7 IR long-pass, new addition',c:'#c04020',
   same:'REAL DATA \u2014 exact digitised curve from the same Hoya IR-series chart as the R/RM entries above. New '
    +'addition, not previously in this file at all \u2014 real 50%-point ~733nm, sitting between R72 (720nm) and '

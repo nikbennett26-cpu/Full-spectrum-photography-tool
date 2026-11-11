@@ -279,7 +279,6 @@ const PROV={
   hy_r80:{s:'hoya_ir_eo',m:'tab'},
   hy_r83:{s:'hoya_ir_eo',m:'tab'},
   hy_r85:{s:'hoya_ir_eo',m:'tab'},
-  hy_rm86:{m:'est'},
   hy_rt830:{s:'hoya_ir',m:'chart'},
   sch_wg345:{m:'est'},
   sch_wg360:{s:'schott_pdf',m:'tab'},
