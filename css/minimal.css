@@ -393,3 +393,56 @@ body.has-image #holdHint,body.has-image #cmpBar .cmpBarLabels span{font-size:11p
   body.fltPage #cookieBanner{left:auto!important;right:16px!important;bottom:16px!important;width:auto!important;border:1px solid #2c2d33!important;border-radius:12px!important;background:#141518!important;box-shadow:0 20px 50px -16px rgba(0,0,0,.8)!important}
   body.fltPage #cookieBanner#cookieBanner button#cookieAck{border-radius:8px!important}
 }
+
+/* Build 393: filter database, wide screen. Stack panel and large readouts under the chart, a labelled tool strip,
+   one-row filter cards. */
+@media (min-width:1100px){
+  /* 4. tool strip with words */
+  body.fltPage #fShell#fShell #fRail{display:flex!important;gap:8px!important;align-items:center;height:42px;padding:0!important;border:0!important;background:none!important}
+  body.fltPage #fShell#fShell #fRail .rk{display:inline-flex!important;flex-direction:row!important;align-items:center;gap:6px;width:auto!important;min-width:0!important;height:34px!important;padding:0 13px!important;border:1px solid #2c2d33!important;border-radius:8px!important;background:rgba(255,255,255,.025)!important;color:#c9c5bc!important}
+  body.fltPage #fShell#fShell #fRail .rk::after{content:attr(data-lbl)!important;display:inline!important;position:static!important;font:500 12.5px/1 Inter,ui-sans-serif,system-ui,sans-serif!important;letter-spacing:0!important;text-transform:none!important;color:inherit!important;opacity:1!important}
+  body.fltPage #fShell#fShell #fRail .rk .rkI{display:none!important}
+  body.fltPage #fShell#fShell #fRail #railEditor{display:none!important}
+  body.fltPage #fShell#fShell #fRail #railLog{padding:0 12px!important}
+  body.fltPage #fShell#fShell #fRail #railClear::after{content:'Clear stack'!important}
+  body.fltPage #fShell#fShell #fRail #railLog::after{content:'Log scale'!important}
+  body.fltPage #fShell#fShell #fRail #railZoomIn::after{content:'Zoom in'!important}
+  body.fltPage #fShell#fShell #fRail #railZoomOut::after{content:'Zoom out'!important}
+  body.fltPage #fShell#fShell #fRail #railExport{margin-left:auto}
+  body.fltPage #fShell#fShell #fRail #railExport::after{content:'Export PNG'!important}
+  body.fltPage #fShell#fShell #fRail .rk:hover{border-color:#5a5852!important;color:#f1ede6!important}
+  body.fltPage #fShell#fShell #fRail .rk[aria-pressed="true"]{border-color:rgba(214,58,58,.7)!important;background:rgba(214,58,58,.12)!important;color:#f1ede6!important}
+  /* 1 + 2. under the chart: the stack as a list on the left, the measurements as large tiles on the right */
+  body.fltPage #fShell#fShell #fChart{display:grid!important;grid-template-columns:minmax(260px,.8fr) minmax(0,1.6fr);grid-template-areas:"chart chart" "stack stats";gap:14px 18px;padding:14px!important}
+  body.fltPage #fShell#fShell #chartWrap{grid-area:chart}
+  body.fltPage #fShell#fShell #chart{height:max(320px,calc(100vh - 335px))!important}
+  body.fltPage #fShell#fShell #stickyStack{grid-area:stack;position:static!important;display:flex!important;flex-direction:column;align-items:stretch!important;gap:0!important;padding:0!important;border:1px solid #23242a!important;border-radius:12px!important;background:rgba(255,255,255,.02)!important;min-height:120px;max-height:210px;overflow:hidden;cursor:default}
+  body.fltPage #fShell#fShell #stickyStack::before{content:'Your stack';display:block;padding:11px 14px 9px;font:600 11.5px/1 ui-sans-serif,system-ui,sans-serif;letter-spacing:.11em;text-transform:uppercase;color:#b9b5ac;border-bottom:1px solid #23242a}
+  body.fltPage #fShell#fShell #stickyStack .ss-names{display:flex!important;flex-direction:column!important;flex:1!important;gap:0!important;overflow-y:auto!important;overflow-x:hidden!important;white-space:normal!important;scrollbar-width:thin}
+  body.fltPage #fShell#fShell #stickyStack .ss-names:empty::before{content:'No filters yet. Press + on any filter in the list to add it.';display:block;padding:14px;font:400 13px/1.5 Inter,ui-sans-serif,system-ui,sans-serif;color:#7f7b73}
+  body.fltPage #fShell#fShell .ssChip{display:flex!important;justify-content:space-between;align-items:center;height:36px;padding:0 8px 0 14px!important;border:0!important;border-bottom:1px solid #1c1d21!important;border-radius:0!important;background:none!important;font:500 13.5px/1 Inter,ui-sans-serif,system-ui,sans-serif!important;cursor:pointer}
+  body.fltPage #fShell#fShell .ssChip b{color:#e4e0d8!important;font-weight:500!important;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  body.fltPage #fShell#fShell .ssChip i{display:grid;place-content:center;width:26px;height:26px;border-radius:7px;font-size:16px!important;color:#8a867d!important}
+  body.fltPage #fShell#fShell .ssChip:hover{background:rgba(255,255,255,.035)!important}
+  body.fltPage #fShell#fShell .ssChip:hover i{background:rgba(214,58,58,.16);color:#f1ede6!important}
+  body.fltPage #fShell#fShell #ssStats{display:none!important}
+  body.fltPage #fShell#fShell #readout{grid-area:stats;display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px!important;margin:0!important;align-content:start}
+  body.fltPage #fShell#fShell #readout .ro{padding:13px 14px 12px!important;border:1px solid #23242a!important;border-radius:12px!important;background:rgba(255,255,255,.02)!important;min-width:0}
+  body.fltPage #fShell#fShell #readout .ro .k{font:500 11px/1.2 ui-sans-serif,system-ui,sans-serif!important;letter-spacing:.08em!important;text-transform:uppercase;color:#8a867d!important}
+  body.fltPage #fShell#fShell #readout .ro .v{margin-top:8px;font:500 24px/1.15 Inter,ui-sans-serif,system-ui,sans-serif!important;letter-spacing:-.01em;color:#f1ede6!important;font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
+  /* 5. filter cards: one row each */
+  body.fltPage #fShell#fShell .fb{padding:0!important;border:0!important;border-bottom:1px solid #1c1d21!important;border-radius:0!important;background:none!important}
+  body.fltPage #fShell#fShell .fb .fbrow{display:flex!important;align-items:center;gap:10px;min-height:46px;padding:5px 8px 5px 12px}
+  body.fltPage #fShell#fShell .fb .fbinfo{flex:1;min-width:0;display:grid;grid-template-columns:minmax(0,auto) auto;justify-content:start;align-items:center;column-gap:8px;row-gap:2px}
+  body.fltPage #fShell#fShell .fb .fbinfo b{font:500 13.5px/1.2 Inter,ui-sans-serif,system-ui,sans-serif!important;color:#e4e0d8;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  body.fltPage #fShell#fShell .fb .fbinfo small{grid-column:1/-1;font-size:11.5px!important;line-height:1.3!important;color:#7f7b73!important;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin:0!important}
+  body.fltPage #fShell#fShell .fb .fbconf{font:600 9.5px/1 ui-sans-serif,system-ui,sans-serif!important;letter-spacing:.06em;padding:3px 7px!important;border-radius:999px!important;justify-self:start;width:auto!important}
+  body.fltPage #fShell#fShell .fb .fbactions{display:flex!important;gap:6px;flex:none}
+  body.fltPage #fShell#fShell .fb .fbactions button{height:30px!important;min-height:30px!important;padding:0 10px!important;border:1px solid #2c2d33!important;border-radius:8px!important;background:rgba(255,255,255,.025)!important;color:#c9c5bc!important;font:500 12px/1 Inter,ui-sans-serif,system-ui,sans-serif!important}
+  body.fltPage #fShell#fShell .fb .fbactions .fbcurve{width:30px;padding:0!important;font-size:0!important}
+  body.fltPage #fShell#fShell .fb .fbactions .fbcurve::before{content:'\2248';font-size:15px}
+  body.fltPage #fShell#fShell .fb .fbactions .fbadd{border-color:#3d4048!important;color:#f1ede6!important}
+  body.fltPage #fShell#fShell .fb.on{background:rgba(214,58,58,.07)!important}
+  body.fltPage #fShell#fShell .fb.on .fbadd{background:#d63a3a!important;border-color:#d63a3a!important;color:#fff!important}
+  body.fltPage #fShell#fShell .fb:hover{background:rgba(255,255,255,.03)!important}
+}

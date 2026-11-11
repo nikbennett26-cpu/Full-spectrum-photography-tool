@@ -65,7 +65,9 @@ function _drawChartInner(dprOverride){
      dropped, which is a black chart. Above 2x the difference is not visible
      on a line chart anyway. The PNG export passes dprOverride and is
      deliberately exempt, since that output is meant to be zoomed into. */
-  const dpr=dprOverride||Math.min(window.devicePixelRatio||1,chartDprCap);
+  /* Build 393: only a real number counts as an override. The window's resize listener used to call draw with its Event
+     object, which made the size NaN, the canvas 0x0 and the chart blank until the next interaction. */
+  const dpr=(typeof dprOverride==='number'&&dprOverride>0?dprOverride:0)||Math.min(window.devicePixelRatio||1,chartDprCap);
   /* If the element hasn't been laid out yet, rect.width is 0 and the old code
      clamped the canvas to 1x1 — which the browser then stretched to full size
      as a solid black box that only fixed itself if some later event happened

@@ -652,7 +652,7 @@ function updateAoiNote(fs){
     ' \u2014 coatings vary, so treat this as indicative. Broadening and peak loss off-axis are not modelled.';
   note.style.display='';
 }
-window.addEventListener('resize',draw);
+window.addEventListener('resize',()=>draw());
 window.addEventListener('resize',()=>{if(typeof crgbUpdate==='function')crgbUpdate();});
 
 /* The window 'resize' event alone isn't enough on a phone: the chart also
