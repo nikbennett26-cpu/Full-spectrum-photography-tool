@@ -717,10 +717,9 @@ void main(){
         if (this.contextLost || gl.isContextLost()) { job.sync = null; cb(null); return; }
         let st;
         try { st = gl.clientWaitSync(sync, 0, 0); } catch (e) { st = gl.WAIT_FAILED; }
-        if (st === gl.TIMEOUT_EXPIRED) {
+        if (st === gl.TIMEOUT_EXPIRED) {                              // still drawing: look again (less often once it is clearly a slow frame)
           const age = performance.now() - t0;
-          if (age < 30000) { setTimeout(poll, age < 120 ? 4 : 16); return; }
-          gl.deleteSync(sync); job.sync = null; return;               // a frame that never finished: drop this one quietly
+          setTimeout(poll, age < 120 ? 4 : age < 1000 ? 16 : 100); return;
         }
         gl.deleteSync(sync); job.sync = null;
         if (st === gl.WAIT_FAILED) { this._rsaFail = true; cb(null); return; }

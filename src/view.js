@@ -108,7 +108,7 @@ function drawHistogram() {
     /* one read in flight at a time: on a slow GPU a newer request would otherwise replace the older one before it
        finished, again and again, and the histogram would not move until the edits stopped. Instead the next read is
        started as soon as the current one lands. */
-    if (histInFlight && performance.now() - histInFlight < 5000) { histAgain = true; if (clipOn) engine.render(currentParams()); return; }
+    if (histInFlight && performance.now() - histInFlight < 60000) { histAgain = true; if (clipOn) engine.render(currentParams()); return; }
     if (!engine.hasPreserveBuffer && !clipOn) engine.render(currentParams());
     let failed = false;
     histInFlight = performance.now(); histAgain = false;
