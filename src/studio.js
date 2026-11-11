@@ -324,16 +324,26 @@
   }
   /* Build 378: a visible zoom control on the photo (the mouse wheel already zooms; nothing on screen said so) */
   function addZoom() {
-    const cw = $('cw'); if (!cw || $('stZoom')) return;
-    const d = document.createElement('div'); d.id = 'stZoom';
-    d.innerHTML = '<button type="button" id="stZm" aria-label="Zoom out" title="Zoom out">\u2212</button><button type="button" id="stZf" title="Fit the whole photo (double-click the photo)">Fit</button><button type="button" id="stZp" aria-label="Zoom in" title="Zoom in (or scroll over the photo)">+</button>';
+    /* build 395: one floating bar at the bottom of the photo: compare, view, zoom. The compare control itself stays where
+       the layout code keeps it (#cmpBar) and is laid over the bar's first segment; the view buttons drive the real ones in
+       the Looks tab, so the two always agree. */
+    const cw = $('cw'); if (!cw || $('stBar')) return;
+    const d = document.createElement('div'); d.id = 'stBar';
+    d.innerHTML = '<div class="stBarCmp" aria-hidden="true"></div>'
+      + '<div class="stBarG" id="stView" role="group" aria-label="View">' + [['0', 'Photo'], ['1', 'NDVI'], ['2', 'NGB'], ['3', 'IR map']].map(v => '<button type="button" data-v="' + v[0] + '">' + v[1] + '</button>').join('') + '</div>'
+      + '<div class="stBarG" id="stZoom" role="group" aria-label="Zoom"><button type="button" id="stZm" aria-label="Zoom out" title="Zoom out">−</button><button type="button" id="stZf" title="Fit the whole photo (double-click the photo)">Fit</button><button type="button" id="stZp" aria-label="Zoom in" title="Zoom in (or scroll over the photo)">+</button></div>';
     cw.appendChild(d);
     const mid = f => { const r = $('preview').getBoundingClientRect(); zoomAt(f, r.left + r.width / 2, r.top + r.height / 2); };
     $('stZm').addEventListener('click', () => mid(1 / 1.5));
     $('stZp').addEventListener('click', () => mid(1.5));
     $('stZf').addEventListener('click', () => { zoom = 1; panX = panY = 0; applyZoom(); });
-    window.stZoomSync = z => { const f = $('stZf'); if (f) f.textContent = z <= 1.001 ? 'Fit' : (z < 10 ? z.toFixed(1) : Math.round(z)) + '\u00d7'; };
+    window.stZoomSync = z => { const f = $('stZf'); if (f) f.textContent = z <= 1.001 ? 'Fit' : (z < 10 ? z.toFixed(1) : Math.round(z)) + '×'; };
     window.stZoomSync(zoom);
+    const real = v => document.querySelector('.idxBtn[data-idx="' + v + '"]');
+    const viewSync = () => { d.querySelectorAll('#stView button').forEach(b => { const r = real(b.dataset.v); b.classList.toggle('on', !!(r && r.classList.contains('on'))); }); };
+    d.querySelector('#stView').addEventListener('click', e => { const b = e.target.closest('button[data-v]'); if (!b) return; const r = real(b.dataset.v); if (r) r.click(); setTimeout(viewSync, 30); });
+    document.addEventListener('click', () => { if ($('stBar')) setTimeout(viewSync, 140); }, true);
+    viewSync();
   }
   window.studioLeftOn = function () {
     panelsLoad(); addToggles(); addZoom(); addRails(); showInfo(); fillAll();
@@ -344,7 +354,7 @@
   };
   window.studioLeftOff = function () {
     if (!built) return;
-    ['stTogL', 'stTogR', 'stHdrL', 'stHdrR', 'stZoom', 'stRailL', 'stRailR', 'stInfo'].forEach(id => { const b = $(id); if (b) b.remove(); });
+    ['stTogL', 'stTogR', 'stHdrL', 'stHdrR', 'stBar', 'stRailL', 'stRailR', 'stInfo'].forEach(id => { const b = $(id); if (b) b.remove(); });
     const fd = $('filtersDetails'); if (fd) unpark(fd, 'filters');
     const cd = $('channelDetails'); if (cd) { cd.classList.remove('stSec'); unpark(cd, 'channels'); }
   };

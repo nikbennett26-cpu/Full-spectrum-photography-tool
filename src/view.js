@@ -1129,7 +1129,7 @@ $('cw').addEventListener('wheel', ev => {
   // so a plain mouse wheel over the photo zooms it (in toward the cursor, back out to fit).
   const studio = document.documentElement.classList.contains('studioOn');
   if (!loadedImage || !(ev.ctrlKey || ev.metaKey || studio)) return;
-  if (!(ev.ctrlKey || ev.metaKey) && ev.target.closest && ev.target.closest('#cmpBar')) return;   // wheel over the compare bar is not a zoom
+  if (!(ev.ctrlKey || ev.metaKey) && ev.target.closest && ev.target.closest('#cmpBar,#stBar')) return;   // wheel over the compare bar is not a zoom
   ev.preventDefault();
   if (ev.ctrlKey || ev.metaKey) { zoomAt(Math.pow(0.988, ev.deltaY), ev.clientX, ev.clientY); return; }   // pinch / ctrl+wheel, as before
   const dy = ev.deltaMode === 1 ? ev.deltaY * 33 : ev.deltaMode === 2 ? ev.deltaY * 400 : ev.deltaY;   // lines/pages to px

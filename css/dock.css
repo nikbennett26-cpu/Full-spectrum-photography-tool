@@ -1408,3 +1408,30 @@ html.studioOn body.has-image #reorderZone#reorderZone .pgrid .pb,html.dockOn bod
   html.studioOn body.has-image #reorderZone#reorderZone .dGrp > summary .dT[data-chg]::after{content:attr(data-chg);display:inline-grid;place-content:center;min-width:16px;height:16px;margin-left:8px;padding:0 4px;border-radius:8px;background:rgba(214,58,58,.2);color:#f1ede6;font:600 10px/1 ui-sans-serif,system-ui,sans-serif;letter-spacing:0;vertical-align:1px}
   html.studioOn body.has-image #stInfo:not([hidden]){display:block;position:absolute;left:0;right:0;top:12px;z-index:5;text-align:center;font:500 11.5px/1 ui-monospace,Menlo,monospace;letter-spacing:.04em;color:#7f7b73;pointer-events:none;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding:0 60px}
 }
+
+/* Build 395: one floating bar on the photo: compare | view | zoom */
+#stBar{display:none}
+@media (min-width:1000px){
+  html.studioOn body.has-image #cw{--bw:min(760px,calc(100% - 28px))}
+  html.studioOn body.has-image #stBar{display:flex;align-items:center;position:absolute;left:50%;bottom:16px;transform:translateX(-50%);z-index:11;width:var(--bw);height:44px;box-sizing:border-box;padding:0 6px;border:1px solid rgba(255,255,255,.1);border-radius:22px;background:rgba(12,12,14,.84);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);box-shadow:0 14px 40px -10px rgba(0,0,0,.8)}
+  #stBar .stBarCmp{flex:1 1 0;min-width:0;height:100%}
+  #stBar .stBarG{display:flex;align-items:center;gap:2px;height:28px;padding:0 8px;border-left:1px solid rgba(255,255,255,.1);flex:none}
+  #stBar .stBarG button{height:30px;padding:0 10px;border:0;border-radius:15px;background:none;color:#b9b5ac;font:500 12.5px/1 Inter,ui-sans-serif,system-ui,sans-serif;white-space:nowrap;cursor:pointer;transition:background-color .16s ease,color .16s ease}
+  #stBar .stBarG button:hover{color:#f1ede6;background:rgba(255,255,255,.06)}
+  #stBar .stBarG button.on{background:rgba(255,255,255,.13);color:#f1ede6}
+  #stBar #stZm,#stBar #stZp{min-width:30px;padding:0 6px;font-size:15px}
+  #stBar #stZf{min-width:44px;font-variant-numeric:tabular-nums}
+  html.studioOn body.has-image #stBar #stZoom{position:static !important;display:flex !important;height:28px !important;border:0 !important;border-left:1px solid rgba(255,255,255,.1) !important;border-radius:0 !important;background:none !important;box-shadow:none !important;-webkit-backdrop-filter:none !important;backdrop-filter:none !important;overflow:visible !important}
+  /* the compare control sits over the bar's first segment, with no box of its own */
+  html.studioOn body.has-image #cw > #cmpBar#cmpBar{left:calc(50% - var(--bw) / 2 + 10px) !important;right:auto !important;bottom:20px !important;transform:none !important;width:calc(var(--bw) - 400px) !important;min-width:150px;height:36px !important;border:0 !important;background:none !important;box-shadow:none !important;-webkit-backdrop-filter:none !important;backdrop-filter:none !important;z-index:12 !important}
+  html.studioOn body.has-image #toast#toast{bottom:76px}
+}
+@media (min-width:1000px) and (max-width:1279px){
+  /* narrow windows: the view switch stays in the Looks tab only, so the bar never crowds */
+  html.studioOn body.has-image #stBar #stView{display:none}
+  html.studioOn body.has-image #cw > #cmpBar#cmpBar{width:calc(var(--bw) - 170px) !important}
+}
+@media (min-width:1000px) and (max-width:1279px){
+  /* the file line in the top bar ran under the undo buttons in narrow windows */
+  html.studioOn body.has-image #studioFile{display:none}
+}
