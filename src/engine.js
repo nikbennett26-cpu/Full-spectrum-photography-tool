@@ -77,6 +77,8 @@ class WebGLEngine {
         this.epdTex = null; this._epdId = null; this._toneMaps = null; this.toneBase = null; this._toneFail = false;
         this._rd = null; this._rdFail = false;
         this._bg = null; this._sg = null; this._og = null; this._lo = null; this._blit = null;
+        if (this._rsa) Object.keys(this._rsa).forEach(k => { this._rsa[k].gen++; });   // build 397: callbacks still waiting on the old context never run
+        this._rs = null; this._rsa = null; this._rsFail = false; this._rsaFail = false;   // the histogram's small copies and read buffers
         this._texGen = (this._texGen || 0) + 1;
         /* Buffers as well as shaders. A lost context takes EVERY GL object
            with it, and the vertex quad every draw call reads from lives in
@@ -328,11 +330,30 @@ class WebGLEngine {
      for Highlights/Shadows, G = the haze transmission for Dehaze, both measured on one small copy; puts them in epdTex.
      Each is built once per picture, the first time it is used (a few ms), and the texture is re-made if the other arrives
      later. False when they cannot be had (WebGL1, or the helper is missing or fails): the shader then does what it always did. */
+  /* Build 397: the Highlights/Shadows base and the haze map were worked out the first time either slider moved, so the
+     first frame of that drag stood still for a moment (about 0.15 s on a phone). They are now worked out while the
+     page is idle after a photo opens, one at a time; a drag that starts first simply builds them itself, as before.
+     The editor's own preview only, not the export or batch copies. */
+  _toneSoon() {
+    const tok = this._toneTok = {};
+    if (typeof engine === 'undefined' || this !== engine || typeof toneProxy !== 'function' || !this.isWebGL2) return;
+    const idle = fn => (typeof requestIdleCallback === 'function') ? requestIdleCallback(fn, { timeout: 5000 }) : setTimeout(fn, 1500);
+    const step = needDH => () => {
+      if (tok !== this._toneTok || this._toneFail || this.contextLost) return;
+      if (typeof sliderDragging !== 'undefined' && sliderDragging) { idle(step(needDH)); return; }
+      if (this._epdId != null && this._epdId !== -1) return;   // tone mapping is on and its base is in the shared texture: leave it
+      try { this._toneMapsReady(true, needDH); } catch (e) {}
+      if (!needDH) idle(step(true));
+    };
+    setTimeout(() => idle(step(false)), 1200);   // after the photo's first frames and the histogram
+  }
   _toneMapsReady(needTB, needDH) {
     const gl = this.gl;
     if (!this.isWebGL2 || this._toneFail || typeof toneProxy !== 'function' || !this._toneImg) return false;
     const m = this._toneMaps || (this._toneMaps = { pr: null, tb: null, dh: null });
-    if ((!needTB || m.tb) && (!needDH || m.dh)) return true;
+    /* build 397: and only if they are still what the texture holds; tone mapping uploads its own base into the same
+       texture (_epdId then names it), so after tone mapping has been on, the maps go back up before they are used */
+    if ((!needTB || m.tb) && (!needDH || m.dh) && this._epdId === -1 && this.epdTex) return true;
     try {
       if (!m.pr) m.pr = toneProxy(this._toneImg);
       if (!m.pr) { this._toneFail = true; return false; }
@@ -406,6 +427,7 @@ class WebGLEngine {
     this.inputIsLinear = !!(img.__linearFloat && this.isWebGL2);
     this._texGen = (this._texGen || 0) + 1;   // a new picture: the prepared copy (see _prepPass) is stale
     this._toneImg = img; this._toneMaps = null; this.toneBase = null;   // and so are the Highlights/Shadows base and the haze map (tone-base.js): rebuilt on first use
+    this._toneSoon();
     if (img.__linearFloat && this.isWebGL2) {
       gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA16F, img.width, img.height, 0, gl.RGBA, gl.FLOAT, img.__linearFloat);
     } else {
@@ -617,20 +639,24 @@ void main(){
      back after every edit while the GPU waited) being copied out and shrunk on the CPU. Each output pixel is a
      bilinear sample of the frame, not an average of a whole block, so clipped highlights still count as clipped.
      Returns top-down RGBA rows, or null where it cannot (WebGL1), and the caller falls back to the old path. */
+  _rsTarget(w, h) {   // the small framebuffer both readers draw the shrunk frame into
+    const gl = this.gl;
+    if (this._rs && this._rs.w === w && this._rs.h === h) return true;
+    if (this._rs) { gl.deleteFramebuffer(this._rs.fb); gl.deleteRenderbuffer(this._rs.rb); this._rs = null; }
+    const fb = gl.createFramebuffer(), rb = gl.createRenderbuffer();
+    gl.bindRenderbuffer(gl.RENDERBUFFER, rb); gl.renderbufferStorage(gl.RENDERBUFFER, gl.RGBA8, w, h);
+    gl.bindFramebuffer(gl.FRAMEBUFFER, fb); gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.RENDERBUFFER, rb);
+    const ok = gl.checkFramebufferStatus(gl.FRAMEBUFFER) === gl.FRAMEBUFFER_COMPLETE;
+    gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+    if (!ok) { gl.deleteFramebuffer(fb); gl.deleteRenderbuffer(rb); this._rsFail = true; return false; }
+    this._rs = { fb, rb, w, h, raw: new Uint8Array(w * h * 4) };
+    return true;
+  }
   readSmall(w, h) {
     const gl = this.gl;
     if (!this.isWebGL2 || this._rsFail || !gl) return null;
     try {
-      if (!this._rs || this._rs.w !== w || this._rs.h !== h) {
-        if (this._rs) { gl.deleteFramebuffer(this._rs.fb); gl.deleteRenderbuffer(this._rs.rb); }
-        const fb = gl.createFramebuffer(), rb = gl.createRenderbuffer();
-        gl.bindRenderbuffer(gl.RENDERBUFFER, rb); gl.renderbufferStorage(gl.RENDERBUFFER, gl.RGBA8, w, h);
-        gl.bindFramebuffer(gl.FRAMEBUFFER, fb); gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.RENDERBUFFER, rb);
-        const ok = gl.checkFramebufferStatus(gl.FRAMEBUFFER) === gl.FRAMEBUFFER_COMPLETE;
-        gl.bindFramebuffer(gl.FRAMEBUFFER, null);
-        if (!ok) { gl.deleteFramebuffer(fb); gl.deleteRenderbuffer(rb); this._rsFail = true; return null; }
-        this._rs = { fb, rb, w, h, raw: new Uint8Array(w * h * 4) };
-      }
+      if (!this._rsTarget(w, h)) return null;
       const r = this._rs, W = this.canvas.width, H = this.canvas.height;
       gl.bindFramebuffer(gl.READ_FRAMEBUFFER, null); gl.bindFramebuffer(gl.DRAW_FRAMEBUFFER, r.fb);
       gl.blitFramebuffer(0, 0, W, H, 0, 0, w, h, gl.COLOR_BUFFER_BIT, gl.LINEAR);
@@ -642,6 +668,76 @@ void main(){
       for (let y = 0; y < h; y++) out.set(r.raw.subarray((h - 1 - y) * row, (h - y) * row), y * row);
       return out;
     } catch (e) { try { gl.bindFramebuffer(gl.FRAMEBUFFER, null); } catch (e2) {} this._rsFail = true; return null; }
+  }
+  /* Build 397: the same small copy, without the wait. readSmall above returns the pixels at once, which means the page
+     stops until the GPU has finished drawing the frame (on a phone, the whole of a heavy edit). Here the copy is
+     written into a GPU-side buffer, a fence marks the point it is complete, and the page carries on; the fence is
+     checked every few milliseconds and the buffer read only once it has passed, which no longer waits for anything.
+     cb(pixels) gets top-down RGBA rows, or cb(null) where it cannot (no WebGL2, a lost context), and the caller then
+     uses readSmall. A newer request replaces an older one still in flight; the older one's callback never runs. */
+  readSmallAsync(w, h, cb) {
+    const gl = this.gl;
+    if (!this.isWebGL2 || this._rsFail || this._rsaFail || !gl || typeof gl.fenceSync !== 'function') { cb(null); return; }
+    try {
+      /* one target, buffer and fence per size, so the histogram (320 wide) and the curve's small histogram (128 wide)
+         never cancel each other */
+      const jobs = this._rsa || (this._rsa = {}), key = w + 'x' + h;
+      let job = jobs[key];
+      if (!job) {
+        const fb = gl.createFramebuffer(), rb = gl.createRenderbuffer();
+        gl.bindRenderbuffer(gl.RENDERBUFFER, rb); gl.renderbufferStorage(gl.RENDERBUFFER, gl.RGBA8, w, h);
+        gl.bindFramebuffer(gl.FRAMEBUFFER, fb); gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.RENDERBUFFER, rb);
+        const ok = gl.checkFramebufferStatus(gl.FRAMEBUFFER) === gl.FRAMEBUFFER_COMPLETE;
+        gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+        if (!ok) { gl.deleteFramebuffer(fb); gl.deleteRenderbuffer(rb); this._rsaFail = true; cb(null); return; }
+        const pbo = gl.createBuffer(), bytes0 = w * h * 4;
+        gl.bindBuffer(gl.PIXEL_PACK_BUFFER, pbo); gl.bufferData(gl.PIXEL_PACK_BUFFER, bytes0, gl.STREAM_READ); gl.bindBuffer(gl.PIXEL_PACK_BUFFER, null);
+        // keep at most a few sizes (a window resize changes the histogram's height)
+        const keys = Object.keys(jobs);
+        if (keys.length >= 4) keys.forEach(k => { const j = jobs[k]; try { if (j.sync) gl.deleteSync(j.sync); gl.deleteFramebuffer(j.fb); gl.deleteRenderbuffer(j.rb); gl.deleteBuffer(j.pbo); } catch (e) {} j.gen++; delete jobs[k]; });
+        job = jobs[key] = { fb: fb, rb: rb, pbo: pbo, raw: new Uint8Array(bytes0), sync: null, gen: 0 };
+      }
+      const r = job, W = this.canvas.width, H = this.canvas.height, bytes = w * h * 4;
+      if (job.sync) { try { gl.deleteSync(job.sync); } catch (e) {} job.sync = null; }
+      const gen = ++job.gen;
+      gl.bindFramebuffer(gl.READ_FRAMEBUFFER, null); gl.bindFramebuffer(gl.DRAW_FRAMEBUFFER, r.fb);
+      gl.blitFramebuffer(0, 0, W, H, 0, 0, w, h, gl.COLOR_BUFFER_BIT, gl.LINEAR);
+      gl.bindFramebuffer(gl.READ_FRAMEBUFFER, r.fb);
+      gl.bindBuffer(gl.PIXEL_PACK_BUFFER, job.pbo);
+      gl.readPixels(0, 0, w, h, gl.RGBA, gl.UNSIGNED_BYTE, 0);
+      gl.bindBuffer(gl.PIXEL_PACK_BUFFER, null);
+      gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+      const sync = gl.fenceSync(gl.SYNC_GPU_COMMANDS_COMPLETE, 0);
+      if (!sync || gl.getError() !== gl.NO_ERROR) { if (sync) gl.deleteSync(sync); this._rsaFail = true; cb(null); return; }
+      job.sync = sync;
+      gl.flush();
+      const t0 = performance.now();
+      const poll = () => {
+        if (gen !== job.gen) return;                                   // replaced by a newer request
+        if (this.contextLost || gl.isContextLost()) { job.sync = null; cb(null); return; }
+        let st;
+        try { st = gl.clientWaitSync(sync, 0, 0); } catch (e) { st = gl.WAIT_FAILED; }
+        if (st === gl.TIMEOUT_EXPIRED) {
+          const age = performance.now() - t0;
+          if (age < 30000) { setTimeout(poll, age < 120 ? 4 : 16); return; }
+          gl.deleteSync(sync); job.sync = null; return;               // a frame that never finished: drop this one quietly
+        }
+        gl.deleteSync(sync); job.sync = null;
+        if (st === gl.WAIT_FAILED) { this._rsaFail = true; cb(null); return; }
+        try {
+          gl.bindBuffer(gl.PIXEL_PACK_BUFFER, job.pbo);
+          gl.getBufferSubData(gl.PIXEL_PACK_BUFFER, 0, r.raw);
+          gl.bindBuffer(gl.PIXEL_PACK_BUFFER, null);
+        } catch (e) { try { gl.bindBuffer(gl.PIXEL_PACK_BUFFER, null); } catch (e2) {} this._rsaFail = true; cb(null); return; }
+        const out = new Uint8ClampedArray(bytes), row = w * 4;
+        for (let y = 0; y < h; y++) out.set(r.raw.subarray((h - 1 - y) * row, (h - y) * row), y * row);
+        cb(out);
+      };
+      setTimeout(poll, 0);
+    } catch (e) {
+      try { gl.bindBuffer(gl.PIXEL_PACK_BUFFER, null); gl.bindFramebuffer(gl.FRAMEBUFFER, null); } catch (e2) {}
+      this._rsaFail = true; cb(null);
+    }
   }
   readPixels() {
     // WebGL's origin is bottom-left, canvas/image convention is top-left —

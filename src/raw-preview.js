@@ -538,14 +538,22 @@ function solveRidge(A, B, lambda) {
    every load without anyone noticing. */
 async function fitCameraColour(rawCv, jpgBlob) {
   const N = 220;                              // ~48k sample points
-  const a = document.createElement('canvas'); a.width = N; a.height = N;
-  a.getContext('2d').drawImage(rawCv, 0, 0, N, N);
-  const bmp = await createImageBitmap(jpgBlob);
-  const b = document.createElement('canvas'); b.width = N; b.height = N;
-  b.getContext('2d').drawImage(bmp, 0, 0, N, N);
-
-  const da = a.getContext('2d').getImageData(0, 0, N, N).data;
-  const db = b.getContext('2d').getImageData(0, 0, N, N).data;
+  /* Build 397: both pictures are shrunk to the sample grid by the browser's image decoder (createImageBitmap with a
+     size), away from the page, and the same way for both, so each pair still compares like with like. Drawing the
+     full-size camera JPEG (20 MP) onto a small canvas held the page for well over a second just after a RAW opened.
+     Browsers that cannot shrink that way use the drawing it did before. */
+  const grid = async src => {
+    const c = document.createElement('canvas'); c.width = N; c.height = N;
+    const x = c.getContext('2d', { willReadFrequently: true });
+    let bm = null;
+    try { bm = await createImageBitmap(src, { resizeWidth: N, resizeHeight: N, resizeQuality: 'medium' }); } catch (e) { bm = null; }
+    if (bm && bm.width === N && bm.height === N) { x.drawImage(bm, 0, 0); }
+    else { const full = (src instanceof Blob) ? await createImageBitmap(src) : src; x.drawImage(full, 0, 0, N, N); if (full !== src && full.close) full.close(); }
+    if (bm && bm.close) bm.close();
+    return x.getImageData(0, 0, N, N).data;
+  };
+  const da = await grid(rawCv);
+  const db = await grid(jpgBlob);
 
   const T = 20;
   const AtA = Array.from({length: T}, () => new Float64Array(T));
@@ -1174,7 +1182,9 @@ function rawEngineResultToCanvas(res, doCamSpaceSwap, doCamSpaceSwapMatrix, doCa
   const h = Math.max(1, Math.round(srcH * scale));
   const cv = floatOnly ? null : document.createElement('canvas');
   if (cv) { cv.width = w; cv.height = h; }
-  const ctx = cv ? cv.getContext('2d') : null;
+  /* build 397: kept in ordinary memory (willReadFrequently): it is filled from here and then copied into the working
+     canvas, and a GPU-held canvas had to be read back for that copy, a quarter of a second on a desktop */
+  const ctx = cv ? cv.getContext('2d', { willReadFrequently: true }) : null;
   const img = ctx ? ctx.createImageData(w, h) : null;
   const d8 = img ? img.data : null;
   const LUTN = 4096;
@@ -1301,6 +1311,11 @@ function rawEngineResultToCanvas(res, doCamSpaceSwap, doCamSpaceSwapMatrix, doCa
      exactly 1x1 source pixel, so this reduces to the same simple sample
      the old code always did for that case -- no behaviour change there. */
   const boxSize = 1 / scale;
+  /* Build 397: the same box averages are what rawWorkingPlanes (raw-process.js) keeps as the working-size planes, and it
+     worked them out again with a second pass over every sensor pixel (about a third of a second on a desktop) moments
+     after this one. They are kept here as they go past, bit for bit the same numbers. */
+  const keepDs = !forceFullRes && scale < 1 && !res.__ds && w * h > 0;
+  const dsR = keepDs ? new Float32Array(w * h) : null, dsG = keepDs ? new Float32Array(w * h) : null, dsB = keepDs ? new Float32Array(w * h) : null;
   for (let y = 0; y < h; y++) {
     const sy0 = Math.floor(y * boxSize);
     const sy1 = Math.min(srcH, Math.max(sy0 + 1, Math.ceil((y + 1) * boxSize)));
@@ -1317,6 +1332,7 @@ function rawEngineResultToCanvas(res, doCamSpaceSwap, doCamSpaceSwapMatrix, doCa
       }
       const q = (y * w + x) * 4;
       let srn = sr / n, sgn = sg / n, sbn = sb / n;
+      if (keepDs) { const qd = y * w + x; dsR[qd] = srn; dsG[qd] = sgn; dsB[qd] = sbn; }
       // how close each channel is to ITS OWN clip point (build 192), so the tests below mean "clipped" on every camera
       const kR = srn * icR, kG = sgn * icG, kB = sbn * icB;
       const rawMxPre = kR > kG ? (kR > kB ? kR : kB) : (kG > kB ? kG : kB);
@@ -1412,6 +1428,7 @@ function rawEngineResultToCanvas(res, doCamSpaceSwap, doCamSpaceSwapMatrix, doCa
       floatBuf[q+3] = 1;
     }
   }
+  if (keepDs && !res.__ds) res.__ds = { R: dsR, G: dsG, B: dsB, width: w, height: h };
   if (floatOnly) return { floatBuf, w, h };
   ctx.putImageData(img, 0, 0);
   cv.__linearFloat = floatBuf;   // linear scene-referred twin, headroom intact -- see setImage

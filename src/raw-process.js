@@ -849,6 +849,21 @@ function canvasToBlobSafe(cv, label, timeoutMs = 30000, allowFullRes = false) {
   });
 }
 
+/* Build 397: the full-size copy of a RAW is no longer built the moment it opens. It used to be: the whole sensor run
+   through the colour pipeline again at full size (about a second on a desktop, several on a phone) and then encoded to
+   a 20-odd megapixel PNG, all on the page's own thread, so the editor froze for seconds just after the photo appeared,
+   and a 300 MB high-precision copy was kept for as long as the photo was open. Full-size export and full-screen view
+   already rebuild the full size from the sensor data whenever RAW noise reduction is on (it is by default), or the swap
+   or white balance has changed (rawFullResSource in export.js). With no saved copy they now always do, and only when
+   asked. The original's size is known straight away, so the export size choice appears as before; the RAW file stands
+   in as the 'original' for the code that checks one exists. */
+function rawFullDeferred(res, file) {
+  rawEngine.fullKey = null;
+  origFile = file; origW = res.width; origH = res.height;
+  if (typeof updateExportResOptions === 'function') updateExportResOptions();
+  if ($('previewFullscreen') && $('previewFullscreen').classList.contains('on') && typeof renderFullscreenHQ === 'function') renderFullscreenHQ();
+}
+
 /* body.imgLoading is on for as long as a photo is being opened, so the home page's file slot can show work happening. */
 async function loadFile(file) {
   if (!file) return;
@@ -1121,48 +1136,7 @@ async function loadFileInner(file) {
           camFail('Unavailable for this file \u2014 the camera\u2019s JPEG could not be read (' + e.message + ').');
         }
       };
-      const buildFull = async () => {
-        try {
-          /* cv above is deliberately capped at WORKING_MAX_DIM (see the
-             comment on rawEngineResultToCanvas itself) -- reusing it here
-             was the actual bug: this blob was labelled "full-res" but was
-             really the same capped canvas the live preview already had,
-             so origW/origH ended up equal to the preview size and the
-             export resolution choice silently never appeared. Re-running
-             the decode with forceFullRes=true is the only way to get a
-             genuine full-resolution canvas -- the initial downscale point-
-             samples straight into a smaller buffer, so there is no detail
-             left in cv to recover by upscaling it back up. This does mean
-             decoding twice per load rather than once, but it happens here,
-             in the background, after the fast capped preview is already on
-             screen -- the same place this "best effort" work already ran,
-             just actually producing what it claimed to. */
-          const fullCv = rawEngineResultToCanvas(res, $('camSpaceSwap') && $('camSpaceSwap').checked, getCamSpaceSwapMatrix(), getCamSpaceSwapName(), true);
-          rawEngine.fullKey = camSwapKey(!!($('camSpaceSwap') && $('camSpaceSwap').checked), getCamSpaceSwapMatrix(), getCamSpaceSwapName()) + '|' + rawWbKey();   // which swap the saved full-size copy has
-          const fullBlob = await canvasToBlobSafe(fullCv, 'CR2 (' + decoderLabel + ', full-res)', 45000, true);
-          if (stale()) return;
-          origFile = fullBlob; origW = fullCv.width; origH = fullCv.height;
-          if (typeof updateExportResOptions === 'function') updateExportResOptions();
-          /* renderFullscreenHQ bails out immediately if origFile isn't set
-             yet (nothing to render at higher quality) and never retries on
-             its own -- opening "Expand" before this background decode
-             finishes left the fullscreen view permanently stuck on its
-             working-resolution placeholder, even minutes later, since
-             nothing ever told it origFile had since arrived. If Expand is
-             open right now, this is that missed retry. */
-          if ($('previewFullscreen') && $('previewFullscreen').classList.contains('on') && typeof renderFullscreenHQ === 'function') renderFullscreenHQ();
-        } catch (e) {
-          // Was console.warn only -- invisible to an actual user, so this
-          // failure mode (real resolution never becomes available, working
-          // size silently stands in for it everywhere, forever, for this
-          // load) looked identical to a working-as-designed cap. A toast
-          // costs nothing when this never fires; it's the only way to
-          // actually confirm or rule out this exact failure the next time
-          // it's suspected, rather than guessing again.
-          console.warn('Full-resolution encode skipped \u2014 export at original resolution and session restore will be unavailable for this load:', e);
-          toast('Full-resolution version failed to build (' + (e && e.message ? e.message : 'see console') + ') \u2014 export and Expand will use working size only for this photo');
-        }
-      };
+      const buildFull = async () => rawFullDeferred(res, file);   // build 397: see rawFullDeferred
       /* Build 152: the photo goes on screen first. The camera-colour fit and the full-resolution copy used to run
          before it: the fit was awaited, and the full-size canvas (21 MP on a 5D Mk II) was built synchronously at the
          start of what was meant to be a background task. On a phone that added tens of seconds to every RAW. Both
@@ -1263,29 +1237,7 @@ async function loadFileInner(file) {
            session-restore are still handled, in the same non-blocking
            background task as before. */
         const savedName = file.name.replace(/\.[^.]+$/, '') + '_preview.jpg';
-        const buildFull = async () => {
-          try {
-            // Same fix, same reasoning as the CR2 branch above: cv is
-            // capped at WORKING_MAX_DIM, so reusing it here was the actual
-            // bug this RAF report traced back to -- re-decode once more
-            // with forceFullRes=true to get a genuine full-resolution
-            // canvas instead of mislabelling the already-capped one.
-            const fullCv = rawEngineResultToCanvas(res, $('camSpaceSwap') && $('camSpaceSwap').checked, getCamSpaceSwapMatrix(), getCamSpaceSwapName(), true);
-          rawEngine.fullKey = camSwapKey(!!($('camSpaceSwap') && $('camSpaceSwap').checked), getCamSpaceSwapMatrix(), getCamSpaceSwapName()) + '|' + rawWbKey();   // which swap the saved full-size copy has
-            const fullBlob = await canvasToBlobSafe(fullCv, ext + ' (' + (fullCv.__demosaicName || demosaicPrefName()) + ', full-res)', 45000, true);
-            if (stale()) return;
-            origFile = fullBlob; origW = fullCv.width; origH = fullCv.height;
-            if (typeof updateExportResOptions === 'function') updateExportResOptions();
-            // Same retry-trigger as the CR2 branch above -- see its comment
-            // for why this is needed: renderFullscreenHQ never retries on
-            // its own once origFile finally arrives.
-            if ($('previewFullscreen') && $('previewFullscreen').classList.contains('on') && typeof renderFullscreenHQ === 'function') renderFullscreenHQ();
-          } catch (e) {
-            // Same reasoning as the CR2 branch above -- see its comment.
-            console.warn('Full-resolution encode skipped \u2014 export at original resolution and session restore will be unavailable for this load:', e);
-            toast('Full-resolution version failed to build (' + (e && e.message ? e.message : 'see console') + ') \u2014 export and Expand will use working size only for this photo');
-          }
-        };
+        const buildFull = async () => rawFullDeferred(res, file);   // build 397: see rawFullDeferred
         saveSessionImage(file, file.name);   // build 152: the original RAW, not a full-size PNG (see the CR2 branch)
         await finishLoad(cv, cv.width, cv.height, rawFlipToExif(res && res.flip), null, savedName);   // upright, as the camera recorded it
       if (typeof rawNrAuto === 'function' && !stale()) rawNrAuto();   // build 226: RAW noise reduction starts on (src/controls.js)

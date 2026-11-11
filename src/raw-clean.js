@@ -31,7 +31,41 @@
    Everything is reversible and kept per photo: the list of changed samples (with their old values) and the per-row and
    per-column offsets, so the tick box can be turned off again, or on again, without a second search. */
 
-function rcSortedMedian(arr, n) { const s = arr.subarray(0, n); s.sort(); return (n & 1) ? s[n >> 1] : 0.5 * (s[(n >> 1) - 1] + s[n >> 1]); }
+/* Build 397: the median by selection rather than a full sort. Same value to the last bit (the k-th smallest is the
+   k-th smallest however it is found), in a fraction of the time: this runs about fifty thousand times on a 20 MP frame,
+   and the sorting was most of the second or so the page stood still while the RAW clean-up looked for stripes. Like
+   the sort it reorders the first n entries of arr. A NaN (never expected here) falls back to the sort, which places
+   NaNs last. */
+function rcSelect(a, lo, hi, k) {   // puts the k-th smallest of a[lo..hi] at a[k]
+  while (hi > lo) {
+    const mid = (lo + hi) >> 1;
+    // median of three as the pivot, moved to a[hi]
+    if (a[mid] < a[lo]) { const t = a[mid]; a[mid] = a[lo]; a[lo] = t; }
+    if (a[hi] < a[lo]) { const t = a[hi]; a[hi] = a[lo]; a[lo] = t; }
+    if (a[mid] < a[hi]) { const t = a[mid]; a[mid] = a[hi]; a[hi] = t; }
+    const pv = a[hi];
+    let i = lo, j = hi - 1;
+    for (;;) {
+      while (a[i] < pv) i++;
+      while (j > i && a[j] > pv) j--;
+      if (i >= j) break;
+      const t = a[i]; a[i] = a[j]; a[j] = t; i++; j--;
+    }
+    { const t = a[i]; a[i] = a[hi]; a[hi] = t; }
+    if (i === k) return;
+    if (i < k) lo = i + 1; else hi = i - 1;
+  }
+}
+function rcSortedMedian(arr, n) {
+  const s = arr.subarray(0, n);
+  for (let i = 0; i < n; i++) if (s[i] !== s[i]) { s.sort(); return (n & 1) ? s[n >> 1] : 0.5 * (s[(n >> 1) - 1] + s[n >> 1]); }
+  const k = n >> 1;
+  rcSelect(s, 0, n - 1, k);
+  if (n & 1) return s[k];
+  let lower = s[0];   // the largest of what is left below position k
+  for (let i = 1; i < k; i++) if (s[i] > lower) lower = s[i];
+  return 0.5 * (lower + s[k]);
+}
 
 /* The frame's own noise level on one plane: 1.4826 x the median absolute difference between a pixel and the median of
    its ring of 8, over a sample of positions. */
@@ -173,6 +207,7 @@ async function rcFindAll(res, tick) {
     for (let c = 0; c < 3; c++) {
       const sn = rcPlaneSigma(P3[c], W, H);
       line.ro.push(rcLineOffsets(P3[c], W, H, true, sn));
+      if (tick) await tick(0.5 + 0.5 * (c + 0.5) / 3);   // build 397: a pause between the rows and the columns as well
       line.co.push(rcLineOffsets(P3[c], W, H, false, sn));
       if (tick) await tick(0.5 + 0.5 * (c + 1) / 3);
     }
@@ -184,17 +219,23 @@ async function rcFindAll(res, tick) {
 }
 
 /* dir = +1 puts the fix on the planes, -1 takes it off again. */
+/* Build 397: a plane with no stripe found in either direction (the usual case) is skipped: adding zero to all twenty
+   million samples of it took a few hundred milliseconds of the page's time for nothing. A plane with only row (or only
+   column) offsets touches each sample the same way as before. */
+function rcLinesAny(a) { if (!a) return false; for (let i = 0; i < a.length; i++) if (a[i]) return true; return false; }
 function rcApply(P3, W, H, fix, dir) {
   const h = fix.hot;
   if (dir > 0) {
     if (h) for (let n = 0; n < h.idx.length; n++) P3[h.idx[n] % 3][(h.idx[n] / 3) | 0] = h.nw[n];
     if (fix.line) for (let c = 0; c < 3; c++) {
       const P = P3[c], ro = fix.line.ro[c], co = fix.line.co[c];
+      if (!rcLinesAny(ro) && !rcLinesAny(co)) continue;
       for (let y = 0; y < H; y++) { const r = ro[y], b = y * W; for (let x = 0; x < W; x++) P[b + x] -= r + co[x]; }
     }
   } else {
     if (fix.line) for (let c = 0; c < 3; c++) {
       const P = P3[c], ro = fix.line.ro[c], co = fix.line.co[c];
+      if (!rcLinesAny(ro) && !rcLinesAny(co)) continue;
       for (let y = 0; y < H; y++) { const r = ro[y], b = y * W; for (let x = 0; x < W; x++) P[b + x] += r + co[x]; }
     }
     if (h) for (let n = h.idx.length - 1; n >= 0; n--) P3[h.idx[n] % 3][(h.idx[n] / 3) | 0] = h.old[n];
@@ -218,6 +259,8 @@ async function rawFixRun() {
       await new Promise(r => setTimeout(r, 30));
       res.__fix = await rcFindAll(res, async f => { if (st) st.textContent = 'Looking… ' + Math.round(f * 100) + '%'; await new Promise(r => setTimeout(r, 0)); });
     }
+    if (token !== loadToken || rawEngine.lastResult !== res) return;
+    await new Promise(r => setTimeout(r, 0));   // build 397: let the page breathe between the search and the change
     if (token !== loadToken || rawEngine.lastResult !== res) return;
     const P3 = [res.R, res.G, res.B];
     if (want && !res.__fixOn) rcApply(P3, res.width, res.height, res.__fix, 1);

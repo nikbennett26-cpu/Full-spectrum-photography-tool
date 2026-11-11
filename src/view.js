@@ -63,10 +63,10 @@ document.addEventListener('DOMContentLoaded', () => {
   if (a) a.addEventListener('click', () => setScopeMode('hist'));
   if (b) b.addEventListener('click', () => setScopeMode('parade'));
 });
-let histSrc = null, histCtx = null, histTimer = null;
+let histSrc = null, histCtx = null, histTimer = null, modeNoteTimer = null, histAsyncOff = false, histInFlight = 0, histAgain = false;
 function scheduleHistogram() {
   if (typeof scheduleCurveHist === 'function') scheduleCurveHist();   // build 169: the histogram behind the Points curve
-  if (typeof updateModeNote === 'function') setTimeout(updateModeNote, 120);   // build 171: after the modified dots refresh
+  if (typeof updateModeNote === 'function') { clearTimeout(modeNoteTimer); modeNoteTimer = setTimeout(updateModeNote, 120); }   // build 171: after the modified dots refresh; build 397: one pending, not one per frame
   if (histTimer) clearTimeout(histTimer);
   histTimer = setTimeout(() => { if (gamutWarnShown || maskViewIndex() >= 0) return; drawHistogram(); }, 90);
 }
@@ -101,6 +101,28 @@ function drawHistogram() {
      synchronous render immediately before reading in that case, and read
      via readPixels() (a direct gl.readPixels() call, unaffected by
      preserveDrawingBuffer either way) instead of drawImage(). */
+  /* Build 397: read back without waiting for the GPU (engine.readSmallAsync); the histogram is drawn a few
+     milliseconds later, when the copy is ready, instead of the page standing still until the frame is finished. Where
+     that cannot run, the copy is read at once as before (histAsyncOff). */
+  if (engine && engine.readSmallAsync && !histAsyncOff) {
+    /* one read in flight at a time: on a slow GPU a newer request would otherwise replace the older one before it
+       finished, again and again, and the histogram would not move until the edits stopped. Instead the next read is
+       started as soon as the current one lands. */
+    if (histInFlight && performance.now() - histInFlight < 5000) { histAgain = true; if (clipOn) engine.render(currentParams()); return; }
+    if (!engine.hasPreserveBuffer && !clipOn) engine.render(currentParams());
+    let failed = false;
+    histInFlight = performance.now(); histAgain = false;
+    const eng = engine;
+    engine.readSmallAsync(HIST_W, hh, d => {
+      histInFlight = 0;
+      if (!d) { failed = true; histAsyncOff = true; return; }
+      if (eng === engine && $('scopeDetails').open && loadedImage) histPaint(cv, d, hh);
+      if (histAgain) { histAgain = false; if (!(gamutWarnShown || maskViewIndex() >= 0)) drawHistogram(); }
+    });
+    if (clipOn) engine.render(currentParams());
+    if (failed) drawHistogram();   // it could not even start: read at once instead
+    return;
+  }
   /* build 317: the GPU shrinks the frame and only the small copy is read back (engine.readSmall) */
   let small = null;
   if (engine && engine.readSmall) {
@@ -127,6 +149,9 @@ function drawHistogram() {
 
   d = histCtx.getImageData(0, 0, HIST_W, hh).data;
   }
+  histPaint(cv, d, hh);
+}
+function histPaint(cv, d, hh) {
   const bins = [new Uint32Array(256), new Uint32Array(256), new Uint32Array(256)];
   /* Counted per PIXEL, not per channel. The old count took the largest
      single-channel bin-0 total, so one saturated yellow area — B = 0 across

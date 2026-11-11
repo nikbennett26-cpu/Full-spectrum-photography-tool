@@ -39,6 +39,11 @@ function advancedInUse() {
 function updateModeNote() {
   const n = $('modeNote'); if (!n) return;
   const used = editorMode === 'simple' ? advancedInUse() : [];
+  /* Build 397: this runs after every frame of a slider drag; rebuilding the same three nodes each time dirtied the
+     layout every frame. Nothing is touched unless the list has changed. */
+  const key = used.join('|');
+  if (n.dataset.k === key) return;
+  n.dataset.k = key;
   n.hidden = !used.length;
   const bar = $('modeBar'); if (bar) bar.classList.toggle('empty', !used.length);   // build 217: the bar is only the note now
   if (used.length) {   // three nodes so the page translator handles the words; the tool names are fixed constants

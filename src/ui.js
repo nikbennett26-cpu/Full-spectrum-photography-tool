@@ -290,6 +290,7 @@ const STEP_DEFS = [
   ['export',   '06', 'Export'],
 ];
 let _stepDefaults = null;
+let _stepModWas = new WeakMap();   // build 397: see the input listener below; emptied by every full refresh
 
 function stepPanelFor(key) {
   if (key === 'export') return document.getElementById('exportSection');
@@ -329,6 +330,7 @@ function refreshStepIndicators() {
     const btn = document.querySelector('#stepStrip button[data-jump="' + key + '"]');
     if (btn) btn.classList.toggle('mod', mod);
   });  if (typeof updateModeNote === 'function') updateModeNote();   // build 171
+  _stepModWas = new WeakMap();
 }
 function buildStepStrip() {
   const strip = document.getElementById('stepStrip');
@@ -416,8 +418,27 @@ document.addEventListener('click', e => {
 /* Any control change anywhere refreshes the dots. Delegated, so controls that
    are created later (colour bands, batch rows) are covered without needing to
    be registered. */
-document.addEventListener('input', refreshStepIndicators);
-document.addEventListener('change', refreshStepIndicators);
+/* Build 397: a slider drag fires an input event every frame, and the full refresh walks every card's controls (several
+   milliseconds a frame on a phone). Between two input events only the control being moved has changed, so the dots can
+   only change if that one control has just crossed its starting value. The full refresh runs then, and on every change
+   event (the end of a drag, a tick box, a menu), so the dots end up exactly as before. */
+function stepCtlModified(el) {
+  return !!(_stepDefaults && _stepDefaults.has(el) && (el.type === 'checkbox' ? el.checked : el.value) !== _stepDefaults.get(el));
+}
+document.addEventListener('input', e => {
+  const el = e && e.target;
+  if (el && _stepDefaults && _stepDefaults.has(el) && _stepModWas.has(el)) {
+    const now = stepCtlModified(el);
+    if (now === _stepModWas.get(el)) return;
+  }
+  refreshStepIndicators();
+  if (el && _stepDefaults && _stepDefaults.has(el)) _stepModWas.set(el, stepCtlModified(el));
+});
+document.addEventListener('change', e => {
+  refreshStepIndicators();
+  const el = e && e.target;
+  if (el && _stepDefaults && _stepDefaults.has(el)) _stepModWas.set(el, stepCtlModified(el));
+});
 
 /* sRGB 0-255 to OKLab. Used by the colour-range mask picker, and by the self-test (src/selftest.js), which is built
    into its own file and only loaded for ?selftest, so these must live here in the editor itself. */
@@ -1019,16 +1040,18 @@ function maskColorDoPick(clientX, clientY) {
    moves, so a scroll that starts on a slider does not flash it. */
 (function wireValueBubble() {
   const b = document.createElement('div'); b.id = 'valBubble'; b.style.display = 'none'; document.body.appendChild(b);
-  let cur = null;
-  document.addEventListener('pointerdown', e => { cur = (e.target && e.target.matches && e.target.matches('.sl input[type=range]')) ? e.target : null; }, true);
-  const hide = () => { cur = null; b.style.display = 'none'; };
+  let cur = null, rect = null, queued = false;   // build 397: the slider's place is read once per drag and the bubble moved at most once a frame
+  document.addEventListener('pointerdown', e => { cur = (e.target && e.target.matches && e.target.matches('.sl input[type=range]')) ? e.target : null; rect = null; }, true);
+  const hide = () => { cur = null; rect = null; b.style.display = 'none'; };
   window.addEventListener('pointerup', hide, true);
   window.addEventListener('pointercancel', hide, true);
   document.addEventListener('input', e => {
-    if (!cur || e.target !== cur) return;
+    if (!cur || e.target !== cur || queued) return;
+    queued = true;
     requestAnimationFrame(() => {
+      queued = false;
       if (!cur) return;
-      const r = cur.getBoundingClientRect(), min = +cur.min || 0, max = +cur.max || 100;
+      const r = rect || (rect = cur.getBoundingClientRect()), min = +cur.min || 0, max = +cur.max || 100;
       const f = (+cur.value - min) / Math.max(1e-9, max - min), lab = document.getElementById('v_' + cur.id);
       b.textContent = lab ? lab.textContent : cur.value;
       b.style.left = (r.left + 9 + f * Math.max(0, r.width - 18)) + 'px';
@@ -1113,16 +1136,23 @@ const CURVE_PAD = 12;
 /* Build 169: a small histogram of the preview for the Points curve, refreshed a moment after each render while the
    Points tab is open. Read with drawImage from the preview canvas, so it costs nothing on devices without a preserved
    drawing buffer (where it is simply not drawn). */
-let curveHist = null, curveHistTimer = null, curveHistCv = null;
+let curveHist = null, curveHistTimer = null, curveHistCv = null, curveHistAsyncOff = false;
 function scheduleCurveHist() {
   if (curveHistTimer) clearTimeout(curveHistTimer);
   curveHistTimer = setTimeout(() => {
     curveHistTimer = null;
     const det = $('curveDetails'), pts = $('curvePoints'), pv = $('preview');
     if (!det || !det.open || !pts || pts.hidden || !loadedImage || !pv || !pv.width || !engine || !engine.hasPreserveBuffer) return;
+    const w = 128, h = Math.max(1, Math.round(128 * pv.height / pv.width));
+    /* Build 397: read without waiting for the GPU where it can (engine.readSmallAsync), at once otherwise */
+    if (engine.readSmallAsync && !curveHistAsyncOff) {
+      let failed = false;
+      engine.readSmallAsync(w, h, d => { if (!d) { failed = true; curveHistAsyncOff = true; return; } curveHistFrom(d); });
+      if (!failed) return;
+    }
+    let d = null;
     try {
-      const w = 128, h = Math.max(1, Math.round(128 * pv.height / pv.width));
-      let d = engine.readSmall ? engine.readSmall(w, h) : null;   // build 317: shrunk on the GPU
+      d = engine.readSmall ? engine.readSmall(w, h) : null;   // build 317: shrunk on the GPU
       if (!d) {
         if (!curveHistCv) curveHistCv = document.createElement('canvas');
         curveHistCv.width = w; curveHistCv.height = h;
@@ -1130,6 +1160,12 @@ function scheduleCurveHist() {
         cx.drawImage(pv, 0, 0, w, h);
         d = cx.getImageData(0, 0, w, h).data;
       }
+    } catch (e) { curveHist = null; return; }
+    curveHistFrom(d);
+  }, 160);
+}
+function curveHistFrom(d) {
+    try {
       const N = 64;
       const hs = { l: new Float32Array(N), r: new Float32Array(N), g: new Float32Array(N), b: new Float32Array(N) };
       for (let i = 0; i < d.length; i += 4) {
@@ -1139,7 +1175,6 @@ function scheduleCurveHist() {
       }
       curveHist = hs; drawCurveEditor();
     } catch (e) { curveHist = null; }
-  }, 160);
 }
 const CURVE_COL = { master: '#d8c8ad', r: '#e0664a', g: '#6fc08a', b: '#6aa0e0' };
 function drawCurveEditor() {

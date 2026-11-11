@@ -35,6 +35,18 @@ const PRECACHE = [
   '/manifest.json'
 ];
 
+/* Build 397: the editor's script and styles are requested with the build number (?b=397), so every deploy cached a
+   new copy beside the old ones, about a megabyte each, and none were ever removed. Once a build's copy is stored, the
+   same file from other builds is dropped. */
+async function pruneOldBuilds(cache, url) {
+  const b = url.searchParams.get('b');
+  if (!b || url.origin !== self.location.origin) return;
+  for (const k of await cache.keys()) {
+    const u = new URL(k.url);
+    if (u.pathname === url.pathname && u.searchParams.has('b') && u.searchParams.get('b') !== b) await cache.delete(k);
+  }
+}
+
 self.addEventListener('install', event => {
   event.waitUntil((async () => {
     const cache = await caches.open(CACHE_VERSION);
@@ -196,7 +208,7 @@ self.addEventListener('fetch', event => {
       const res = await fetch(req);
       if (res && (res.ok || res.type === 'opaque')) {
         const copy = res.clone();
-        caches.open(CACHE_VERSION).then(c => c.put(req, copy)).catch(() => {});
+        caches.open(CACHE_VERSION).then(c => c.put(req, copy).then(() => pruneOldBuilds(c, url))).catch(() => {});
       }
       return res;
     } catch (e) {

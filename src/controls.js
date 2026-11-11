@@ -727,6 +727,7 @@ if (typeof WebGLEngine !== 'undefined') {
   WebGLEngine.prototype.setImage = function (img) { if (typeof engine !== 'undefined' && this === engine) epdImageGen++; return _epdSetImage.call(this, img); };
 }
 function currentParams() {
+  const curve = getCurveLut();   // build 397: once per call (it serialises the whole curve state to check its cache)
   return {
     matrix: getMatrixUI(),
     mOffset: getMatrixOffsetUI(),
@@ -804,7 +805,7 @@ function currentParams() {
     dither: true,
     dustView: typeof dustShow !== 'undefined' && dustShow,   // build 185, preview only
     masks: maskUniformData(), maskView: maskViewIndex(),
-    curveOn: !curveAllIdentity(), curveKey: getCurveLut().key, curveLut: getCurveLut().lut,
+    curveOn: !curveAllIdentity(), curveKey: curve.key, curveLut: curve.lut,
     caR: ((+($('caR') && $('caR').value) || 0) / 100) * 0.005,
     caB: ((+($('caB') && $('caB').value) || 0) / 100) * 0.005,
     hotspot: [(+($('hotR') && $('hotR').value) || 0) / 100, (+($('hotG') && $('hotG').value) || 0) / 100, (+($('hotB') && $('hotB').value) || 0) / 100],
@@ -864,10 +865,15 @@ let renderPending = false, renderNeedsFillSync = false;
 let sliderDragging = false, draggedSliderId = '', draftShown = false, draftIdleTimer = null, gamutWarnShown = false;
 const GAMUT_DRAG_IDS = ['sat', 'vibrance', 'hue', 'satPreserve'];
 function gamutDragActive() { return sliderDragging && GAMUT_DRAG_IDS.indexOf(draggedSliderId) >= 0; }
+/* Build 397: measured once per drag. Reading the canvas's on-screen size every frame forced the browser to lay the page
+   out again in the middle of each frame of the drag; the photo does not move or resize while a slider is held. */
+let draftRectMemo = null;
 function draftScale() {
   if (!engine || !engine.canvas) return 1;
   const W = engine.canvas.width, H = engine.canvas.height;
-  const r = engine.canvas.getBoundingClientRect();
+  if (!sliderDragging) draftRectMemo = null;
+  const r = (draftRectMemo && draftRectMemo.W === W && draftRectMemo.H === H) ? draftRectMemo.r : engine.canvas.getBoundingClientRect();
+  if (sliderDragging) draftRectMemo = { W: W, H: H, r: r };
   if (r.width < 2 || r.height < 2) return 1;   // hidden canvas: nothing to size against
   /* Build 131: at the size it is shown, not 0.75 of it. A draft below screen resolution, stretched up with smoothing,
      had about 30% less brightness grain and 40% less colour grain on screen than the real frame, so grain popped back
@@ -885,11 +891,12 @@ function settleFullRes() {
   scheduleHistogram();
 }
 document.addEventListener('pointerdown', e => {
+  draftRectMemo = null;
   if (e.target && e.target.matches && e.target.matches('.sl input[type=range]')) { sliderDragging = true; draggedSliderId = e.target.id; }
 }, true);
 ['pointerup', 'pointercancel'].forEach(t => window.addEventListener(t, () => {
   if (!sliderDragging) return;
-  sliderDragging = false;
+  sliderDragging = false; draftRectMemo = null;
   settleFullRes();
   draggedSliderId = '';
 }, true));
