@@ -31,9 +31,19 @@ const X = ctx.__out;
 const q = v => (v == null || !Number.isFinite(v)) ? 0 : Math.round(Math.max(0, v) * 1000) / 1000;
 const at = (arr, l) => arr[l - 300];   // spectral.js curves sit on a 300-1100nm, 1nm grid
 
+/* Build 391: each 10nm step holds the filter's MEAN transmission across that step (l-5 to l+5, 1nm trapezoid), not its
+   value at the one wavelength. The editor adds these steps up, so the mean is the quantity it needs, and a point sample
+   was badly wrong for anything narrower than the grid: a 3nm laser-line filter centred between two steps read as passing
+   nothing, one centred on a step as passing a full 10nm (40 filters were out by more than 20%, 80 by more than 5%).
+   Smooth curves are unchanged to within rounding. */
+const bandMean = (l, f) => {
+  let sum = 0;
+  for (let k = -5; k <= 5; k++) { const v = X.filterTBase(l + k, f); sum += (Number.isFinite(v) ? Math.max(0, v) : 0) * (k === -5 || k === 5 ? 0.5 : 1); }
+  return sum / 10;
+};
 const filters = X.FILTERS.filter(f => f.g !== 'Custom').map(f => {
   const c = X.dataConfidence(f), p = X.provenanceOf(f), s = p.s && X.SOURCES[p.s];
-  return [f.id, f.n, c.label, s ? s.who : '', WL.map(l => q(X.filterTBase(l, f))), f.d || ''];   // [5] short description, searched by the editor's filter picker (build 180)
+  return [f.id, f.n, c.label, s ? s.who : '', WL.map(l => q(bandMean(l, f))), f.d || ''];   // [5] short description, searched by the editor's filter picker (build 180)
 });
 const sensors = {};
 for (const [name, key] of [['Generic CMOS (approximation)', 'CMOS sensor'], ['Kodak KAF-8300 CCD (real, astronomy)', 'KAF 8300 CCD']]) {

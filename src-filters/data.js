@@ -488,28 +488,16 @@ const FILTERS=[
    +'correction. Real plateau settles around 84% by 900nm, this datasheet\u2019s own chart doesn\u2019t extend further; '
    +'held flat above that. Lee\u2019s polyester 87C is sold for B&W IR film sensitive to 1000nm, consistent with '
    +'this real spec.'},
- {id:'rm90',g:'B9',n:'Hoya RM90',   d:'Real gradual rise, fitted to UVP chart',        c:'#7c2719',bands:[{lo:926,ls:50,T:.94}],
-   /* A second Hoya RM90 entry (hy_rm90) was removed in favour of this one.
-      The two came from different digitising batches and their curves
-      disagreed by up to 8pp, so one of them had to be wrong; this is the
-      one kept, on the file owner's call. Recorded here because a
-      disagreement that large is worth knowing about if a measurement ever
-      contradicts this curve. */
-  same:'fitted to a real Schott/Hoya comparison chart on ultravioletphotography.com \u2014 the rise is far more gradual than a simple cutoff suggests, spanning roughly 700-1200nm rather than plateauing sharply. Max fitting error 4.0 percentage points'},
+ {id:'rm90',g:'B9',n:'Hoya RM90',   d:'Deep IR \u00b7 Hoya\u2019s own table \u00b7 50% at 921nm',        c:'#7c2719',type:'absorptive',
+  same:'REAL DATA \u2014 Hoya\u2019s own datasheet table for this glass at 2.5mm (hoyaoptics.com/eo_pdf), read 2026-11-11; surface reflection is included, which is why it levels off near 90%. A slow rise, not a sharp cut: 4% at 800nm, 18% at 850nm, 40% at 900nm, 50% at about 921nm, 74% at 1000nm and 85% at 1100nm. Build 391: replaces a curve fitted to a forum chart, which read up to 6 points high past 1050nm and 5 low at 900nm.'},
  {id:'bw094',g:'B9',n:'B+W 094',     d:'= Schott RG1000 · fitted to Schott datasheet',c:'#6e2216',
   same:'REAL DATA \u2014 CheeseCube312\u2019s Filter-Plotter-Data project, digitised from Schott\u2019s own RG1000 datasheet. '
    +'Replaces the earlier sigmoid fit (RMS 2.1pp, cross-confirmed by Edmund Optics) after checking it against '
    +'this real curve directly \u2014 the two matched closely (within a few points at every checked wavelength), so '
    +'this is a precision upgrade to the exact numbers, not a correction of an error. B+W\u2019s own numbering '
    +'(092=695nm/RG695, 093=830nm/RG830, 094\u2248RG1000) confirms the identity.'},
- {id:'rm100',g:'B9',n:'Hoya RM100',  d:'Official Hoya datasheet · deepest',            c:'#6b2115',bands:[{lo:950,ls:42,T:.91}],
-   /* A second Hoya RM100 entry (hy_rm100) was removed in favour of this one.
-      The two came from different digitising batches and their curves
-      disagreed by up to 18pp, so one of them had to be wrong; this is the
-      one kept, on the file owner's call. Recorded here because a
-      disagreement that large is worth knowing about if a measurement ever
-      contradicts this curve. */
-  same:'fitted to Hoya\u2019s own official spectral characteristics datasheet (RM100, 2.5mm, AR coated) \u2014 max fitting error 4.5 percentage points. Also gradual, rising from ~800nm through past 1200nm rather than a sharp cutoff'},
+ {id:'rm100',g:'B9',n:'Hoya RM100',  d:'Deepest IR \u00b7 Hoya\u2019s own table \u00b7 50% at 990nm',            c:'#6b2115',type:'absorptive',
+  same:'REAL DATA \u2014 Hoya\u2019s own datasheet table for this glass at 2.5mm (hoyaoptics.com/eo_pdf), read 2026-11-11; surface reflection is included, which is why it levels off near 90%. Rises very slowly: 3% at 850nm, 15% at 900nm, 35% at 950nm, 50% at about 990nm, 66% at 1050nm and 74% at 1100nm. Build 391: replaces a fitted curve that put the 50% point near 958nm and read up to 18 points too high around 1040nm, so exposure predictions for this filter were about a stop optimistic on a sensor that is already weak out here.'},
 
  /* ---- Haze / UV-cut ----
     Passes visible light, blocks UV, and (the reason this is its own group
@@ -1437,19 +1425,14 @@ const FILTERS=[
   same:'DERIVED from real data \u2014 Hoya Candeo Optronics\u2019 own datasheet table for R70 glass at 2.5mm (see the Hoya R70 '
    +'glass card), on the assumption that the camera filter uses that glass at about that thickness. 50% at about '
    +'702nm: the number names the 50% point, not a 70% point as this card used to say. Replaces an estimate.'},
- {id:'hy_r76',g:'B8',n:'Hoya R76',d:'Real chart \u00b7 IR long-pass',c:'#bc552d',
-  same:'REAL DATA \u2014 exact digitised curve from Hoya\u2019s own published IR-series chart (IR76N/IR80N/IR83N/'
-   +'IR85N/RM90/RM100/RT830). Replaces an undocumented placeholder (flat 90%, generic ls:6 slope) with the '
-   +'exact curve \u2014 real 50%-point ~769nm, close to but not exactly the nominal "76" in the name.'},
- {id:'hy_r80',g:'B8',n:'Hoya R80',d:'Real chart \u00b7 IR long-pass',c:'#b34e2a',
-  same:'REAL DATA \u2014 exact digitised curve, same source as R76 above. Real 50%-point ~808nm, close to but '
-   +'not exactly the nominal "80" in the name.'},
- {id:'hy_r83',g:'B9',n:'Hoya R83',d:'Real chart \u00b7 IR long-pass',c:'#aa4827',
-  same:'REAL DATA \u2014 exact digitised curve, same source as R76 above. Real 50%-point ~834nm, close to the '
-   +'nominal "83" in the name.'},
- {id:'hy_r85',g:'B9',n:'Hoya R85',d:'Real chart \u00b7 IR long-pass',c:'#a34423',
-  same:'REAL DATA \u2014 exact digitised curve, same source as R76 above. Real 50%-point ~850nm, matching the '
-   +'nominal "85" in the name almost exactly.'},
+ {id:'hy_r76',g:'B8',n:'Hoya R76',d:'IR long-pass \u00b7 Hoya\u2019s own table (IR76N)',c:'#bc552d',type:'absorptive',
+  same:'REAL DATA \u2014 Hoya\u2019s own datasheet table for this glass at 2.5mm (hoyaoptics.com/eo_pdf), read 2026-11-11; surface reflection is included, which is why it levels off near 90%. IR76N glass: 13% at 750nm, 50% at about 765nm, 84% by 790nm. Build 391: replaces a curve digitised from Hoya\u2019s series chart, whose edge sat about 3nm late.'},
+ {id:'hy_r80',g:'B8',n:'Hoya R80',d:'IR long-pass \u00b7 Hoya\u2019s own table (IR80N)',c:'#b34e2a',type:'absorptive',
+  same:'REAL DATA \u2014 Hoya\u2019s own datasheet table for this glass at 2.5mm (hoyaoptics.com/eo_pdf), read 2026-11-11; surface reflection is included, which is why it levels off near 90%. IR80N glass: 15% at 790nm, 50% at about 806nm, 82% by 830nm. Build 391: replaces a curve digitised from Hoya\u2019s series chart.'},
+ {id:'hy_r83',g:'B9',n:'Hoya R83',d:'IR long-pass \u00b7 Hoya\u2019s own table (IR83N)',c:'#aa4827',type:'absorptive',
+  same:'REAL DATA \u2014 Hoya\u2019s own datasheet table for this glass at 2.5mm (hoyaoptics.com/eo_pdf), read 2026-11-11; surface reflection is included, which is why it levels off near 90%. IR83N glass: 15% at 820nm, 50% at about 836nm, 83% by 860nm. Build 391: replaces a curve digitised from Hoya\u2019s series chart.'},
+ {id:'hy_r85',g:'B9',n:'Hoya R85',d:'IR long-pass \u00b7 Hoya\u2019s own table (IR85N)',c:'#a34423',type:'absorptive',
+  same:'REAL DATA \u2014 Hoya\u2019s own datasheet table for this glass at 2.5mm (hoyaoptics.com/eo_pdf), read 2026-11-11; surface reflection is included, which is why it levels off near 90%. IR85N glass: 16% at 840nm, 50% at about 855nm, 80% by 880nm. Build 391: replaces a curve digitised from Hoya\u2019s series chart, whose edge sat about 3nm early.'},
  {id:'hy_rm86',g:'B9',n:'Hoya RM86',d:'Deep IR long-pass',c:'#943c1e',
   bands:[{lo:860,ls:6,T:.90}]},
  {id:'hy_rt830',g:'B9',n:'Hoya RT830',d:'Real chart \u00b7 IR long-pass, new addition',c:'#c04020',
