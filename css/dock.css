@@ -1391,3 +1391,20 @@ html.studioOn body.has-image #reorderZone#reorderZone .swapBtn.on:not(#matrixDet
 html.studioOn body.has-image #reorderZone#reorderZone #btnAddBand{height:32px;padding:0 14px}
 html.studioOn body.has-image #reorderZone#reorderZone .pgrid,html.dockOn body.has-image #reorderZone#reorderZone .pgrid{align-items:stretch}
 html.studioOn body.has-image #reorderZone#reorderZone .pgrid .pb,html.dockOn body.has-image #reorderZone#reorderZone .pgrid .pb{height:100%}
+
+/* Build 394: panel rails, changed-slider markers, camera details line */
+.stRail,#stInfo{display:none}
+@media (min-width:1000px){
+  html.studioOn body.has-image .stRail{position:absolute;top:50%;transform:translateY(-50%);z-index:12;flex-direction:column;gap:2px;padding:4px;border:1px solid rgba(255,255,255,.1);border-radius:14px;background:rgba(10,10,12,.84);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);box-shadow:0 6px 18px rgba(0,0,0,.55)}
+  html.studioOn body.has-image #stRailL{left:12px}
+  html.studioOn body.has-image #stRailR{right:12px}
+  html.studioOn.stNoL body.has-image #stRailL,html.studioOn.stNoR body.has-image #stRailR{display:flex}
+  .stRail button{display:grid;place-content:center;width:36px;height:36px;border:0;border-radius:10px;background:none;color:#a8a49b;cursor:pointer;transition:background-color .16s ease,color .16s ease}
+  .stRail button:hover{background:rgba(255,255,255,.08);color:#f1ede6}
+  .stRail button svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round}
+  /* a moved slider: a small red dot before its name, the name brighter; the group header shows how many */
+  html.studioOn body.has-image #reorderZone#reorderZone .sl.chg > label{color:#f1ede6}
+  html.studioOn body.has-image #reorderZone#reorderZone .sl.chg > label::before{content:'';display:inline-block;width:5px;height:5px;margin:0 7px 2px 0;border-radius:50%;background:#d63a3a;vertical-align:middle}
+  html.studioOn body.has-image #reorderZone#reorderZone .dGrp > summary .dT[data-chg]::after{content:attr(data-chg);display:inline-grid;place-content:center;min-width:16px;height:16px;margin-left:8px;padding:0 4px;border-radius:8px;background:rgba(214,58,58,.2);color:#f1ede6;font:600 10px/1 ui-sans-serif,system-ui,sans-serif;letter-spacing:0;vertical-align:1px}
+  html.studioOn body.has-image #stInfo:not([hidden]){display:block;position:absolute;left:0;right:0;top:12px;z-index:5;text-align:center;font:500 11.5px/1 ui-monospace,Menlo,monospace;letter-spacing:.04em;color:#7f7b73;pointer-events:none;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding:0 60px}
+}

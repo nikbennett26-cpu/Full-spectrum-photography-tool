@@ -228,15 +228,100 @@
     const pos = (v - mn) / span * 100, c = mn < 0 && mx > 0 ? -mn / span * 100 : 0;
     const lo = Math.min(c, pos).toFixed(2), hi = Math.max(c, pos).toFixed(2);
     if (el.style.getPropertyValue('--lo') !== lo) el.style.setProperty('--lo', lo);
-    if (el.style.getPropertyValue('--hi') !== hi) el.style.setProperty('--hi', hi);
+    if (el.style.getPropertyValue('--hi') !== hi) el.style.setProperty('--hi', hi);    /* build 394: a slider away from its starting value marks its row, so what has been edited shows at a glance */
+    const row = el.closest('.sl'); if (row) row.classList.toggle('chg', Math.abs(v - (+el.defaultValue)) > 1e-9 && el.defaultValue !== '');
   }
-  function fillAll() { const z = $('reorderZone'); if (z) z.querySelectorAll('.sl:not(.wb) input[type=range]').forEach(fillOne); }
+  function fillAll() {
+    const z = $('reorderZone'); if (!z) return;
+    z.querySelectorAll('.sl:not(.wb) input[type=range]').forEach(fillOne);
+    z.querySelectorAll('details.dGrp').forEach(g => {   // build 394: how many sliders in each group have been moved
+      const t = g.querySelector(':scope > summary .dT'); if (!t) return;
+      const n = g.querySelectorAll('.sl.chg').length, v = n ? String(n) : '';
+      if ((t.dataset.chg || '') !== v) { if (v) t.dataset.chg = v; else delete t.dataset.chg; }
+    });
+  }
   document.addEventListener('input', e => { if (e.target && e.target.matches && e.target.matches('#reorderZone input[type=range]')) fillOne(e.target); }, true);
+  document.addEventListener('change', () => fillSoon(), true);
+  document.addEventListener('click', () => { if (root.classList.contains('studioOn')) setTimeout(fillAll, 120); }, true);
   let fillT = 0;
   const fillSoon = () => { clearTimeout(fillT); fillT = setTimeout(fillAll, 40); };
   new MutationObserver(ms => { if (ms.some(m => m.target.matches && m.target.matches('input[type=range]') && !(m.oldValue || '').includes('--lo'))) fillSoon(); else if (ms.some(m => m.target.matches && m.target.matches('input[type=range]'))) fillSoon(); })
     .observe(document.getElementById('reorderZone') || document.body, { attributes: true, attributeFilter: ['style', 'value'], subtree: true });
 
+  /* Build 394: a hidden side panel leaves a slim rail of icons on that edge of the photo; one click brings the panel back
+     on the section asked for. */
+  function addRails() {
+    const cw = $('cw'); if (!cw || $('stRailL')) return;
+    const mk = (id, items, label) => {
+      const r = document.createElement('div'); r.id = id; r.className = 'stRail'; r.setAttribute('role', 'toolbar'); r.setAttribute('aria-label', label);
+      items.forEach(it => { const b = document.createElement('button'); b.type = 'button'; b.title = it[0]; b.setAttribute('aria-label', it[0]); b.innerHTML = it[1]; b.addEventListener('click', it[2]); r.appendChild(b); });
+      cw.appendChild(r);
+    };
+    const svg = p => '<svg viewBox="0 0 20 20" aria-hidden="true">' + p + '</svg>';
+    const openL = secId => () => { root.classList.remove('stNoL'); panelsSave(); const d = $(secId); if (d) { d.open = true; setTimeout(() => { try { d.scrollIntoView({ block: 'nearest' }); } catch (e) {} }, 80); } setTimeout(() => { window.dispatchEvent(new Event('resize')); refreshSpectrum(); }, 60); };
+    mk('stRailL', [
+      ['Spectrum', svg('<path d="M2.5 15c2.5 0 3-9 5.5-9s2.5 6 4.5 6 2.5-4 5-4"/>'), openL('stSecSpec')],
+      ['Source channels', svg('<circle cx="7.5" cy="8" r="4.5"/><circle cx="12.5" cy="8" r="4.5"/><circle cx="10" cy="12.5" r="4.5"/>'), openL('stChanHome')],
+      ['History', svg('<path d="M3.5 10a6.5 6.5 0 1 0 2-4.7M3.5 4v3h3M10 6.5V10l2.5 1.5"/>'), openL('stSecHist')]
+    ], 'Left panel');
+    const dock = $('dock');
+    const tabs = dock ? [...dock.querySelectorAll('button[data-tab]')] : [];
+    mk('stRailR', tabs.map(t => {
+      const ic = t.querySelector('svg'); const name = (t.textContent || t.dataset.tab).trim();
+      return [name, ic ? ic.outerHTML : svg('<circle cx="10" cy="10" r="3"/>'), () => { root.classList.remove('stNoR'); panelsSave(); t.click(); if (!t.classList.contains('on')) t.click(); setTimeout(() => window.dispatchEvent(new Event('resize')), 60); }];
+    }), 'Right panel');
+  }
+  /* Build 394: a quiet line with what the camera recorded (body, lens, ISO, shutter, aperture, focal length), read from
+     the file's own EXIF. Works on JPEG and on the TIFF-based RAW formats; says nothing when the file carries none. */
+  function exifText(buf) {
+    try {
+      const dv = new DataView(buf); let t0 = -1;
+      if (dv.getUint16(0) === 0xFFD8) {   // JPEG: find the APP1 "Exif" block
+        let o = 2;
+        while (o + 4 < dv.byteLength) { const m = dv.getUint16(o), n = dv.getUint16(o + 2); if (m === 0xFFE1 && dv.getUint32(o + 4) === 0x45786966) { t0 = o + 10; break; } if ((m & 0xFF00) !== 0xFF00) break; o += 2 + n; }
+      } else if (dv.getUint16(0) === 0x4949 || dv.getUint16(0) === 0x4D4D) t0 = 0;
+      if (t0 < 0) return '';
+      const le = dv.getUint16(t0) === 0x4949, u16 = o => dv.getUint16(t0 + o, le), u32 = o => dv.getUint32(t0 + o, le);
+      const SZ = [0, 1, 1, 2, 4, 8, 1, 1, 2, 4, 8, 4, 8];
+      const out = {};
+      const readIfd = (off, want) => {
+        if (!off || t0 + off + 2 > dv.byteLength) return;
+        const n = u16(off);
+        for (let i = 0; i < n; i++) {
+          const e = off + 2 + i * 12; if (t0 + e + 12 > dv.byteLength) return;
+          const tag = u16(e), type = u16(e + 2), cnt = u32(e + 4); if (!(tag in want)) continue;
+          const len = (SZ[type] || 1) * cnt, vo = len > 4 ? u32(e + 8) : e + 8; if (t0 + vo + len > dv.byteLength) continue;
+          let v;
+          if (type === 2) { v = ''; for (let k = 0; k < cnt; k++) { const c = dv.getUint8(t0 + vo + k); if (!c) break; v += String.fromCharCode(c); } v = v.trim(); }
+          else if (type === 3) v = u16(vo); else if (type === 4) v = u32(vo);
+          else if (type === 5) { const d = u32(vo + 4); v = d ? u32(vo) / d : 0; }
+          else continue;
+          out[want[tag]] = v;
+        }
+      };
+      readIfd(u32(4), { 0x010F: 'make', 0x0110: 'model', 0x8769: 'exif' });
+      if (out.exif) readIfd(out.exif, { 0x829A: 'exp', 0x829D: 'fn', 0x8827: 'iso', 0x920A: 'fl', 0xA434: 'lens' });
+      const bits = [];
+      if (out.model) { const mk = (out.make || '').split(' ')[0]; bits.push(mk && out.model.toLowerCase().indexOf(mk.toLowerCase()) < 0 ? mk + ' ' + out.model : out.model); }
+      if (out.lens && /[a-z]{2}/i.test(out.lens) && out.lens.indexOf('65535') < 0) bits.push(out.lens);   // adapted lenses write a placeholder
+      if (out.iso) bits.push('ISO ' + out.iso);
+      if (out.exp) bits.push(out.exp >= 0.4 ? (Math.round(out.exp * 10) / 10) + 's' : '1/' + Math.round(1 / out.exp) + 's');
+      if (out.fn) bits.push('f/' + (Math.round(out.fn * 10) / 10));
+      if (out.fl) bits.push(Math.round(out.fl) + 'mm');
+      return bits.join('  \u00b7  ');
+    } catch (e) { return ''; }
+  }
+  window.stPhotoInfo = async function (file) {
+    let txt = '';
+    try { if (file && file.slice) txt = exifText(await file.slice(0, 262144).arrayBuffer()); } catch (e) {}
+    window._stInfoText = txt; showInfo();
+  };
+  function showInfo() {
+    const cw = $('cw'); if (!cw) return;
+    let el = $('stInfo');
+    if (!el) { el = document.createElement('div'); el.id = 'stInfo'; cw.appendChild(el); }
+    el.textContent = window._stInfoText || ''; el.hidden = !window._stInfoText;
+  }
   /* Build 378: a visible zoom control on the photo (the mouse wheel already zooms; nothing on screen said so) */
   function addZoom() {
     const cw = $('cw'); if (!cw || $('stZoom')) return;
@@ -251,7 +336,7 @@
     window.stZoomSync(zoom);
   }
   window.studioLeftOn = function () {
-    panelsLoad(); addToggles(); addZoom(); fillAll();
+    panelsLoad(); addToggles(); addZoom(); addRails(); showInfo(); fillAll();
     if (!built) build();
     const fd = $('filtersDetails'); if (fd) { park(fd, 'filters'); $('stSpecPick').appendChild(fd); }
     const cd = $('channelDetails'); if (cd) { park(cd, 'channels'); $('stChanHome').appendChild(cd); cd.classList.add('stSec'); }
@@ -259,7 +344,7 @@
   };
   window.studioLeftOff = function () {
     if (!built) return;
-    ['stTogL', 'stTogR', 'stHdrL', 'stHdrR', 'stZoom'].forEach(id => { const b = $(id); if (b) b.remove(); });
+    ['stTogL', 'stTogR', 'stHdrL', 'stHdrR', 'stZoom', 'stRailL', 'stRailR', 'stInfo'].forEach(id => { const b = $(id); if (b) b.remove(); });
     const fd = $('filtersDetails'); if (fd) unpark(fd, 'filters');
     const cd = $('channelDetails'); if (cd) { cd.classList.remove('stSec'); unpark(cd, 'channels'); }
   };

@@ -857,6 +857,7 @@ async function loadFile(file) {
   if (typeof decodeTipAsk === 'function' && !(await decodeTipAsk(file))) return;
   try { if (window.dockLooks) window.dockLooks(); } catch (e) {}   /* build 347: each new photo starts back on Looks */
   document.body.classList.add('imgLoading');
+  try { if (window.stPhotoInfo) window.stPhotoInfo(file); } catch (e) {}   /* build 394: camera details line */
   try { return await loadFileInner(file); }
   finally { document.body.classList.remove('imgLoading'); }
 }
