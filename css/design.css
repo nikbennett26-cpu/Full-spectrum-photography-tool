@@ -1,0 +1,166 @@
+/* ============================================================================================================
+   Build 398 — design pass. Loaded last, so it settles what the older stylesheets (main → refresh → dock → minimal)
+   left inconsistent. One set of rules, written once:
+
+   · One typeface. Inter 4, variable (every weight from one file) with optical sizing, so the big headline tightens
+     and the 11 px labels open up on their own. The panels had been in two fonts: Inter, and whatever the computer
+     calls "ui-sans-serif" (San Francisco on a Mac, Segoe on Windows), and semibold was faked from the 500 weight.
+   · Headings in sentence case, not spaced-out capitals.
+   · Choosing an option is shown in neutral light (a raised, lighter tile). Red is kept for what is live or for the
+     one main action: the open tab, the current history step, a changed setting's dot, the slider fills, Export.
+   · Surfaces step up in tone instead of being boxed in by outlines; lines are hairlines.
+   · Numbers line up (tabular figures).
+   ============================================================================================================ */
+
+@font-face{font-family:'InterVariable';font-style:normal;font-display:swap;font-weight:100 900;
+  src:url(../fonts/inter-var-latin.woff2) format('woff2');
+  unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}
+@font-face{font-family:'InterVariable';font-style:normal;font-display:swap;font-weight:100 900;
+  src:url(../fonts/inter-var-latin-ext.woff2) format('woff2');
+  unicode-range:U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF}
+
+:root{
+  --ds-font:'InterVariable','Inter',system-ui,-apple-system,'Segoe UI',sans-serif;
+  --ds-bg0:#08080a;      /* page */
+  --ds-bg1:#0d0d10;      /* panels */
+  --ds-bg2:#141418;      /* controls, cards */
+  --ds-bg3:#1b1b21;      /* hover */
+  --ds-sel:rgba(255,255,255,.105);
+  --ds-sel-ring:rgba(255,255,255,.2);
+  --ds-line:rgba(255,255,255,.065);
+  --ds-line2:rgba(255,255,255,.11);
+  --ds-t1:#f3f0ea; --ds-t2:#b7b2a9; --ds-t3:#7f7a71;
+  --ds-red:#d63a3a;
+  --ds-r-sm:8px; --ds-r:10px; --ds-r-lg:14px;
+  /* the older sheets read these */
+  --font-display:var(--ds-font); --font-body:var(--ds-font); --font-mono:var(--ds-font);
+}
+
+/* ---------- one typeface everywhere (SVG icons are unaffected; nothing here uses an icon font) ---------- */
+html body, html body *:not(code):not(kbd):not(pre):not(samp){font-family:var(--ds-font) !important}
+html body{font-optical-sizing:auto;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;text-rendering:optimizeLegibility}
+html body .v, html body output, html body .stN, html body input[type=number], html body .sl .val, html body [id^="v_"]{font-variant-numeric:tabular-nums}
+
+/* ---------- home page ---------- */
+#emptyStateGroup.lab .labHero h1{font-weight:300 !important;letter-spacing:-.022em !important}
+#baDemo .baTag{font:600 10.5px/1 var(--ds-font) !important;letter-spacing:.06em !important;text-transform:uppercase;padding:6px 9px !important;border-radius:999px !important;
+  background:rgba(8,8,10,.55) !important;border:1px solid rgba(255,255,255,.14) !important;-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px)}
+#emptyStateGroup.lab .labFmtChip{font:500 11.5px/1 var(--ds-font) !important;letter-spacing:.02em !important;color:var(--ds-t3) !important}
+/* the drop area: a tonal surface with a quiet upload mark, not a dashed box */
+#emptyStateGroup#emptyStateGroup.lab .labGo.ltPrompt{border:1px solid var(--ds-line2) !important;border-radius:var(--ds-r-lg) !important;background:linear-gradient(180deg,rgba(255,255,255,.035),rgba(255,255,255,.012)) !important;transition:border-color .16s ease,background-color .16s ease}
+#emptyStateGroup#emptyStateGroup.lab .labGo.ltPrompt:hover{border-color:rgba(255,255,255,.22) !important;background:rgba(255,255,255,.045) !important}
+@media (min-width:1000px){#emptyStateGroup#emptyStateGroup.lab .labGo.ltPrompt .ltCmd{display:block;padding-top:56px;background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23f3f0ea' stroke-width='1.7' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 16V4M7 9l5-5 5 5'/%3E%3Cpath d='M4 16v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2'/%3E%3C/svg%3E") center 20px/20px no-repeat,radial-gradient(circle at center 30px,var(--ds-bg3) 0 19.5px,rgba(255,255,255,.12) 20px 20.6px,transparent 21px) center 0/100% 60px no-repeat}}
+#emptyStateGroup#emptyStateGroup.lab #triStart,#emptyStateGroup#emptyStateGroup.lab #plGo,#emptyStateGroup#emptyStateGroup.lab #landingLinks a.labTool{border:0 !important;border-radius:var(--ds-r) !important;background:var(--ds-bg2) !important;box-shadow:inset 0 0 0 1px var(--ds-line) !important;transition:background-color .16s ease}
+#emptyStateGroup#emptyStateGroup.lab #triStart:hover,#emptyStateGroup#emptyStateGroup.lab #plGo:hover,#emptyStateGroup#emptyStateGroup.lab #landingLinks a.labTool:hover{background:var(--ds-bg3) !important;box-shadow:inset 0 0 0 1px var(--ds-line2) !important}
+/* Simple / Advanced: a segmented control */
+#emptyStateGroup.lab .labModeSeg{border:0 !important;padding:3px;gap:2px;border-radius:var(--ds-r);background:var(--ds-bg2);box-shadow:inset 0 0 0 1px var(--ds-line)}
+#emptyStateGroup.lab .labModeSeg button{min-height:30px !important;border-radius:7px !important;color:var(--ds-t3) !important;font-weight:500 !important}
+#emptyStateGroup.lab .labModeSeg button[aria-checked="true"]{box-shadow:inset 0 0 0 1px var(--ds-sel-ring) !important;background:var(--ds-sel) !important;color:var(--ds-t1) !important}
+
+/* ---------- cookie notice: a small floating card ---------- */
+#consentBar#consentBar.on{left:auto;right:16px;bottom:16px;max-width:420px;padding:12px 12px 12px 16px;gap:14px;align-items:center;border:1px solid var(--ds-line2);border-radius:var(--ds-r-lg);
+  background:rgba(16,16,19,.86);-webkit-backdrop-filter:blur(16px) saturate(1.3);backdrop-filter:blur(16px) saturate(1.3);box-shadow:0 18px 50px -12px rgba(0,0,0,.8)}
+#consentBar#consentBar p{font-size:12.5px !important;color:var(--ds-t2) !important;margin:0 !important}
+#consentBar#consentBar button{min-height:32px;padding:0 14px;border-radius:8px !important;border:0 !important;background:var(--ds-t1) !important;color:#111 !important;font-weight:600 !important;font-size:12.5px !important}
+html.dockOn body.has-image #consentBar#consentBar.on{left:12px;right:12px;max-width:none;bottom:calc(var(--dockH,64px) + 10px)}
+@media (max-width:999px){#consentBar#consentBar.on{left:12px;right:12px;max-width:none}}
+
+/* ============================== the editor (desktop studio and phone) ============================== */
+
+/* headings: sentence case, weight not spacing */
+html.studioOn body.has-image .stH,html.studioOn body.has-image .stH > span,html.studioOn body.has-image .stepHdr > span,html.studioOn body.has-image .dGrp > summary .dT{
+  text-transform:none !important;letter-spacing:-.003em !important;font-size:13px !important;font-weight:600 !important;color:var(--ds-t1) !important}
+html.studioOn body.has-image .dGrp > summary .dT{font-weight:550 !important;color:#e2ded6 !important}
+html body.has-image .mxPrevLbl,html body.has-image .subhdr{text-transform:none !important;letter-spacing:0 !important;font-size:12px !important;font-weight:500 !important;color:var(--ds-t3) !important}
+html body.has-image #cmpBar .cmpBarLabels span{text-transform:none !important;letter-spacing:0 !important;font-size:12px !important;font-weight:500 !important;color:var(--ds-t2) !important;text-decoration:none !important}
+
+/* option buttons: tonal tiles; the chosen one is lighter, not red */
+html body.has-image #reorderZone#reorderZone .swapBtn,html body.has-image #reorderZone#reorderZone #matrixDetails .swapRow .swapBtn,
+html body.has-image #reorderZone#reorderZone .wbModeBtn,html body.has-image #reorderZone#reorderZone .btnGhostSmall:not(#scopeModeRow .btnGhostSmall){
+  border:0 !important;border-radius:var(--ds-r) !important;background:var(--ds-bg2) !important;box-shadow:inset 0 0 0 1px var(--ds-line) !important;color:var(--ds-t2) !important;font-weight:500 !important;
+  transition:background-color .14s ease,box-shadow .14s ease,color .14s ease}
+html body.has-image #reorderZone#reorderZone .swapBtn:hover,html body.has-image #reorderZone#reorderZone .wbModeBtn:hover,html body.has-image #reorderZone#reorderZone .btnGhostSmall:not(#scopeModeRow .btnGhostSmall):hover{
+  background:var(--ds-bg3) !important;box-shadow:inset 0 0 0 1px var(--ds-line2) !important;color:var(--ds-t1) !important}
+html body.has-image #reorderZone#reorderZone .swapBtn.on,html body.has-image #reorderZone#reorderZone #matrixDetails .swapRow .swapBtn.on,
+html body.has-image #reorderZone#reorderZone .wbModeBtn.on,html body.has-image #reorderZone#reorderZone .btnGhostSmall.on:not(#scopeModeRow .btnGhostSmall),html body.has-image #reorderZone#reorderZone .btnGhostSmall[aria-pressed="true"]:not(#scopeModeRow .btnGhostSmall){
+  background:var(--ds-sel) !important;box-shadow:inset 0 0 0 1px var(--ds-sel-ring),0 1px 0 rgba(255,255,255,.04) !important;color:var(--ds-t1) !important}
+html body.has-image #reorderZone#reorderZone #matrixDetails .swapRow{gap:6px !important}
+
+/* before/after colour pairs: rounded chips with a hairline between */
+html body.has-image #mxPreview.mxPreview{gap:4px !important}
+html body.has-image #mxPreview.mxPreview > div{border-radius:6px;overflow:hidden;box-shadow:inset 0 0 0 1px rgba(0,0,0,.25)}
+
+/* histogram mode: one segmented control */
+html.studioOn body.has-image #scopeModeRow#scopeModeRow{display:inline-flex !important;gap:2px !important;padding:3px !important;border-radius:var(--ds-r) !important;background:var(--ds-bg2) !important;box-shadow:inset 0 0 0 1px var(--ds-line) !important;border:0 !important}
+html.studioOn body.has-image #scopeModeRow#scopeModeRow button.btnGhostSmall{height:28px !important;min-height:28px !important;padding:0 12px !important;border:0 !important;border-radius:7px !important;background:none !important;box-shadow:none !important;color:var(--ds-t3) !important;font-size:12px !important;font-weight:500 !important}
+html.studioOn body.has-image #scopeModeRow#scopeModeRow button.btnGhostSmall:hover{color:var(--ds-t1) !important}
+html.studioOn body.has-image #scopeModeRow#scopeModeRow button.btnGhostSmall.on{background:var(--ds-sel) !important;box-shadow:inset 0 0 0 1px var(--ds-sel-ring) !important;color:var(--ds-t1) !important}
+html.studioOn body.has-image #histogram{border-radius:var(--ds-r) !important;border-color:var(--ds-line) !important;background:var(--ds-bg1) !important}
+
+@media (min-width:1000px){
+  /* surfaces: page darkest, panels a step up, hairlines between */
+  html.studioOn body.has-image{background:var(--ds-bg0) !important}
+  html.studioOn body.has-image #studioLeft,html.studioOn body.has-image #reorderZone#reorderZone{background:var(--ds-bg1) !important;border-color:var(--ds-line) !important}
+  html.studioOn body.has-image #studioLeft .stSec,html.studioOn body.has-image #reorderZone#reorderZone .dGrp,html.studioOn body.has-image #reorderZone#reorderZone .stepPanel > summary{border-color:var(--ds-line) !important}
+  html.studioOn body.has-image #editorLeft > .toolbar{background:var(--ds-bg0) !important;border-color:var(--ds-line) !important}
+  html.studioOn body.has-image #cw{background:#0b0b0e !important;border-color:var(--ds-line) !important;border-radius:16px !important}
+  /* top bar: quiet text buttons */
+  html.studioOn body.has-image #bReset.btnGhost,html.studioOn body.has-image #filterDbBtn{border:0 !important;border-radius:var(--ds-r-sm) !important;background:none !important;box-shadow:none !important;color:var(--ds-t2) !important;font-weight:500 !important}
+  html.studioOn body.has-image #bReset.btnGhost:hover,html.studioOn body.has-image #filterDbBtn:hover{background:var(--ds-bg2) !important;color:var(--ds-t1) !important}
+  /* the tab row: icon over label, red bar only under the open one */
+  html.studioOn body.has-image #dock button{color:var(--ds-t3) !important}
+  html.studioOn body.has-image #dock button:hover{color:var(--ds-t1) !important}
+  html.studioOn body.has-image #dock button.on{color:var(--ds-t1) !important}
+  html.studioOn body.has-image #dock button.on svg{stroke:var(--ds-red) !important}
+  /* left column */
+  html.studioOn body.has-image #studioLeft .stCards > div{border:0 !important;border-radius:var(--ds-r) !important;background:var(--ds-bg2) !important;box-shadow:inset 0 0 0 1px var(--ds-line) !important}
+  html.studioOn body.has-image #studioLeft .stCards > div small{font-size:11px !important;color:var(--ds-t3) !important;letter-spacing:0 !important}
+  html.studioOn body.has-image #studioLeft .stCards > div b,html.studioOn body.has-image #studioLeft .stCards > div strong{font-size:14px !important;font-weight:600 !important;font-variant-numeric:tabular-nums}
+  html.studioOn body.has-image #studioLeft #stSecTri .stB button,html.studioOn body.has-image #studioLeft #stSecTri .stB a{border:0 !important;border-radius:var(--ds-r) !important;background:var(--ds-bg2) !important;box-shadow:inset 0 0 0 1px var(--ds-line2) !important;color:var(--ds-t1) !important;font-weight:500 !important}
+  html.studioOn body.has-image #studioLeft #stSecTri .stB button:hover,html.studioOn body.has-image #studioLeft #stSecTri .stB a:hover{background:var(--ds-bg3) !important}
+  html.studioOn body.has-image #studioLeft #stSecSpec select,html.studioOn body.has-image #studioLeft .stB > select{border-radius:var(--ds-r) !important;border-color:var(--ds-line2) !important;background-color:var(--ds-bg2) !important}
+  /* floating bar on the photo: same glass as the cookie card */
+  html.studioOn body.has-image #stBar{border-color:var(--ds-line2) !important;background:rgba(14,14,17,.8) !important;-webkit-backdrop-filter:blur(18px) saturate(1.3) !important;backdrop-filter:blur(18px) saturate(1.3) !important}
+}
+
+/* phone */
+@media (max-width:999px){
+  html.dockOn body.has-image{background:var(--ds-bg0) !important}
+  html.dockOn body.has-image #dock{background:rgba(10,10,12,.92) !important;-webkit-backdrop-filter:blur(16px);backdrop-filter:blur(16px);border-top:1px solid var(--ds-line) !important}
+  html.dockOn body.has-image #dock button{color:var(--ds-t3) !important;font-weight:500 !important}
+  html.dockOn body.has-image #dock button.on{color:var(--ds-t1) !important}
+  html.dockOn body.has-image .dGrp > summary .dT{font-size:15px !important;font-weight:500 !important}
+  html.dockOn body.has-image #reorderZone .dGrp{border-color:var(--ds-line) !important}
+  /* the undo chip on the photo: glass, not a red box */
+  html.dockOn body.has-image #zoomBadge .previewPill,html.dockOn body.has-image #undoChip{border:1px solid var(--ds-line2) !important;border-radius:999px !important;background:rgba(12,12,15,.66) !important;-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);color:var(--ds-t1) !important}
+}
+
+/* ---- stronger versions of the heading rules (the older sheets set capitals with doubled IDs) ---- */
+html.studioOn body.has-image #reorderZone#reorderZone .dGrp > summary .dT,
+html.studioOn body.has-image #reorderZone#reorderZone .stepPanel > summary.stepHdr,
+html.studioOn body.has-image #reorderZone#reorderZone .stepPanel > summary.stepHdr > span,
+html.studioOn body.has-image #exportSection#exportSection > summary.secHead,
+html.studioOn body.has-image #exportSection#exportSection > summary.secHead > span{
+  font-family:var(--ds-font) !important;text-transform:none !important;letter-spacing:-.003em !important;line-height:1 !important}
+html.studioOn body.has-image #reorderZone#reorderZone .stepPanel > summary.stepHdr,
+html.studioOn body.has-image #reorderZone#reorderZone .stepPanel > summary.stepHdr > span,
+html.studioOn body.has-image #exportSection#exportSection > summary.secHead,
+html.studioOn body.has-image #exportSection#exportSection > summary.secHead > span{font-size:15px !important;font-weight:600 !important;color:var(--ds-t1) !important}
+html.studioOn body.has-image #reorderZone#reorderZone .dGrp > summary .dT{font-size:13.5px !important;font-weight:500 !important;color:#dcd8d0 !important}
+html.studioOn body.has-image #reorderZone#reorderZone .dGrp[open] > summary .dT{color:var(--ds-t1) !important}
+html.studioOn body.has-image #reorderZone#reorderZone .dGrp > summary:hover .dT{color:var(--ds-t1) !important}
+html.studioOn body.has-image #cmpBar#cmpBar .cmpBarLabels span,html.dockOn body.has-image #cmpBar#cmpBar .cmpBarLabels span{
+  font:500 12px/1 var(--ds-font) !important;letter-spacing:0 !important;text-transform:none !important;color:var(--ds-t2) !important;text-decoration:none !important}
+html.studioOn body.has-image #reorderZone#reorderZone .mxPrevLbl,html.studioOn body.has-image #reorderZone#reorderZone .subhdr,html.dockOn body.has-image #reorderZone .mxPrevLbl{
+  text-transform:none !important;letter-spacing:0 !important;font-size:12px !important;font-weight:500 !important;color:var(--ds-t3) !important}
+/* colour pairs */
+html body.has-image .mxPreview > div{height:24px !important;border-radius:6px !important}
+/* Clipping / CMYK toggles sit beside the segmented control as quiet pills */
+html.studioOn body.has-image #clipToggle,html.studioOn body.has-image #cmykToggle{border:0 !important;border-radius:var(--ds-r) !important;background:var(--ds-bg2) !important;box-shadow:inset 0 0 0 1px var(--ds-line) !important;color:var(--ds-t2) !important;font-size:12px !important;font-weight:500 !important}
+/* the "hold to compare" hint floated above the bar; with the bar on the photo it is not needed on desktop */
+@media (min-width:1000px){ html.studioOn body.has-image #holdHint{display:none !important} }
+/* phone headings */
+html.dockOn body.has-image #reorderZone .stepPanel > summary.stepHdr,html.dockOn body.has-image #reorderZone .stepPanel > summary.stepHdr > span{text-transform:none !important;letter-spacing:-.005em !important}
+
+#emptyStateGroup#emptyStateGroup.lab .labGo.ltPrompt .ltCmd{font-weight:500 !important;letter-spacing:-.005em !important}
+html.dockOn body.has-image #zoomBadge{background:none !important;border:0 !important;box-shadow:none !important}
