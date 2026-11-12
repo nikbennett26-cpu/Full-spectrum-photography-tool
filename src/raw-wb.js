@@ -262,6 +262,8 @@ function rtwbSet(next) {
     for (let e = d; e; e = e.parentElement) if (e.tagName === 'DETAILS') e.open = true;
     setTimeout(() => d.scrollIntoView({ behavior: 'smooth', block: 'start' }), 60);
   });
+  /* Build 405: Temperature & tint is part of the white balance card, so it is always open and its heading is not a fold. */
+  { const g = $('wbTempGrp'); if (g) { g.open = true; g.addEventListener('toggle', () => { if (!g.open) g.open = true; }); const sm = g.querySelector(':scope > summary'); if (sm) sm.addEventListener('click', e => e.preventDefault()); } }
 })();
 
 /* The white balance in effect as Temperature + Green (the nearest reading when it is beyond the scale). */

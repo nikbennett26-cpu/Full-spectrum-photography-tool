@@ -230,3 +230,25 @@ body.fltPage #exportPngBtn::before,body.fltPage #exportPngBtn > svg,body.fltPage
 body.fltPage #exportPngBtn{background:var(--ds-red) !important;box-shadow:none !important;color:#fff !important}
 body.fltPage button[id^="export"]:hover{background:var(--ds-bg3) !important}
 body.fltPage #exportPngBtn:hover{background:#c63333 !important}
+
+/* Build 405: White balance is one card. Temperature & tint is its second section, under the grey pickers: the same
+   heading, the same hairline rows, no card inside the card and no fold. The steps keep their "before / after the
+   swap" labels, which carry the order the numbered rail used to. */
+#reorderZone#reorderZone details[data-step="wb"] .wbSlim > #wbTempGrp#wbTempGrp{border:0!important;border-top:1px solid var(--st-hair,#1f2024)!important;border-radius:0!important;margin:6px 0 0!important;padding:0!important;background:transparent!important;overflow:visible!important;box-shadow:none!important}
+#reorderZone#reorderZone details[data-step="wb"] #wbTempGrp#wbTempGrp > summary{pointer-events:none;cursor:default;list-style:none;display:flex;align-items:baseline;gap:10px;min-height:0!important;height:auto!important;padding:14px 2px 6px!important;margin:0!important;border:0!important;background:transparent!important}
+#reorderZone#reorderZone details[data-step="wb"] #wbTempGrp#wbTempGrp > summary::-webkit-details-marker{display:none}
+#reorderZone#reorderZone details[data-step="wb"] #wbTempGrp#wbTempGrp > summary::before,#reorderZone#reorderZone details[data-step="wb"] #wbTempGrp#wbTempGrp > summary::after{content:none!important;display:none!important}
+#reorderZone#reorderZone details[data-step="wb"] #wbTempGrp#wbTempGrp > summary .dDot,#reorderZone#reorderZone details[data-step="wb"] #wbTempGrp#wbTempGrp > summary .dS{display:none!important}
+#reorderZone#reorderZone details[data-step="wb"] #wbTempGrp#wbTempGrp > summary .dT{flex:none;margin:0!important}
+#reorderZone#reorderZone details[data-step="wb"] #wbTempGrp#wbTempGrp > .dBody{padding:0 0 6px!important;margin:0!important;border:0!important;background:transparent!important}
+#reorderZone#reorderZone details[data-step="wb"] #wbTempGrp#wbTempGrp .wbStep{display:block;border-top:1px solid var(--st-hair,#1f2024);padding:12px 0 10px}
+#reorderZone#reorderZone details[data-step="wb"] #wbTempGrp#wbTempGrp .wbStep[hidden]{display:none}
+#reorderZone#reorderZone details[data-step="wb"] #wbTempGrp#wbTempGrp .wbStepRail{display:none!important}
+#reorderZone#reorderZone details[data-step="wb"] #wbTempGrp#wbTempGrp .wbStepCard{background:transparent!important;border:0!important;border-radius:0!important;padding:0!important;margin:0!important;box-shadow:none!important}
+#reorderZone#reorderZone details[data-step="wb"] #wbTempGrp#wbTempGrp .wbStepT{font-weight:600;font-size:13.5px;color:var(--ds-t1,#ece8e1)}
+#reorderZone#reorderZone details[data-step="wb"] #wbTempGrp#wbTempGrp .wbSwapRow{min-height:40px!important;margin:0!important;padding:0!important;border:0!important;border-radius:0!important;background:transparent!important;font-size:13.5px!important;font-weight:600}
+#reorderZone#reorderZone details[data-step="wb"] #wbTempGrp#wbTempGrp #wbSwapStep{padding:4px 0}
+#reorderZone#reorderZone details[data-step="wb"] #wbTempGrp#wbTempGrp .wbSwapSum{font-weight:400;color:var(--ds-t2,#8c8984)}
+#reorderZone#reorderZone details[data-step="wb"] #wbTempGrp#wbTempGrp:not(.wbRaw) #wbCastStep{border-top:0;padding-top:4px}
+html.studioOn #reorderZone#reorderZone details[data-step="wb"] #wbTempGrp#wbTempGrp > summary .dT{font:500 11.5px/1 InterVariable,Inter,system-ui,-apple-system,"Segoe UI",sans-serif!important;letter-spacing:.11em!important;text-transform:uppercase!important;color:#b9b5ac!important}
+html.studioOn #reorderZone#reorderZone details[data-step="wb"] #wbTempGrp#wbTempGrp > summary{padding:16px 2px 10px!important}
