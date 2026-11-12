@@ -164,3 +164,69 @@ html.dockOn body.has-image #reorderZone .stepPanel > summary.stepHdr,html.dockOn
 
 #emptyStateGroup#emptyStateGroup.lab .labGo.ltPrompt .ltCmd{font-weight:500 !important;letter-spacing:-.005em !important}
 html.dockOn body.has-image #zoomBadge{background:none !important;border:0 !important;box-shadow:none !important}
+
+/* ============================== the filter database page (build 399): the same rules as the editor ============================== */
+body.fltPage{background:var(--ds-bg0) !important}
+/* top bar: the same quiet text button as the editor's */
+body.fltPage #fBar{background:var(--ds-bg0) !important;border-color:var(--ds-line) !important}
+body.fltPage #fBar .fBack{border:0 !important;border-radius:var(--ds-r-sm) !important;background:none !important;box-shadow:none !important;color:var(--ds-t2) !important;font-weight:500 !important}
+body.fltPage #fBar .fBack:hover{background:var(--ds-bg2) !important;color:var(--ds-t1) !important}
+/* panels and cards: tonal surfaces, hairlines */
+body.fltPage #fShell#fShell #fChart,body.fltPage #fShell#fShell .panel{border:0 !important;border-radius:16px !important;background:var(--ds-bg1) !important;box-shadow:inset 0 0 0 1px var(--ds-line) !important}
+body.fltPage #fShell#fShell #filterList{border:0 !important;border-radius:var(--ds-r-lg) !important;box-shadow:inset 0 0 0 1px var(--ds-line) !important;background:var(--ds-bg1) !important}
+body.fltPage #fShell#fShell #filterList .grp,body.fltPage #fShell#fShell .fb{border-color:var(--ds-line) !important}
+body.fltPage #fShell#fShell .pt{text-transform:none !important;letter-spacing:-.003em !important;font-size:15px !important;font-weight:600 !important;color:var(--ds-t1) !important}
+/* chart toolbar and every other button: tonal tiles */
+body.fltPage #fShell#fShell #fRail .rk,body.fltPage #fShell#fShell #advToggle,body.fltPage #fShell#fShell .fb .fbactions button,body.fltPage #fShell#fShell .chiprow .chip,
+body.fltPage #fShell#fShell button.btnGhostSmall,body.fltPage #fShell#fShell .panel button:not(.fbadd):not(.ssX):not([data-pane]){
+  border:0 !important;border-radius:var(--ds-r) !important;background:var(--ds-bg2) !important;box-shadow:inset 0 0 0 1px var(--ds-line) !important;color:var(--ds-t2) !important;font-weight:500 !important;
+  transition:background-color .14s ease,box-shadow .14s ease,color .14s ease}
+body.fltPage #fShell#fShell .chiprow .chip{border-radius:999px !important}
+body.fltPage #fShell#fShell #fRail .rk:hover,body.fltPage #fShell#fShell #advToggle:hover,body.fltPage #fShell#fShell .fb .fbactions button:hover,body.fltPage #fShell#fShell .chiprow .chip:hover{
+  background:var(--ds-bg3) !important;box-shadow:inset 0 0 0 1px var(--ds-line2) !important;color:var(--ds-t1) !important}
+/* chosen: lighter, not red (log scale on, a filter chip on, a filter in the stack) */
+body.fltPage #fShell#fShell #fRail .rk[aria-pressed="true"],body.fltPage #fShell#fShell .chiprow .chip.on,body.fltPage #fShell#fShell .chiprow .chip[aria-pressed="true"],
+body.fltPage #fShell#fShell #advToggle[aria-expanded="true"],body.fltPage #fShell#fShell .fb.on .fbadd{
+  background:var(--ds-sel) !important;box-shadow:inset 0 0 0 1px var(--ds-sel-ring) !important;color:var(--ds-t1) !important;border:0 !important}
+body.fltPage #fShell#fShell .fb .fbactions .fbadd{border:0 !important;border-radius:var(--ds-r) !important;background:var(--ds-bg2) !important;box-shadow:inset 0 0 0 1px var(--ds-line2) !important;color:var(--ds-t1) !important}
+body.fltPage #fShell#fShell .fb.on{background:rgba(255,255,255,.035) !important}
+body.fltPage #fShell#fShell .fb.on .fbadd{background:var(--ds-sel) !important;box-shadow:inset 0 0 0 1px var(--ds-sel-ring) !important}
+/* search box */
+body.fltPage #fShell#fShell #filterSearch{border:0 !important;border-radius:var(--ds-r) !important;background:var(--ds-bg2) !important;box-shadow:inset 0 0 0 1px var(--ds-line2) !important;color:var(--ds-t1) !important}
+body.fltPage #fShell#fShell #filterSearch:focus{box-shadow:inset 0 0 0 1px rgba(255,255,255,.32) !important;outline:0}
+/* labels in sentence case, numbers lined up */
+body.fltPage #fShell#fShell #readout .ro .k{font:500 12px/1.2 var(--ds-font) !important;letter-spacing:0 !important;text-transform:none !important;color:var(--ds-t3) !important}
+body.fltPage #fShell#fShell #readout .ro .v{font-weight:550 !important;letter-spacing:-.01em !important;font-variant-numeric:tabular-nums}
+body.fltPage #fShell#fShell #readout .ro{border:0 !important;border-radius:var(--ds-r-lg) !important;background:var(--ds-bg2) !important;box-shadow:inset 0 0 0 1px var(--ds-line) !important}
+body.fltPage #fShell#fShell #stickyStack::before{font:600 13px/1 var(--ds-font) !important;letter-spacing:-.003em !important;text-transform:none !important;color:var(--ds-t1) !important}
+body.fltPage #fShell#fShell #stickyStack{border:0 !important;border-radius:var(--ds-r-lg) !important;background:var(--ds-bg2) !important;box-shadow:inset 0 0 0 1px var(--ds-line) !important}
+body.fltPage #fShell#fShell .grpHead .gcount{font-variant-numeric:tabular-nums;font-weight:500 !important;border:0 !important;background:var(--ds-bg2) !important;box-shadow:inset 0 0 0 1px var(--ds-line) !important;color:var(--ds-t3) !important}
+/* data badges: small pills in sentence case */
+body.fltPage .fbconf{font:600 10px/1 var(--ds-font) !important;letter-spacing:.01em !important;text-transform:lowercase !important;padding:3px 7px !important;border-radius:999px !important}
+/* section tabs (Find, Stack, Camera, Data): as in the editor, the open one is white with a red icon */
+body.fltPage #fTabs#fTabs button[data-pane]{color:var(--ds-t3) !important;background:none !important;font-weight:500 !important}
+body.fltPage #fTabs#fTabs button[data-pane]:hover{color:var(--ds-t1) !important}
+body.fltPage #fTabs#fTabs button[data-pane][aria-pressed="true"]{color:var(--ds-t1) !important}
+body.fltPage #fTabs#fTabs button[data-pane][aria-pressed="true"] svg{stroke:var(--ds-red) !important}
+@media (max-width:1099px){
+  body.fltPage #fTabs#fTabs{background:rgba(10,10,12,.92) !important;-webkit-backdrop-filter:blur(16px);backdrop-filter:blur(16px);border-top:1px solid var(--ds-line) !important}
+  body.fltPage .ssChip{border:0 !important;background:var(--ds-bg2) !important;box-shadow:inset 0 0 0 1px var(--ds-line2) !important}
+}
+body.fltPage .fbconf::first-letter{text-transform:uppercase}
+/* the Stack, Camera and Data panes */
+body.fltPage .ro .k,body.fltPage .grph3sum,body.fltPage .pt,body.fltPage .k{text-transform:none !important;letter-spacing:0 !important}
+body.fltPage .grph3sum{font:500 13px/1.4 var(--ds-font) !important}
+body.fltPage .ro .k{font:500 11.5px/1.2 var(--ds-font) !important;color:var(--ds-t3) !important}
+body.fltPage .ro{border:0 !important;border-radius:var(--ds-r) !important;background:var(--ds-bg2) !important;box-shadow:inset 0 0 0 1px var(--ds-line) !important}
+body.fltPage .ro .v{font-variant-numeric:tabular-nums}
+body.fltPage input[type=range],body.fltPage input[type=checkbox],body.fltPage input[type=radio]{accent-color:var(--ds-red)}
+body.fltPage select{-webkit-appearance:none;appearance:none;min-height:36px;padding:0 34px 0 12px !important;border:0 !important;border-radius:var(--ds-r) !important;color:var(--ds-t1) !important;font:500 13px/1 var(--ds-font) !important;
+  background:var(--ds-bg2) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23b7b2a9' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E") right 11px center/14px no-repeat !important;
+  box-shadow:inset 0 0 0 1px var(--ds-line2) !important}
+body.fltPage select:hover{background-color:var(--ds-bg3) !important}
+body.fltPage #exportPngBtn,body.fltPage #exportCsvBtn,body.fltPage #exportJsonBtn,body.fltPage button[id^="export"]{border:0 !important;border-radius:var(--ds-r) !important;min-height:36px;padding:0 14px !important;font:500 13px/1 var(--ds-font) !important;
+  background:var(--ds-bg2) !important;box-shadow:inset 0 0 0 1px var(--ds-line2) !important;color:var(--ds-t1) !important}
+body.fltPage #exportPngBtn::before,body.fltPage #exportPngBtn > svg,body.fltPage #exportPngBtn > i{display:none !important}
+body.fltPage #exportPngBtn{background:var(--ds-red) !important;box-shadow:none !important;color:#fff !important}
+body.fltPage button[id^="export"]:hover{background:var(--ds-bg3) !important}
+body.fltPage #exportPngBtn:hover{background:#c63333 !important}

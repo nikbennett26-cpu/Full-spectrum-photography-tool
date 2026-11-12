@@ -227,11 +227,11 @@ function drawCrgbChart(responses,maxResponse,targetCanvas,forceW,forceH){
 
   // thin QE-tinted strip along the top showing roughly where R/G/B peak,
   // mirroring the reference report's little illuminant/QE bar
-  cx.strokeStyle='rgba(84,64,42,.4)';cx.lineWidth=1*dpr;
+  cx.strokeStyle='rgba(255,255,255,.08)';cx.lineWidth=1*dpr;
   for(let t=0;t<=1.0001;t+=0.5){
     const yy=Math.round(y(t*yMax))+.5;
     cx.beginPath();cx.moveTo(pad.l,yy);cx.lineTo(W-pad.r,yy);cx.stroke();
-    cx.fillStyle='#7a6a52';cx.font=(9*dpr)+'px "JetBrains Mono",monospace';
+    cx.fillStyle='#7f7a71';cx.font='500 '+(9.5*dpr)+'px InterVariable,Inter,system-ui,sans-serif';
     cx.textAlign='right';cx.textBaseline='middle';
     cx.fillText(Math.round(t*yMax),pad.l-4*dpr,yy);
   }

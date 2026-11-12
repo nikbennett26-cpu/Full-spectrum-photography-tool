@@ -116,7 +116,7 @@ function _drawChartInner(dprOverride){
 
   // grid
   cx.strokeStyle=chartTheme().gridMajor;cx.lineWidth=1*dpr;
-  cx.font=(9.5*dpr)+'px "JetBrains Mono",monospace';cx.fillStyle='#7a6a52';
+  cx.font='500 '+(10*dpr)+'px InterVariable,Inter,system-ui,sans-serif';cx.fillStyle='#7f7a71';   // build 399: the editor's typeface and greys (the old ones named a font that was never loaded)
   if(isLog()){
     const decades=[1,0.1,0.01,0.001,0.0001,0.00001];
     decades.forEach(t=>{
@@ -173,20 +173,20 @@ function _drawChartInner(dprOverride){
   cx.strokeStyle=chartTheme().gridMajor;cx.lineWidth=1*dpr;
 
   // axis titles
-  cx.font=(10*dpr)+'px "Barlow Condensed",sans-serif';cx.fillStyle='#a89372';
+  cx.font='500 '+(10.5*dpr)+'px InterVariable,Inter,system-ui,sans-serif';cx.fillStyle='#9a958c';
   cx.textAlign='center';cx.textBaseline='alphabetic';
-  cx.fillText(trT('WAVELENGTH (nm)'),pad.l+(W-pad.l-pad.r)/2,H-4*dpr);
+  cx.fillText(dsCase(trT('WAVELENGTH (nm)')),pad.l+(W-pad.l-pad.r)/2,H-4*dpr);
   cx.save();
   cx.translate(11*dpr,pad.t+(H-pad.t-pad.b)/2);
   cx.rotate(-Math.PI/2);
   cx.textAlign='center';cx.textBaseline='alphabetic';
-  cx.fillText(trT(isLog()?'TRANSMISSION (log %)':'TRANSMISSION (%)'),0,0);
+  cx.fillText(dsCase(trT(isLog()?'TRANSMISSION (log %)':'TRANSMISSION (%)')),0,0);
   cx.restore();
 
   // region labels
   cx.textBaseline='top';cx.textAlign='center';cx.fillStyle=chartTheme().axisText;
   cx.fillText('UV',(uvX0+uvX1)/2,pad.t+3*dpr);
-  cx.fillText(trT('VISIBLE'),(uvX1+visX1)/2,pad.t+3*dpr);
+  cx.fillText(dsCase(trT('VISIBLE')),(uvX1+visX1)/2,pad.t+3*dpr);
   cx.fillText('NIR',(visX1+nirX1)/2,pad.t+3*dpr);
 
   const fs=selected.map(id=>FILTERS.find(f=>f.id===id)).filter(Boolean);
@@ -258,8 +258,8 @@ function _drawChartInner(dprOverride){
     cx.strokeStyle=stackColor;cx.lineWidth=1.0*dpr;cx.lineJoin='round';cx.stroke();
     cx.restore();
   }else{
-    cx.fillStyle='#7a6a52';cx.textAlign='center';cx.textBaseline='middle';
-    cx.font=(12*dpr)+'px system-ui,sans-serif';
+    cx.fillStyle='#7f7a71';cx.textAlign='center';cx.textBaseline='middle';
+    cx.font='500 '+(13*dpr)+'px InterVariable,Inter,system-ui,sans-serif';
     cx.fillText(trT('Select one or more filters below'),W/2,H/2);
   }
 
@@ -287,13 +287,15 @@ function _drawChartInner(dprOverride){
    contrast against #faf7f2. Saturation is nudged up slightly because
    darkening alone tends to read as grey. */
 function themeCurveColor(hex){ return hex; }   // build 211: curves were only darkened for the light theme
+/* build 399: chart labels in sentence case, like the rest of the tool; a translated label is left as the translation has it */
+function dsCase(t){ return (typeof t==='string' && /^[A-Z][A-Z ()%a-z]*$/.test(t) && t===t.toUpperCase().replace('(NM)','(nm)').replace('(LOG %)','(log %)')) ? t.charAt(0)+t.slice(1).toLowerCase().replace('(nm)','(nm)') : t; }
 function chartTheme(){
   /* Build 203: the minimal theme -- a flat ground, a faint grid, no tinted UV / visible / NIR bands; the curves carry it. */
   return {
     bg:'#000000',
     gridMajor:'rgba(255,255,255,.13)',
     gridMinor:'rgba(255,255,255,.055)',
-    axisText:'rgba(161,157,151,.95)',
+    axisText:'rgba(183,178,169,.9)',
     uvTint:'rgba(0,0,0,0)',
     visTint:'rgba(0,0,0,0)',
     nirTint:'rgba(0,0,0,0)',
