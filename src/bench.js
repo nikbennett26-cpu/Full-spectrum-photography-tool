@@ -194,4 +194,79 @@ async function runBench() {
   });
 }
 
-if (BENCH) { if (document.readyState === 'complete') setTimeout(runBench, 600); else window.addEventListener('load', () => setTimeout(runBench, 600)); }
+/* ?bench=raw (build 403): times opening one of your own RAW files, stage by stage, and lists every moment the page
+   froze (any stretch over 50 ms where it could not respond, from the browser's own long-task record). */
+async function runRawBench() {
+  const box = document.createElement('div');
+  box.id = 'benchBox';
+  box.style.cssText = 'position:fixed;inset:auto 16px 16px auto;z-index:100000;width:min(700px,calc(100vw - 32px));max-height:calc(100vh - 32px);overflow:auto;'
+    + 'padding:18px 18px 16px;border-radius:16px;background:rgba(14,14,17,.96);border:1px solid rgba(255,255,255,.12);box-shadow:0 20px 60px -10px rgba(0,0,0,.85);'
+    + 'color:#f3f0ea;font:13px/1.5 InterVariable,Inter,system-ui,sans-serif';
+  box.innerHTML = '<div style="font-size:15px;font-weight:600;margin-bottom:2px">irlab RAW opening test</div>'
+    + '<div id="benchStatus" style="color:#b7b2a9;margin-bottom:10px">Pick a RAW file of the kind you normally open. It is opened as usual and every stage is timed; nothing is saved or sent anywhere.</div>'
+    + '<label style="display:inline-flex;align-items:center;min-height:36px;padding:0 16px;border-radius:10px;background:#d63a3a;color:#fff;font-weight:600;cursor:pointer">Choose RAW file<input type="file" id="benchRawPick" style="display:none"></label>'
+    + '<pre id="benchOut" style="display:none;margin:12px 0 0;padding:12px;border-radius:10px;background:#08080a;border:1px solid rgba(255,255,255,.08);white-space:pre-wrap;font:12px/1.5 ui-monospace,Menlo,Consolas,monospace;color:#d8d4cc"></pre>'
+    + '<div id="benchBtns" style="display:none;margin-top:12px;gap:8px"><button type="button" id="benchCopy" style="min-height:36px;padding:0 16px;border:0;border-radius:10px;background:#d63a3a;color:#fff;font:600 13px InterVariable,Inter,system-ui,sans-serif;cursor:pointer">Copy results</button></div>';
+  document.body.appendChild(box);
+  const status = t => { $('benchStatus').textContent = t; };
+  const file = await new Promise(res => $('benchRawPick').addEventListener('change', e => res(e.target.files[0]), { once: true }));
+  if (!file) return;
+  box.querySelector('label').style.display = 'none';
+  status('Opening ' + file.name + '… leave the tab in front until it says Done.');
+  const R = { file: file.name, sizeMB: +(file.size / 1048576).toFixed(1) }, marks = [], longs = [];
+  let po = null;
+  try { po = new PerformanceObserver(l => l.getEntries().forEach(e => longs.push([e.startTime, e.duration]))); po.observe({ type: 'longtask' }); } catch (e) { R.noLongTasks = true; }
+  const origStart = window.rawProgStart;
+  window.rawProgStart = function (step, detail) { marks.push([performance.now(), (typeof RAWPROG_STEPS !== 'undefined' && RAWPROG_STEPS[step]) || ('step ' + step)]); return origStart.apply(this, arguments); };
+  // a heartbeat: how late a 50 ms timer fires shows how responsive the page felt, even where long tasks are not reported
+  let beatLate = 0, beats = 0, lastBeat = performance.now(), beatOn = true;
+  const beat = () => { if (!beatOn) return; const n = performance.now(); beatLate = Math.max(beatLate, n - lastBeat - 50); beats++; lastBeat = n; setTimeout(beat, 50); };
+  setTimeout(beat, 50);
+  window.__selftestRunning = true;   // skips the "decode quality" question
+  const t0 = performance.now();
+  try {
+    await loadFile(file);
+    for (let i = 0; i < 1200 && !document.body.classList.contains('has-image'); i++) await benchWait(100);
+    R.toPhotoShownMs = Math.round(performance.now() - t0);
+    marks.push([performance.now(), 'Photo on screen']);
+    // let the follow-on work run (clean-up, noise reduction, colour fit): wait for 3 s with no long task
+    status('Photo is open; waiting for the follow-on work to finish…');
+    let quietSince = performance.now();
+    for (let i = 0; i < 600; i++) {
+      await benchWait(250);
+      const last = longs.length ? longs[longs.length - 1][0] + longs[longs.length - 1][1] : 0;
+      if (last > quietSince) quietSince = last;
+      if (performance.now() - quietSince > 3000) break;
+    }
+    R.toSettledMs = Math.round(quietSince - t0);
+  } catch (e) { R.error = String(e && e.message || e); }
+  finally { window.__selftestRunning = false; window.rawProgStart = origStart; beatOn = false; if (po) po.disconnect(); }
+  try { R.device = benchDevice(); } catch (e) {}
+  try { R.photo = (origW || '?') + '×' + (origH || '?') + ' (working copy ' + engine.canvas.width + '×' + engine.canvas.height + ')'; } catch (e) {}
+  const lines = ['irlab RAW opening test · build ' + (window.IRLAB_BUILD || '') + ' · ' + new Date().toISOString()];
+  if (R.device) { lines.push('GPU: ' + R.device.gpu); lines.push('Device: ' + R.device.cores + ' cores, ' + R.device.memoryGB + ' GB · ' + R.device.ua); }
+  lines.push('File: ' + R.file + ' (' + R.sizeMB + ' MB)' + (R.photo ? ' · ' + R.photo : ''));
+  if (R.error) lines.push('STOPPED: ' + R.error);
+  lines.push('', 'Stages (seconds from choosing the file):');
+  marks.forEach(m => lines.push('  ' + ((m[0] - t0) / 1000).toFixed(2).padStart(6) + ' s  ' + m[1]));
+  if (R.toSettledMs) lines.push('  ' + (R.toSettledMs / 1000).toFixed(2).padStart(6) + ' s  everything finished');
+  const ls = longs.filter(l => l[0] >= t0 - 5).map(l => [l[0] - t0, l[1]]);
+  const total = ls.reduce((a, l) => a + l[1], 0), worst = ls.reduce((a, l) => Math.max(a, l[1]), 0);
+  lines.push('', 'Freezes (page could not respond): ' + ls.length + ', total ' + (total / 1000).toFixed(2) + ' s, longest ' + (worst / 1000).toFixed(2) + ' s');
+  ls.filter(l => l[1] >= 150).forEach(l => lines.push('  at ' + (l[0] / 1000).toFixed(2).padStart(6) + ' s: ' + (l[1] / 1000).toFixed(2) + ' s'));
+  lines.push('Longest wait for a 50 ms timer: ' + (beatLate / 1000).toFixed(2) + ' s');
+  const text = lines.join('\n');
+  window.__benchResults = { text, data: R };
+  status(R.error ? 'The test stopped early. Copy what it has and send it over.' : 'Done. Copy the results and send them over.');
+  const out = $('benchOut'); out.textContent = text; out.style.display = 'block';
+  $('benchBtns').style.display = 'flex';
+  $('benchCopy').addEventListener('click', async () => {
+    try { await navigator.clipboard.writeText(text); $('benchCopy').textContent = 'Copied'; }
+    catch (e) { const r = document.createRange(); r.selectNodeContents(out); const s = getSelection(); s.removeAllRanges(); s.addRange(r); $('benchCopy').textContent = 'Selected: press Ctrl+C'; }
+  });
+}
+
+if (BENCH) {
+  const go = /[?&]bench=raw(&|$)/.test(location.search) ? runRawBench : runBench;
+  if (document.readyState === 'complete') setTimeout(go, 600); else window.addEventListener('load', () => setTimeout(go, 600));
+}

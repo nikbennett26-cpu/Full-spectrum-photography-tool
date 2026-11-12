@@ -890,9 +890,10 @@ void main(){
         const fb = gl.createFramebuffer(), rb = gl.createRenderbuffer();
         gl.bindRenderbuffer(gl.RENDERBUFFER, rb); gl.renderbufferStorage(gl.RENDERBUFFER, gl.RGBA8, w, h);
         gl.bindFramebuffer(gl.FRAMEBUFFER, fb); gl.framebufferRenderbuffer(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.RENDERBUFFER, rb);
-        const ok = gl.checkFramebufferStatus(gl.FRAMEBUFFER) === gl.FRAMEBUFFER_COMPLETE;
+        /* build 403: no checkFramebufferStatus here. Like getError it makes the page wait for the GPU to finish
+           everything queued (half a second just after a RAW opens, when the first histogram of that photo's shape is
+           read). An RGBA8 renderbuffer as the only attachment is always complete. */
         gl.bindFramebuffer(gl.FRAMEBUFFER, null);
-        if (!ok) { gl.deleteFramebuffer(fb); gl.deleteRenderbuffer(rb); this._rsaFail = true; cb(null); return; }
         const pbo = gl.createBuffer(), bytes0 = w * h * 4;
         gl.bindBuffer(gl.PIXEL_PACK_BUFFER, pbo); gl.bufferData(gl.PIXEL_PACK_BUFFER, bytes0, gl.STREAM_READ); gl.bindBuffer(gl.PIXEL_PACK_BUFFER, null);
         // keep at most a few sizes (a window resize changes the histogram's height)
