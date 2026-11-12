@@ -320,9 +320,9 @@ class WebGLEngine {
      sent to a placeholder is only noted (newest value per name). Then the program for this set of values is chosen:
      the fitted copy if it is ready, the full program otherwise. It is made current and given every noted value (each
      program keeps its own). A value sent outside setUniforms (the glow probe's scale) goes straight to the current
-     program. Fitted copies are compiled only where the browser can do it off the page's thread
-     (KHR_parallel_shader_compile), and only once drawing has paused, so they never cost a stutter; until one is ready
-     the full program draws, exactly as before. ?vsync builds them at once instead (used by the self-test and the
+     program. Fitted copies are compiled once drawing has paused: off the page's thread where the browser can
+     (KHR_parallel_shader_compile); elsewhere (most phones) one at a time after a full second of rest with nothing
+     touched (build 402, _variantIdle). Until one is ready the full program draws, exactly as before. ?vsync builds them at once instead (used by the self-test and the
      speed test, so both check the fitted copies). At most twelve are kept.
      --------------------------------------------------------------------------------------------------------------- */
   _vl(name) { return { __v: 1, n: name }; }
@@ -338,7 +338,13 @@ class WebGLEngine {
     this._uLast = new Map();
     this._uRec = false;
     this._vRecent = [];
+    this._vQueue = []; this._vIdleOn = false;
     this._vFail = false;
+    if (!WebGLEngine._pointerWatch && typeof document !== 'undefined') {   // is a finger or button down anywhere on the page
+      WebGLEngine._pointerWatch = true; WebGLEngine._pointerDown = false;
+      document.addEventListener('pointerdown', () => { WebGLEngine._pointerDown = true; }, true);
+      ['pointerup', 'pointercancel'].forEach(t => document.addEventListener(t, () => { WebGLEngine._pointerDown = false; }, true));
+    }
     this._vSync = typeof location !== 'undefined' && /[?&](vsync|selftest|bench)(&|=|$)/.test(location.search);
     this._vPar = gl.getExtension('KHR_parallel_shader_compile');
     this._fsSrc = fsSource();
@@ -381,7 +387,8 @@ class WebGLEngine {
   _variantApply() {
     const gl = this.gl;
     let prog = this._base;
-    if (!this._vFail && (this._vPar || this._vSync)) {
+    this._vLastFrame = performance.now();
+    if (!this._vFail) {
       try {
         const key = this._variantKey();
         if (key) {
@@ -410,8 +417,28 @@ class WebGLEngine {
       const last = this._vRecent.length ? this._vRecent[this._vRecent.length - 1][1] : 0;
       const keys = new Set(this._vRecent.filter(r => r[1] >= last - 120).map(r => r[0]));
       this._vRecent = [];
-      keys.forEach(k => { if (!this._variants.has(k)) this._variantBuild(k, false); });
+      if (this._vPar) { keys.forEach(k => { if (!this._variants.has(k)) this._variantBuild(k, false); }); return; }
+      /* build 402: a browser that cannot compile in the background (most phones) compiles on the page's own thread,
+         which holds the page for the length of the compile (about 0.15 s on a recent phone). So it waits for a full
+         second with no frame drawn and no finger or button down, builds one copy, and waits again for the next. */
+      keys.forEach(k => { if (!this._variants.has(k) && this._vQueue.indexOf(k) < 0) this._vQueue.push(k); });
+      this._variantIdle();
     }, 500);
+  }
+  _variantIdle() {
+    if (this._vIdleOn || !this._vQueue.length) return;
+    this._vIdleOn = true;
+    const go = () => {
+      this._vIdleOn = false;
+      if (this.contextLost || this._vFail || !this._vQueue.length) return;
+      const busy = (typeof sliderDragging !== 'undefined' && sliderDragging) || WebGLEngine._pointerDown ||
+        performance.now() - (this._vLastFrame || 0) < 1000 || document.hidden;
+      if (busy) { this._vIdleOn = true; setTimeout(() => { this._vIdleOn = false; this._variantIdle(); }, 400); return; }
+      const k = this._vQueue.shift();
+      if (!this._variants.has(k)) this._variantBuild(k, false);
+      if (this._vQueue.length) setTimeout(() => this._variantIdle(), 300);
+    };
+    if (typeof requestIdleCallback === 'function') requestIdleCallback(go, { timeout: 3000 }); else setTimeout(go, 200);
   }
   _variantSource(key) {
     const fold = new Set(key.split(','));

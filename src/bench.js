@@ -180,7 +180,7 @@ async function runBench() {
     lines.push('Time for one finished frame         full size              half size (dragging)');
     R.frames.forEach(f => lines.push((f.fitted ? '* ' : '  ') + (f.name + ' ').padEnd(36, '.') + ' ' + String(f.fullMs).padStart(7) + ' ms ' + ('(' + f.fullFps + ' fps)').padStart(9) + '   ' + (f.halfMs == null ? '—' : String(f.halfMs).padStart(7) + ' ms')));
   }
-  if (R.fitted) lines.push('* = fitted program. Built ' + R.fitted.built + ', compile ' + R.fitted.compileMedianMs + ' ms typical (worst ' + R.fitted.compileWorstMs + ' ms); in normal use ' + (R.fitted.background ? 'built in the background' : 'not used on this device (no background compiling)'));
+  if (R.fitted) lines.push('* = fitted program. Built ' + R.fitted.built + ', compile ' + R.fitted.compileMedianMs + ' ms typical (worst ' + R.fitted.compileWorstMs + ' ms); in normal use ' + (R.fitted.background ? 'built in the background' : 'built while the page is resting (no background compiling here)'));
   if (R.sliderInputMs) lines.push('', 'Page time per slider movement: ' + R.sliderInputMs.median + ' ms (worst ' + R.sliderInputMs.worst + ' ms)');
   if (R.histogram) lines.push('Histogram copy ready after ' + R.histogram.readyAfterMs + ' ms; page held ' + R.histogram.pageHeldMs + ' ms');
   const text = lines.join('\n');
