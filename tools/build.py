@@ -35,6 +35,8 @@ BUNDLES = [
                           'wb-lut', 'colour-mirror', 'export', 'dock', 'studio', 'trichrome', 'share', 'planner', 'video', 'filter-predict', 'film-fit', 'filter-wb', 'ir-leak', 'dust', 'look-export', 'mode', 'undo-buttons', 'decode-tip', 'tone-base', 'raw-clean', 'classic-looks']),
     # the self-test is only fetched when the page is opened with ?selftest (src/i18n.js), so most visits skip its 130 KB
     ('editor-selftest.js', 'src', ['selftest']),
+    # the speed test, fetched only for ?bench (src/i18n.js)
+    ('editor-bench.js', 'src', ['bench']),
     ('filters.js', 'src-filters', ['layout', 'model', 'schott', 'data', 'thorlabs', 'edmund', 'provenance', 'list-search', 'export', 'recipe', 'chart', 'selftest',
                                    'zoom-guidance', 'spectral']),
 ]
@@ -45,7 +47,7 @@ _st = open(os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'src',
 _st_names = set(re.findall(r'^(?:async\s+)?(?:function\s+|const\s+|let\s+)([A-Za-z_$][\w$]*)', _st, re.M))
 _srcdir = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'src')
 for _f in os.listdir(_srcdir):
-    if not _f.endswith('.js') or _f == 'selftest.js': continue
+    if not _f.endswith('.js') or _f in ('selftest.js', 'bench.js'): continue
     _t = open(os.path.join(_srcdir, _f), encoding='utf-8').read()
     _t = re.sub(r'/\*.*?\*/', '', _t, flags=re.S); _t = re.sub(r'(?m)^\s*//.*$', '', _t)   # comments may mention them
     _used = [n for n in _st_names if re.search(r'(?<![\w$.])' + re.escape(n) + r'(?![\w$])', _t)]

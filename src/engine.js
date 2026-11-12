@@ -708,7 +708,9 @@ void main(){
       gl.bindBuffer(gl.PIXEL_PACK_BUFFER, null);
       gl.bindFramebuffer(gl.FRAMEBUFFER, null);
       const sync = gl.fenceSync(gl.SYNC_GPU_COMMANDS_COMPLETE, 0);
-      if (!sync || gl.getError() !== gl.NO_ERROR) { if (sync) gl.deleteSync(sync); this._rsaFail = true; cb(null); return; }
+      /* build 400: no gl.getError() here: asking for errors makes the page wait for the GPU to catch up, which is the
+         very wait this function exists to avoid (the speed test showed it holding the page for a whole frame) */
+      if (!sync) { this._rsaFail = true; cb(null); return; }
       job.sync = sync;
       gl.flush();
       const t0 = performance.now();
