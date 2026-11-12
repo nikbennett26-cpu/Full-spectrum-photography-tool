@@ -177,131 +177,307 @@ class WebGLEngine {
     gl.deleteShader(vs); gl.deleteShader(fs);
 
     this.uLocs = {
-      image: gl.getUniformLocation(this.program, 'u_image'),
-      lut: gl.getUniformLocation(this.program, 'u_lut'),
-      lutPre: gl.getUniformLocation(this.program, 'u_lutPre'),
-      lutPreSize: gl.getUniformLocation(this.program, 'u_lutPreSize'),
-      lutPreMix: gl.getUniformLocation(this.program, 'u_lutPreMix'),
-      hellwigVW: gl.getUniformLocation(this.program, 'u_hellwigVW'),
-      lutSize: gl.getUniformLocation(this.program, 'u_lutSize'),
-      lutMix: gl.getUniformLocation(this.program, 'u_lutMix'),
-      texelSize: gl.getUniformLocation(this.program, 'u_texelSize'),
-      clipView: gl.getUniformLocation(this.program, 'u_clipView'),
-      cmykWarn: gl.getUniformLocation(this.program, 'u_cmykWarn'),
-      gamutDrag: gl.getUniformLocation(this.program, 'u_gamutDrag'),
-      dither: gl.getUniformLocation(this.program, 'u_dither'), dustView: gl.getUniformLocation(this.program, 'u_dustView'),
-      deband: gl.getUniformLocation(this.program, 'u_deband'), debandRad: gl.getUniformLocation(this.program, 'u_debandRad'),
-      caR: gl.getUniformLocation(this.program, 'u_caR'),
-      caB: gl.getUniformLocation(this.program, 'u_caB'),
-      hotspot: gl.getUniformLocation(this.program, 'u_hotspot'),
-      hotSize: gl.getUniformLocation(this.program, 'u_hotSize'),
-      curve: gl.getUniformLocation(this.program, 'u_curve'),
-      curveOn: gl.getUniformLocation(this.program, 'u_curveOn'),
-      curveLum: gl.getUniformLocation(this.program, 'u_curveLum'),
-      epdOn: gl.getUniformLocation(this.program, 'u_epdOn'), epdProbe: gl.getUniformLocation(this.program, 'u_epdProbe'),
-      epdTemp: gl.getUniformLocation(this.program, 'u_epdTemp'), epdBoost: gl.getUniformLocation(this.program, 'u_epdBoost'),
-      epdS: gl.getUniformLocation(this.program, 'u_epdS'), epdNorm: gl.getUniformLocation(this.program, 'u_epdNorm'),
-      epdBase: gl.getUniformLocation(this.program, 'u_epdBase'), tbOn: gl.getUniformLocation(this.program, 'u_tbOn'), dhOn: gl.getUniformLocation(this.program, 'u_dhOn'), epdRef: gl.getUniformLocation(this.program, 'u_epdRef'),
-      maskN: gl.getUniformLocation(this.program, 'u_maskN'),
-      maskProbe: gl.getUniformLocation(this.program, 'u_maskProbe'), maskGuideOn: gl.getUniformLocation(this.program, 'u_maskGuideOn'),
-      maskGuide: gl.getUniformLocation(this.program, 'u_maskGuide'), mGuideTexel: gl.getUniformLocation(this.program, 'u_mGuideTexel'),
-      maskView: gl.getUniformLocation(this.program, 'u_maskView'),
-      mGeom: gl.getUniformLocation(this.program, 'u_mGeom[0]'),
-      mInfo: gl.getUniformLocation(this.program, 'u_mInfo[0]'),
-      mAdj: gl.getUniformLocation(this.program, 'u_mAdj[0]'),
-      mAdj2: gl.getUniformLocation(this.program, 'u_mAdj2[0]'),
-      bandPreview: gl.getUniformLocation(this.program, 'u_bandPreview'),
-      lutDomainMin: gl.getUniformLocation(this.program, 'u_lutDomainMin'),
-      lutDomainMax: gl.getUniformLocation(this.program, 'u_lutDomainMax'),
-      matrix: gl.getUniformLocation(this.program, 'u_matrix'),
-      mOffset: gl.getUniformLocation(this.program, 'u_mOffset'),
-      polyMix: gl.getUniformLocation(this.program, 'u_polyMix'),
-      irMix: gl.getUniformLocation(this.program, 'u_irMix'),
-      irS: gl.getUniformLocation(this.program, 'u_irS'),
-      irL: gl.getUniformLocation(this.program, 'u_irL'),
-      irX: gl.getUniformLocation(this.program, 'u_irX'),
-      polyEps: gl.getUniformLocation(this.program, 'u_polyEps'),
-      polyS: gl.getUniformLocation(this.program, 'u_polyS'),
-      polyL: gl.getUniformLocation(this.program, 'u_polyL'),
-      polyX: gl.getUniformLocation(this.program, 'u_polyX'),
-      camFit: gl.getUniformLocation(this.program, 'u_camFit'),
-      camCoef: gl.getUniformLocation(this.program, 'u_camCoef'),
-      bandCount: gl.getUniformLocation(this.program, 'u_bandCount'),
-      bandHue: gl.getUniformLocation(this.program, 'u_bandHue'),
-      bandWidth: gl.getUniformLocation(this.program, 'u_bandWidth'),
-      bandDH: gl.getUniformLocation(this.program, 'u_bandDH'),
-      bandDS: gl.getUniformLocation(this.program, 'u_bandDS'),
-      bandLo: gl.getUniformLocation(this.program, 'u_bandLo'),
-      bandHi: gl.getUniformLocation(this.program, 'u_bandHi'),
-      bandSelectivity: gl.getUniformLocation(this.program, 'u_bandSelectivity'),
-      bandAB: gl.getUniformLocation(this.program, 'u_bandAB'),
-      irSub: gl.getUniformLocation(this.program, 'u_irSub'), irSubOn: gl.getUniformLocation(this.program, 'u_irSubOn'),
-      srcGuide: gl.getUniformLocation(this.program, 'u_srcGuide'), srcGuideTexel: gl.getUniformLocation(this.program, 'u_srcGuideTexel'),
-      srcGuideOn: gl.getUniformLocation(this.program, 'u_srcGuideOn'), srcProbe: gl.getUniformLocation(this.program, 'u_srcProbe'),
-      ortonOn: gl.getUniformLocation(this.program, 'u_ortonOn'), ortonProbe: gl.getUniformLocation(this.program, 'u_ortonProbe'), orton: gl.getUniformLocation(this.program, 'u_orton'),
-      ortonBias: gl.getUniformLocation(this.program, 'u_ortonBias'), halation: gl.getUniformLocation(this.program, 'u_halation'), halBias: gl.getUniformLocation(this.program, 'u_halBias'), ortonTex: gl.getUniformLocation(this.program, 'u_ortonTex'), ortonInv: gl.getUniformLocation(this.program, 'u_ortonInv'), ortonTexel: gl.getUniformLocation(this.program, 'u_ortonTexel'),
-      bandPC: gl.getUniformLocation(this.program, 'u_bandPC'),
-      bandDL: gl.getUniformLocation(this.program, 'u_bandDL'),
-      preWB: gl.getUniformLocation(this.program, 'u_preWB'),
-      postWB: gl.getUniformLocation(this.program, 'u_postWB'),
-      preWBM: gl.getUniformLocation(this.program, 'u_preWBM'),
-      postWBM: gl.getUniformLocation(this.program, 'u_postWBM'),
-      wbMethod: gl.getUniformLocation(this.program, 'u_wbMethod'),
-      hueSpace: gl.getUniformLocation(this.program, 'u_hueSpace'),
-      lumPreserve: gl.getUniformLocation(this.program, 'u_lumPreserve'),
-      lumaW: gl.getUniformLocation(this.program, 'u_lumaW'),
-      tempTint: gl.getUniformLocation(this.program, 'u_tempTint'),
-      satPreserve: gl.getUniformLocation(this.program, 'u_satPreserve'),
-      wide: gl.getUniformLocation(this.program, 'u_wide'),
-      contrast: gl.getUniformLocation(this.program, 'u_contrast'),
-      exposure: gl.getUniformLocation(this.program, 'u_exposure'),
-      brightness: gl.getUniformLocation(this.program, 'u_brightness'),
-      hue: gl.getUniformLocation(this.program, 'u_hue'),
-      sat: gl.getUniformLocation(this.program, 'u_sat'),
-      vibrance: gl.getUniformLocation(this.program, 'u_vibrance'),
-      blackPt: gl.getUniformLocation(this.program, 'u_blackPt'),
-      whitePt: gl.getUniformLocation(this.program, 'u_whitePt'),
-      noiseReduction: gl.getUniformLocation(this.program, 'u_noiseReduction'),
-      inputLinear: gl.getUniformLocation(this.program, 'u_inputLinear'),
-      hlRecover: gl.getUniformLocation(this.program, 'u_hlRecover'),
-      sharpen: gl.getUniformLocation(this.program, 'u_sharpen'),
-      sharpenRadius: gl.getUniformLocation(this.program, 'u_sharpenRadius'),
-      sharpenMask: gl.getUniformLocation(this.program, 'u_sharpenMask'),
-      noiseColour: gl.getUniformLocation(this.program, 'u_noiseColour'),
-      nrScale: gl.getUniformLocation(this.program, 'u_nrScale'),
-      contrastPivot: gl.getUniformLocation(this.program, 'u_contrastPivot'),
-      hiPivot: gl.getUniformLocation(this.program, 'u_hiPivot'),
-      hslOn: gl.getUniformLocation(this.program, 'u_hslOn'), skyDeep: gl.getUniformLocation(this.program, 'u_skyDeep'), crimson: gl.getUniformLocation(this.program, 'u_crimson'), skyLab: gl.getUniformLocation(this.program, 'u_skyLab'), skyCol: gl.getUniformLocation(this.program, 'u_skyCol'), maskSize: gl.getUniformLocation(this.program, 'u_maskSize'), skyL: gl.getUniformLocation(this.program, 'u_skyL'), skyShow: gl.getUniformLocation(this.program, 'u_skyShow'), skyMask: gl.getUniformLocation(this.program, 'u_skyMask'),
-      bandProbe: gl.getUniformLocation(this.program, 'u_bandProbe'), bandGuideOn: gl.getUniformLocation(this.program, 'u_bandGuideOn'), bandGuide: gl.getUniformLocation(this.program, 'u_bandGuide'), guideTexel: gl.getUniformLocation(this.program, 'u_guideTexel'),
-      hslH0: gl.getUniformLocation(this.program, 'u_hslH0'), hslH1: gl.getUniformLocation(this.program, 'u_hslH1'),
-      hslS0: gl.getUniformLocation(this.program, 'u_hslS0'), hslS1: gl.getUniformLocation(this.program, 'u_hslS1'),
-      hslL0: gl.getUniformLocation(this.program, 'u_hslL0'), hslL1: gl.getUniformLocation(this.program, 'u_hslL1'),
-      shW: gl.getUniformLocation(this.program, 'u_shW'),
-      filmTone: gl.getUniformLocation(this.program, 'u_filmTone'),
-      indexMode: gl.getUniformLocation(this.program, 'u_indexMode'),
-      highlights: gl.getUniformLocation(this.program, 'u_highlights'),
-      shadows: gl.getUniformLocation(this.program, 'u_shadows'),
-      clarity: gl.getUniformLocation(this.program, 'u_clarity'),
-      dehaze:  gl.getUniformLocation(this.program, 'u_dehaze'),
-      calRH:    gl.getUniformLocation(this.program, 'u_calRH'),
-      calGH:    gl.getUniformLocation(this.program, 'u_calGH'),
-      calBH:    gl.getUniformLocation(this.program, 'u_calBH'),
-      calRS:    gl.getUniformLocation(this.program, 'u_calRS'),
-      calGS:    gl.getUniformLocation(this.program, 'u_calGS'),
-      calBS:    gl.getUniformLocation(this.program, 'u_calBS'),
-      calST:    gl.getUniformLocation(this.program, 'u_calST'),
-      swapSpace: gl.getUniformLocation(this.program, 'u_swapSpace'),
-      swapT: gl.getUniformLocation(this.program, 'u_swapT'),
-      swapTi: gl.getUniformLocation(this.program, 'u_swapTi'),
-      vigAmt: gl.getUniformLocation(this.program, 'u_vigAmt'),
-      vigFall: gl.getUniformLocation(this.program, 'u_vigFall'),
-      vigSpread: gl.getUniformLocation(this.program, 'u_vigSpread'),
-      vigCentre: gl.getUniformLocation(this.program, 'u_vigCentre'),
-      aspect: gl.getUniformLocation(this.program, 'u_aspect'),
-      prep: gl.getUniformLocation(this.program, 'u_prep'),
-      prepped: gl.getUniformLocation(this.program, 'u_prepped'),
-      src: gl.getUniformLocation(this.program, 'u_src')
+      image: this._vl('u_image'),
+      lut: this._vl('u_lut'),
+      lutPre: this._vl('u_lutPre'),
+      lutPreSize: this._vl('u_lutPreSize'),
+      lutPreMix: this._vl('u_lutPreMix'),
+      hellwigVW: this._vl('u_hellwigVW'),
+      lutSize: this._vl('u_lutSize'),
+      lutMix: this._vl('u_lutMix'),
+      texelSize: this._vl('u_texelSize'),
+      clipView: this._vl('u_clipView'),
+      cmykWarn: this._vl('u_cmykWarn'),
+      gamutDrag: this._vl('u_gamutDrag'),
+      dither: this._vl('u_dither'), dustView: this._vl('u_dustView'),
+      deband: this._vl('u_deband'), debandRad: this._vl('u_debandRad'),
+      caR: this._vl('u_caR'),
+      caB: this._vl('u_caB'),
+      hotspot: this._vl('u_hotspot'),
+      hotSize: this._vl('u_hotSize'),
+      curve: this._vl('u_curve'),
+      curveOn: this._vl('u_curveOn'),
+      curveLum: this._vl('u_curveLum'),
+      epdOn: this._vl('u_epdOn'), epdProbe: this._vl('u_epdProbe'),
+      epdTemp: this._vl('u_epdTemp'), epdBoost: this._vl('u_epdBoost'),
+      epdS: this._vl('u_epdS'), epdNorm: this._vl('u_epdNorm'),
+      epdBase: this._vl('u_epdBase'), tbOn: this._vl('u_tbOn'), dhOn: this._vl('u_dhOn'), epdRef: this._vl('u_epdRef'),
+      maskN: this._vl('u_maskN'),
+      maskProbe: this._vl('u_maskProbe'), maskGuideOn: this._vl('u_maskGuideOn'),
+      maskGuide: this._vl('u_maskGuide'), mGuideTexel: this._vl('u_mGuideTexel'),
+      maskView: this._vl('u_maskView'),
+      mGeom: this._vl('u_mGeom[0]'),
+      mInfo: this._vl('u_mInfo[0]'),
+      mAdj: this._vl('u_mAdj[0]'),
+      mAdj2: this._vl('u_mAdj2[0]'),
+      bandPreview: this._vl('u_bandPreview'),
+      lutDomainMin: this._vl('u_lutDomainMin'),
+      lutDomainMax: this._vl('u_lutDomainMax'),
+      matrix: this._vl('u_matrix'),
+      mOffset: this._vl('u_mOffset'),
+      polyMix: this._vl('u_polyMix'),
+      irMix: this._vl('u_irMix'),
+      irS: this._vl('u_irS'),
+      irL: this._vl('u_irL'),
+      irX: this._vl('u_irX'),
+      polyEps: this._vl('u_polyEps'),
+      polyS: this._vl('u_polyS'),
+      polyL: this._vl('u_polyL'),
+      polyX: this._vl('u_polyX'),
+      camFit: this._vl('u_camFit'),
+      camCoef: this._vl('u_camCoef'),
+      bandCount: this._vl('u_bandCount'),
+      bandHue: this._vl('u_bandHue'),
+      bandWidth: this._vl('u_bandWidth'),
+      bandDH: this._vl('u_bandDH'),
+      bandDS: this._vl('u_bandDS'),
+      bandLo: this._vl('u_bandLo'),
+      bandHi: this._vl('u_bandHi'),
+      bandSelectivity: this._vl('u_bandSelectivity'),
+      bandAB: this._vl('u_bandAB'),
+      irSub: this._vl('u_irSub'), irSubOn: this._vl('u_irSubOn'),
+      srcGuide: this._vl('u_srcGuide'), srcGuideTexel: this._vl('u_srcGuideTexel'),
+      srcGuideOn: this._vl('u_srcGuideOn'), srcProbe: this._vl('u_srcProbe'),
+      ortonOn: this._vl('u_ortonOn'), ortonProbe: this._vl('u_ortonProbe'), orton: this._vl('u_orton'),
+      ortonBias: this._vl('u_ortonBias'), halation: this._vl('u_halation'), halBias: this._vl('u_halBias'), ortonTex: this._vl('u_ortonTex'), ortonInv: this._vl('u_ortonInv'), ortonTexel: this._vl('u_ortonTexel'),
+      bandPC: this._vl('u_bandPC'),
+      bandDL: this._vl('u_bandDL'),
+      preWB: this._vl('u_preWB'),
+      postWB: this._vl('u_postWB'),
+      preWBM: this._vl('u_preWBM'),
+      postWBM: this._vl('u_postWBM'),
+      wbMethod: this._vl('u_wbMethod'),
+      hueSpace: this._vl('u_hueSpace'),
+      lumPreserve: this._vl('u_lumPreserve'),
+      lumaW: this._vl('u_lumaW'),
+      tempTint: this._vl('u_tempTint'),
+      satPreserve: this._vl('u_satPreserve'),
+      wide: this._vl('u_wide'),
+      contrast: this._vl('u_contrast'),
+      exposure: this._vl('u_exposure'),
+      brightness: this._vl('u_brightness'),
+      hue: this._vl('u_hue'),
+      sat: this._vl('u_sat'),
+      vibrance: this._vl('u_vibrance'),
+      blackPt: this._vl('u_blackPt'),
+      whitePt: this._vl('u_whitePt'),
+      noiseReduction: this._vl('u_noiseReduction'),
+      inputLinear: this._vl('u_inputLinear'),
+      hlRecover: this._vl('u_hlRecover'),
+      sharpen: this._vl('u_sharpen'),
+      sharpenRadius: this._vl('u_sharpenRadius'),
+      sharpenMask: this._vl('u_sharpenMask'),
+      noiseColour: this._vl('u_noiseColour'),
+      nrScale: this._vl('u_nrScale'),
+      contrastPivot: this._vl('u_contrastPivot'),
+      hiPivot: this._vl('u_hiPivot'),
+      hslOn: this._vl('u_hslOn'), skyDeep: this._vl('u_skyDeep'), crimson: this._vl('u_crimson'), skyLab: this._vl('u_skyLab'), skyCol: this._vl('u_skyCol'), maskSize: this._vl('u_maskSize'), skyL: this._vl('u_skyL'), skyShow: this._vl('u_skyShow'), skyMask: this._vl('u_skyMask'),
+      bandProbe: this._vl('u_bandProbe'), bandGuideOn: this._vl('u_bandGuideOn'), bandGuide: this._vl('u_bandGuide'), guideTexel: this._vl('u_guideTexel'),
+      hslH0: this._vl('u_hslH0'), hslH1: this._vl('u_hslH1'),
+      hslS0: this._vl('u_hslS0'), hslS1: this._vl('u_hslS1'),
+      hslL0: this._vl('u_hslL0'), hslL1: this._vl('u_hslL1'),
+      shW: this._vl('u_shW'),
+      filmTone: this._vl('u_filmTone'),
+      indexMode: this._vl('u_indexMode'),
+      highlights: this._vl('u_highlights'),
+      shadows: this._vl('u_shadows'),
+      clarity: this._vl('u_clarity'),
+      dehaze:  this._vl('u_dehaze'),
+      calRH:    this._vl('u_calRH'),
+      calGH:    this._vl('u_calGH'),
+      calBH:    this._vl('u_calBH'),
+      calRS:    this._vl('u_calRS'),
+      calGS:    this._vl('u_calGS'),
+      calBS:    this._vl('u_calBS'),
+      calST:    this._vl('u_calST'),
+      swapSpace: this._vl('u_swapSpace'),
+      swapT: this._vl('u_swapT'),
+      swapTi: this._vl('u_swapTi'),
+      vigAmt: this._vl('u_vigAmt'),
+      vigFall: this._vl('u_vigFall'),
+      vigSpread: this._vl('u_vigSpread'),
+      vigCentre: this._vl('u_vigCentre'),
+      aspect: this._vl('u_aspect'),
+      prep: this._vl('u_prep'),
+      prepped: this._vl('u_prepped'),
+      src: this._vl('u_src')
     };
+    this._variantInit();
+  }
+
+  /* ---------------------------------------------------------------------------------------------------------------
+     Build 401: programs fitted to the edit.
+
+     The editor's main shader carries every effect, each behind a test such as "if (u_clarity > 0.0)". The speed test
+     (?bench) showed a desktop graphics card spending the same 40 ms on a frame with no edits as with clarity, dehaze,
+     noise reduction and the rest all on: on Windows the browser hands the shader to Direct3D, whose compiler often
+     runs both sides of such a test. So, once the page is idle, a second copy of the program is compiled in which every
+     setting that is exactly zero is written in as a fixed zero instead of a value to be supplied. The compiler can
+     then see that the code behind each switched-off effect never runs, and leaves it out. Nothing else in the shader
+     changes; a zero written in is the same zero the page would have supplied.
+
+     How it fits in: uLocs hands out placeholders, not real uniform locations. While setUniforms runs, every value
+     sent to a placeholder is only noted (newest value per name). Then the program for this set of values is chosen:
+     the fitted copy if it is ready, the full program otherwise. It is made current and given every noted value (each
+     program keeps its own). A value sent outside setUniforms (the glow probe's scale) goes straight to the current
+     program. Fitted copies are compiled only where the browser can do it off the page's thread
+     (KHR_parallel_shader_compile), and only once drawing has paused, so they never cost a stutter; until one is ready
+     the full program draws, exactly as before. ?vsync builds them at once instead (used by the self-test and the
+     speed test, so both check the fitted copies). At most twelve are kept.
+     --------------------------------------------------------------------------------------------------------------- */
+  _vl(name) { return { __v: 1, n: name }; }
+  _variantInit() {
+    const gl = this.gl, eng = this;
+    const progRec = (program) => { const locs = new Map(); return { program: program, used: 0, state: 'ready',
+      loc(n) { if (!locs.has(n)) locs.set(n, gl.getUniformLocation(program, n)); return locs.get(n); } }; };
+    this._progRec = progRec;
+    this._base = progRec(this.program);
+    this._active = this._base;
+    if (this._variants) this._variants.forEach(v => { try { if (v.program && v !== this._base) gl.deleteProgram(v.program); } catch (e) {} });
+    this._variants = new Map();
+    this._uLast = new Map();
+    this._uRec = false;
+    this._vRecent = [];
+    this._vFail = false;
+    this._vSync = typeof location !== 'undefined' && /[?&](vsync|selftest|bench)(&|=|$)/.test(location.search);
+    this._vPar = gl.getExtension('KHR_parallel_shader_compile');
+    this._fsSrc = fsSource();
+    // the plain number settings the fitted copies may write in: float, int and bool uniforms that are not arrays
+    const types = {};
+    for (const m of this._fsSrc.matchAll(/^\s*uniform\s+(float|int|bool)\s+([^;]+);/gm))
+      m[2].split(',').forEach(x => { x = x.trim(); if (/^u_\w+$/.test(x)) types[x] = m[1]; });
+    this._vTypes = types;
+    if (!gl.__irVirtual) {
+      gl.__irVirtual = true;
+      ['uniform1f', 'uniform1i', 'uniform2f', 'uniform2i', 'uniform3f', 'uniform4f', 'uniform1fv', 'uniform2fv', 'uniform3fv', 'uniform4fv', 'uniform1iv',
+       'uniformMatrix2fv', 'uniformMatrix3fv', 'uniformMatrix4fv'].forEach(m => {
+        const orig = gl[m];
+        if (typeof orig !== 'function') return;
+        gl[m] = function (loc) {
+          if (loc && loc.__v === 1) {
+            // typed arrays are copied: a caller may reuse its buffer, and the value is sent again on later frames
+            const a = Array.prototype.slice.call(arguments, 1).map(x => (ArrayBuffer.isView(x) ? x.slice() : Array.isArray(x) ? x.slice() : x));
+            eng._uLast.set(loc.n, [orig, a]);
+            if (!eng._uRec) { const L = eng._active.loc(loc.n); if (L) orig.apply(gl, [L].concat(a)); }
+            return;
+          }
+          return orig.apply(gl, arguments);
+        };
+      });
+    }
+  }
+  _variantKey() {
+    const zero = [];
+    for (const [n, v] of this._uLast) {
+      const t = this._vTypes[n];
+      if (!t) continue;
+      const a = v[1];
+      if (a.length === 1 && a[0] === 0) zero.push(n);
+      else if (a.length === 1 && a[0] === false) zero.push(n);
+    }
+    zero.sort();
+    return zero.join(',');
+  }
+  _variantApply() {
+    const gl = this.gl;
+    let prog = this._base;
+    if (!this._vFail && (this._vPar || this._vSync)) {
+      try {
+        const key = this._variantKey();
+        if (key) {
+          let v = this._variants.get(key);
+          if (!v && this._vSync) v = this._variantBuild(key, true);
+          if (v && v.state === 'compiling') this._variantPoll(v);
+          if (v && v.state === 'ready') { prog = v; v.used = performance.now(); }
+          else if (!v) this._variantWant(key);
+        }
+      } catch (e) { this._vFail = true; console.warn('fitted shader programs off:', e && e.message); prog = this._base; }
+    }
+    this._active = prog;
+    gl.useProgram(prog.program);
+    for (const [n, v] of this._uLast) { const L = prog.loc(n); if (L) v[0].apply(gl, [L].concat(v[1])); }
+  }
+  /* note a set of values that has no fitted copy yet; the copies for the last frame drawn are started once drawing has
+     paused for half a second (a frame draws the main pass and its small probe passes, each with its own values) */
+  _variantWant(key) {
+    const now = performance.now();
+    this._vRecent.push([key, now]);
+    if (this._vRecent.length > 64) this._vRecent.splice(0, this._vRecent.length - 64);
+    clearTimeout(this._vTimer);
+    this._vTimer = setTimeout(() => {
+      if (this.contextLost || this._vFail) return;
+      if (typeof sliderDragging !== 'undefined' && sliderDragging) { this._variantWant(key); return; }
+      const last = this._vRecent.length ? this._vRecent[this._vRecent.length - 1][1] : 0;
+      const keys = new Set(this._vRecent.filter(r => r[1] >= last - 120).map(r => r[0]));
+      this._vRecent = [];
+      keys.forEach(k => { if (!this._variants.has(k)) this._variantBuild(k, false); });
+    }, 500);
+  }
+  _variantSource(key) {
+    const fold = new Set(key.split(','));
+    return this._fsSrc.replace(/^(\s*)uniform\s+(float|int|bool)\s+([^;]+);/gm, (all, ind, type, names) => {
+      const list = names.split(',').map(x => x.trim());
+      const keep = list.filter(x => !fold.has(x)), gone = list.filter(x => fold.has(x));
+      if (!gone.length) return all;
+      const zero = type === 'float' ? '0.0' : type === 'int' ? '0' : 'false';
+      return (keep.length ? ind + 'uniform ' + type + ' ' + keep.join(', ') + ';\n' : '') + gone.map(x => ind + 'const ' + type + ' ' + x + ' = ' + zero + ';').join('\n');
+    });
+  }
+  _variantBuild(key, sync) {
+    const gl = this.gl;
+    // keep at most twelve: drop the one used least recently
+    if (this._variants.size >= 12) {
+      let old = null;
+      this._variants.forEach((v, k) => { if (v.state !== 'compiling' && (!old || v.used < old[1].used)) old = [k, v]; });
+      if (old) { try { if (old[1].program) gl.deleteProgram(old[1].program); } catch (e) {} this._variants.delete(old[0]); }
+      else return null;
+    }
+    const v = this._progRec(null);
+    v.state = 'compiling'; v.key = key;
+    this._variants.set(key, v);
+    try {
+      const vs = gl.createShader(gl.VERTEX_SHADER); gl.shaderSource(vs, VS_SOURCE); gl.compileShader(vs);
+      const fs = gl.createShader(gl.FRAGMENT_SHADER); gl.shaderSource(fs, this._variantSource(key)); gl.compileShader(fs);
+      const pr = gl.createProgram();
+      gl.attachShader(pr, vs); gl.attachShader(pr, fs);
+      if (this._aPos >= 0) gl.bindAttribLocation(pr, this._aPos, 'a_position');
+      if (this._aTex >= 0) gl.bindAttribLocation(pr, this._aTex, 'a_texCoord');
+      gl.linkProgram(pr);
+      v.program = pr; v.vs = vs; v.fs = fs; v.t0 = performance.now();
+      const p2 = this._progRec(pr); v.loc = p2.loc;
+      if (sync) this._variantFinish(v);
+      else this._variantPoll(v);
+    } catch (e) { v.state = 'failed'; }
+    return v;
+  }
+  _variantPoll(v) {
+    const gl = this.gl;
+    if (v.state !== 'compiling') return;
+    let done = true;
+    try { if (this._vPar) done = gl.getProgramParameter(v.program, this._vPar.COMPLETION_STATUS_KHR); } catch (e) { done = true; }
+    if (done) { this._variantFinish(v); return; }
+    clearTimeout(v.timer);
+    v.timer = setTimeout(() => this._variantPoll(v), 40);
+  }
+  _variantFinish(v) {
+    const gl = this.gl;
+    let ok = false;
+    try { ok = gl.getProgramParameter(v.program, gl.LINK_STATUS); } catch (e) { ok = false; }
+    try { gl.deleteShader(v.vs); gl.deleteShader(v.fs); } catch (e) {}
+    v.vs = v.fs = null;
+    if (!ok) { try { gl.deleteProgram(v.program); } catch (e) {} v.program = null; v.state = 'failed'; return; }
+    v.state = 'ready'; v.ms = Math.round(performance.now() - v.t0);
+  }
+  /* for the speed test: resolves once no fitted copy is still compiling */
+  variantsSettled(maxMs) {
+    const t0 = performance.now();
+    return new Promise(res => {
+      const tick = () => {
+        let busy = false; this._variants.forEach(v => { if (v.state === 'compiling') { this._variantPoll(v); if (v.state === 'compiling') busy = true; } });
+        if (!busy || performance.now() - t0 > (maxMs || 8000)) res(!busy); else setTimeout(tick, 50);
+      };
+      tick();
+    });
   }
 
   initBuffers() {
@@ -309,14 +485,14 @@ class WebGLEngine {
     const posBuf = gl.createBuffer();
     gl.bindBuffer(gl.ARRAY_BUFFER, posBuf);
     gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1,-1, 1,-1, -1,1, 1,1]), gl.STATIC_DRAW);
-    const aPos = gl.getAttribLocation(this.program, 'a_position');
+    const aPos = gl.getAttribLocation(this.program, 'a_position'); this._aPos = aPos;
     gl.enableVertexAttribArray(aPos);
     gl.vertexAttribPointer(aPos, 2, gl.FLOAT, false, 0, 0);
 
     const texBuf = gl.createBuffer();
     gl.bindBuffer(gl.ARRAY_BUFFER, texBuf);
     gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([0,0, 1,0, 0,1, 1,1]), gl.STATIC_DRAW);
-    const aTex = gl.getAttribLocation(this.program, 'a_texCoord');
+    const aTex = gl.getAttribLocation(this.program, 'a_texCoord'); this._aTex = aTex;
     gl.enableVertexAttribArray(aTex);
     gl.vertexAttribPointer(aTex, 2, gl.FLOAT, false, 0, 0);
   }
@@ -985,6 +1161,14 @@ void main(){
   }
 
   setUniforms(p) {
+    /* build 401: the values are gathered first (_setUniformsBody records them, see _variantInit), then the program
+       that matches them is chosen and given every value */
+    this._uRec = true;
+    try { this._setUniformsBody(p); } finally { this._uRec = false; }
+    this._variantApply();
+  }
+
+  _setUniformsBody(p) {
     const gl = this.gl;
     gl.useProgram(this.program);
 

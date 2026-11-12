@@ -126,10 +126,17 @@ async function runBench() {
       const reps = BENCH_QUICK ? 2 : 6;
       const full = benchTime(() => engine.render(P), reps);
       const half = engine.renderScaled ? benchTime(() => engine.renderScaled(P, 0.5), reps) : null;
-      R.frames.push({ name, fullMs: full.median, fullFps: +(1000 / Math.max(full.median, 0.1)).toFixed(0), halfMs: half ? half.median : null, worstFullMs: full.worst });
+      const fitted = engine._active && engine._base && engine._active !== engine._base;
+      R.frames.push({ name, fitted, fullMs: full.median, fullFps: +(1000 / Math.max(full.median, 0.1)).toFixed(0), halfMs: half ? half.median : null, worstFullMs: full.worst });
       await benchFrame();
     }
     resetAllControls(); await benchWait(400);
+    // the fitted programs (build 401): how many were built and how long one took to compile here
+    if (engine._variants) {
+      const ms = [...engine._variants.values()].filter(v => v.state === 'ready' && v.ms != null).map(v => v.ms).sort((a, b) => a - b);
+      R.fitted = { built: ms.length, compileMedianMs: ms.length ? ms[ms.length >> 1] : null, compileWorstMs: ms.length ? ms[ms.length - 1] : null,
+        background: !!engine._vPar };
+    }
 
     // page time for one slider movement while dragging (the GPU is not waited for here)
     status('Timing slider handling…');
@@ -171,8 +178,9 @@ async function runBench() {
   if (R.frames && R.frames.length) {
     lines.push('');
     lines.push('Time for one finished frame         full size              half size (dragging)');
-    R.frames.forEach(f => lines.push('  ' + (f.name + ' ').padEnd(36, '.') + ' ' + String(f.fullMs).padStart(7) + ' ms ' + ('(' + f.fullFps + ' fps)').padStart(9) + '   ' + (f.halfMs == null ? '—' : String(f.halfMs).padStart(7) + ' ms')));
+    R.frames.forEach(f => lines.push((f.fitted ? '* ' : '  ') + (f.name + ' ').padEnd(36, '.') + ' ' + String(f.fullMs).padStart(7) + ' ms ' + ('(' + f.fullFps + ' fps)').padStart(9) + '   ' + (f.halfMs == null ? '—' : String(f.halfMs).padStart(7) + ' ms')));
   }
+  if (R.fitted) lines.push('* = fitted program. Built ' + R.fitted.built + ', compile ' + R.fitted.compileMedianMs + ' ms typical (worst ' + R.fitted.compileWorstMs + ' ms); in normal use ' + (R.fitted.background ? 'built in the background' : 'not used on this device (no background compiling)'));
   if (R.sliderInputMs) lines.push('', 'Page time per slider movement: ' + R.sliderInputMs.median + ' ms (worst ' + R.sliderInputMs.worst + ' ms)');
   if (R.histogram) lines.push('Histogram copy ready after ' + R.histogram.readyAfterMs + ' ms; page held ' + R.histogram.pageHeldMs + ' ms');
   const text = lines.join('\n');
