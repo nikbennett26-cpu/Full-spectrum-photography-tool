@@ -529,8 +529,8 @@ const FILTERS=[
     limit — with only the cutoff moving from blue through to deep red.
     These are the filters actually used in front of Aerochrome film to hold
     back blue, since every emulsion layer is inherently blue-sensitive. */
- {id:'w3',g:'B4',n:'Wratten 3',   d:'Light yellow · 440nm',                 c:'#e8e07a',bands:[{lo:462.6,ls:7.08,T:.902}]},
- {id:'w4',g:'B4',n:'Wratten 4',   d:'Yellow · 455nm',                       c:'#e6d96b',bands:[{lo:471.3,ls:5.50,T:.903}]},
+ {id:'w3',g:'B4',n:'Wratten 3',   d:'Light yellow · blocks below 440nm · half at ~463nm',c:'#e8e07a',bands:[{lo:462.6,ls:7.08,T:.902}]},
+ {id:'w4',g:'B4',n:'Wratten 4',   d:'Yellow · blocks below 455nm · half at ~471nm',c:'#e6d96b',bands:[{lo:471.3,ls:5.50,T:.903}]},
  {id:'w8',g:'B4',n:'Wratten 8 (K2)',d:'Hoya K2 yellow · official Kodak data',c:'#e3cf5c',bands:[{lo:492.2,ls:9.21,T:.900}],
   same:'least-squares fit to Eastman Kodak\u2019s own published transmittance table ("Transmission of Wratten Filters", '
    +'compiled by Allie C. Peed Jr.), 400-700nm at 10nm intervals, illuminant C \u2014 OCR-extracted from the scanned '

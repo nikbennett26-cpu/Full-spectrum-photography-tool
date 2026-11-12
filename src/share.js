@@ -120,12 +120,24 @@ function recipeLines() {
       }
     }
   } catch (e) {}
-  const names = { hue: 'Hue', sat: 'Saturation', vibrance: 'Vibrance', bright: 'Exposure' };
+  /* build 404: the channel swap is the heart of most IR edits and was never written on the card */
+  try {
+    const on = document.querySelector('.swapBtn[data-perm].on');
+    const perm = on ? on.dataset.perm : '012';
+    let mixed = false;   // the mixer differs from what the chosen swap sets (row i takes channel perm[i] at 100)
+    if (typeof MCELLS !== 'undefined') MCELLS.forEach((id, k) => { const e = $(id); const i = (k / 3) | 0, j = k % 3; if (e && Number(e.value) !== (String(j) === perm[i] ? 100 : 0)) mixed = true; });
+    if (on && on.dataset.perm !== '012') L.push(['Swap', (on.title || on.textContent.trim()) + (mixed ? ', then mixed by hand' : '')]);
+    else if (mixed) L.push(['Swap', 'Channel mix set by hand']);
+  } catch (e) {}
+  /* build 404: written to the slider's own precision, so a small exposure change no longer reads "+0", and with units */
+  const names = { hue: ['Hue', '°'], sat: ['Saturation', ''], vibrance: ['Vibrance', ''], bright: ['Exposure', ' EV'] };
   const ch = [];
   Object.keys(names).forEach(id => {
     const el = $(id); if (!el) return;
-    const v = Number(el.value), d = Number(el.defaultValue);
-    if (v !== d) ch.push(names[id] + ' ' + (v > d ? '+' : '') + Math.round(v - d));
+    const v = Number(el.value), d = Number(el.defaultValue), step = Number(el.step) || 1;
+    const dec = step >= 1 ? 0 : Math.min(2, String(step).split('.')[1].length);
+    const diff = +(v - d).toFixed(dec);
+    if (diff !== 0) ch.push(names[id][0] + ' ' + (diff > 0 ? '+' : '') + (dec ? diff.toFixed(dec).replace(/(\.\d*?)0+$/, '$1').replace(/\.$/, '') : String(diff)) + names[id][1]);
   });
   if (ch.length) L.push(['Tweaks', ch.join('  ')]);
   return L;
