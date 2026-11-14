@@ -544,7 +544,13 @@ function rawClipFor(res) {
     for (let i = 0; i < n; i += stride) { cnt++; const v = P[i]; if (v >= LO && v < LO + NB * BIN) h[((v - LO) / BIN) | 0]++; }
     let best = -1, bc = 0;
     for (let b = Math.ceil((0.9 - LO) / BIN); b < NB; b++) if (h[b] > bc) { bc = h[b]; best = b; }
-    if (best < 0 || bc < Math.max(20, cnt * 0.002)) return Infinity;
+    /* Build 408: a plateau of 0.02% of the sample is enough (it was 0.2%). A photo whose only blown area is a car's
+       glossy boot is about 0.17% of the frame: with AMaZE red scraped past 0.2% and green did not, and with RCD
+       (or with Balance before rebuild off) not even red did, so no clip level was found, the rebuild was skipped,
+       and the blown paint showed up blue after white balance (blue gain x5.2 on this camera). The test below, that
+       the pile-up stands well above the bins beneath it, is what keeps a smooth fall-off of bright pixels from
+       being taken for a clip. */
+    if (best < 0 || bc < Math.max(20, cnt * 0.0002)) return Infinity;
     let below = 0, nb = 0; for (let b = best - 40; b < best - 8; b++) if (b >= 0) { below += h[b]; nb++; }
     if (nb && bc < 5 * (below / nb)) return Infinity;   // no plateau: a smooth falloff of bright pixels, not a clip
     return LO + best * BIN;
