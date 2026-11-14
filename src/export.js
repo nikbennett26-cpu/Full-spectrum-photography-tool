@@ -760,7 +760,7 @@ async function exportNow() {
       const result = await renderAtOriginalRes();
       if (result) { px = result.px; w = result.w; h = result.h; }
     } catch (e) { toast('Original render failed (' + e.message + ') — using working size', true); }
-    $('bDl').disabled = false; $('bDl').textContent = 'Export Image';
+    $('bDl').disabled = false; $('bDl').textContent = 'Export image';
   }
   if (!px) {
     w = $('preview').width; h = $('preview').height;
@@ -820,7 +820,7 @@ async function exportNow() {
     deliverBlob(finalBlob, 'channel-swap-' + stamp + '.' + ext, offerLanding);
   }, mime, fmt === 'jpeg' ? 1.0 : undefined);
   } catch (e) {
-    $('bDl').disabled = false; $('bDl').textContent = 'Export Image';
+    $('bDl').disabled = false; $('bDl').textContent = 'Export image';
     alert('Export failed: ' + (e && e.message ? e.message : e) + '\n\nA screenshot of this is the fastest way to get it fixed.');
   }
 }
@@ -834,5 +834,5 @@ $('bDl').onclick = async () => {
   const btn = $('bDl'); btn.disabled = true; btn.classList.add('busy'); btn.textContent = 'Exporting\u2026';
   await new Promise(r => requestAnimationFrame(() => setTimeout(r, 0)));
   try { await exportNow(); }
-  finally { exportBusy = false; btn.disabled = false; btn.classList.remove('busy'); btn.textContent = 'Export Image'; }
+  finally { exportBusy = false; btn.disabled = false; btn.classList.remove('busy'); btn.textContent = 'Export image'; }
 };

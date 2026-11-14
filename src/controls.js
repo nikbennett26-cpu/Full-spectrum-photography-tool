@@ -835,11 +835,27 @@ function lutMixUI() { const e = $('lutMix'); return (e ? (+e.value || 0) : 100) 
    to keep finding and re-visiting one at a time. render() already runs
    after every one of them, so this rides along with it instead: one place,
    correct regardless of which of the 24 actually fired. */
+/* Build 406: the fill is drawn from the slider's neutral point to the thumb, not from the left edge, so +0.7 and
+   -0.7 read differently and a slider at home shows no fill. --o is where home sits (0-100), worked out once per
+   slider from the default the markup started with; the stylesheet fills between --o and --val. A row whose slider is
+   off its default gets .chg (the class the desktop panels already used for "this has been moved"), so its name and
+   number can read as live; a row whose home is not at an end gets .bip once, which draws the small home notch.
+   Sliders made later with no fixed default (colour bands) fill from zero, or from the left, and are never marked. */
 function syncSliderFill(el) {
   if (!el) return;
   const min = +el.min || 0, max = +el.max || 100, v = +el.value || 0;
   const pct = max > min ? (v - min) / (max - min) * 100 : 0;
   el.style.setProperty('--val', pct);
+  let m = el._sf;
+  if (!m) {
+    const known = typeof sliderDefaults !== 'undefined' && el.id && (el.id in sliderDefaults);
+    const d = known ? +sliderDefaults[el.id] : (min < 0 && max > 0 ? 0 : min);
+    const o = max > min ? Math.min(100, Math.max(0, (d - min) / (max - min) * 100)) : 0;
+    m = el._sf = { def: known ? d : null, row: el.closest ? el.closest('.sl') : null };
+    el.style.setProperty('--o', +o.toFixed(3));
+    if (m.row && o > 0.5 && o < 99.5) m.row.classList.add('bip');
+  }
+  if (m.row && m.def !== null) m.row.classList.toggle('chg', Math.abs(v - m.def) > 1e-9);
 }
 /* Full pass: only needed when many sliders change at once (load, reset,
    undo/redo, preset). The per-slider input listener updates just its own
@@ -847,6 +863,7 @@ function syncSliderFill(el) {
 function syncSliderFills() {
   document.querySelectorAll('input[type=range]').forEach(syncSliderFill);
 }
+syncSliderFills();   // build 406: once at start, so every track knows where its home is before the first render
 /* render() is frame-coalesced. A slider drag fires 'input' at 60-120 Hz,
    but the display only shows one frame per vsync -- every engine.render()
    beyond the last in a frame is GPU work nobody sees. Callers keep calling
@@ -1680,7 +1697,7 @@ function presetMixApply(pct) {
     const place = () => { sh.style.left = el.offsetLeft + 'px'; sh.style.top = (el.offsetTop - 8) + 'px'; sh.style.width = el.offsetWidth + 'px'; sh.style.height = (el.offsetHeight + 16) + 'px'; };
     place(); addEventListener('resize', place); new ResizeObserver(place).observe(host);
     let g = null;
-    sh.addEventListener('pointerdown', e => { place(); g = { x: e.clientX, y: e.clientY, v: +el.value, on: false }; });
+    sh.addEventListener('pointerdown', e => { place(); g = { x: e.clientX, y: e.clientY, v: +el.value, on: false, f: 1, y0: e.clientY }; });
     sh.addEventListener('pointermove', e => {
       if (!g) return;
       const dx = e.clientX - g.x, dy = e.clientY - g.y;
@@ -1688,20 +1705,35 @@ function presetMixApply(pct) {
         if (Math.abs(dy) > 8 && Math.abs(dy) > Math.abs(dx)) { g = null; return; }   // a scroll
         if (Math.abs(dx) < 8) return;
         g.on = true; armUndoCapture(); try { sh.setPointerCapture(e.pointerId); } catch (err) {}
+        if (row) row.classList.add('held');                        // build 406: the row answers the finger while it drags (see premium.css)
+        if (window.sliderDetent) sliderDetent.reset();
       }
       const min = +el.min, max = +el.max, step = +el.step || 1;
       const W = Math.max(120, el.offsetWidth);
+      /* Build 406 r2: the touch fine mode (view.js) on the shield too. Once the drag has started, moving the finger up or
+         down away from the slider slows it (touchFineFactor). At each change of speed the drag starts again from where
+         the finger and the value are now, so the value never jumps when the speed changes. */
+      const f = touchFineFactor(Math.abs(e.clientY - g.y0));
+      if (f !== g.f) {
+        if (g.f === 1 && f < 1) haptic(12);
+        g.f = f; g.x = e.clientX; g.v = g.cur !== undefined ? g.cur : +el.value;
+        sliderFineMark(row, f);
+      }
+      const fdx = e.clientX - g.x;
       let moved;
-      if (EASED[id]) {                                            // 0.4x over the first 40 px, then enough to reach the full range across one slider width
-        const d = Math.abs(dx), s2 = (1.03 * W - 16) / Math.max(1, W - 40);
-        moved = Math.sign(dx) * (d <= 40 ? d * 0.4 : 16 + (d - 40) * s2) / W * (max - min);
-      } else moved = dx * (max - min) / W / SLOW;
-      let v = Math.max(min, Math.min(max, g.v + moved));
-      v = Math.round((v - min) / step) * step + min;
-      if (v !== +el.value) { el.value = String(v); el.dispatchEvent(new Event('input', { bubbles: true })); }
+      if (f < 1) moved = fdx * (max - min) / W / SLOW * f;
+      else if (EASED[id]) {                                            // 0.4x over the first 40 px, then enough to reach the full range across one slider width
+        const d = Math.abs(fdx), s2 = (1.03 * W - 16) / Math.max(1, W - 40);
+        moved = Math.sign(fdx) * (d <= 40 ? d * 0.4 : 16 + (d - 40) * s2) / W * (max - min);
+      } else moved = fdx * (max - min) / W / SLOW;
+      g.cur = Math.max(min, Math.min(max, g.v + moved));            // unrounded, so a slow drag can still creep across a step
+      let v = Math.round((g.cur - min) / step) * step + min;
+      v = +v.toFixed(6);
+      if (v !== +el.value) { el.value = String(v); el.dispatchEvent(new Event('input', { bubbles: true })); if (window.sliderDetent) sliderDetent.tick(el); }
       e.preventDefault();
     });
-    const end = e => { if (g && g.on) el.dispatchEvent(new Event('change', { bubbles: true })); g = null; };
+    const row = el.closest('.sl');
+    const end = e => { if (g && g.on) el.dispatchEvent(new Event('change', { bubbles: true })); g = null; if (row) { row.classList.remove('held'); sliderFineMark(row, 1); } };
     sh.addEventListener('pointerup', end); sh.addEventListener('pointercancel', end);
   }
   SPECIAL.forEach(id => shield($(id), id));

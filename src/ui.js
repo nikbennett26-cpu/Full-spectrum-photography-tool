@@ -854,20 +854,32 @@ function drawMaskOverlay() {
   if (!editing) return;
   const m = masks[maskSel], ox = pv.offsetLeft, oy = pv.offsetTop, pw = pv.offsetWidth, ph = pv.offsetHeight;
   const X = u => ox + u * pw, Y = v => oy + v * ph;
-  ctx.lineWidth = 1.5; ctx.strokeStyle = 'rgba(232,217,184,.95)'; ctx.fillStyle = '#e8d9b8';
-  const sq = (x, y) => { ctx.fillRect(x - 5, y - 5, 10, 10); };
+  /* Build 406: every line and handle is drawn twice, a dark band under a light one, so it reads on snow, sky and
+     shadow alike (the single pale line vanished on bright skies, exactly where graduated masks go). Handles are round,
+     12px, with a dark edge; the one that moves the whole mask is a ring, the ones that resize it are solid. */
+  const ink = 'rgba(10,10,12,.62)', light = '#f3f0ea';
+  const twice = (path, dash) => {
+    ctx.setLineDash(dash || []);
+    ctx.lineWidth = 3.5; ctx.strokeStyle = ink; path(); ctx.stroke();
+    ctx.lineWidth = 1.5; ctx.strokeStyle = light; path(); ctx.stroke();
+    ctx.setLineDash([]);
+  };
+  const knob = (x, y, ring) => {
+    ctx.beginPath(); ctx.arc(x, y, 6, 0, 6.2832);
+    ctx.lineWidth = 2; ctx.strokeStyle = ink; ctx.fillStyle = ring ? 'rgba(10,10,12,.35)' : light;
+    ctx.fill(); ctx.stroke();
+    if (ring) { ctx.beginPath(); ctx.arc(x, y, 4.5, 0, 6.2832); ctx.lineWidth = 2; ctx.strokeStyle = light; ctx.stroke(); }
+  };
   if (m.type === 'linear') {
     const ax = X(m.x0), ay = Y(m.y0), bx = X(m.x1), by = Y(m.y1);
     const dx = bx - ax, dy = by - ay, len = Math.hypot(dx, dy) || 1, nx = -dy / len, ny = dx / len, L = Math.max(pw, ph);
-    ctx.beginPath(); ctx.moveTo(ax, ay); ctx.lineTo(bx, by); ctx.stroke();
-    ctx.setLineDash([6, 5]);
-    [[ax, ay], [bx, by]].forEach(q => { ctx.beginPath(); ctx.moveTo(q[0] - nx * L, q[1] - ny * L); ctx.lineTo(q[0] + nx * L, q[1] + ny * L); ctx.stroke(); });
-    ctx.setLineDash([]);
-    sq(ax, ay); sq(bx, by);
+    twice(() => { ctx.beginPath(); ctx.moveTo(ax, ay); ctx.lineTo(bx, by); });
+    [[ax, ay], [bx, by]].forEach(q => twice(() => { ctx.beginPath(); ctx.moveTo(q[0] - nx * L, q[1] - ny * L); ctx.lineTo(q[0] + nx * L, q[1] + ny * L); }, [6, 5]));
+    knob(ax, ay); knob(bx, by);
   } else if (m.type === 'radial') {
     const cx = X(m.cx), cy = Y(m.cy), rx = m.rx * pw, ry = m.ry * ph;
-    ctx.beginPath(); ctx.ellipse(cx, cy, Math.max(1, rx), Math.max(1, ry), 0, 0, 6.2832); ctx.stroke();
-    sq(cx, cy); sq(cx + rx, cy); sq(cx - rx, cy); sq(cx, cy + ry); sq(cx, cy - ry);
+    twice(() => { ctx.beginPath(); ctx.ellipse(cx, cy, Math.max(1, rx), Math.max(1, ry), 0, 0, 6.2832); });
+    knob(cx, cy, true); knob(cx + rx, cy); knob(cx - rx, cy); knob(cx, cy + ry); knob(cx, cy - ry);
   }
 }
 (function wireMasks() {
@@ -1198,20 +1210,25 @@ function drawCurveEditor() {
     const hb = curveHist[curveChan === 'master' ? 'l' : curveChan], n = hb.length;
     let mx = 0; for (let i = 0; i < n; i++) mx = Math.max(mx, hb[i]);
     if (mx > 0) {
-      ctx.fillStyle = curveChan === 'master' ? 'rgba(163,160,151,.28)' : CURVE_COL[curveChan] + '40';
+      ctx.fillStyle = curveChan === 'master' ? 'rgba(183,178,169,.22)' : CURVE_COL[curveChan] + '38';
       ctx.beginPath(); ctx.moveTo(0, H);
       for (let i = 0; i < n; i++) ctx.lineTo((i + 0.5) / n * W, H - Math.sqrt(hb[i] / mx) * H * 0.9);
       ctx.lineTo(W, H); ctx.closePath(); ctx.fill();
     }
   }
-  ctx.strokeStyle = 'rgba(84,64,42,.55)'; ctx.lineWidth = 1;
-  ctx.strokeRect(.5, .5, W - 1, H - 1);
+  /* Build 406: neutral hairlines in the theme's warm white (they were the old brown theme's), the quarter grid fainter
+     than the frame, and the straight no-change line the clearest of the three, since it is what you read a curve
+     against. Eighths are ticked along the bottom edge, where tones are placed, without filling the plot with lines. */
+  ctx.strokeStyle = 'rgba(243,240,234,.07)'; ctx.lineWidth = 1;
   for (let q = 1; q < 4; q++) {
     const gx = Math.round(W * q / 4) + .5, gy = Math.round(H * q / 4) + .5;
     ctx.beginPath(); ctx.moveTo(gx, 0); ctx.lineTo(gx, H); ctx.stroke();
     ctx.beginPath(); ctx.moveTo(0, gy); ctx.lineTo(W, gy); ctx.stroke();
   }
-  ctx.strokeStyle = 'rgba(168,147,114,.35)'; ctx.setLineDash([4, 4]);
+  ctx.strokeStyle = 'rgba(243,240,234,.16)';
+  for (let q = 1; q < 8; q += 2) { const gx = Math.round(W * q / 8) + .5; ctx.beginPath(); ctx.moveTo(gx, H); ctx.lineTo(gx, H - 4); ctx.stroke(); }
+  ctx.strokeRect(.5, .5, W - 1, H - 1);
+  ctx.strokeStyle = 'rgba(243,240,234,.22)'; ctx.setLineDash([3, 4]);
   ctx.beginPath(); ctx.moveTo(0, H); ctx.lineTo(W, 0); ctx.stroke(); ctx.setLineDash([]);
   const order = ['r', 'g', 'b', 'master'].filter(k => k !== curveChan).concat([curveChan]);
   order.forEach(k => {
@@ -1222,27 +1239,45 @@ function drawCurveEditor() {
       const full = makeChanFn(k);
       ctx.globalAlpha = 0.6; ctx.strokeStyle = CURVE_COL[k]; ctx.lineWidth = 1.25; ctx.setLineDash([5, 4]);
       ctx.beginPath();
-      for (let px = 0; px <= W; px += 2) { const y = H - full(px / W) * H; if (px === 0) ctx.moveTo(px, y); else ctx.lineTo(px, y); }
+      for (let px = 0; px <= W; px += 1) { const y = H - full(px / W) * H; if (px === 0) ctx.moveTo(px, y); else ctx.lineTo(px, y); }
       ctx.stroke(); ctx.setLineDash([]);
     }
     ctx.globalAlpha = k === curveChan ? 1 : 0.35;
-    ctx.strokeStyle = CURVE_COL[k]; ctx.lineWidth = k === curveChan ? 2 : 1.25;
+    ctx.strokeStyle = CURVE_COL[k]; ctx.lineWidth = k === curveChan ? 2 : 1.25; ctx.lineJoin = 'round';
     ctx.beginPath();
-    for (let px = 0; px <= W; px += 2) { const y = H - fn(px / W) * H; if (px === 0) ctx.moveTo(px, y); else ctx.lineTo(px, y); }
+    // build 406: one sample per CSS pixel (was every other), so a steep curve near black or white is drawn as smooth as it is applied
+    for (let px = 0; px <= W; px += 1) { const y = H - fn(px / W) * H; if (px === 0) ctx.moveTo(px, y); else ctx.lineTo(px, y); }
     ctx.stroke();
   });
   ctx.globalAlpha = 1;
+  /* Build 406: while a point is being dragged, thin guides run from it to the bottom (input) and left (output) edges,
+     so you can see which tone it takes and where it sends it, the two numbers shown in In and Out below. */
+  const dq = curveDragIdx >= 0 && curveState[curveChan][curveDragIdx];
+  if (dq) {
+    const gx = Math.round(dq[0] * W) + .5, gy = Math.round(H - dq[1] * H) + .5;
+    ctx.strokeStyle = CURVE_COL[curveChan]; ctx.globalAlpha = .45; ctx.lineWidth = 1; ctx.setLineDash([2, 3]);
+    ctx.beginPath(); ctx.moveTo(gx, gy); ctx.lineTo(gx, H); ctx.moveTo(gx, gy); ctx.lineTo(0, gy); ctx.stroke();
+    ctx.setLineDash([]); ctx.globalAlpha = 1;
+  }
   ctx.fillStyle = CURVE_COL[curveChan]; ctx.strokeStyle = '#0b0c0e'; ctx.lineWidth = 1.5;
   curveState[curveChan].forEach((q, i) => {
-    ctx.beginPath(); ctx.arc(q[0] * W, H - q[1] * H, i === curveSel ? 7 : 5, 0, 6.2832); ctx.fill(); ctx.stroke();
-    if (i === curveSel) { ctx.beginPath(); ctx.arc(q[0] * W, H - q[1] * H, 11, 0, 6.2832); ctx.strokeStyle = CURVE_COL[curveChan]; ctx.lineWidth = 1.5; ctx.stroke(); ctx.strokeStyle = '#0b0c0e'; }
+    const x = q[0] * W, y = H - q[1] * H;
+    if (i === curveSel) {
+      // build 406: the selected point is a hollow ring with a dark core edge, readable over the histogram and the curve
+      ctx.beginPath(); ctx.arc(x, y, 9, 0, 6.2832); ctx.fillStyle = 'rgba(11,12,14,.55)'; ctx.fill();
+      ctx.lineWidth = 2; ctx.strokeStyle = CURVE_COL[curveChan]; ctx.stroke();
+      ctx.beginPath(); ctx.arc(x, y, 4, 0, 6.2832); ctx.fillStyle = '#f3f0ea'; ctx.fill();
+      ctx.fillStyle = CURVE_COL[curveChan]; ctx.strokeStyle = '#0b0c0e'; ctx.lineWidth = 1.5;
+      return;
+    }
+    ctx.beginPath(); ctx.arc(x, y, 5, 0, 6.2832); ctx.fill(); ctx.stroke();
   });
   ctx.restore();
   const lc = $('curveLum'); if (lc) lc.checked = !!curveState.lum;
   syncCurvePointRow();
 }
 /* The point being edited, for the exact-value fields under the curve. -1 means none. */
-let curveSel = -1;
+let curveSel = -1, curveDragIdx = -1;   // build 406: curveDragIdx is the point under the finger/mouse while a drag lasts
 function syncCurvePointRow() {
   const fin = $('curveIn'), fout = $('curveOut'); if (!fin || !fout) return;
   const pts = curveState[curveChan];
@@ -1276,31 +1311,43 @@ function curveChanged() { drawCurveEditor(); if (typeof syncCurveRegions === 'fu
     const pts = curveState[curveChan], [x, y, r] = pos(e);
     armUndoCapture();
     let { i, d } = nearest(pts, x, y, r);
+    /* Build 406: a fingertip gets a bigger catch radius than a mouse (24px, a 48px target, was 18 for both), so grabbing
+       a point on a phone no longer adds a new one beside it by mistake. */
+    const HIT = e.pointerType === 'mouse' ? 18 : 24;
     /* Double-tap removes a point. Done here rather than with the dblclick
        event, which touch screens do not reliably fire; this behaves the same
        for mouse, pen and finger. A second tap on the same point within
        450ms removes it, including a point that the first tap just added. */
     const nowT = performance.now();
-    if (d <= 18 && i > 0 && i < pts.length - 1 && lastTap.i === i && lastTap.ch === curveChan && nowT - lastTap.t < 450) {
+    if (d <= HIT && i > 0 && i < pts.length - 1 && lastTap.i === i && lastTap.ch === curveChan && nowT - lastTap.t < 450) {
       pts.splice(i, 1); lastTap = { t: 0 }; curveSel = -1;
       commitUndoCapture(); curveChanged();
       return;
     }
-    lastTap = d <= 18 ? { t: nowT, i: i, ch: curveChan } : { t: 0 };
-    if (d > 18) {
+    lastTap = d <= HIT ? { t: nowT, i: i, ch: curveChan } : { t: 0 };
+    if (d > HIT) {
       const nx = Math.min(0.99, Math.max(0.01, x));
       let ins = pts.findIndex(q => q[0] > nx); if (ins < 0) ins = pts.length;
       if ((ins > 0 && nx - pts[ins - 1][0] < 0.02) || (ins < pts.length && pts[ins][0] - nx < 0.02)) { preChangeSnapshot = null; return; }
-      pts.splice(ins, 0, [nx, clamp01(y)]); i = ins;
+      /* Build 406: a tap close to the line puts the new point ON the line, so adding a point does not by itself kink the
+         curve because the finger landed a few pixels off it; you then drag it where you want. A tap well away from the
+         line still puts the point where you tapped, as before. */
+      let ny = clamp01(y);
+      const onCurve = makeCurveFn(pts)(nx);
+      if (Math.abs(onCurve - ny) * r.height <= (e.pointerType === 'mouse' ? 10 : 18)) ny = onCurve;
+      pts.splice(ins, 0, [nx, ny]); i = ins;
       lastTap = { t: nowT, i: ins, ch: curveChan };
     }
-    drag = { i: i }; curveSel = i;
+    drag = { i: i, x0: e.clientX, y0: e.clientY, moved: false }; curveSel = i; curveDragIdx = i;
     try { cv.setPointerCapture(e.pointerId); } catch (err) {}
     sliderDragging = true; draggedSliderId = 'curve';   // reuse the draft-quality render while dragging
     curveChanged();
   });
   cv.addEventListener('pointermove', e => {
     if (!drag) return;
+    /* Build 406: a press that actually moved a point is a drag, not a tap, so it can never be the first half of a
+       double-tap. Before, grabbing a point again straight after a quick drag (to refine it) deleted it. */
+    if (!drag.moved && Math.hypot(e.clientX - drag.x0, e.clientY - drag.y0) > 4) { drag.moved = true; lastTap = { t: 0 }; }
     const pts = curveState[curveChan], [x, y] = pos(e), i = drag.i, n = pts.length;
     const nx = (i === 0 || i === n - 1) ? pts[i][0] : Math.max(pts[i - 1][0] + 0.01, Math.min(pts[i + 1][0] - 0.01, x));
     pts[i] = [nx, clamp01(y)];
@@ -1310,7 +1357,7 @@ function curveChanged() { drawCurveEditor(); if (typeof syncCurveRegions === 'fu
     if (!drag) return;
     const pts = curveState[curveChan], r = cv.getBoundingClientRect(), i = drag.i;
     if (i > 0 && i < pts.length - 1 && (e.clientX < r.left - 24 || e.clientX > r.right + 24)) { pts.splice(i, 1); curveSel = -1; }
-    drag = null;
+    drag = null; curveDragIdx = -1;
     sliderDragging = false; settleFullRes(); draggedSliderId = '';
     commitUndoCapture();
     curveChanged();
@@ -1368,9 +1415,9 @@ function drawCurveMini() {
     ctx.fillStyle = 'rgba(111,171,150,' + (curveMiniHot === k ? 0.22 : (i % 2 ? 0.10 : 0.05)) + ')';
     ctx.fillRect(W * i / 4, 0, W / 4, H);
   });
-  ctx.strokeStyle = 'rgba(168,147,114,.35)'; ctx.setLineDash([3, 3]); ctx.beginPath(); ctx.moveTo(0, H); ctx.lineTo(W, 0); ctx.stroke(); ctx.setLineDash([]);
+  ctx.strokeStyle = 'rgba(243,240,234,.22)'; ctx.setLineDash([3, 4]); ctx.beginPath(); ctx.moveTo(0, H); ctx.lineTo(W, 0); ctx.stroke(); ctx.setLineDash([]);   // build 406: same baseline as the Points graph
   const fn = makeChanFn(curveChan);
-  ctx.strokeStyle = CURVE_COL[curveChan]; ctx.lineWidth = 2; ctx.beginPath();
+  ctx.strokeStyle = CURVE_COL[curveChan]; ctx.lineWidth = 2; ctx.lineJoin = 'round'; ctx.beginPath();
   for (let px = 0; px <= W; px += 1) { const y = H - fn(px / W) * H; if (px === 0) ctx.moveTo(px, y); else ctx.lineTo(px, y); }
   ctx.stroke(); ctx.restore();
 }

@@ -681,8 +681,13 @@ void main(){
   float mx = max(k.r, max(k.g, k.b)), mn = min(k.r, min(k.g, k.b));
   if (u_hlDone < 0.5 && mx > 0.9) {
     vec3 b = c * u_wb; float lvl = max(b.r, max(b.g, b.b));
-    vec3 wgt = vec3(hlNear(k.r), hlNear(k.g), hlNear(k.b));
+    // premium pass: every channel, not only the pinned one, by the most-clipped channel's weight (raw-preview.js)
+    float wgt = max(hlNear(k.r), max(hlNear(k.g), hlNear(k.b)));
     c += (vec3(lvl) / u_wb - c) * wgt;
+  } else if (u_hlDone > 0.5 && mx > 1.0) {
+    // premium pass: Highlight recovery ran; trust its colour less the further it had to rebuild past clip (raw-preview.js)
+    vec3 b = c * u_wb; float lvl = max(b.r, max(b.g, b.b)), w = smoothstep(1.0, 1.4, mx);
+    c += (vec3(lvl) / u_wb - c) * w;
   }
   vec3 r = u_M * (c * u_wb);
   if (mn >= 0.96) { float t = clamp((mn - 0.96) / 0.04, 0.0, 1.0); t = t * t * (3.0 - 2.0 * t); float m = max(r.r, max(r.g, r.b)); r += (vec3(m) - r) * t; }

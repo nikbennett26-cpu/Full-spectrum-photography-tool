@@ -1365,10 +1365,25 @@ function rawEngineResultToCanvas(res, doCamSpaceSwap, doCamSpaceSwapMatrix, doCa
       if (!res.__hlDone && rawMxPre > 0.9) {   // the basic rebuild; skipped when inpaint opposed ran
         const bR = srn * wb[0], bG = sgn * wb[1], bB = sbn * wb[2];
         const lvl = bR > bG ? (bR > bB ? bR : bB) : (bG > bB ? bG : bB);
-        const wR = hlNear(kR), wG = hlNear(kG), wB = hlNear(kB);
-        if (wR > 0) srn += (lvl / wb[0] - srn) * wR;
-        if (wG > 0) sgn += (lvl / wb[1] - sgn) * wG;
-        if (wB > 0) sbn += (lvl / wb[2] - sbn) * wB;
+        /* Premium pass: the neutral assumption above, applied to the whole pixel. Only the pinned channel used to be
+           refilled, so when the channels still holding data disagreed the pixel kept their disagreement at full
+           brightness: on an IR-converted Canon behind Wratten 12 + didymium + GRB1, red pins first (white balance
+           0.64 / 1 / 5.2), blue's large gain set the level, red was raised to it and green was left behind, and
+           every blown speck of paint or chrome came out a flat saturated magenta (G as low as 1 against R 254).
+           Now all three channels move toward the level together, by the weight of whichever channel is closest to
+           clip, over the same 90-98.5% fade, so a blown highlight turns white and its edge has no seam. */
+        const wA = Math.max(hlNear(kR), hlNear(kG), hlNear(kB));
+        if (wA > 0) { srn += (lvl / wb[0] - srn) * wA; sgn += (lvl / wb[1] - sgn) * wA; sbn += (lvl / wb[2] - sbn) * wA; }
+      } else if (res.__hlDone && rawMxPre > 1) {
+        /* Premium pass: after Highlight recovery (inpaint opposed) a rebuilt channel sits above its clip by however much
+           was estimated. A small rebuild is trusted as it is; the further past clip it had to go, the more the pixel is
+           taken to neutral at its rebuilt brightness, complete at 1.4 times clip. The estimate itself is fair in camera
+           terms (on the IR Canon test file 0.93 / 0.85 / 1.09 balanced) but the camera matrix turns that small tint at
+           three times white into a flat magenta, so its brightness and shape are kept and its colour is not. */
+        const bR = srn * wb[0], bG = sgn * wb[1], bB = sbn * wb[2];
+        const lvl = bR > bG ? (bR > bB ? bR : bB) : (bG > bB ? bG : bB);
+        let w = (rawMxPre - 1) / 0.4; w = w < 0 ? 0 : w > 1 ? 1 : w; w = w * w * (3 - 2 * w);
+        srn += (lvl / wb[0] - srn) * w; sgn += (lvl / wb[1] - sgn) * w; sbn += (lvl / wb[2] - sbn) * w;
       }
 
       const cr = srn * wb[0], cg = sgn * wb[1], cb = sbn * wb[2];

@@ -250,7 +250,7 @@ irlabTr.add('ja', {
 "Export": "書き出し",
 "Export (5)": "書き出し (5)",
 "Export CSV": "CSVを書き出し",
-"Export Image": "画像を書き出し",
+"Export image": "画像を書き出し",
 "Export JSON": "JSONを書き出し",
 "Export PNG report": "PNGレポートを書き出し",
 "Export a PNG report": "PNGレポートを書き出し",

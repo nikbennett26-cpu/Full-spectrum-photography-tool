@@ -313,26 +313,14 @@ uniform sampler2D u_epdBase;   // the smooth, edge-stopping base layer of the lo
     return sign(c) * mix(a * 12.92, 1.055 * pow(a, vec3(1.0 / 2.4)) - 0.055, step(vec3(0.0031308), a));
   }
 
-  // Soft-knee highlight protection — a standard tanh-based soft clip, the
-  // same generic technique used broadly in HDR tone mapping and audio
-  // limiting, not specific to any one tool. Values above the threshold ease
-  // toward 1.0 instead of hard-clipping. The threshold sits deliberately
-  // high (0.96, not compressing until near-true-white) after checking the
-  // old lower threshold (0.75) directly: it was already compressing 0.75-
-  // 0.95 linear-light values — a realistic range for ordinary sunlit
-  // highlight detail, well short of blown-out — down to 83% of their
-  // natural spread before this fix, which flattens exactly the kind of
-  // shadow-to-highlight tonal separation (e.g. deep red in shaded foliage
-  // easing toward gold in sunlit foliage) that should survive a channel
-  // swap. This range is now left completely untouched; only genuine
-  // near-white values get the soft roll-off.
+  /* Was a tanh soft knee from 0.96 to 1.0 linear. Everything that reaches it has already been brought into 0..1 (the
+     in-range path, gamutMixToAnchor's clamp, the Keep saturation scale), so it never eased anything over white; it only
+     squeezed the top 4% of the range, and once per gamut pass: after the two passes of a default render pure white came
+     out at 253 (0.9857 linear), never 255, the 16-bit export topped out near 65120, and "at white" in the histogram and
+     Show clipping could never fire. Build r2: in-range values are left alone, so white is 1.0 and the passes are
+     idempotent. Values below 0.96 are exactly as before; only the brightest 1-3 levels of a render moved up. */
   float compressChan(float v) {
-    const float threshold = 0.96;
-    const float softness = 0.04; // threshold+softness must not exceed 1.0
-    if (v < 0.0) return 0.0;
-    if (v <= threshold) return v;
-    float x = (v - threshold) / softness;
-    return threshold + softness * ((exp(x) - exp(-x)) / (exp(x) + exp(-x)));
+    return clamp(v, 0.0, 1.0);
   }
 
   /* Soft roll-off toward 1.0. GLSL ES 1.00 has no tanh() — compressChan
@@ -396,6 +384,11 @@ uniform sampler2D u_epdBase;   // the smooth, edge-stopping base layer of the lo
      initialiser, since these are written from several stages. */
   float g_over = 0.0;    // furthest any channel went above 1.0
   float g_under = 0.0;   // furthest any channel went below 0.0
+  /* Where a channel that reached white (1.0) has ended up, in linear light. The sRGB gamut passes now leave white at 1.0
+     (compressChan), but the wide working space's knee (wideToDisplay) still brings a RAW's white to about 0.963, so each
+     pass carries this ceiling through its own curve and Show clipping asks "is this channel at the white the pipeline can
+     actually reach". */
+  float g_white = 1.0;
   /* How strongly the band being previewed claimed this pixel, 0..1. Carried
      out to the overlay the same way the clipping globals are, because the
      weight is only known inside targetedHSL and the overlay draws at the end
@@ -476,6 +469,7 @@ uniform sampler2D u_epdBase;   // the smooth, edge-stopping base layer of the lo
     // (it contributes zero) and every path through this function reports.
     g_over  = max(g_over,  mx - 1.0);
     g_under = max(g_under, -mn);
+    g_white = compressChan(g_white);   // every path below ends in compressGamut, whose roll-off this follows
     if (mn >= 0.0 && mx <= 1.0) { pull = 0.0; return compressGamut(c); }
     /* Anchor moves toward mid-grey BEFORE solving t, not after — an
        additive shift applied after the fact cancels out of the channels'
@@ -553,8 +547,16 @@ uniform sampler2D u_epdBase;   // the smooth, edge-stopping base layer of the lo
     vec3 dc = vec3(rgcCompress(d.r), rgcCompress(d.g), rgcCompress(d.b));
     pull = clamp(max(max(d.r - dc.r, d.g - dc.g), d.b - dc.b), 0.0, 1.0);
     vec3 o = srgbToLinear(vec3(me) - dc * me);   // the brightest channel comes back exactly as it went in
-    const float knee = 0.9;
-    if (mx > knee) o *= (knee + (1.0 - knee) * (1.0 - exp(-(mx - knee) / (1.0 - knee)))) / mx;
+    /* Premium pass: the knee is scaled so white lands exactly on 1.0 (it stopped at 0.963, so a RAW's white was 250-251,
+       never 255); above white the scale holds at 1, uniformly across the channels. Values
+       from 0.9 to white rise by at most 2.6%; below 0.9 nothing changes. Light above white keeps its colour, as before
+       (the self-test holds that for a red at twice white). */
+    const float knee = 0.9, kW = knee + (1.0 - knee) * (1.0 - 0.36787944);   // the old curve's value at white, 1 - exp(-1)
+    g_white = g_white > knee ? min(1.0, (knee + (1.0 - knee) * (1.0 - exp(-(g_white - knee) / (1.0 - knee)))) * (1.0 + (1.0 - kW) * (g_white - knee) / (1.0 - knee) / kW)) : g_white;   // white through the same knee
+    if (mx > knee) {
+      float t = min(1.0, (mx - knee) / (1.0 - knee));   // eases the scale-up in from the knee, so the curve stays continuous there
+      o *= min(1.0, (knee + (1.0 - knee) * (1.0 - exp(-(mx - knee) / (1.0 - knee)))) * (1.0 + (1.0 - kW) * t / kW)) / mx;
+    }
     return clamp(o, 0.0, 1.0);
   }
 
@@ -1888,6 +1890,15 @@ uniform float u_skyL;          // the typical lightness of the sky; anything cle
   float sCurve(float x, float strength, float p) {
     x = clamp(x, 0.0, 1.0);
     p = clamp(p, 0.05, 0.95);
+    /* Below strength 1 the power curve's slope is infinite at black and at white, so a little sensor noise in the
+       deepest shadows (or a speck in a blown sky) was stretched into speckle. Within 0.02 of either end the curve is
+       replaced by the straight line from the end to the curve's value there (the slope is then finite, at most
+       1/strength times the curve's own); at strength 1 and above this changes nothing. */
+    const float T = 0.02;
+    if (strength < 1.0) {
+      if (x < T) return (p * pow(T / p, strength)) * (x / T);
+      if (x > 1.0 - T) return 1.0 - ((1.0 - p) * pow(T / (1.0 - p), strength)) * ((1.0 - x) / T);
+    }
     if (x < p) return p * pow(x / p, strength);
     return 1.0 - (1.0 - p) * pow((1.0 - x) / (1.0 - p), strength);
   }
@@ -1929,6 +1940,16 @@ uniform float u_skyL;          // the typical lightness of the sky; anything cle
     vec3 lg = log2(max(c, vec3(0.0005))) * 0.30103;     // log10 of the value
     vec3 t = (lg - SPEED + 0.85) * GAMMA;               // -0.85 = mid-density point
     return clamp(1.0 / (1.0 + exp(-t * 2.3026)), 0.0, 1.0);
+  }
+
+  /* One Clarity blur tap: returns weight*luma and adds the weight to w. The weight is the tap's base weight times
+     exp(-(stops from the centre / 2)^2), so taps across a strong edge count for little. */
+  float clTap(vec2 uv, float centre, float base, inout float w) {
+    float l = dot(srcLin(uv), LUMW);
+    float d = log2(max(l, 0.0001) / centre) * (1.0 / 2.0);
+    float k = base * exp(-d * d);
+    w += k;
+    return k * l;
   }
 
   vec3 applyContrast(vec3 c, float strength) {
@@ -2663,7 +2684,7 @@ uniform float u_skyL;          // the typical lightness of the sky; anything cle
     if (u_irSubOn > 0.5) rgb = wideOn() ? u_irSub * rgb : max(u_irSub * rgb, vec3(0.0));   // build 172: IR leak removal
     // Reset BEFORE targetedHSL, not after: it now reports its own
     // out-of-gamut overshoot, and resetting afterward would wipe it.
-    g_over = 0.0; g_under = 0.0;
+    g_over = 0.0; g_under = 0.0; g_white = 1.0;
     rgb = targetedHSL(rgb);   // SOOC colour only — before white balance, before the swap
 
     float pull1 = 0.0, pull2 = 0.0;
@@ -2835,17 +2856,15 @@ uniform float u_skyL;          // the typical lightness of the sky; anything cle
       if (midtone_mask > 0.001) {
         /* Two-ring blur: inner 4 taps at 12px, outer 4 at 24px.
            Weighted 0.6 / 0.4 — inner ring dominates but outer adds reach. */
-        vec2 r1 = u_texelSize * 12.0;
-        vec2 r2 = u_texelSize * 24.0;
-        float blur_luma =
-          dot(srcLin(v_texCoord + vec2( r1.x, 0.0)), LUMW) * 0.15
-        + dot(srcLin(v_texCoord + vec2(-r1.x, 0.0)), LUMW) * 0.15
-        + dot(srcLin(v_texCoord + vec2(0.0,  r1.y)), LUMW) * 0.15
-        + dot(srcLin(v_texCoord + vec2(0.0, -r1.y)), LUMW) * 0.15
-        + dot(srcLin(v_texCoord + vec2( r2.x, 0.0)), LUMW) * 0.10
-        + dot(srcLin(v_texCoord + vec2(-r2.x, 0.0)), LUMW) * 0.10
-        + dot(srcLin(v_texCoord + vec2(0.0,  r2.y)), LUMW) * 0.10
-        + dot(srcLin(v_texCoord + vec2(0.0, -r2.y)), LUMW) * 0.10;
+        /* The rings are in picture terms, like noise reduction's taps: u_nrScale source pixels per working-preview
+           pixel (1 in the preview, so the preview is unchanged). In texels alone a full-size export, two to four times
+           the preview's width, measured local contrast over a patch two to four times smaller than the one on screen,
+           so the exported Clarity was a finer, weaker effect than the one that was set. Above preview scale each tap
+           also lands between four pixels, so the bilinear filter averages them, as one preview pixel already does. */
+        float clS = max(u_nrScale, 1.0);
+        vec2 clH = clS > 1.5 ? 0.5 * u_texelSize : vec2(0.0);
+        vec2 r1 = u_texelSize * 12.0 * clS;
+        vec2 r2 = u_texelSize * 24.0 * clS;
         /* The local ratio is measured on the source alone, centre against its own surroundings, and then applied to the
            edited pixel. It used to divide the EDITED pixel by the UNEDITED surroundings, so any global change (Exposure,
            white balance, the swap) read as local contrast: Exposure +1 with Clarity 50 brightened a featureless grey
@@ -2853,10 +2872,25 @@ uniform float u_skyL;          // the typical lightness of the sky; anything cle
         /* Build 165: the centre is a small average (the pixel and four neighbours 1.5px away), not the single pixel. With
            the single pixel, sensor grain counted as "local contrast" and Clarity +80 roughly doubled the grain of a
            noisy sky; structure at the 12-24px scale Clarity is meant for is unchanged by a 1.5px average. */
-        vec2 cr = u_texelSize * 1.5;
+        vec2 cr = u_texelSize * 1.5 * clS;
         float safe_cl   = max((dot(srcLin(v_texCoord), LUMW) * 2.0
           + dot(srcLin(v_texCoord + vec2( cr.x, 0.0)), LUMW) + dot(srcLin(v_texCoord + vec2(-cr.x, 0.0)), LUMW)
           + dot(srcLin(v_texCoord + vec2(0.0,  cr.y)), LUMW) + dot(srcLin(v_texCoord + vec2(0.0, -cr.y)), LUMW)) / 6.0, 0.0001);
+        /* Edge-aware base: a tap whose luma is far from the centre's (more than about 2 stops) is weighted down, so across
+           a wide edge the base stays on the pixel's own side of it. With a plain average the bright side of an edge was
+           measured against a base dragged down by the dark side, and Clarity +100 drew a light halo there (and a dark one
+           on the other side). Texture within a stop or so keeps nearly full weight, so ordinary Clarity is unchanged. */
+        float clW = 0.0;
+        float blur_luma =
+          clTap(v_texCoord + clH + vec2( r1.x, 0.0), safe_cl, 0.15, clW)
+        + clTap(v_texCoord + clH + vec2(-r1.x, 0.0), safe_cl, 0.15, clW)
+        + clTap(v_texCoord + clH + vec2(0.0,  r1.y), safe_cl, 0.15, clW)
+        + clTap(v_texCoord + clH + vec2(0.0, -r1.y), safe_cl, 0.15, clW)
+        + clTap(v_texCoord + clH + vec2( r2.x, 0.0), safe_cl, 0.10, clW)
+        + clTap(v_texCoord + clH + vec2(-r2.x, 0.0), safe_cl, 0.10, clW)
+        + clTap(v_texCoord + clH + vec2(0.0,  r2.y), safe_cl, 0.10, clW)
+        + clTap(v_texCoord + clH + vec2(0.0, -r2.y), safe_cl, 0.10, clW);
+        blur_luma = blur_luma / max(clW, 1e-4);
         float safe_blur = max(blur_luma, 0.0001);
         float log_ratio = log2(safe_cl / safe_blur);
         /* Soft-clip the ratio so extreme edges don't overshoot. */
@@ -2941,6 +2975,10 @@ uniform float u_skyL;          // the typical lightness of the sky; anything cle
         float mapped_depth  = dh ? clamp(0.4 * (1.0 - tmap) / 0.95, 0.0, 1.0) : safe_dark / (safe_dark + 0.2);
         float depth_factor  = mix(0.4, 1.0, mapped_depth);
         float strength      = -u_dehaze;
+        /* The veil is mixed in linear light, where even a few percent toward a 0.95 grey lifts black to a visibly
+           grey 40-odd of 255, so the first steps of the slider jumped. The strength now eases in (smoothstep); the
+           middle and the full-strength end are unchanged (0, 0.5 and 1 map to themselves). */
+        strength = strength * strength * (3.0 - 2.0 * strength);
         rgb = mix(rgb, ATMOS, strength * 0.7 * depth_factor);
       }
     }
@@ -3370,7 +3408,9 @@ uniform float u_skyL;          // the typical lightness of the sky; anything cle
       float pull = max(pull1, pull2);
       // 0.002 in linear light is about half a step at 8-bit near white, small
       // enough to catch real overflow and large enough to ignore rounding.
-      bool blown  = (g_over > 0.002) || (mx >= 0.9980);
+      // "at white" is the ceiling the gamut passes leave (g_white), not 1.0, which no pixel can reach after them; never
+      // stricter than the old 0.998, so nothing that was flagged before stops being flagged
+      bool blown  = (g_over > 0.002) || (mx >= min(0.9980, linearToSrgb(vec3(g_white)).x - 0.0010));
       // mx is the MAXIMUM channel, so this tests that every channel is on the
       // floor — a genuinely black pixel — rather than that any one of them is.
       bool crushed = (g_under > 0.002) || (mx <= 0.0039);

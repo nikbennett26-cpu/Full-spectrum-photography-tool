@@ -537,6 +537,19 @@ function exitPick() {
   if ($('btnAddBand')) $('btnAddBand').classList.remove('armed');
   ['btnMaskPick'].forEach(id => { if ($(id)) $(id).classList.remove('armed'); });
 }
+/* Build 406: Esc puts an armed picker down (white balance, targeted colour, sample, centre, mask colour, RAW white
+   balance, and dust spots), the way every desktop editor lets you back out of a tool. Before, the only way out was to
+   find and press the same button again. Typing in a field is left alone, and Esc still closes fullscreen first. */
+window.addEventListener('keydown', ev => {
+  if (ev.key !== 'Escape' || ev.defaultPrevented) return;
+  const t = ev.target;
+  if (t && (t.tagName === 'INPUT' && t.type !== 'range' && t.type !== 'checkbox' || t.tagName === 'TEXTAREA' || t.isContentEditable)) return;
+  if ($('previewFullscreen') && $('previewFullscreen').classList.contains('on')) return;   // that Esc belongs to fullscreen (src/view.js)
+  let done = false;
+  if (pickMode) { exitPick(); hideLoupe(); done = true; }
+  if (typeof dustArmed !== 'undefined' && (dustArmed || dustSrcFor >= 0)) { dustSrcFor = -1; dustSetArmed(false); if (typeof dustRenderList === 'function') dustRenderList(); done = true; }
+  if (done) ev.preventDefault();
+});
 
 /* ---------- Targeted colour bands ----------
    One tap adds one band, sampled from the untouched source — same rawPixels

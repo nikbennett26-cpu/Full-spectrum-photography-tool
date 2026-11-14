@@ -1,0 +1,463 @@
+/* ============================================================================================================
+   Build 406 — premium pass. Loaded last (after design.css), so it has the final say.
+   Four parts, each kept inside its own markers:
+     1. Surfaces, depth and motion      (the look of the whole editor)
+     2. Sliders and controls            (how a control looks while you use it)
+     3. Scopes, curve and on-photo tools
+     4. Anything the imaging pass needs
+   ============================================================================================================ */
+
+/* ==== PART 1: SURFACES, DEPTH AND MOTION — begin ==== */
+/* The editor had one tone of near-black for everything (page, panels, stage, controls), told apart only by 1px
+   hairlines, so nothing sat above anything and the photo did not read as the stage. This part gives it a small,
+   neutral elevation scale, a three-level type hierarchy in the panels, and one restrained motion curve.
+   Everything stays neutral grey-black: the photo is false colour, so the chrome must not tint how it is seen.
+
+   Levels (each a fixed tone step; nothing is coloured):
+     0  stage  the well the photo sits in: recessed, the darkest thing on screen
+     1  page   the ground under everything
+     2  panel  top bar, side panels, phone sheet
+     3  raise  an open section, cards, the histogram instrument, a chosen tab
+     4  float  things that genuinely float over the photo or the page: the compare/zoom bar, toasts, dialogs.
+               Only these carry a real shadow. */
+:root{
+  --pm-s0:#040405;
+  --pm-s1:#09090b;
+  --pm-s2:#101013;
+  --pm-s3:#17171b;
+  --pm-s4:#1d1d22;
+  --pm-glass:rgba(20,20,24,.86);
+  --pm-hair:rgba(255,255,255,.06);
+  --pm-hair2:rgba(255,255,255,.1);
+  --pm-lip:inset 0 1px 0 rgba(255,255,255,.045);           /* a hairline of light on the top edge of a raised surface */
+  --pm-lip2:inset 0 1px 0 rgba(255,255,255,.07);
+  --pm-sh-raise:0 1px 2px rgba(0,0,0,.35);
+  --pm-sh-float:0 18px 44px -14px rgba(0,0,0,.8),0 4px 12px -4px rgba(0,0,0,.55);
+  --pm-r1:6px; --pm-r2:8px; --pm-r3:12px; --pm-r4:16px;     /* chip · control · group/card · floating/stage */
+  --pm-ease:cubic-bezier(.2,.75,.25,1);
+  --pm-t1:120ms; --pm-t2:180ms;
+  --pm-focus:rgba(243,240,234,.72);
+  --pm-t2c:#bdb8af;                                          /* secondary text, a touch lighter than --ds-t2 on the raised tones */
+}
+
+/* ---------- small things everywhere ---------- */
+html body ::selection{background:rgba(255,255,255,.24);color:#fff}
+html body.has-image :is(button,summary,a,select,label[role=button],[role=button],[role=tab]):focus-visible{outline:2px solid var(--pm-focus) !important;outline-offset:2px !important}
+html body.has-image :is(button,a,select)[disabled],html body.has-image :is(button,a)[aria-disabled="true"]{cursor:default}
+/* inside the panels a focus ring is drawn just inside the row, so it never spills over a group's edge */
+html body.has-image #reorderZone#reorderZone details > summary:focus-visible,html body.has-image #studioLeft .stH:focus-visible,html body.has-image #dock button:focus-visible{outline-offset:-2px !important}
+/* panel scrollbars: thin, neutral, only as present as they need to be */
+html body.has-image #reorderZone#reorderZone,html body.has-image #studioLeft{scrollbar-width:thin;scrollbar-color:rgba(255,255,255,.13) transparent}
+html body.has-image #reorderZone::-webkit-scrollbar,html body.has-image #studioLeft::-webkit-scrollbar{width:10px}
+html body.has-image #reorderZone::-webkit-scrollbar-thumb,html body.has-image #studioLeft::-webkit-scrollbar-thumb{background:rgba(255,255,255,.12);border:3px solid transparent;border-radius:10px;background-clip:padding-box}
+html body.has-image #reorderZone::-webkit-scrollbar-thumb:hover,html body.has-image #studioLeft::-webkit-scrollbar-thumb:hover{background-color:rgba(255,255,255,.22)}
+html body.has-image #reorderZone::-webkit-scrollbar-track,html body.has-image #studioLeft::-webkit-scrollbar-track{background:transparent}
+
+/* ---------- floating things: one surface, one shadow, and blur without saturation (it would push the photo's colour
+   under the bar) ---------- */
+html body #toast#toast,html body.has-image #toast#toast{background:var(--pm-glass) !important;border:0 !important;border-radius:var(--pm-r3) !important;
+  box-shadow:var(--pm-lip2),0 0 0 1px var(--pm-hair2),var(--pm-sh-float) !important;-webkit-backdrop-filter:blur(16px) !important;backdrop-filter:blur(16px) !important}
+html body #decodeTip#decodeTip,html body #rawProg#rawProg{background:var(--pm-s4) !important;border:0 !important;border-radius:var(--pm-r4) !important;box-shadow:var(--pm-lip2),0 0 0 1px var(--pm-hair2),0 30px 80px -20px rgba(0,0,0,.85),0 6px 16px -6px rgba(0,0,0,.6) !important}
+html body #decodeTip#decodeTip button:focus-visible{outline-color:var(--pm-focus) !important}
+html body #consentBar#consentBar.on{background:var(--pm-glass);border:0;box-shadow:var(--pm-lip2),0 0 0 1px var(--pm-hair2),var(--pm-sh-float);-webkit-backdrop-filter:blur(16px);backdrop-filter:blur(16px)}
+
+/* inside an open group (which is itself one step up), the option tiles that use the shared tile tones step up with it,
+   so a tile never looks sunk into the group it sits on. Only the tokens move; the tiles' own rules are untouched. */
+html body.has-image #reorderZone details.dGrp[open]{--ds-bg2:var(--pm-s4);--ds-bg3:#25252b}
+
+/* ---------- start page: light touches only, so the first screen matches the editor it leads to ---------- */
+#emptyStateGroup#emptyStateGroup#emptyStateGroup.lab .labGo.ltPrompt{box-shadow:var(--pm-lip) !important;transition:border-color var(--pm-t2) var(--pm-ease),background-color var(--pm-t2) var(--pm-ease),transform var(--pm-t1) var(--pm-ease) !important}
+#emptyStateGroup#emptyStateGroup#emptyStateGroup.lab .labGo.ltPrompt:active{transform:scale(.995)}
+#emptyStateGroup#emptyStateGroup#emptyStateGroup.lab :is(#triStart,#plGo,#landingLinks a.labTool){box-shadow:var(--pm-lip),inset 0 0 0 1px var(--ds-line) !important;
+  transition:background-color var(--pm-t1) var(--pm-ease),box-shadow var(--pm-t1) var(--pm-ease),transform var(--pm-t1) var(--pm-ease) !important}
+#emptyStateGroup#emptyStateGroup#emptyStateGroup.lab :is(#triStart,#plGo,#landingLinks a.labTool):hover{background:var(--pm-s4) !important;box-shadow:var(--pm-lip2),inset 0 0 0 1px var(--ds-line2) !important}
+#emptyStateGroup#emptyStateGroup#emptyStateGroup.lab :is(#triStart,#plGo,#landingLinks a.labTool):active{transform:scale(.99)}
+#emptyStateGroup#emptyStateGroup#emptyStateGroup.lab .labModeSeg button{transition:background-color var(--pm-t1) var(--pm-ease),color var(--pm-t1) var(--pm-ease),box-shadow var(--pm-t1) var(--pm-ease) !important}
+#emptyStateGroup#emptyStateGroup#emptyStateGroup.lab .labModeSeg button[aria-checked="true"]{background:var(--pm-s4) !important;box-shadow:var(--pm-lip2),0 0 0 1px var(--ds-line2),var(--pm-sh-raise) !important}
+#emptyStateGroup :is(button,a,summary,select,label[role=button]):focus-visible{outline:2px solid var(--pm-focus) !important;outline-offset:2px !important}
+
+/* ---------- motion: one curve, short, and only on things that do not move the photo ---------- */
+/* a section's content settles in as it opens (opacity and a 4px rise: no height animation, so nothing re-lays out) */
+@keyframes pmOpen{from{opacity:0;transform:translateY(-4px)}to{opacity:1;transform:none}}
+html body.has-image #reorderZone#reorderZone details.dGrp[open] > .dBody,
+html body.has-image #studioLeft details.stSec[open] > .stB{animation:pmOpen var(--pm-t2) var(--pm-ease) both}
+/* the disclosure chevrons turn rather than jump */
+html body.has-image #reorderZone#reorderZone details > summary::after,html body.has-image #studioLeft .stH::after,html body.has-image #studioLeft .stH svg{transition:transform var(--pm-t2) var(--pm-ease),border-color var(--pm-t1) var(--pm-ease) !important}
+
+@media (prefers-reduced-motion:reduce){
+  /* :is() takes the specificity of its strongest argument, so this outranks every motion rule above (and the older sheets) */
+  html body :is(*,#pm#pm#pm#pm#pm),html body :is(*,#pm#pm#pm#pm#pm)::before,html body :is(*,#pm#pm#pm#pm#pm)::after{animation:none !important;transition:none !important}
+}
+
+/* ================================== desktop studio ================================== */
+@media (min-width:1000px){
+  /* --- the ground: panels one step up from the page, the stage one step below it --- */
+  html.studioOn body.has-image{background:var(--pm-s1) !important}
+  html.studioOn body.has-image .toolbar,html.studioOn body.has-image #editorLeft > .toolbar{background:var(--pm-s2) !important;border-bottom:1px solid var(--pm-hair) !important;box-shadow:0 1px 0 rgba(0,0,0,.6) !important}
+  html.studioOn body.has-image .toolbar::after{display:none !important}
+  html.studioOn body.has-image #studioLeft{background:var(--pm-s2) !important;box-shadow:inset -1px 0 0 var(--pm-hair),1px 0 0 rgba(0,0,0,.55) !important}
+  html.studioOn body.has-image #reorderZone#reorderZone{background:var(--pm-s2) !important;border-left:1px solid var(--pm-hair) !important;box-shadow:-1px 0 0 rgba(0,0,0,.55) !important}
+  html.studioOn body.has-image #previewSticky{background:var(--pm-s1) !important}
+  /* the stage: a recessed well. Same box and border width as before, so the photo is laid out exactly as it was */
+  html.studioOn body.has-image #cw{background:var(--pm-s0) !important;border-radius:var(--pm-r4) !important;
+    box-shadow:inset 0 0 0 1px rgba(255,255,255,.03),inset 0 1px 0 rgba(0,0,0,.9),inset 0 10px 30px -10px rgba(0,0,0,.9) !important}
+  /* the photo: the brightest, crispest thing. A neutral hairline edge and a soft, tight drop */
+  html.studioOn body.has-image #previewWrap{box-shadow:0 0 0 1px rgba(255,255,255,.09),0 2px 4px rgba(0,0,0,.55),0 24px 60px -18px rgba(0,0,0,.95) !important}
+  /* the slim rails that show when a side panel is hidden, and the panel toggles on the stage edge */
+  html.studioOn body.has-image .stRail{background:var(--pm-glass) !important;border:0 !important;box-shadow:var(--pm-lip),0 0 0 1px var(--pm-hair2),var(--pm-sh-float) !important;-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px)}
+  html.studioOn body.has-image .stTog{transition:background-color var(--pm-t1) var(--pm-ease),color var(--pm-t1) var(--pm-ease),opacity var(--pm-t1) var(--pm-ease) !important}
+
+  /* --- top bar: every button the same size, shape and quiet weight; hover lifts, press gives --- */
+  html.studioOn body.has-image .toolbar .filelabel,html.studioOn body.has-image .toolbar #bHome,html.studioOn body.has-image .toolbar .stHdrTog,
+  html.studioOn body.has-image .toolbar #btnUndo,html.studioOn body.has-image .toolbar #btnRedo,html.studioOn body.has-image .toolbar .ptIconBtn,
+  html.studioOn body.has-image .toolbar #bReset.btnGhost,html.studioOn body.has-image .toolbar #filterDbBtn{
+    height:34px !important;min-height:34px !important;box-sizing:border-box !important;border:0 !important;border-radius:var(--pm-r2) !important;background:transparent !important;box-shadow:none !important;
+    color:var(--ds-t2) !important;transition:background-color var(--pm-t1) var(--pm-ease),color var(--pm-t1) var(--pm-ease),transform var(--pm-t1) var(--pm-ease) !important}
+  html.studioOn body.has-image .toolbar .filelabel,html.studioOn body.has-image .toolbar #bHome,html.studioOn body.has-image .toolbar .stHdrTog,
+  html.studioOn body.has-image .toolbar #btnUndo,html.studioOn body.has-image .toolbar #btnRedo,html.studioOn body.has-image .toolbar .ptIconBtn{width:34px !important;padding:0 !important}
+  html.studioOn body.has-image .toolbar .filelabel,html.studioOn body.has-image .toolbar #bHome{color:var(--ds-t1) !important}
+  html.studioOn body.has-image .toolbar .filelabel:hover,html.studioOn body.has-image .toolbar #bHome:hover,html.studioOn body.has-image .toolbar .stHdrTog:hover,
+  html.studioOn body.has-image .toolbar #btnUndo:not([disabled]):hover,html.studioOn body.has-image .toolbar #btnRedo:not([disabled]):hover,html.studioOn body.has-image .toolbar .ptIconBtn:hover,
+  html.studioOn body.has-image .toolbar #bReset.btnGhost:hover,html.studioOn body.has-image .toolbar #filterDbBtn:hover{background:rgba(255,255,255,.065) !important;color:var(--ds-t1) !important}
+  html.studioOn body.has-image .toolbar .filelabel:active,html.studioOn body.has-image .toolbar #bHome:active,html.studioOn body.has-image .toolbar .stHdrTog:active,
+  html.studioOn body.has-image .toolbar #btnUndo:not([disabled]):active,html.studioOn body.has-image .toolbar #btnRedo:not([disabled]):active,html.studioOn body.has-image .toolbar .ptIconBtn:active,
+  html.studioOn body.has-image .toolbar #bReset.btnGhost:active,html.studioOn body.has-image .toolbar #filterDbBtn:active{background:rgba(255,255,255,.1) !important;transform:scale(.96)}
+  html.studioOn body.has-image .toolbar #btnUndo[disabled],html.studioOn body.has-image .toolbar #btnRedo[disabled]{opacity:.32 !important;background:transparent !important}
+  /* a panel toggle whose panel is showing reads as on */
+  html:not(.stNoL).studioOn body.has-image .toolbar #stHdrL,html:not(.stNoR).studioOn body.has-image .toolbar #stHdrR{color:var(--ds-t1) !important}
+  html.stNoL.studioOn body.has-image .toolbar #stHdrL,html.stNoR.studioOn body.has-image .toolbar #stHdrR{color:var(--ds-t3) !important}
+
+  /* --- the floating bar on the photo: the one thing at level 4 on the stage --- */
+  html.studioOn body.has-image #stBar{background:var(--pm-glass) !important;border:0 !important;
+    box-shadow:var(--pm-lip2),0 0 0 1px var(--pm-hair2),var(--pm-sh-float) !important;-webkit-backdrop-filter:blur(18px) !important;backdrop-filter:blur(18px) !important}
+  html.studioOn body.has-image #stBar .stBarG{border-left-color:var(--pm-hair2) !important}
+  html.studioOn body.has-image #stBar .stBarG button{color:var(--ds-t2) !important;transition:background-color var(--pm-t1) var(--pm-ease),color var(--pm-t1) var(--pm-ease),transform var(--pm-t1) var(--pm-ease) !important}
+  html.studioOn body.has-image #stBar .stBarG button:hover{color:var(--ds-t1) !important;background:rgba(255,255,255,.07) !important}
+  html.studioOn body.has-image #stBar .stBarG button:active{transform:scale(.95)}
+  html.studioOn body.has-image #stBar .stBarG button.on{background:rgba(255,255,255,.14) !important;color:#fff !important;box-shadow:inset 0 0 0 1px rgba(255,255,255,.08),var(--pm-lip2) !important}
+
+  /* --- left panel: Spectrum, What this stack does, History... --- */
+  html.studioOn body.has-image #studioLeft .stSec{border-bottom:1px solid var(--pm-hair) !important}
+  html.studioOn body.has-image #studioLeft .stH{height:42px !important;transition:background-color var(--pm-t1) var(--pm-ease) !important;box-shadow:none !important}
+  html.studioOn body.has-image #studioLeft .stH:hover{background:rgba(255,255,255,.025) !important}
+  html.studioOn body.has-image #studioLeft .stH,html.studioOn body.has-image #studioLeft .stH > span{font-size:13px !important;font-weight:600 !important;letter-spacing:-.005em !important;color:var(--ds-t1) !important}
+  html.studioOn body.has-image #studioLeft .stSec:not([open]) > .stH > span{color:var(--pm-t2c) !important;font-weight:550 !important}
+  /* cards and the spectrum chart sit one step up, with a lit top edge */
+  html.studioOn body.has-image #studioLeft .stCards > div{background:var(--pm-s3) !important;box-shadow:var(--pm-lip),0 0 0 1px var(--pm-hair) !important}
+  html.studioOn body.has-image #studioLeft #stSpecCv{border-radius:var(--pm-r2) !important;background:var(--pm-s0) !important;box-shadow:inset 0 0 0 1px var(--pm-hair),inset 0 2px 6px rgba(0,0,0,.6) !important;border:0 !important}
+  html.studioOn body.has-image #studioLeft #stSpecPick select,html.studioOn body.has-image #studioLeft .stB > select,html.studioOn body.has-image #studioLeft #stSecSpec select{
+    background-color:var(--pm-s3) !important;border:0 !important;box-shadow:var(--pm-lip),0 0 0 1px var(--pm-hair2) !important;transition:background-color var(--pm-t1) var(--pm-ease) !important}
+  html.studioOn body.has-image #studioLeft #stSpecPick select:hover,html.studioOn body.has-image #studioLeft #stSecSpec select:hover{background-color:var(--pm-s4) !important}
+  html.studioOn body.has-image #studioLeft #stSecTri .stB button,html.studioOn body.has-image #studioLeft #stSecTri .stB a,html.studioOn body.has-image #studioLeft .stBtns button{
+    transition:background-color var(--pm-t1) var(--pm-ease),transform var(--pm-t1) var(--pm-ease) !important}
+  html.studioOn body.has-image #studioLeft #stSecTri .stB button{background:var(--pm-s3) !important;box-shadow:var(--pm-lip),0 0 0 1px var(--pm-hair2) !important}
+  html.studioOn body.has-image #studioLeft #stSecTri .stB button:hover{background:var(--pm-s4) !important}
+  html.studioOn body.has-image #studioLeft #stSecTri .stB button:active{transform:scale(.98)}
+  /* history: the current step is a lit row, not only a red tick */
+  html.studioOn body.has-image #studioLeft .stHI{border-radius:var(--pm-r2) !important;transition:background-color var(--pm-t1) var(--pm-ease),color var(--pm-t1) var(--pm-ease) !important}
+  html.studioOn body.has-image #studioLeft .stHI:hover{background:rgba(255,255,255,.04) !important}
+
+  /* --- inspector head: the histogram as an instrument, then the tab strip --- */
+  html.studioOn body.has-image #studioHead{background:var(--pm-s2) !important;border-bottom:1px solid var(--pm-hair) !important;box-shadow:0 1px 0 rgba(0,0,0,.5),0 12px 18px -14px rgba(0,0,0,.9) !important}
+  html.studioOn body.has-image #studioHead > #scopeDetails{padding:12px 10px 10px !important}
+  html.studioOn body.has-image #studioHead #scopeBar{padding:6px !important;border-radius:var(--pm-r3) !important;background:var(--pm-s3) !important;box-shadow:var(--pm-lip),0 0 0 1px var(--pm-hair) !important}
+  html.studioOn body.has-image #studioHead #histogram,html.studioOn body.has-image #studioHead canvas#histogram{border:0 !important;border-radius:var(--pm-r2) !important;background:var(--pm-s0) !important;
+    box-shadow:inset 0 0 0 1px rgba(255,255,255,.04),inset 0 2px 8px rgba(0,0,0,.7) !important}
+  html.studioOn body.has-image #studioHead #scopeMeta{margin-top:6px !important}
+  html.studioOn body.has-image #studioHead #scopeModeRow#scopeModeRow{background:var(--pm-s2) !important;box-shadow:inset 0 0 0 1px var(--pm-hair),inset 0 1px 2px rgba(0,0,0,.4) !important}
+  html.studioOn body.has-image #studioHead #scopeModeRow#scopeModeRow button.btnGhostSmall{transition:background-color var(--pm-t1) var(--pm-ease),color var(--pm-t1) var(--pm-ease) !important}
+  html.studioOn body.has-image #studioHead #scopeModeRow#scopeModeRow button.btnGhostSmall.on{background:var(--pm-s4) !important;box-shadow:var(--pm-lip2),0 0 0 1px var(--pm-hair2),var(--pm-sh-raise) !important}
+  html.studioOn body.has-image #studioHead #clipToggle,html.studioOn body.has-image #studioHead #cmykToggle{background:transparent !important;box-shadow:inset 0 0 0 1px var(--pm-hair2) !important;transition:background-color var(--pm-t1) var(--pm-ease),color var(--pm-t1) var(--pm-ease) !important}
+  html.studioOn body.has-image #studioHead #clipToggle:hover,html.studioOn body.has-image #studioHead #cmykToggle:hover{background:rgba(255,255,255,.05) !important;color:var(--ds-t1) !important}
+  html.studioOn body.has-image #studioHead #clipToggle:has(input:checked),html.studioOn body.has-image #studioHead #cmykToggle:has(input:checked){background:var(--ds-sel) !important;box-shadow:inset 0 0 0 1px var(--ds-sel-ring) !important;color:var(--ds-t1) !important}
+  /* the tab strip: the open tab is a lit tile with a red rule under it; the rest are quiet */
+  html.studioOn body.has-image #studioHead > #dock{padding:6px 8px !important;gap:2px !important;border-top:1px solid var(--pm-hair) !important;border-bottom:0 !important;margin-top:0 !important}
+  html.studioOn body.has-image #studioHead > #dock button{height:48px !important;border-radius:var(--pm-r2) !important;color:#8e8980 !important;
+    transition:background-color var(--pm-t1) var(--pm-ease),color var(--pm-t1) var(--pm-ease),transform var(--pm-t1) var(--pm-ease) !important}
+  html.studioOn body.has-image #studioHead > #dock button svg{transition:transform var(--pm-t2) var(--pm-ease),stroke var(--pm-t1) var(--pm-ease) !important}
+  html.studioOn body.has-image #studioHead > #dock button:hover{color:var(--ds-t1) !important;background:rgba(255,255,255,.04) !important}
+  html.studioOn body.has-image #studioHead > #dock button:active{transform:scale(.96)}
+  html.studioOn body.has-image #studioHead > #dock button.on{color:var(--ds-t1) !important;background:var(--pm-s3) !important;box-shadow:var(--pm-lip),0 0 0 1px var(--pm-hair) !important;font-weight:600 !important}
+  html.studioOn body.has-image #studioHead > #dock button.on::before{left:22px !important;right:22px !important;bottom:-1px !important;height:2px !important;border-radius:2px !important;background:var(--ds-red) !important}
+
+  /* --- the panel: three levels. Title > section > row --- */
+  /* 1. panel title ("Light"): the largest type in the panel, no rule above it, air below */
+  html.studioOn body.has-image #reorderZone#reorderZone#reorderZone .stepPanel > summary.stepHdr,
+  html.studioOn body.has-image #reorderZone#reorderZone#reorderZone #exportSection > summary.secHead{border-top:0 !important;box-shadow:none !important;min-height:52px !important;height:auto !important;padding-top:8px !important;padding-bottom:2px !important;margin-bottom:6px !important}
+  html.studioOn body.has-image #reorderZone#reorderZone#reorderZone .stepPanel > summary.stepHdr > span:not(.stepChip):not(.stepDot):not(.stepArrow),
+  html.studioOn body.has-image #reorderZone#reorderZone#reorderZone .stepPanel > summary.stepHdr,
+  html.studioOn body.has-image #reorderZone#reorderZone#reorderZone #exportSection > summary.secHead,
+  html.studioOn body.has-image #reorderZone#reorderZone#reorderZone #exportSection > summary.secHead > span{font-size:18px !important;font-weight:650 !important;letter-spacing:-.018em !important;color:var(--ds-t1) !important}
+  /* 2. sections: closed ones are rows on hairlines; an open one becomes a group, one step up, with a lit edge */
+  html.studioOn body.has-image #reorderZone#reorderZone#reorderZone details.dGrp{margin:0 !important;border-radius:0 !important;
+    transition:background-color var(--pm-t2) var(--pm-ease),box-shadow var(--pm-t2) var(--pm-ease)}
+  html.studioOn body.has-image #reorderZone#reorderZone#reorderZone details.dGrp > summary{min-height:42px !important;height:42px !important;border-top:1px solid var(--pm-hair) !important;box-shadow:none !important;background:transparent !important;
+    transition:background-color var(--pm-t1) var(--pm-ease) !important}
+  html.studioOn body.has-image #reorderZone#reorderZone#reorderZone details.dGrp > summary:hover{background:rgba(255,255,255,.025) !important}
+  html.studioOn body.has-image #reorderZone#reorderZone#reorderZone details.dGrp > summary .dT{font-size:13.5px !important;font-weight:500 !important;color:var(--pm-t2c) !important;letter-spacing:-.003em !important}
+  html.studioOn body.has-image #reorderZone#reorderZone#reorderZone details.dGrp > summary:hover .dT{color:var(--ds-t1) !important}
+  html.studioOn body.has-image #reorderZone#reorderZone#reorderZone details.dGrp[open]{margin:6px 8px 10px !important;border-radius:var(--pm-r3) !important;background:var(--pm-s3) !important;box-shadow:var(--pm-lip),0 0 0 1px var(--pm-hair) !important}
+  html.studioOn body.has-image #reorderZone#reorderZone#reorderZone details.dGrp[open] > summary{border-top:0 !important;padding-left:8px !important;padding-right:8px !important;border-radius:var(--pm-r3) !important}
+  html.studioOn body.has-image #reorderZone#reorderZone#reorderZone details.dGrp[open] > summary:hover{background:rgba(255,255,255,.02) !important}
+  html.studioOn body.has-image #reorderZone#reorderZone#reorderZone details.dGrp[open] > summary .dT{font-weight:600 !important;color:var(--ds-t1) !important}
+  html.studioOn body.has-image #reorderZone#reorderZone#reorderZone details.dGrp[open] > .dBody{padding-left:6px !important;padding-right:6px !important;padding-top:0 !important}
+  /* a closed row right after an open group, or first under the title, needs no rule of its own */
+  html.studioOn body.has-image #reorderZone#reorderZone#reorderZone details.dGrp[open] + details.dGrp > summary,
+  html.studioOn body.has-image #reorderZone#reorderZone#reorderZone .stepPanel > summary.stepHdr + details.dGrp > summary,
+  html.studioOn body.has-image #reorderZone#reorderZone#reorderZone .panel > details.dGrp:first-child > summary{border-top-color:transparent !important}
+  /* the mix grid's row labels hang left of their column; keep them inside the group's edge */
+  html.studioOn body.has-image #reorderZone#reorderZone#reorderZone #matrixDetails[open] #mx.mxGrid{margin-left:8px !important}
+  /* the White balance card keeps its own flat second section (build 405), never a card in a card */
+  html.studioOn body.has-image #reorderZone#reorderZone#reorderZone details[data-step="wb"] #wbTempGrp#wbTempGrp{margin:6px 0 0 !important;background:transparent !important;box-shadow:none !important;border-radius:0 !important}
+  html.studioOn body.has-image #reorderZone#reorderZone#reorderZone details[data-step="wb"] #wbTempGrp#wbTempGrp > summary{height:auto !important;min-height:0 !important;border-top:0 !important;background:transparent !important}
+}
+
+/* ================================== phone and portrait tablet ================================== */
+@media (max-width:999px){
+  html.dockOn body.has-image{background:var(--pm-s1) !important}
+  html.dockOn body.has-image #previewSticky{background:var(--pm-s1) !important}
+  /* the photo well: recessed, the same box as before so the photo keeps its size */
+  html.dockOn body.has-image #cw{background:var(--pm-s0) !important;border-color:rgba(255,255,255,.035) !important;border-radius:var(--pm-r2) !important;box-shadow:inset 0 2px 10px -2px rgba(0,0,0,.9) !important}
+  html.dockOn body.has-image #previewWrap{box-shadow:0 0 0 1px rgba(255,255,255,.08),0 8px 24px -10px rgba(0,0,0,.9)}
+  /* the top icon row */
+  html.dockOn body.has-image .toolbar{border-bottom-color:transparent !important}
+  html.dockOn body.has-image .toolbar > :is(button,label,a),html.dockOn body.has-image .toolbar .ptTools > button{border-radius:var(--pm-r2) !important;transition:background-color var(--pm-t1) var(--pm-ease),transform var(--pm-t1) var(--pm-ease) !important}
+  html.dockOn body.has-image .toolbar > :is(button,label,a):active,html.dockOn body.has-image .toolbar .ptTools > button:active{background:rgba(255,255,255,.09) !important;transform:scale(.94)}
+  /* before/after: a floating pill, level 4 */
+  html.dockOn body.has-image #cmpBar{background:var(--pm-glass) !important;border:0 !important;box-shadow:var(--pm-lip2),0 0 0 1px var(--pm-hair2),0 10px 24px -10px rgba(0,0,0,.8) !important;-webkit-backdrop-filter:blur(16px);backdrop-filter:blur(16px)}
+  /* the sheet: a surface above the photo, with rounded top corners, a lit top edge and a shadow cast upward */
+  html.dockOn body.has-image #reorderZone#reorderZone{background:var(--pm-s2) !important;border-top:0 !important;border-radius:var(--pm-r4) var(--pm-r4) 0 0 !important;
+    box-shadow:var(--pm-lip2),0 0 0 1px var(--pm-hair),0 -14px 32px -12px rgba(0,0,0,.9) !important;padding-top:14px !important}
+  html.dockOn body.has-image #sheetGrip::before,html.dockOn body.has-image #sheetGrip::after,html.dockOn body.has-image #sheetGrip > *{transition:background-color var(--pm-t1) var(--pm-ease),width var(--pm-t2) var(--pm-ease)}
+  /* bottom tabs: the open one is lit and marked; the rest are quiet */
+  html.dockOn body.has-image #dock{background:rgba(9,9,11,.94) !important;border-top:1px solid var(--pm-hair) !important;-webkit-backdrop-filter:blur(16px);backdrop-filter:blur(16px)}
+  html.dockOn body.has-image #dock button:not(.on){color:#8e8980 !important}
+  html.dockOn body.has-image #dock button{position:relative;transition:color var(--pm-t1) var(--pm-ease),background-color var(--pm-t1) var(--pm-ease),transform var(--pm-t1) var(--pm-ease) !important}
+  html.dockOn body.has-image #dock button:active{transform:scale(.95)}
+  html.dockOn body.has-image #dock button{isolation:isolate}
+  html.dockOn body.has-image #dock button::before{content:'';position:absolute;z-index:-1;inset:3px 6px;border-radius:var(--pm-r3);background:rgba(255,255,255,.075);box-shadow:var(--pm-lip);opacity:0;transform:scale(.92);
+    transition:opacity var(--pm-t2) var(--pm-ease),transform var(--pm-t2) var(--pm-ease)}
+  html.dockOn body.has-image #dock button.on::before{opacity:1;transform:none}
+  html.dockOn body.has-image #dock#dock button,html.dockOn body.has-image #dock#dock button.on{box-shadow:none !important;border-radius:0 !important}
+  html.dockOn body.has-image #dock#dock button.on{color:var(--ds-t1) !important;font-weight:650 !important;background:transparent !important}
+  html.dockOn body.has-image #dock button.on::after{content:'';position:absolute;left:50%;top:-5px;width:22px;height:2px;margin-left:-11px;border-radius:0 0 2px 2px;background:var(--ds-red)}
+
+  /* --- the sheet's contents: title > section > row --- */
+  html.dockOn body.has-image #reorderZone#reorderZone#reorderZone .stepPanel > summary.stepHdr,
+  html.dockOn body.has-image #reorderZone#reorderZone#reorderZone .stepPanel > summary.stepHdr > span:not(.stepChip):not(.stepDot):not(.stepArrow){font-size:20px !important;font-weight:650 !important;letter-spacing:-.02em !important;color:var(--ds-t1) !important}
+  html.dockOn body.has-image #reorderZone#reorderZone#reorderZone .stepPanel > summary.stepHdr{margin-bottom:8px !important}
+  html.dockOn body.has-image #reorderZone#reorderZone#reorderZone details.dGrp{border-bottom:0 !important;border-top:1px solid var(--pm-hair) !important;border-radius:0;
+    transition:background-color var(--pm-t2) var(--pm-ease)}
+  html.dockOn body.has-image #reorderZone#reorderZone#reorderZone details.dGrp > summary{min-height:46px !important;padding-top:11px !important;padding-bottom:11px !important;margin-bottom:0 !important;transition:background-color var(--pm-t1) var(--pm-ease) !important}
+  html.dockOn body.has-image #reorderZone#reorderZone#reorderZone details.dGrp > summary:active{background:rgba(255,255,255,.04) !important}
+  html.dockOn body.has-image #reorderZone#reorderZone#reorderZone details.dGrp > summary .dT{font-size:15px !important;font-weight:500 !important;color:var(--pm-t2c) !important}
+  html.dockOn body.has-image #reorderZone#reorderZone#reorderZone details.dGrp[open]{margin:6px 0 10px !important;border-top-color:transparent !important;border-radius:var(--pm-r3) !important;background:var(--pm-s3) !important;box-shadow:var(--pm-lip),0 0 0 1px var(--pm-hair) !important}
+  html.dockOn body.has-image #reorderZone#reorderZone#reorderZone details.dGrp[open] > summary .dT{font-weight:600 !important;color:var(--ds-t1) !important}
+  html.dockOn body.has-image #reorderZone#reorderZone#reorderZone details.dGrp[open] + details.dGrp,
+  html.dockOn body.has-image #reorderZone#reorderZone#reorderZone .stepPanel > summary.stepHdr + details.dGrp,
+  html.dockOn body.has-image #reorderZone#reorderZone#reorderZone .panel > details.dGrp:first-child{border-top-color:transparent !important}
+  html.dockOn body.has-image #reorderZone#reorderZone#reorderZone details[data-step="wb"] #wbTempGrp#wbTempGrp{margin:6px 0 0 !important;background:transparent !important;box-shadow:none !important;border-radius:0 !important}
+}
+
+
+/* ================================== round 2: sentence case, a calmer Export ================================== */
+/* Every heading in the panels reads in sentence case, as the rest of the app does: the White balance sub-headings,
+   the sub-group headings in Colour and Detail, the curve's channel label and the mix grid's column labels were
+   switched to spaced capitals by older sheets. Only the transform and tracking change; the words are untouched.
+   :is(#pm…,*) lifts these over the older doubled- and quadrupled-ID rules without matching anything extra. */
+html:is(#pm#pm#pm#pm#pm,*) body.has-image :is(.wbSlimT,.grpHdr,.dSub,.crCap,#mx .hdr){text-transform:none !important;letter-spacing:-.003em !important}
+/* Grey pickers / Temperature & tint are the White balance card's two sections: same weight as a section heading */
+html:is(#pm#pm#pm#pm#pm,*).studioOn body.has-image :is(.wbSlimT,#wbTempGrp > summary .dT.wbSlimT){font-size:13.5px !important;font-weight:600 !important;color:var(--ds-t1) !important}
+/* sub-groups inside a section (Primary hue, Noise reduction…): a quiet step below the section heading */
+html:is(#pm#pm#pm#pm#pm,*) body.has-image :is(.grpHdr,.dSub){font-size:12.5px !important;font-weight:600 !important;color:var(--pm-t2c) !important}
+html:is(#pm#pm#pm#pm#pm,*) body.has-image :is(.crCap,#mx .hdr){font-size:11.5px !important;font-weight:500 !important}
+/* the precision-drag chip ("fine × 0.1") is a live tag, so it keeps its red tint, but it no longer shouts */
+html:is(#pm#pm#pm#pm#pm,*) body .sl.fine[data-f]::after{text-transform:none !important;letter-spacing:.01em !important;font-weight:550 !important;font-size:10.5px !important}
+
+/* Export image: still the one solid red thing in the Export tab, but sized and shaped like the rest. Sentence weight,
+   no tracking, the button height and radius scale, a white arrow in place of the red chip-in-a-red-button, and a
+   slightly deeper red at rest (white on it is 5.4:1) that brightens to the accent on hover. */
+html:is(#pm#pm#pm#pm#pm,*) body.has-image #bDl.keyBtn{height:46px !important;min-height:46px !important;justify-content:center !important;gap:8px !important;padding:0 18px !important;
+  border:0 !important;border-radius:var(--pm-r3) !important;background:#c23535 !important;color:#fff !important;
+  font-size:14.5px !important;font-weight:600 !important;letter-spacing:-.005em !important;text-transform:none !important;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.16),0 0 0 1px rgba(0,0,0,.35),0 6px 16px -8px rgba(0,0,0,.8) !important;
+  transition:background-color var(--pm-t1) var(--pm-ease),transform var(--pm-t1) var(--pm-ease),box-shadow var(--pm-t1) var(--pm-ease) !important}
+html:is(#pm#pm#pm#pm#pm,*) body.has-image #bDl.keyBtn::before{width:18px !important;height:18px !important;border-radius:0 !important;
+  background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23ffffff' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M12 4v12M6.5 10.5 12 16l5.5-5.5'/%3E%3Cpath d='M5 20h14'/%3E%3C/svg%3E") center/18px no-repeat !important}
+html:is(#pm#pm#pm#pm#pm,*) body.has-image #bDl.keyBtn:hover{background:var(--ds-red) !important}
+html:is(#pm#pm#pm#pm#pm,*) body.has-image #bDl.keyBtn:active{background:#ad2f2f !important;transform:scale(.985)}
+html:is(#pm#pm#pm#pm#pm,*) body.has-image #bDl.keyBtn:focus-visible{outline:2px solid var(--pm-focus) !important;outline-offset:2px !important}
+html:is(#pm#pm#pm#pm#pm,*) body.has-image #bDl.keyBtn[disabled]{background:var(--pm-s4) !important;color:var(--ds-t3) !important;box-shadow:inset 0 0 0 1px var(--pm-hair2) !important}
+
+/* phone: the grab handle's bar sat above the sheet's edge, over the before/after pill. Its box (the drag target) and
+   its position (set by the sheet code) stay as they are; only the drawn bar moves down onto the sheet. */
+@media (max-width:999px){
+  html.dockOn:not(.sheetClosed) body.has-image #sheetGrip > span{transform:translateY(15px)}
+  html.dockOn.sheetClosed body.has-image #sheetGrip > span{transform:translateY(6px)}
+}
+/* Batch's "Choose files" was a second solid red button in the same tab; it becomes a neutral tile so Export stays the one */
+html:is(#pm#pm#pm#pm#pm,*) body.has-image #batchPanel label.filelabel{background:var(--pm-s4) !important;border:0 !important;border-radius:var(--pm-r2) !important;color:var(--ds-t1) !important;
+  box-shadow:var(--pm-lip2),0 0 0 1px var(--pm-hair2) !important;transition:background-color var(--pm-t1) var(--pm-ease),transform var(--pm-t1) var(--pm-ease) !important}
+html:is(#pm#pm#pm#pm#pm,*) body.has-image #batchPanel label.filelabel:hover{background:#25252b !important}
+html:is(#pm#pm#pm#pm#pm,*) body.has-image #batchPanel label.filelabel:active{transform:scale(.98)}
+
+/* ==== PART 1 — end ==== */
+/* . */
+/* . */
+/* . */
+/* . */
+/* ==== PART 2: SLIDERS AND CONTROLS — begin ==== */
+
+/* Sliders and the small controls beside them. Every rule here starts with  html:is(#ctl#ctl#ctl,*)  — it matches every
+   page (the * branch) but counts as three ids, so it settles the slider skin over the older sheets (minimal.css draws
+   a 1px line with !important on everything; dock.css redraws the desktop one under #reorderZone#reorderZone) without
+   chasing their selectors. Only .sl rows are restyled: the white-balance strips (.sl.wb, .wbBigSl), the compare bar,
+   the mixer and the trichrome gains keep their own looks.
+
+   Custom properties set by syncSliderFill() (src/controls.js) on each input:
+     --val  where the thumb is, 0-100      --o  where the slider's default ("home") is, 0-100
+   The fill runs from home to the thumb; --tw is the thumb width, so the stops land on the thumb's centre exactly (a
+   thumb's centre travels from tw/2 to width - tw/2, not from 0 to 100%). */
+
+html:is(#ctl#ctl#ctl,*) body .sl:not(.wb) input[type=range]:not(.wbBigSl){
+  --tw:14px; --trk:rgba(255,255,255,.12); --fill:var(--safelight,#d63a3a);
+  --a:calc(var(--tw) / 2 + (100% - var(--tw)) * min(var(--o,0), var(--val,0)) / 100);
+  --b:calc(var(--tw) / 2 + (100% - var(--tw)) * max(var(--o,0), var(--val,0)) / 100);
+  -webkit-appearance:none;appearance:none;height:28px;margin:0;padding:0;background:transparent;cursor:pointer}
+/* the track: 3px with a little body, the part between home and the thumb in the accent */
+html:is(#ctl#ctl#ctl,*) body .sl:not(.wb) input[type=range]:not(.wbBigSl)::-webkit-slider-runnable-track{
+  height:3px !important;border-radius:2px !important;border:0 !important;box-shadow:inset 0 1px 0 rgba(0,0,0,.35) !important;
+  background:linear-gradient(to right,var(--trk) 0,var(--trk) var(--a),var(--fill) var(--a),var(--fill) var(--b),var(--trk) var(--b),var(--trk) 100%) !important}
+html:is(#ctl#ctl#ctl,*) body .sl:not(.wb) input[type=range]:not(.wbBigSl)::-moz-range-track{
+  height:3px !important;border-radius:2px !important;border:0 !important;
+  background:linear-gradient(to right,var(--trk) 0,var(--trk) var(--a),var(--fill) var(--a),var(--fill) var(--b),var(--trk) var(--b),var(--trk) 100%) !important}
+html:is(#ctl#ctl#ctl,*) body .sl:not(.wb) input[type=range]:not(.wbBigSl)::-moz-range-progress{background:transparent !important;height:3px}
+/* home notch: a short tick across the track where the default sits, on sliders whose home is not at an end. Drawn on
+   the input's own box so it can stand taller than the track; the thumb covers it when the slider is at home. */
+html:is(#ctl#ctl#ctl,*) body .sl.bip:not(.wb) input[type=range]:not(.wbBigSl){
+  --n:calc(var(--tw) / 2 + (100% - var(--tw)) * var(--o,50) / 100);
+  background:linear-gradient(to right,transparent calc(var(--n) - 1px),rgba(255,255,255,.34) calc(var(--n) - 1px),rgba(255,255,255,.34) calc(var(--n) + 1px),transparent calc(var(--n) + 1px)) no-repeat 0 50% / 100% 9px !important}
+/* the thumb: a solid, lit cap rather than a pen-drawn ring */
+html:is(#ctl#ctl#ctl,*) body .sl:not(.wb) input[type=range]:not(.wbBigSl)::-webkit-slider-thumb{
+  -webkit-appearance:none !important;width:var(--tw) !important;height:var(--tw) !important;margin-top:calc((3px - var(--tw)) / 2) !important;
+  border-radius:50% !important;border:0 !important;filter:none !important;cursor:grab;
+  background:radial-gradient(circle at 50% 30%,#fffdf9 0,#f3f0ea 45%,#cfc9be 100%) !important;
+  box-shadow:0 0 0 .5px rgba(0,0,0,.7),0 1px 3px rgba(0,0,0,.6),inset 0 -1px 0 rgba(0,0,0,.12) !important;
+  transform:scale(1) !important;transition:transform .12s ease,box-shadow .12s ease !important}
+html:is(#ctl#ctl#ctl,*) body .sl:not(.wb) input[type=range]:not(.wbBigSl)::-moz-range-thumb{
+  width:var(--tw) !important;height:var(--tw) !important;border-radius:50% !important;border:0 !important;cursor:grab;
+  background:radial-gradient(circle at 50% 30%,#fffdf9 0,#f3f0ea 45%,#cfc9be 100%) !important;
+  box-shadow:0 0 0 .5px rgba(0,0,0,.7),0 1px 3px rgba(0,0,0,.6) !important;
+  transform:scale(1) !important;transition:transform .12s ease,box-shadow .12s ease !important}
+/* hover (a mouse over the row): a faint halo, and the track a shade lighter */
+@media (hover:hover){
+  html:is(#ctl#ctl#ctl,*) body .sl:not(.wb):hover input[type=range]:not(.wbBigSl){--trk:rgba(255,255,255,.17)}
+  html:is(#ctl#ctl#ctl,*) body .sl:not(.wb) input[type=range]:not(.wbBigSl):hover::-webkit-slider-thumb{
+    box-shadow:0 0 0 .5px rgba(0,0,0,.7),0 1px 3px rgba(0,0,0,.6),0 0 0 5px rgba(255,255,255,.07) !important}
+  html:is(#ctl#ctl#ctl,*) body .sl:not(.wb) input[type=range]:not(.wbBigSl):hover::-moz-range-thumb{
+    box-shadow:0 0 0 .5px rgba(0,0,0,.7),0 1px 3px rgba(0,0,0,.6),0 0 0 5px rgba(255,255,255,.07) !important}
+}
+/* held (being dragged; set by the gesture code once a touch is known to be a drag, not a scroll): the cap grows a
+   little and takes a soft accent halo. Nothing else on the panel changes. */
+html:is(#ctl#ctl#ctl,*) body .sl.held:not(.wb) input[type=range]:not(.wbBigSl)::-webkit-slider-thumb{cursor:grabbing;transform:scale(1.2) !important;
+  box-shadow:0 0 0 .5px rgba(0,0,0,.7),0 2px 6px rgba(0,0,0,.6),0 0 0 6px rgba(214,58,58,.2) !important}
+html:is(#ctl#ctl#ctl,*) body .sl.held:not(.wb) input[type=range]:not(.wbBigSl)::-moz-range-thumb{cursor:grabbing;transform:scale(1.2) !important;
+  box-shadow:0 0 0 .5px rgba(0,0,0,.7),0 2px 6px rgba(0,0,0,.6),0 0 0 6px rgba(214,58,58,.2) !important}
+/* keyboard focus: a clear ring round the cap (outline does not draw on a WebKit thumb; a ring of shadow does) */
+html:is(#ctl#ctl#ctl,*) body .sl:not(.wb) input[type=range]:not(.wbBigSl):focus{outline:none}
+html:is(#ctl#ctl#ctl,*) body .sl:not(.wb) input[type=range]:not(.wbBigSl):focus-visible::-webkit-slider-thumb{
+  box-shadow:0 0 0 2px #0d0d10,0 0 0 4px #f3f0ea,0 1px 3px rgba(0,0,0,.6) !important}
+html:is(#ctl#ctl#ctl,*) body .sl:not(.wb) input[type=range]:not(.wbBigSl):focus-visible::-moz-range-thumb{
+  box-shadow:0 0 0 2px #0d0d10,0 0 0 4px #f3f0ea,0 1px 3px rgba(0,0,0,.6) !important}
+/* fingers: a bigger cap and a taller hit area, on the phone sheet and on touch screens in the desktop layout */
+@media (pointer:coarse){
+  html:is(#ctl#ctl#ctl,*) body .sl:not(.wb) input[type=range]:not(.wbBigSl){--tw:22px;height:36px}
+}
+html:is(#ctl#ctl#ctl,*) body .sl:not(.wb) input[type=range]:not(.wbBigSl):disabled{opacity:.4;cursor:default}
+
+/* The name and number of a slider read quiet at their default and live once moved (.chg, kept by syncSliderFill on
+   every path that changes a value: drag, preset, undo, reset, typing, a reopened session). */
+html:is(#ctl#ctl#ctl,*) body .sl:not(.wb) > label{-webkit-user-select:none;user-select:none;transition:color .16s ease}
+html:is(#ctl#ctl#ctl,*) body .sl > label input.vedit{-webkit-user-select:text;user-select:text}
+html:is(#ctl#ctl#ctl,*) body .sl:not(.wb) > label b[id^="v_"]{color:#8d887f;transition:color .16s ease,background-color .16s ease;border-radius:4px}
+html:is(#ctl#ctl#ctl,*) body .sl.chg:not(.wb) > label{color:#f3f0ea}
+html:is(#ctl#ctl#ctl,*) body .sl.chg:not(.wb) > label b[id^="v_"]{color:#f3f0ea}
+/* held: the number is what you are watching, so it is the brightest thing on the row */
+html:is(#ctl#ctl#ctl,*) body .sl.held:not(.wb) > label b[id^="v_"]{color:#fff;background:rgba(255,255,255,.08)}
+
+/* Precision drag tag ("FINE × 0.1"): a small chip centred on the name line, not a stray line of red mono text. The
+   attributes it reads (data-ft, data-f) are set on the .sl row (src/view.js), so the chip hangs off the row: the old
+   rule (main.css) read them from the label, which never has them, and showed a lone " × ". */
+html:is(#ctl#ctl#ctl,*) body .sl.fine > label::after{content:none !important;display:none !important}
+html:is(#ctl#ctl#ctl,*) body .sl.fine{position:relative}
+html:is(#ctl#ctl#ctl,*) body .sl.fine[data-f]::after{content:attr(data-ft) '\2009\00d7\2009' attr(data-f);
+  position:absolute;left:50%;top:0;transform:translateX(-50%);padding:3px 8px;border-radius:999px;z-index:2;
+  background:rgba(214,58,58,.16);box-shadow:inset 0 0 0 1px rgba(214,58,58,.45);color:#f3f0ea;
+  font:600 10px/1 var(--ds-font,system-ui);letter-spacing:.06em;text-transform:uppercase;font-variant-numeric:tabular-nums;
+  white-space:nowrap;pointer-events:none;animation:ctlTag .14s ease both}
+@keyframes ctlTag{from{opacity:0;transform:translate(-50%,2px)}to{opacity:1;transform:translate(-50%,0)}}
+
+/* ---- the other small controls: state only (hover, pressed, selected, keyboard focus) ---- */
+/* keyboard focus everywhere in the panels: one visible ring, never on mouse clicks */
+html:is(#ctl#ctl#ctl,*) body #reorderZone :is(button,select,summary,input[type=checkbox],input[type=radio]):focus-visible,
+html:is(#ctl#ctl#ctl,*) body #dock button:focus-visible{outline:2px solid #f3f0ea !important;outline-offset:2px !important}
+/* pressed: a short, physical give on buttons inside the panels */
+html:is(#ctl#ctl#ctl,*) body #reorderZone button:not(:disabled):active{filter:brightness(1.18)}
+/* checkboxes and radios in the panels: the accent, and a clear hover */
+html:is(#ctl#ctl#ctl,*) body #reorderZone input:is([type=checkbox],[type=radio]){accent-color:#d63a3a;cursor:pointer}
+@media (hover:hover){ html:is(#ctl#ctl#ctl,*) body #reorderZone input:is([type=checkbox],[type=radio]):not(:disabled):hover{filter:brightness(1.25)} }
+/* "Range controls" disclosure: shows whether it is open, and a hover */
+html:is(#ctl#ctl#ctl,*) body .rangeToggle{transition:color .16s ease,border-color .16s ease,background-color .16s ease}
+@media (hover:hover){ html:is(#ctl#ctl#ctl,*) body .rangeToggle:hover{color:#f3f0ea;border-color:rgba(255,255,255,.22)} }
+html:is(#ctl#ctl#ctl,*) body details.showRanges .rangeToggle,html:is(#ctl#ctl#ctl,*) body .rangeToggle[aria-expanded="true"]{color:#f3f0ea;border-color:rgba(255,255,255,.2)}
+/* select menus: hover lifts the tile a step */
+@media (hover:hover){ html:is(#ctl#ctl#ctl,*) body #reorderZone select:not(:disabled):hover{border-color:rgba(255,255,255,.22) !important} }
+
+@media (prefers-reduced-motion:reduce){
+  html:is(#ctl#ctl#ctl,*) body .sl input[type=range]::-webkit-slider-thumb{transition:none !important}
+  html:is(#ctl#ctl#ctl,*) body .sl input[type=range]::-moz-range-thumb{transition:none !important}
+  html:is(#ctl#ctl#ctl,*) body .sl.fine::after{animation:none}
+  html:is(#ctl#ctl#ctl,*) body .sl.held:not(.wb) input[type=range]::-webkit-slider-thumb{transform:none !important}
+}
+
+/* ==== PART 2 — end ==== */
+/* . */
+/* . */
+/* . */
+/* . */
+/* ==== PART 3: SCOPES, CURVE AND ON-PHOTO TOOLS — begin ==== */
+
+/* Pan and pinch follow the hand directly. The .12s transform easing (css/main.css) suits a wheel notch, but it was also
+   applied while dragging and pinching, because the old rule that switched it off keyed on a .dragging class the pan
+   code never sets (it sets .panning): the picture trailed a finger by a beat. .pinching is set by src/view.js. */
+#previewWrap.panning,#previewWrap.pinching{transition:none}
+@media (prefers-reduced-motion:reduce){ #previewWrap{transition:none} }
+
+/* The before/after divider: a warm-white hairline between two dark edges, so it reads on any photo. The single red
+   line with a red glow disappeared against red, orange and magenta foliage, which is most infrared photos. */
+#cmpHandle::before{width:1px;left:-.5px;background:#f3f0ea;box-shadow:0 0 0 1px rgba(8,8,10,.55),0 0 7px rgba(0,0,0,.45)}
+
+/* An armed picker or dust tool marks the photo itself with a thin accent edge, not only its button, so it is clear
+   the next tap on the photo samples instead of comparing or panning (Esc puts the tool down on desktop). */
+#preview.pick{outline:2px solid rgba(214,58,58,.9);outline-offset:-2px}
+
+/* White balance markers: a light inner ring inside the coloured one, and the dark outer edge, so the marker can be
+   found on a bright sky as well as in shadow. */
+.pickmarker{box-shadow:0 0 0 1px rgba(0,0,0,.65),inset 0 0 0 1px rgba(243,240,234,.7),0 0 8px rgba(0,0,0,.5)}
+
+/* Hold to compare (press and hold the photo, or Space) says what you are looking at while you hold. On desktop the
+   idle "hold to compare" hint is hidden (css/design.css) and that rule hid the live "showing original" status with
+   it, so the photo silently swapped to Before with nothing on screen to say so. Only the live state comes back. */
+@media (min-width:1000px){
+  html.studioOn body.has-image #holdHint.on{display:block !important;background:rgba(10,10,12,.8) !important;color:#f3f0ea;
+    padding:5px 11px;border-radius:999px;box-shadow:0 0 0 1px rgba(255,255,255,.1);line-height:1.2;height:auto;
+    top:16px !important;bottom:auto !important}   /* top of the photo pane, clear of the compare bar */
+}
+/* ==== PART 3 — end ==== */
+/* . */
+/* . */
+/* . */
+/* . */
+/* ==== PART 4: IMAGING — begin ==== */
+
+/* ==== PART 4 — end ==== */

@@ -250,7 +250,7 @@ irlabTr.add('zh', {
 "Export": "导出",
 "Export (5)": "导出 (5)",
 "Export CSV": "导出 CSV",
-"Export Image": "导出图像",
+"Export image": "导出图像",
 "Export JSON": "导出 JSON",
 "Export PNG report": "导出 PNG 报告",
 "Export a PNG report": "导出 PNG 报告",

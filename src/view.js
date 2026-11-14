@@ -54,7 +54,7 @@ function drawParade(ctx, d, W, H, hh) {
   paradeCv.getContext('2d').putImageData(img, 0, 0);
   ctx.imageSmoothingEnabled = true;
   ctx.drawImage(paradeCv, 0, 0, W, H);
-  ctx.strokeStyle = 'rgba(84,64,42,.55)'; ctx.lineWidth = 1;
+  ctx.strokeStyle = (getComputedStyle(ctx.canvas).getPropertyValue('--line') || '').trim() || 'rgba(255,255,255,.08)'; ctx.lineWidth = 1;   // build 406: the theme's hairline, not the old brown
   for (let q = 1; q < 4; q++) { const gy = Math.round(H * q / 4) + .5; ctx.beginPath(); ctx.moveTo(0, gy); ctx.lineTo(W, gy); ctx.stroke(); }
   [1, 2].forEach(q => { const gx = Math.round(W * (q * (cw + gap) - gap / 2) / tw) + .5; ctx.beginPath(); ctx.moveTo(gx, 0); ctx.lineTo(gx, H); ctx.stroke(); });
 }
@@ -187,25 +187,46 @@ function histPaint(cv, d, hh) {
   // pure white — which is exactly what heavy channel swapping produces —
   // otherwise creates one enormous spike that squashes everything else into
   // an unreadable flat line.
+  /* Build 406: drawn like an instrument. The bins are read from a ~70k-pixel copy, so neighbouring levels jitter by a
+     few counts and three jittery lines read as noise; a light [1 2 1] smoothing (display only: every count and
+     percentage below still comes from the raw bins) leaves the shape and drops the fuzz. Bins 0 and 255 are never
+     smoothed into their neighbours, so a pile-up at either end stays a sharp spike instead of a fake slope. */
+  const sm = [new Float32Array(256), new Float32Array(256), new Float32Array(256)];
+  for (let c = 0; c < 3; c++) {
+    const b = bins[c], o = sm[c];
+    o[0] = b[0]; o[255] = b[255];
+    o[1] = (2 * b[1] + b[2]) / 3; o[254] = (b[253] + 2 * b[254]) / 3;
+    for (let v = 2; v < 254; v++) o[v] = (b[v - 1] + 2 * b[v] + b[v + 1]) / 4;
+  }
   let peak = 1;
-  for (let c = 0; c < 3; c++) for (let v = 1; v < 255; v++) if (bins[c][v] > peak) peak = bins[c][v];
+  for (let c = 0; c < 3; c++) for (let v = 1; v < 255; v++) if (sm[c][v] > peak) peak = sm[c][v];
 
+  /* build 205: three thin lines, the way the rest of the minimal look draws curves. Build 406: each line now sits on a
+     faint fill of its own colour, added together ('lighter'), so where the three channels agree the overlap turns a
+     neutral grey and where one channel stands apart its own colour shows: the balance between channels, which is what
+     a channel swap changes, reads at a glance instead of the last-drawn blue line hiding the other two. */
+  const cols = ['#e0664a', '#6fc08a', '#6aa0e0'], fills = ['rgba(224,102,74,.2)', 'rgba(111,192,138,.2)', 'rgba(106,160,224,.2)'];
+  const yOf = n => H - 1 - Math.min(1, Math.sqrt(n / peak)) * (H - 3);   // sqrt keeps the long thin tails visible next to the tall midtone mass
+  const xOf = v => v / 255 * W;
+  ctx.lineJoin = 'round';
+  ctx.globalCompositeOperation = 'lighter';
+  for (let c = 0; c < 3; c++) {
+    ctx.beginPath(); ctx.moveTo(0, H);
+    for (let v = 0; v < 256; v++) ctx.lineTo(xOf(v), yOf(sm[c][v]));
+    ctx.lineTo(W, H); ctx.closePath();
+    ctx.fillStyle = fills[c]; ctx.fill();
+  }
+  ctx.globalCompositeOperation = 'source-over';
+  // the quarter lines go over the fills (drawn under them, the additive fill lit them up) and under the three lines
   ctx.strokeStyle = lnCol; ctx.lineWidth = 1;
   for (let q = 1; q < 4; q++) { const x = Math.round(W * q / 4) + .5; ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, H); ctx.stroke(); }
   ctx.beginPath(); ctx.moveTo(0, H - .5); ctx.lineTo(W, H - .5); ctx.stroke();
-
-  // build 205: three thin lines, no fill, the way the rest of the minimal look draws curves
-  const cols = ['#d63a3a', '#6fae7f', '#6f9fc7'];
-  ctx.lineJoin = 'round';
   for (let c = 0; c < 3; c++) {
     ctx.beginPath();
-    for (let v = 0; v < 256; v++) {
-      // sqrt keeps the long thin tails visible next to the tall midtone mass
-      const y = H - 1 - Math.min(1, Math.sqrt(bins[c][v] / peak)) * (H - 3);
-      if (v === 0) ctx.moveTo(0, y); else ctx.lineTo(v / 255 * W, y);
-    }
-    ctx.strokeStyle = cols[c]; ctx.lineWidth = 1.3; ctx.stroke();
+    for (let v = 0; v < 256; v++) { const y = yOf(sm[c][v]); if (v === 0) ctx.moveTo(0, y); else ctx.lineTo(xOf(v), y); }
+    ctx.strokeStyle = cols[c]; ctx.globalAlpha = .92; ctx.lineWidth = 1.25; ctx.stroke();
   }
+  ctx.globalAlpha = 1;
 
   // Count only what's genuinely pinned at the ends, and report it as a
   // percentage — the number you actually act on.
@@ -221,16 +242,48 @@ function histPaint(cv, d, hh) {
   for (let c = 0; c < 3; c++) anyHi = Math.max(anyHi, bins[c][255]);
   if (pct(anyHi) > 0.05 && pct(anyHi) - pct(allWhite) > 0.05)
     parts.push(pct(anyHi).toFixed(1) + '% one channel pinned');
+  /* Build 406: clipping lamps in the two top corners, the way a camera or raw converter shows them. Each one lights in
+     the colour of whatever has run out of room at that end (one channel's own colour, a mix of the channels pinned,
+     and warm white when whole pixels are pinned in all three), and sits dark when nothing is. The threshold is the
+     same 0.05% as the text below, so the lamp and the words never disagree. Display only: nothing new is measured. */
+  const lamp = (right, chans, all) => {
+    const s = 7, x0 = right ? W - 2 : 2, y0 = 2, dx = right ? -s : s;
+    let r = 0, g = 0, b = 0;
+    const rgb = [[224, 102, 74], [111, 192, 138], [106, 160, 224]];
+    chans.forEach((on, c) => { if (on) { r += rgb[c][0]; g += rgb[c][1]; b += rgb[c][2]; } });
+    const lit = all || chans.some(Boolean);
+    ctx.beginPath(); ctx.moveTo(x0, y0); ctx.lineTo(x0 + dx, y0); ctx.lineTo(x0, y0 + s); ctx.closePath();
+    ctx.fillStyle = all ? '#f3f0ea' : lit ? 'rgb(' + Math.min(255, r) + ',' + Math.min(255, g) + ',' + Math.min(255, b) + ')' : 'rgba(127,122,113,.35)';
+    ctx.fill();
+    if (lit) { ctx.strokeStyle = 'rgba(0,0,0,.7)'; ctx.lineWidth = 1; ctx.stroke(); }
+  };
+  lamp(false, [0, 1, 2].map(c => pct(bins[c][0]) > 0.05), pct(allBlack) > 0.05);
+  lamp(true, [0, 1, 2].map(c => pct(bins[c][255]) > 0.05), pct(allWhite) > 0.05);
   if (parts.length) {
-    ctx.font = '11px Inter,system-ui,sans-serif';
-    ctx.fillStyle = (cs.getPropertyValue('--paper-dim') || '').trim() || '#a19d97'; ctx.textAlign = 'right';
-    ctx.fillText(parts.join('  ·  '), W - 6, 14);
+    ctx.font = '11px Inter,system-ui,sans-serif'; ctx.textAlign = 'right';
+    const txt = parts.join('  ·  '), tw = ctx.measureText(txt).width;
+    // a plate behind the words, so they stay readable over the curves they sit on
+    ctx.fillStyle = bgCol; ctx.globalAlpha = .78; ctx.fillRect(W - 16 - tw - 4, 3, tw + 8, 15); ctx.globalAlpha = 1;
+    ctx.fillStyle = (cs.getPropertyValue('--paper-dim') || '').trim() || '#a19d97';
+    ctx.fillText(txt, W - 16, 14);
   }
 }
 /* Captured once at startup, before anything can change them. Shared by the
    double-tap reset and by the centre detent. */
 const sliderDefaults = {};
 document.querySelectorAll('.sl input[type=range]').forEach(r => { sliderDefaults[r.id] = r.value; });
+/* Build 406: the first press of a possible double-click on a slider (set by the gesture gate, read by the reset). */
+let sliderClick = null;
+/* Touch fine mode, shared by the gesture gate below and by the touch shield over the sliders (src/controls.js, which
+   since build 342 is what a finger actually drags on a phone). Moving the finger up or down away from the track while
+   dragging slows the slider: past 50px to a quarter of the speed, past 120px to 8%. */
+function touchFineFactor(dy) { return dy > 120 ? 0.08 : dy > 50 ? 0.25 : 1; }
+/* Marks a slider row as being dragged finely, which shows the "FINE × 0.25" chip (premium.css); f = 1 clears it. */
+function sliderFineMark(row, f) {
+  if (!row) return;
+  if (f < 1) { row.classList.add('fine'); row.setAttribute('data-f', String(f)); row.setAttribute('data-ft', (I18N[uiLang] || I18N.en).fineTag || 'fine'); }
+  else { row.classList.remove('fine'); row.removeAttribute('data-f'); }
+}
 
 /* ---------- slider gesture gate ----------
 
@@ -274,9 +327,20 @@ document.querySelectorAll('.sl input[type=range]').forEach(r => { sliderDefaults
     const min = +g.el.min || 0, max = +g.el.max || 100, v = +g.el.value || 0;
     g.el.style.setProperty('--val', max > min ? (v - min) / (max - min) * 100 : 0);
   }
+  /* Build 406: the row being dragged is marked 'held' so its thumb and readout can answer the hand. A finger only
+     holds a slider once the scroll-vs-drag gate has decided it is a drag, so a scroll that starts on a slider never
+     lights the row up. */
+  let heldRow = null;
+  function holdStart(el) { holdEnd(); heldRow = el.closest && el.closest('.sl'); if (heldRow) heldRow.classList.add('held'); }
+  function holdEnd() { if (heldRow) { heldRow.classList.remove('held'); heldRow = null; } }
+  window.addEventListener('pointerup', holdEnd, true);
+  window.addEventListener('pointercancel', holdEnd, true);
+  window.addEventListener('blur', holdEnd);
+
   function release() {
     if (!g || g.released) return;
     g.released = true;
+    holdStart(g.el);
     // fire once so the label and preview catch up with the final value
     g.el.dispatchEvent(new Event('input', { bubbles: true }));
   }
@@ -369,7 +433,7 @@ document.querySelectorAll('.sl input[type=range]').forEach(r => { sliderDefaults
       let f = 1;
       if (touch) {
         const dy = Math.abs(e.clientY - s.startY);
-        f = dy > 120 ? 0.08 : dy > 50 ? 0.25 : 1;
+        f = touchFineFactor(dy);
       } else if (e.shiftKey) f = 0.1;
       if (!s.engaged) {
         if (f === 1) return;
@@ -379,8 +443,7 @@ document.querySelectorAll('.sl input[type=range]').forEach(r => { sliderDefaults
       }
       if (f !== s.f) {
         s.f = f;
-        const row = el.closest('.sl');
-        if (row) { row.classList.toggle('fine', f < 1); row.setAttribute('data-f', String(f)); row.setAttribute('data-ft', (I18N[uiLang] || I18N.en).fineTag || 'fine'); }
+        sliderFineMark(el.closest('.sl'), f);
       }
       if (!dx) return;
       const r = stepInfo(el);
@@ -413,11 +476,44 @@ document.querySelectorAll('.sl input[type=range]').forEach(r => { sliderDefaults
     });
   }
 
+  /* Build 406: one undo step for a run of arrow keys. The step used to be armed only when the slider took focus, so
+     the first key made a step and every key after it, for as long as the slider stayed focused, made none (press
+     arrows, Undo, press arrows again: nothing to undo). Now each run of keys arms its own step, and keys that follow
+     within a second of the last one, while that step is still the newest one, fold into it instead of making a step
+     per press. */
+  let keyRun = null;
+  function keyArm(el, e) {
+    if (e.ctrlKey || e.metaKey) return;
+    const k = e.key;
+    if (!(k === 'ArrowLeft' || k === 'ArrowRight' || k === 'ArrowUp' || k === 'ArrowDown' || k === 'PageUp' || k === 'PageDown' || k === 'Home' || k === 'End')) return;
+    if (typeof undoStack === 'undefined') return;
+    const now = performance.now();
+    if (keyRun && keyRun.el === el && now - keyRun.t < 1000 && undoStack.length && undoStack[undoStack.length - 1] === keyRun.snap) {
+      keyRun.t = now; preChangeSnapshot = null; return;      // still the same run: the step it made already holds the state before it
+    }
+    armUndoCapture();
+    keyRun = { el: el, t: now, snap: preChangeSnapshot };
+  }
+
   function wire(el) {
+    el.addEventListener('keydown', e => keyArm(el, e));   // before wireFine's own keydown, which changes the value there and then
+    el.addEventListener('keyup', () => {
+      if (!keyRun || keyRun.el !== el) return;
+      keyRun.t = performance.now();   // the run's clock counts from the last key let go, so a slow frame between keys does not split it
+      if (preChangeSnapshot && preChangeSnapshot === keyRun.snap) commitUndoCapture();   // a slider whose 'change' commits nothing must not leave the step armed
+    });   // a slider whose 'change' commits nothing must not leave the step armed
+    if (typeof syncSliderFill === 'function') syncSliderFill(el);   // a slider made later gets its fill and home straight away
     wireFine(el);
     el.addEventListener('input', () => { if (g && g.el === el && g.released) detentTick(el); });
     el.addEventListener('pointerdown', e => {
-      if (e.pointerType === 'mouse' || e.pointerType === 'pen') { g = null; return; }
+      if (e.pointerType === 'mouse' || e.pointerType === 'pen') {
+        g = null; if (e.pointerType === 'pen' || e.button === 0) holdStart(el);
+        /* the first press of a possible double-click: what the slider and the undo list were before it (see the
+           double-click reset below) */
+        const now = performance.now();
+        if (!(sliderClick && sliderClick.el === el && now - sliderClick.t < 500) && typeof undoStack !== 'undefined') sliderClick = { el: el, t: now, len: undoStack.length };
+        return;
+      }
       g = { el: el, value: el.value, x: e.clientX, y: e.clientY, released: false, done: false };
       lastNotch = null; lastTickAt = 0;
     });
@@ -449,6 +545,7 @@ document.querySelectorAll('.sl input[type=range]').forEach(r => { sliderDefaults
   }
   document.querySelectorAll('.sl input[type=range]').forEach(wire);
   window.wireSliderGesture = wire;   // for sliders created after this ran — see targetedHSL's band list
+  window.sliderDetent = { tick: detentTick, reset: () => { lastNotch = null; lastTickAt = 0; } };   // the touch shield (controls.js) ticks the same detents
 })();
 
 /* ---------- Auto tone ----------
@@ -621,6 +718,41 @@ $('btnRotR').onclick = () => applyRotation(1);
       commitUndoCapture();
       haptic('tick');
     });
+  });
+})();
+/* Build 406: on a computer, double-click the slider itself or its name to put it back, where the hand already is.
+
+   Mouse and pen only. On a touch screen a double-tap on a track happens by accident while scrubbing, so there the
+   reset stays on the value (above) and in the fine-control row.
+
+   One undo step, not two: the first click of a double-click on the track has already moved the thumb there and made
+   its own step. That step is taken back and its 'before' becomes the 'before' of the reset, so Undo returns to what
+   the slider was before the double-click, and a double-click on a slider that was already at its default leaves no
+   step at all. Sliders made later (colour bands) have no fixed default and are left alone. */
+(function () {
+  let lastPT = 'mouse';
+  document.addEventListener('pointerdown', e => { lastPT = e.pointerType || 'mouse'; }, true);
+  document.addEventListener('dblclick', e => {
+    if (lastPT === 'touch') return;
+    const t = e.target; if (!t || !t.closest) return;
+    const row = t.closest('.sl'); if (!row) return;
+    let el = null;
+    if (t.matches('input[type=range]')) el = t;
+    else if (t.closest('label') && !t.closest('b,input,button,select,a')) el = row.querySelector('input[type=range]');
+    if (!el || el.disabled || !(el.id in sliderDefaults)) return;
+    e.preventDefault();
+    const sel = window.getSelection && window.getSelection(); if (sel && sel.removeAllRanges) sel.removeAllRanges();
+    const def = sliderDefaults[el.id], c = sliderClick; sliderClick = null;
+    const stray = t === el && c && c.el === el && performance.now() - c.t < 1500 && undoStack.length === c.len + 1;
+    if (!stray && el.value === def) return;
+    if (stray) { preChangeSnapshot = undoStack.pop(); preChangeBmp = undoBmps.pop(); }
+    else armUndoCapture();
+    el.value = def;
+    el.dispatchEvent(new Event('input', { bubbles: true }));
+    commitUndoCapture();
+    if (stray) { trimBmps(); refreshCompareRef(); updateUndoButton(); }   // the commit only does this when it adds a step
+    el.dispatchEvent(new Event('change', { bubbles: true }));
+    haptic('tick');
   });
 })();
 /* Long-press a slider's number to type an exact value.
@@ -1136,10 +1268,20 @@ function zoomAt(factor, clientX, clientY) {
   zoom = Math.max(1, Math.min(ZOOM_MAX, zoom * factor));
   if (zoom === prev) return;
   // keep the point under the cursor/fingers fixed while the scale changes
-  const cx = clientX - (r.left + r.width / 2), cy = clientY - (r.top + r.height / 2);
+  /* Build 406: measured from the wrapper's UNtransformed centre (its layout box), the point the scale is made about.
+     This used the picture's on-screen centre, which already includes the pan, and the sum was then off by the pan:
+     at fit it made no difference, but once zoomed in and moved, each further wheel notch or pinch drifted the picture
+     away from the cursor. The on-screen box also lags behind the .12s transform transition during a fast wheel. */
+  const wrap = $('previewWrap'), op = wrap.offsetParent;
+  let dx, dy;
+  if (op) {
+    const o = op.getBoundingClientRect();
+    dx = clientX - (o.left + op.clientLeft - op.scrollLeft + wrap.offsetLeft + wrap.offsetWidth / 2);
+    dy = clientY - (o.top + op.clientTop - op.scrollTop + wrap.offsetTop + wrap.offsetHeight / 2);
+  } else { dx = clientX - (r.left + r.width / 2) + panX; dy = clientY - (r.top + r.height / 2) + panY; }
   const k = zoom / prev;
-  panX = cx - (cx - panX) * k;
-  panY = cy - (cy - panY) * k;
+  panX = dx - (dx - panX) * k;
+  panY = dy - (dy - panY) * k;
   applyZoom();
 }
 $('btnZoomReset').onclick = () => { zoom = 1; panX = panY = 0; applyZoom(); };
@@ -1184,6 +1326,7 @@ function pinchMove(ev) {
 function endPinch() {
   if (!pinch) return;
   pinch = null;
+  $('previewWrap').classList.remove('pinching');
   $('cw').removeEventListener('touchmove', pinchMove);
 }
 $('cw').addEventListener('touchstart', ev => {
@@ -1192,6 +1335,7 @@ $('cw').addEventListener('touchstart', ev => {
   press = null;
   const [a, b] = ev.touches;
   pinch = { d: Math.hypot(a.clientX - b.clientX, a.clientY - b.clientY) };
+  $('previewWrap').classList.add('pinching');   // build 406: the scale follows the fingers directly, without the wheel's easing (css/premium.css)
   $('cw').addEventListener('touchmove', pinchMove, { passive: false });
 }, { passive: true });
 $('cw').addEventListener('touchend', ev => { if (ev.touches.length < 2) endPinch(); }, { passive: true });

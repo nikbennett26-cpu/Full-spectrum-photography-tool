@@ -10,10 +10,8 @@
 // Operates on 0..1 floats throughout, matching the shader exactly, rather
 // than round-tripping through 0..255 integers.
 function compressChanF(v){
-  const threshold=0.96, softness=0.04; // matches the shader; see compressChan's comment
-  if(v<0)return 0;
-  if(v<=threshold)return v;
-  return threshold+softness*Math.tanh((v-threshold)/softness);
+  // matches the shader: in-range values are left alone (build r2), so white stays 1.0 through every gamut pass
+  return v<0?0:v>1?1:v;
 }
 const LUMW_R=0.2126, LUMW_G=0.7152, LUMW_B=0.0722;
 // JS mirrors of the shader's gamut map and OKLab hue/saturation. These must
@@ -355,6 +353,11 @@ function hueSatF(r,g,b,hueFrac,sat,keepSat,vibrance=0){
 function sCurveF(x,strength,pivot){
   x=Math.max(0,Math.min(1,x));
   const p=Math.max(0.05,Math.min(0.95, pivot===undefined?0.5:pivot));
+  if(strength<1){
+    const T=0.02;
+    if(x<T) return p*Math.pow(T/p,strength)*(x/T);
+    if(x>1-T) return 1-(1-p)*Math.pow(T/(1-p),strength)*((1-x)/T);
+  }
   if(x<p) return p*Math.pow(x/p,strength);
   return 1-(1-p)*Math.pow((1-x)/(1-p),strength);
 }
@@ -389,7 +392,65 @@ function hsvRotateF(r,g,b,turns){
   else         o=[cc,0,x];
   return [o[0]+m,o[1]+m,o[2]+m];
 }
-function pipelineRGB(r,g,b,matrix,pre,post,exposure,hueFrac,satFactor,blackPt,lutMix,tt,ct,satPreserve,bands,preM,postM,wbMethod,hueSpaceMode,lumOn,filmEnabled,vibrance=0,camCoefArr=null,swapSpaceMode='2',mO=null){
+/* Build r2: the per-pixel stages the CPU bake had fallen behind on, each a line-for-line copy of the shader's. */
+function colourCalibrationF(r,g,b,cal){   // shader applyColourCalibration; cal = the seven sliders / 100
+  const hR=cal.rh,hG=cal.gh,hB=cal.bh;
+  if(!hR&&!hG&&!hB&&!cal.rs&&!cal.gs&&!cal.bs&&!cal.st) return[r,g,b];
+  const rP=[1-Math.abs(hR),Math.max(0,hR),Math.max(0,-hR)];
+  const gP=[Math.max(0,-hG),1-Math.abs(hG),Math.max(0,hG)];
+  const bP=[Math.max(0,hB),Math.max(0,-hB),1-Math.abs(hB)];
+  let c=[rP[0]*r+gP[0]*g+bP[0]*b, rP[1]*r+gP[1]*g+bP[1]*b, rP[2]*r+gP[2]*g+bP[2]*b].map(v=>Math.max(0,v));
+  const luma=LUMW_R*c[0]+LUMW_G*c[1]+LUMW_B*c[2], cSum=c[0]+c[1]+c[2];
+  if(cSum>0.001){const sa=(c[0]*cal.rs+c[1]*cal.gs+c[2]*cal.bs)/cSum; c=c.map(v=>v+(v-luma)*sa);}
+  if(cal.st){
+    const sL=LUMW_R*Math.max(c[0],0)+LUMW_G*Math.max(c[1],0)+LUMW_B*Math.max(c[2],0);
+    const t=Math.max(0,Math.min(1,sL/0.3)), mask=1-t*t*(3-2*t), st=cal.st*0.25, k=[1+st,1-st,1+st];
+    c=c.map((v,i)=>v+(v*k[i]-v)*mask);
+  }
+  return c;
+}
+function filmToneAerochromeF(v,i){   // shader filmToneAerochrome, one channel
+  const SPEED=[0,-0.10,-0.30][i], lg=Math.log2(Math.max(v,0.0005))*0.30103, t=(lg-SPEED+0.85)*3.12;
+  return Math.max(0,Math.min(1,1/(1+Math.exp(-t*2.3026))));
+}
+function brightnessF(s,bri){   // shader Brightness block, on encoded values; bri = slider / 100
+  const l=linearToSrgbF(LUMW_R*srgbToLinearF(s[0])+LUMW_G*srgbToLinearF(s[1])+LUMW_B*srgbToLinearF(s[2]));
+  if(!(l>0.00001)) return s;
+  const k=Math.pow(2,-bri*1.2), sh=l/(l+(1-l)*k), ls=sh/l;
+  const lw=Math.max(0,Math.min(1,sh)), dyn=0.95+(0.65-0.95)*lw;
+  let cs=Math.pow(ls,dyn);
+  const hr=Math.max(0,Math.min(1,(1.05-sh)/Math.max(1.05-l,0.0001)));
+  cs=cs*(1+(hr-1)*Math.abs(bri));
+  return s.map(v=>Math.max(0,Math.min(1,sh+(v-l)*cs)));
+}
+function whitePointF(s,whitePt){   // shader White point shoulder
+  const wp=whitePt/255, K=Math.max(1-2*wp,0.001), sK=K/(1-wp), span=Math.max(1-K,1e-5);
+  return s.map(v=>Math.max(0,Math.min(1, v<=K ? v/(1-wp) : 1-(1-sK)*Math.pow((1-v)/span,2))));
+}
+function curveSampleF(lut,ch,x){   // the shader reads the 1024-entry table with linear filtering at x*1023
+  const n=lut.length/4, f=Math.max(0,Math.min(1,x))*(n-1), i=Math.min(Math.floor(f),n-2), t=f-i;
+  return lut[i*4+ch]+(lut[(i+1)*4+ch]-lut[i*4+ch])*t;
+}
+function toneCurveF(s,lut,lumMode){   // shader tone curve stage
+  let c=s.map(v=>Math.max(0,Math.min(1,v)));
+  if(lumMode){
+    const L0=LUMW_R*c[0]+LUMW_G*c[1]+LUMW_B*c[2], L1=curveSampleF(lut,3,L0);
+    c=c.map(v=>Math.max(0,Math.min(1,v+(L1-L0))));
+  }
+  return[curveSampleF(lut,0,c[0]),curveSampleF(lut,1,c[1]),curveSampleF(lut,2,c[2])];
+}
+function pipelineRGB(r,g,b,matrix,pre,post,exposure,hueFrac,satFactor,blackPt,lutMix,tt,ct,satPreserve,bands,preM,postM,wbMethod,hueSpaceMode,lumOn,filmEnabled,vibrance=0,camCoefArr=null,swapSpaceMode='2',mO=null,ex=null){
+  /* ex (build r2), all optional: { lumaW, cal, filmTone, brightness, whitePt, curveLut, curveLum } -- see buildCubeLUT */
+  ex = ex || {};
+  const LW = ex.lumaW || [0.2126,0.7152,0.0722];   // the swap's "hold brightness" weights, u_lumaW in the shader
+  /* Exposure first, in linear light, then clipped to 0..1 -- where the shader does it (stage1Lin, before the encode
+     that everything after reads). It used to be a multiply after the swap and white balance, with nothing clipping it,
+     so the gamut map at the end met values far above white and washed them toward grey: Exposure +1 baked a .cube that
+     turned a source 211,224,0 into 248,254,203 where the preview shows 253,253,0. */
+  if (exposure !== 1) {
+    const ex = v => linearToSrgbF(Math.max(0, Math.min(1, srgbToLinearF(v) * exposure)));
+    r = ex(r); g = ex(g); b = ex(b);
+  }
   /* Camera-colour match, mirrored from the shader and in the same place:
      first, on encoded values, before anything else. See the shader comment
      on why it cannot go at the end. */
@@ -414,7 +475,7 @@ function pipelineRGB(r,g,b,matrix,pre,post,exposure,hueFrac,satFactor,blackPt,lu
   // mirrored here so a saved .cube matches whichever one was live
   if (wbMethod === 'bradford') { [lr,lg,lb] = bfMat3vec(preM, [lr,lg,lb]); }
   else { lr*=pre[0];lg*=pre[1];lb*=pre[2]; }
-  const yPreSwap = 0.2126*lr + 0.7152*lg + 0.0722*lb;   // see preserveLuma in the shader
+  const yPreSwap = LW[0]*lr + LW[1]*lg + LW[2]*lb;   // see preserveLuma in the shader (u_lumaW)
   const[a,b1,c,d,e,f,g1,h,i]=matrix;
   const mo = mO || [0,0,0];   // the matrix offsets, in the swap space, as the shader adds them
   /* Working space for the channel swap, mirroring the shader's own
@@ -463,7 +524,7 @@ function pipelineRGB(r,g,b,matrix,pre,post,exposure,hueFrac,satFactor,blackPt,lu
     mb = -0.008564*xr - 0.153302*xg + 1.162106*xb;
   }
   if (lumOn) {
-    const yAfter = 0.2126*mr + 0.7152*mg + 0.0722*mb;
+    const yAfter = LW[0]*mr + LW[1]*mg + LW[2]*mb;
     if (yAfter > 1e-5 && yPreSwap > 1e-5) {
       const gain = yPreSwap / yAfter;
       if (gain <= 1) { mr*=gain; mg*=gain; mb*=gain; }
@@ -481,14 +542,19 @@ function pipelineRGB(r,g,b,matrix,pre,post,exposure,hueFrac,satFactor,blackPt,lu
       }
     }
   }
+  /* the shader brings the swap back into gamut here, before the post-swap white balance (gamutMapT after preserveLuma) */
+  [mr,mg,mb]=gamutMapF(mr,mg,mb,satPreserve);
   if (wbMethod === 'bradford') { [mr,mg,mb] = bfMat3vec(postM, [mr,mg,mb]); }
   else { mr*=post[0];mg*=post[1];mb*=post[2]; }
   const T = tt || [1,1,1];   // temperature/tint, matching the shader's separate stage
   mr*=T[0];mg*=T[1];mb*=T[2];
-  mr*=exposure;mg*=exposure;mb*=exposure;
+  // (exposure is applied at the top, as in the shader)
+  if (ex.cal) [mr,mg,mb]=colourCalibrationF(mr,mg,mb,ex.cal);   // after temperature/tint, before the (spatial) vignette
+  if (ex.filmTone > 0.001) { const f=ex.filmTone; mr+=(filmToneAerochromeF(mr,0)-mr)*f; mg+=(filmToneAerochromeF(mg,1)-mg)*f; mb+=(filmToneAerochromeF(mb,2)-mb)*f; }
   [mr,mg,mb]=applyContrastF(mr,mg,mb,contrastStrength(ct),contrastPivot);
   [mr,mg,mb]=gamutMapF(mr,mg,mb,satPreserve);
   let sr=linearToSrgbF(mr),sg=linearToSrgbF(mg),sb=linearToSrgbF(mb);
+  if(ex.brightness) [sr,sg,sb]=brightnessF([sr,sg,sb],ex.brightness);   // the shader runs Brightness before the black point
   if(blackPt>0){
     const bp=blackPt/255;
     // soft toe, mirroring the shader — see its comment
@@ -496,6 +562,8 @@ function pipelineRGB(r,g,b,matrix,pre,post,exposure,hueFrac,satFactor,blackPt,lu
     const _toe=v=>{const o = v>=K ? (v-bp)/(1-bp) : sK*Math.pow(v/K,2); return Math.max(0,Math.min(1,o));};
     sr=_toe(sr); sg=_toe(sg); sb=_toe(sb);
   }
+  if(ex.whitePt>0) [sr,sg,sb]=whitePointF([sr,sg,sb],ex.whitePt);
+  if(ex.curveLut) [sr,sg,sb]=toneCurveF([sr,sg,sb],ex.curveLut,!!ex.curveLum);
   if(hueFrac!==0||satFactor!==1||vibrance!==0){
     if(hueSpaceMode==='ps') [sr,sg,sb]=hsvRotateF(sr,sg,sb,hueFrac);   // build 237: mirrors the shader's Photoshop mode
     let lr2=srgbToLinearF(sr), lg2=srgbToLinearF(sg), lb2=srgbToLinearF(sb);
@@ -551,9 +619,14 @@ function buildCubeLUT(size){
   out.push('LUT_3D_SIZE '+size);
   out.push('DOMAIN_MIN 0.0 0.0 0.0');
   out.push('DOMAIN_MAX 1.0 1.0 1.0');
+  /* Build r2: the stages this copy used to leave out, with the values the shader receives (engine.js setUniforms) */
+  const cp=currentParams(), c100=k=>(+cp[k]||0)/100;
+  const cubeEx={ lumaW: cp.lumaW, filmTone: c100('filmTone'), brightness: c100('brightness'), whitePt: +cp.whitePt||0,
+    cal: { rh:c100('calRH'), gh:c100('calGH'), bh:c100('calBH'), rs:c100('calRS'), gs:c100('calGS'), bs:c100('calBS'), st:c100('calST') },
+    curveLut: (cp.curveOn && cp.curveLut) ? cp.curveLut : null, curveLum: !!cp.curveLum };
   const N=size-1;
   for(let z=0;z<size;z++)for(let y=0;y<size;y++)for(let x=0;x<size;x++){
-    const o=pipelineRGB(x/N,y/N,z/N,matrix,preWB,postWB,exposure,hueFrac,satFactor,blackPt,lutMix,tt,ct,satPreserve,targetedBands,preWBM,postWBM,wbMethod,hueSpace,lumPreserve,filmOn ? 1 : 0,vibrance,(camCoef && $('camMatch') && $('camMatch').checked) ? camCoef : null,($('swapSpace') && $('swapSpace').value) || '2',getMatrixOffsetUI());   // the same scaled offsets the live preview sends to the shader
+    const o=pipelineRGB(x/N,y/N,z/N,matrix,preWB,postWB,exposure,hueFrac,satFactor,blackPt,lutMix,tt,ct,satPreserve,targetedBands,preWBM,postWBM,wbMethod,hueSpace,lumPreserve,filmOn ? 1 : 0,vibrance,(camCoef && $('camMatch') && $('camMatch').checked) ? camCoef : null,($('swapSpace') && $('swapSpace').value) || '2',getMatrixOffsetUI(),cubeEx);   // the same scaled offsets the live preview sends to the shader
     out.push(o[0].toFixed(6)+' '+o[1].toFixed(6)+' '+o[2].toFixed(6));
   }
   return{text:out.join('\n')+'\n',name:'ChannelSwap_'+lookName+'.cube'};

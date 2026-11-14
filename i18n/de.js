@@ -250,7 +250,7 @@ irlabTr.add('de', {
 "Export": "Export",
 "Export (5)": "Export (5)",
 "Export CSV": "CSV exportieren",
-"Export Image": "Bild exportieren",
+"Export image": "Bild exportieren",
 "Export JSON": "JSON exportieren",
 "Export PNG report": "PNG-Bericht exportieren",
 "Export a PNG report": "Einen PNG-Bericht exportieren",
